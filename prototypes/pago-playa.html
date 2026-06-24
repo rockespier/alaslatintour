@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pago en playa — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Flujo de pago en efectivo con token de aprobación administrativa." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #002359;
+            color: #EEEEEE;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+
+        /* Pulse envelope */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.2; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .pulse-ring {
+            position: absolute; inset: -10px;
+            border-radius: 50%;
+            border: 2px solid #0081C6;
+            animation: pulse-ring 2s ease-in-out infinite;
+        }
+        @keyframes spin-slow { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+        .spin-slow { animation: spin-slow 2.4s linear infinite; }
+
+        /* Countdown */
+        @keyframes pulse-red {
+            0%, 100% { color: #EF4444; transform: scale(1); }
+            50% { color: #ff7373; transform: scale(1.04); }
+        }
+        .countdown-warn { animation: pulse-red 1s ease-in-out infinite; }
+
+        /* Success check */
+        @keyframes draw-check {
+            0% { stroke-dashoffset: 100; opacity: 0; }
+            100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes scale-in {
+            0% { transform: scale(0.4); opacity: 0; }
+            70% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .check-circle { animation: scale-in 0.5s ease-out forwards; }
+        .check-path { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw-check 0.6s 0.3s ease-out forwards; }
+
+        /* Token input */
+        .token-input {
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            background: #002359;
+            border: 2px solid #004F8E;
+            transition: border-color .25s ease;
+        }
+        .token-input:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 4px rgba(0,129,198,0.15); }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased" x-data="paymentFlow()" x-init="init()">
+
+<!-- ============= NAV (logged-in) ============= -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
+                <a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a>
+                <a href="eventos.html" class="text-cyan-brand">Eventos</a>
+                <a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a>
+                <a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-navy-dark border border-navy-mid">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-sm">G</div>
+                    <span class="font-accent text-sm uppercase tracking-wider">Gabriel V.</span>
+                </div>
+                <a href="index.html" class="text-xs text-text-muted hover:text-orange-brand transition">Cerrar sesión</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- ============= DEV STATE SWITCHER ============= -->
+<div class="bg-navy-dark border-b border-orange-brand/40 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex flex-wrap items-center gap-3">
+        <span class="font-accent uppercase tracking-wider text-xs text-orange-brand flex items-center gap-2">
+            <span>🔧</span> Prototipo — Simular estado:
+        </span>
+        <div class="flex flex-wrap gap-2">
+            <button @click="setState('request')" class="px-3 py-1 rounded text-xs font-accent uppercase tracking-wider transition" :class="state === 'request' ? 'bg-orange-brand text-white' : 'bg-navy-deepest border border-navy-mid text-text-muted hover:border-orange-brand'">1. Request</button>
+            <button @click="setState('pending')" class="px-3 py-1 rounded text-xs font-accent uppercase tracking-wider transition" :class="state === 'pending' ? 'bg-orange-brand text-white' : 'bg-navy-deepest border border-navy-mid text-text-muted hover:border-orange-brand'">2. Pending</button>
+            <button @click="setState('token-entry')" class="px-3 py-1 rounded text-xs font-accent uppercase tracking-wider transition" :class="state === 'token-entry' ? 'bg-orange-brand text-white' : 'bg-navy-deepest border border-navy-mid text-text-muted hover:border-orange-brand'">3. Token</button>
+            <button @click="setState('expired')" class="px-3 py-1 rounded text-xs font-accent uppercase tracking-wider transition" :class="state === 'expired' ? 'bg-orange-brand text-white' : 'bg-navy-deepest border border-navy-mid text-text-muted hover:border-orange-brand'">4. Expired</button>
+            <button @click="setState('success')" class="px-3 py-1 rounded text-xs font-accent uppercase tracking-wider transition" :class="state === 'success' ? 'bg-orange-brand text-white' : 'bg-navy-deepest border border-navy-mid text-text-muted hover:border-orange-brand'">5. Success</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============= MAIN ============= -->
+<main class="py-12 px-4 sm:px-6 lg:px-8 min-h-[70vh]">
+    <div class="max-w-3xl mx-auto">
+
+        <!-- breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs font-accent uppercase tracking-wider text-text-muted mb-6">
+            <a href="eventos.html" class="hover:text-cyan-brand">Eventos</a>
+            <span>/</span>
+            <a href="inscripcion.html" class="hover:text-cyan-brand">Inscripción</a>
+            <span>/</span>
+            <span class="text-cyan-brand">Pago en playa</span>
+        </nav>
+
+        <header class="mb-8">
+            <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-xs mb-2">Pago en efectivo</p>
+            <h1 class="font-heading text-3xl md:text-4xl">Pago en playa — Roca Bruja Classic</h1>
+        </header>
+
+        <!-- Event summary card (visible across states) -->
+        <div class="bg-gradient-to-r from-navy-dark via-navy-dark to-navy-mid border border-navy-mid rounded-xl p-5 mb-8 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex items-center gap-3 flex-1">
+                <span class="text-3xl">🇵🇪</span>
+                <div>
+                    <h2 class="font-heading text-lg leading-tight">Roca Bruja Classic</h2>
+                    <p class="text-xs text-text-muted">Open Hombres · Lobitos, Perú · 12 – 15 Jul 2026</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Monto a pagar</p>
+                <p class="font-heading text-3xl text-gold-brand">$75 <span class="text-sm">USD</span></p>
+            </div>
+        </div>
+
+        <!-- ========== STATE 1: REQUEST ========== -->
+        <div x-show="state === 'request'" x-transition class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-10" x-cloak>
+            <div class="text-center mb-8">
+                <div class="inline-flex w-20 h-20 rounded-full bg-orange-brand/15 border border-orange-brand/40 items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <h2 class="font-heading text-2xl md:text-3xl mb-2">Solicita tu código de pago</h2>
+                <p class="text-text-muted max-w-md mx-auto">Tu pago en efectivo en la playa requiere aprobación previa del administrador. El proceso es simple y solo toma unos minutos.</p>
+            </div>
+
+            <div class="bg-navy-deepest border border-navy-mid rounded-xl p-6 mb-8">
+                <h3 class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-5">¿Cómo funciona?</h3>
+                <ol class="space-y-5">
+                    <li class="flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-cyan-brand/15 border border-cyan-brand text-cyan-brand font-heading flex items-center justify-center flex-shrink-0">1</span>
+                        <div>
+                            <p class="font-heading text-base">Envía solicitud al administrador</p>
+                            <p class="text-sm text-text-muted mt-0.5">Al hacer clic, notificamos al equipo ALAS por correo electrónico.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-cyan-brand/15 border border-cyan-brand text-cyan-brand font-heading flex items-center justify-center flex-shrink-0">2</span>
+                        <div>
+                            <p class="font-heading text-base">Recibe un token por correo</p>
+                            <p class="text-sm text-text-muted mt-0.5">Cuando el administrador apruebe, recibirás un código de 8 caracteres en <span class="text-cyan-brand">gabriel.villani@surf.com</span>.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="w-9 h-9 rounded-full bg-cyan-brand/15 border border-cyan-brand text-cyan-brand font-heading flex items-center justify-center flex-shrink-0">3</span>
+                        <div>
+                            <p class="font-heading text-base">Introduce el token aquí</p>
+                            <p class="text-sm text-text-muted mt-0.5">Tienes 20 minutos para usarlo. Una vez validado, tu inscripción quedará reservada con estado <strong class="text-warning-brand">pago pendiente</strong>.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <button @click="setState('pending')" class="w-full max-w-md px-7 py-4 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-base transition shadow-xl shadow-orange-brand/25 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Solicitar código al administrador
+                </button>
+                <a href="inscripcion.html" class="text-sm text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider">← Cambiar método de pago</a>
+            </div>
+        </div>
+
+        <!-- ========== STATE 2: PENDING ========== -->
+        <div x-show="state === 'pending'" x-transition class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-10" x-cloak>
+            <div class="text-center">
+                <div class="relative inline-flex w-28 h-28 items-center justify-center mb-6">
+                    <div class="pulse-ring"></div>
+                    <div class="absolute inset-2 rounded-full bg-cyan-brand/10 border border-cyan-brand/40 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                </div>
+
+                <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-2">Estado: en revisión</p>
+                <h2 class="font-heading text-2xl md:text-3xl mb-3">Solicitud enviada</h2>
+                <p class="text-text-muted max-w-md mx-auto mb-8">El administrador ha sido notificado. Revisa tu correo electrónico en cuanto recibas la aprobación.</p>
+
+                <!-- Email pill -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy-deepest border border-navy-mid mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <span class="text-sm">gabriel.villani@surf.com</span>
+                </div>
+
+                <!-- Spinning indicator -->
+                <div class="flex items-center justify-center gap-3 mb-8">
+                    <svg class="h-5 w-5 text-cyan-brand spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span class="font-accent uppercase tracking-wider text-sm text-cyan-brand">Esperando aprobación…</span>
+                </div>
+
+                <p class="text-xs text-text-muted max-w-md mx-auto leading-relaxed">Tiempo promedio de aprobación: <strong class="text-text-light">2–5 minutos</strong>. Si tu solicitud demora más de 30 minutos, contacta al equipo ALAS.</p>
+
+                <div class="mt-8 flex flex-col items-center gap-3">
+                    <button @click="setState('token-entry'); startCountdown();" class="px-5 py-2.5 rounded-md border border-orange-brand text-orange-brand hover:bg-orange-brand hover:text-white font-accent uppercase tracking-wider text-sm transition">
+                        → Simular aprobación del admin (prototipo)
+                    </button>
+                    <button @click="setState('request')" class="text-xs text-text-muted hover:text-error-brand underline underline-offset-4">Cancelar solicitud</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== STATE 3: TOKEN ENTRY ========== -->
+        <div x-show="state === 'token-entry'" x-transition class="space-y-6" x-cloak>
+            <!-- Success notification -->
+            <div class="bg-success-brand/10 border border-success-brand/40 rounded-xl p-4 flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="flex-1">
+                    <p class="font-heading text-base text-success-brand">¡Token enviado a tu correo!</p>
+                    <p class="text-sm text-text-muted mt-0.5">Revisa <span class="text-text-light">gabriel.villani@surf.com</span> y copia el código de 8 caracteres.</p>
+                </div>
+            </div>
+
+            <div class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-10">
+                <!-- Countdown -->
+                <div class="text-center mb-8">
+                    <p class="font-accent uppercase tracking-[0.3em] text-text-muted text-xs mb-3">Tiempo restante para introducir el token</p>
+                    <div class="font-heading text-6xl md:text-7xl tabular-nums" :class="timer.seconds <= 180 ? 'countdown-warn' : 'text-cyan-brand'">
+                        <span x-text="formatTime(timer.seconds)"></span>
+                    </div>
+                    <div class="mt-4 mx-auto max-w-sm h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                        <div class="h-full transition-all duration-1000" :class="timer.seconds <= 180 ? 'bg-error-brand' : 'bg-cyan-brand'" :style="`width: ${(timer.seconds / 1200) * 100}%`"></div>
+                    </div>
+                    <p class="text-xs text-text-muted mt-3" x-show="timer.seconds <= 180">⚠ ¡Apresúrate! Tu token expirará pronto.</p>
+                </div>
+
+                <!-- Token input -->
+                <div class="max-w-md mx-auto">
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted text-center mb-3">Ingresa el código recibido</label>
+                    <input type="text" maxlength="9" placeholder="A3K9-Z2MX" x-model="tokenInput" @input="tokenInput = tokenInput.toUpperCase()" class="token-input w-full px-6 py-5 rounded-xl text-3xl text-center font-bold" />
+                    <p class="text-xs text-text-muted text-center mt-2">El código tiene 8 caracteres alfanuméricos.</p>
+
+                    <button @click="setState('success')" class="w-full mt-6 px-7 py-4 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-base transition shadow-xl shadow-orange-brand/25">
+                        Confirmar token
+                    </button>
+
+                    <div class="mt-5 flex items-center justify-center gap-4 text-xs text-text-muted">
+                        <button @click="setState('request')" class="hover:text-cyan-brand underline underline-offset-4">Re-solicitar token</button>
+                        <span>·</span>
+                        <a href="eventos.html" class="hover:text-cyan-brand underline underline-offset-4">Volver a eventos</a>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-navy-mid text-center">
+                    <p class="text-xs text-text-muted leading-relaxed max-w-lg mx-auto">Por tu seguridad, este código es de un solo uso y expira automáticamente a los 20 minutos. No lo compartas con nadie.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== STATE 4: EXPIRED ========== -->
+        <div x-show="state === 'expired'" x-transition class="bg-navy-dark border border-error-brand/30 rounded-2xl p-6 md:p-10" x-cloak>
+            <div class="text-center mb-8">
+                <div class="inline-flex w-24 h-24 rounded-full bg-error-brand/15 border-2 border-error-brand/50 items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-error-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <p class="font-accent uppercase tracking-[0.3em] text-error-brand text-xs mb-2">Estado: expirado</p>
+                <h2 class="font-heading text-2xl md:text-3xl text-error-brand mb-3">Token expirado</h2>
+                <p class="text-text-muted max-w-md mx-auto">El código que recibiste ha caducado. Esto ocurre 20 minutos después de su generación por tu seguridad.</p>
+            </div>
+
+            <!-- HTTP debug callout -->
+            <div class="bg-navy-deepest border border-navy-mid rounded-lg p-4 mb-8 max-w-xl mx-auto">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Respuesta del API ALAS BFF</p>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-error-brand/15 text-error-brand border border-error-brand/30">HTTP 400</span>
+                </div>
+                <pre class="font-mono text-xs text-text-light overflow-x-auto leading-relaxed"><span class="text-text-muted">POST</span> <span class="text-cyan-brand">/api/v1/payments/beach/redeem</span>
+
+{
+  <span class="text-orange-brand">"error"</span>: <span class="text-success-brand">"token_expired"</span>,
+  <span class="text-orange-brand">"message"</span>: <span class="text-success-brand">"El token ha caducado. Solicita uno nuevo."</span>,
+  <span class="text-orange-brand">"issuedAt"</span>: <span class="text-success-brand">"2026-07-12T14:23:00Z"</span>,
+  <span class="text-orange-brand">"expiredAt"</span>: <span class="text-success-brand">"2026-07-12T14:43:00Z"</span>
+}</pre>
+            </div>
+
+            <div class="flex flex-col items-center gap-3">
+                <button @click="setState('request')" class="w-full max-w-md px-7 py-4 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-base transition shadow-xl shadow-orange-brand/25 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Re-solicitar token
+                </button>
+                <a href="eventos.html" class="text-sm text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider">← Volver a eventos</a>
+            </div>
+        </div>
+
+        <!-- ========== STATE 5: SUCCESS ========== -->
+        <div x-show="state === 'success'" x-transition class="bg-navy-dark border border-success-brand/30 rounded-2xl p-6 md:p-10" x-cloak>
+            <div class="text-center mb-8">
+                <div class="check-circle inline-flex w-24 h-24 rounded-full bg-success-brand/15 border-2 border-success-brand items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="#22C55E">
+                        <path class="check-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <p class="font-accent uppercase tracking-[0.3em] text-success-brand text-xs mb-2">Inscripción procesada</p>
+                <h2 class="font-heading text-2xl md:text-3xl mb-3">¡Inscripción confirmada!</h2>
+                <p class="text-text-muted max-w-md mx-auto">Tu lugar en el evento está reservado. Recuerda completar el pago en efectivo al llegar a la playa.</p>
+            </div>
+
+            <!-- Status badge -->
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-warning-brand/10 border border-warning-brand/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span class="font-accent uppercase tracking-wider text-sm text-warning-brand">Estado financiero: pago pendiente</span>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="bg-navy-deepest border border-navy-mid rounded-xl p-6 max-w-lg mx-auto mb-8">
+                <h3 class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-4">Detalle de tu inscripción</h3>
+                <dl class="space-y-3 text-sm">
+                    <div class="flex justify-between"><dt class="text-text-muted">Evento</dt><dd>Roca Bruja Classic</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Categoría</dt><dd>Open Hombres</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Fechas</dt><dd>12 – 15 Jul 2026</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-gold-brand font-heading text-base">$75 USD</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Método de pago</dt><dd>Efectivo en playa</dd></div>
+                    <div class="flex justify-between pt-3 border-t border-navy-mid"><dt class="text-text-muted">Estado</dt><dd class="text-warning-brand font-accent uppercase tracking-wider">Pendiente de pago</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Referencia</dt><dd class="font-mono text-xs">ALAS-RBC-2026-0048</dd></div>
+                </dl>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-lg mx-auto">
+                <button class="flex-1 px-5 py-3 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Agregar al calendario
+                </button>
+                <a href="eventos.html" class="flex-1 text-center px-5 py-3 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition">Ver mis inscripciones</a>
+            </div>
+
+            <div class="text-center mt-6">
+                <a href="index.html" class="text-sm text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider">← Ir al inicio</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Footer simplificado -->
+<footer class="bg-navy-deepest border-t border-navy-mid mt-12 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+        <p>© 2026 ALAS Latin Tour. Pagos procesados de forma segura.</p>
+        <div class="flex items-center gap-4">
+            <a href="#" class="hover:text-cyan-brand">Soporte</a>
+            <a href="#" class="hover:text-cyan-brand">Reglamento</a>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+function paymentFlow() {
+    return {
+        state: 'request',
+        tokenInput: '',
+        timer: {
+            seconds: 1200,
+            interval: null
+        },
+        init() {
+            // Read state from URL hash if provided (for prototype review)
+            const hash = window.location.hash.replace('#', '');
+            if (['request', 'pending', 'token-entry', 'expired', 'success'].includes(hash)) {
+                this.state = hash;
+                if (this.state === 'token-entry') this.startCountdown();
+            }
+            this.$watch('state', (val) => {
+                window.location.hash = val;
+                if (val !== 'token-entry') this.stopCountdown();
+            });
+        },
+        setState(newState) {
+            this.state = newState;
+            if (newState === 'token-entry') {
+                this.timer.seconds = 1200;
+                this.startCountdown();
+            }
+        },
+        startCountdown() {
+            this.stopCountdown();
+            this.timer.interval = setInterval(() => {
+                if (this.timer.seconds > 0) {
+                    this.timer.seconds--;
+                } else {
+                    this.stopCountdown();
+                    this.state = 'expired';
+                }
+            }, 1000);
+        },
+        stopCountdown() {
+            if (this.timer.interval) {
+                clearInterval(this.timer.interval);
+                this.timer.interval = null;
+            }
+        },
+        formatTime(s) {
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = (s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+    };
+}
+</script>
+
+</body>
+</html>

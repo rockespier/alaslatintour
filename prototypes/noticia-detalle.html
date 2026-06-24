@@ -1,0 +1,390 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gabriel Villani domina el Roca Bruja Classic y asciende al liderato — ALAS Latin Tour</title>
+    <meta name="description" content="Crónica completa de la victoria de Gabriel Villani en la parada peruana del ALAS Latin Tour 2026. Resultados oficiales, heat scores y análisis de la final." />
+    <link rel="canonical" href="https://alaslatintour.com/noticias/gabriel-villani-roca-bruja-classic" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif'],
+                        mono: ['ui-monospace','SFMono-Regular','Menlo','monospace']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #002359; color: #EEEEEE; }
+        h1,h2,h3,h4,h5,h6,.font-heading { font-family:'Oswald',sans-serif; letter-spacing:.02em; }
+        .font-accent { font-family:'Barlow Condensed',sans-serif; letter-spacing:.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -6px;
+            height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+
+        .ssr-callout {
+            background: linear-gradient(180deg, rgba(0,129,198,0.08), rgba(0,129,198,0.02));
+            border: 1px dashed rgba(0,129,198,0.45);
+        }
+        .ssr-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12.5px;
+            background: #002359;
+            border: 1px solid #004F8E;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #B7DBE8;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .ssr-code .tag { color: #0081C6; }
+        .ssr-code .attr { color: #0D6EFD; }
+        .ssr-code .val { color: #0081C6; }
+
+        .prose-article p { color: #C9DDE8; line-height: 1.85; font-size: 1.0625rem; }
+        .prose-article p + p { margin-top: 1.25rem; }
+        .pull-quote {
+            border-left: 4px solid #007AFF;
+            padding: 16px 24px;
+            margin: 32px 0;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.4rem;
+            color: #EEEEEE;
+            line-height: 1.4;
+        }
+        .avatar-initials {
+            background: linear-gradient(135deg, #0081C6 0%, #007AFF 100%);
+            color: #002359;
+        }
+        .results-table th { background: #004F8E; color: #AAAAAA; }
+        .results-table td, .results-table th { padding: 10px 14px; }
+        .results-table tbody tr:not(:last-child) { border-bottom: 1px solid #004F8E; }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="index.html#eventos" class="nav-link">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link active">Noticias</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="#" class="px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition font-accent uppercase text-sm tracking-wider">Iniciar sesión</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white transition font-accent uppercase text-sm tracking-wider">Registrarse</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="quienes-somos.html" class="block py-2">Quiénes Somos</a>
+            <a href="index.html#eventos" class="block py-2">Eventos</a>
+            <a href="index.html#ranking" class="block py-2">Ranking</a>
+            <a href="noticias.html" class="block py-2 text-cyan-brand">Noticias</a>
+            <a href="index.html#contacto" class="block py-2">Contacto</a>
+        </div>
+    </div>
+</nav>
+
+<!-- SSR DEV-ONLY INDICATOR -->
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8" x-data="{ open: true }">
+    <div class="ssr-callout rounded-xl p-5" x-show="open" x-transition>
+        <div class="flex items-start justify-between gap-4 mb-3">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-md bg-cyan-brand/15 text-cyan-brand flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <div>
+                    <p class="font-heading text-lg leading-tight">SSR HEAD TAGS</p>
+                    <p class="text-xs text-text-muted">Generados por Angular en servidor antes de hidratar el cliente</p>
+                </div>
+            </div>
+            <button @click="open=false" class="text-text-muted hover:text-text-light text-sm" aria-label="Cerrar">✕</button>
+        </div>
+        <pre class="ssr-code"><span class="tag">&lt;title&gt;</span>Gabriel Villani domina el Roca Bruja Classic — ALAS Latin Tour<span class="tag">&lt;/title&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"description"</span> <span class="attr">content</span>=<span class="val">"Crónica de la victoria de Villani en Lobitos, Perú. Resultados oficiales y análisis del nuevo líder del ranking ALAS 2026."</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:title"</span> <span class="attr">content</span>=<span class="val">"Villani asciende al liderato del ALAS Latin Tour"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image"</span> <span class="attr">content</span>=<span class="val">"https://cdn.alaslatintour.com/og/roca-bruja-2026.jpg"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:type"</span> <span class="attr">content</span>=<span class="val">"article"</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"canonical"</span> <span class="attr">href</span>=<span class="val">"https://alaslatintour.com/noticias/gabriel-villani-roca-bruja-classic"</span><span class="tag">/&gt;</span></pre>
+        <p class="text-[11px] text-text-muted mt-3">Visible sólo en build de revisión interna. Se omite en producción.</p>
+    </div>
+</div>
+
+<!-- ARTICLE -->
+<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+
+    <!-- Breadcrumb -->
+    <nav class="text-xs text-text-muted font-accent uppercase tracking-wider mb-6">
+        <a href="noticias.html" class="hover:text-cyan-brand">Noticias</a>
+        <span class="mx-2">/</span>
+        <span class="text-orange-brand">Resultados</span>
+        <span class="mx-2">/</span>
+        <span>Roca Bruja Classic 2026</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-8">
+        <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">Gabriel Villani Domina el Roca Bruja Classic y Asciende al Liderato</h1>
+
+        <div class="flex flex-wrap items-center gap-4 text-sm text-text-muted">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full avatar-initials flex items-center justify-center font-heading text-sm">VC</div>
+                <div>
+                    <p class="text-text-light">Valeria Castillo</p>
+                    <p class="text-xs">Periodista ALAS</p>
+                </div>
+            </div>
+            <span class="hidden sm:inline text-navy-mid">•</span>
+            <span>15 de junio, 2026</span>
+            <span class="hidden sm:inline text-navy-mid">•</span>
+            <span>4 min de lectura</span>
+
+            <div class="ml-auto flex items-center gap-2">
+                <button class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center" aria-label="Compartir">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-2.684 0m0-11.052a3 3 0 102.684 0M6.316 10.658L13 7m0 10l-6.684-3.658"/></svg>
+                </button>
+                <button class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center" aria-label="Twitter">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 5.92a8.2 8.2 0 01-2.36.65 4.12 4.12 0 001.8-2.27 8.2 8.2 0 01-2.6 1 4.1 4.1 0 00-7 3.74A11.65 11.65 0 013.39 4.6a4.1 4.1 0 001.27 5.47 4.07 4.07 0 01-1.86-.52v.05a4.1 4.1 0 003.29 4.02 4.1 4.1 0 01-1.85.07 4.1 4.1 0 003.83 2.85A8.23 8.23 0 012 18.13a11.62 11.62 0 006.29 1.84c7.55 0 11.68-6.25 11.68-11.68v-.53A8.34 8.34 0 0022 5.92z"/></svg>
+                </button>
+                <button class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center" aria-label="WhatsApp">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.413c-.003 6.554-5.338 11.89-11.893 11.89a11.9 11.9 0 01-5.687-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.85 9.85 0 001.692 5.522l-.999 3.648 3.796-.869z"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero image -->
+    <figure class="mb-10 rounded-2xl overflow-hidden border border-navy-mid">
+        <div class="h-64 sm:h-80 md:h-[420px] relative bg-gradient-to-br from-cyan-brand/40 via-navy-mid to-orange-brand/40">
+            <div class="absolute inset-0 flex items-center justify-center text-text-light/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.66-.9l.82-1.2A2 2 0 0110.07 4h3.86a2 2 0 011.66.9l.82 1.2a2 2 0 001.66.9H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <span class="absolute bottom-4 right-4 px-3 py-1.5 bg-navy-deepest/80 text-xs text-text-muted rounded backdrop-blur">Foto: ALAS Media · Lobitos, Perú</span>
+        </div>
+    </figure>
+
+    <!-- Body -->
+    <div class="prose-article">
+        <p>Cuando Gabriel Villani salió del agua bajo el sol de las cinco de la tarde en Lobitos, no necesitaba mirar la tabla de puntajes. La playa entera ya sabía lo que el cuerpo del brasileño confirmaba con cada paso pesado y satisfecho sobre la arena negra: acababa de ganar el Roca Bruja Classic, la tercera parada del ALAS Latin Tour 2026, y con ello había arrancado el liderato del ranking general de manos del peruano Mateo Díaz.</p>
+
+        <p>Villani, de 26 años, llegaba a Perú como sexto en la tabla, lastrado por una eliminación temprana en Matanzas. Pero lo que mostró durante toda la semana en la izquierda peruana fue otra cosa: tubos largos, transiciones limpias y una capacidad sobrehumana de leer las series que rompían a más de doscientos metros del pico. En cuartos despachó al chileno Sebastián Mora con un 17.4 combinado. En semifinales, frente a Lucas Vieira, repitió la dosis con dos olas excelentes en menos de doce minutos.</p>
+
+        <p>La final, sin embargo, fue otra historia. Mateo Díaz, número uno entrando al evento, planteó un duelo táctico: prioridades trabajadas, olas de transición y una primera puntuación de 8.1 que le dio aire durante media manga. Faltando seis minutos, Villani estaba 3.2 puntos abajo. Entonces llegó la serie. Y con ella, la ola.</p>
+
+        <div class="pull-quote">"Sabía que iba a venir una más. Solo era cuestión de aguantar la cabeza fría y dejar pasar lo demás. Cuando la vi formándose entendí que era esa."</div>
+
+        <p>El 9.4 que los cinco jueces de SurfScores firmaron casi al unísono se construyó sobre tres maniobras críticas: un drop tardío, un primer tubo de cinco segundos, y un aéreo de salida ejecutado a metros de las rocas que cierran la izquierda. La ola le dio a Villani un total de 17.95 y una victoria por 0.4 puntos sobre Díaz. La playa, llena de aficionados peruanos, igual aplaudió de pie.</p>
+
+        <figure class="my-8 rounded-xl overflow-hidden border border-navy-mid">
+            <div class="h-56 md:h-72 bg-gradient-to-br from-orange-brand/40 via-navy-dark to-cyan-brand/30 flex items-center justify-center text-text-light/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <figcaption class="px-4 py-3 bg-navy-dark text-xs text-text-muted italic">El público local recibe a Villani tras la premiación. Lobitos, Perú · Foto: Daniela Quispe</figcaption>
+        </figure>
+
+        <p>Más allá del momento épico, el resultado tiene implicancias inmediatas sobre el ranking. Villani sube al primer puesto con 12.840 puntos. Díaz cae al segundo con 11.925. Y Mora, gracias a su semifinal, se acomoda en tercero, escalando una posición y tomándole distancia al argentino Tomás Herrera. Quedan ocho paradas para cerrar la temporada, incluyendo el codiciado Sayulita Masters de cinco estrellas, donde los puntos se duplican.</p>
+
+        <p>El ALAS Latin Tour viaja ahora a Punta Hermosa, en la misma costa peruana, para una parada de cuatro estrellas que comienza el 5 de agosto. Villani ha confirmado su presencia. Díaz también. Y la pregunta, esa que se respira en cada calentamiento previo a la entrada al agua, ya no es quién ganará la temporada — es a cuántos puntos terminarán separados los dos.</p>
+    </div>
+
+    <!-- Results by SurfScores box -->
+    <section class="mt-12 bg-navy-dark border border-cyan-brand/30 rounded-2xl overflow-hidden">
+        <header class="px-6 py-4 flex items-center justify-between border-b border-navy-mid bg-navy-deepest/40">
+            <div>
+                <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Resultados Oficiales — Final Open Hombres</p>
+                <h3 class="font-heading text-xl mt-1">Roca Bruja Classic 2026 · Lobitos, Perú</h3>
+            </div>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="text-xs text-cyan-brand hover:text-cyan-dark underline underline-offset-4 whitespace-nowrap">Results by SurfScores.com</a>
+        </header>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm results-table">
+                <thead class="font-accent uppercase tracking-wider text-xs">
+                    <tr>
+                        <th class="text-left">Posición</th>
+                        <th class="text-left">Surfista</th>
+                        <th class="text-right">Ola 1</th>
+                        <th class="text-right">Ola 2</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-cyan-brand/5">
+                        <td class="font-heading text-gold-brand text-lg">1</td>
+                        <td class="font-medium">Gabriel Villani <span class="text-text-muted text-xs">(BRA)</span></td>
+                        <td class="text-right font-heading">8.55</td>
+                        <td class="text-right font-heading text-cyan-brand">9.40</td>
+                        <td class="text-right font-heading text-lg">17.95</td>
+                    </tr>
+                    <tr>
+                        <td class="font-heading text-lg">2</td>
+                        <td class="font-medium">Mateo Díaz <span class="text-text-muted text-xs">(PER)</span></td>
+                        <td class="text-right font-heading">8.10</td>
+                        <td class="text-right font-heading">9.45</td>
+                        <td class="text-right font-heading text-lg">17.55</td>
+                    </tr>
+                    <tr>
+                        <td class="font-heading text-lg">3</td>
+                        <td class="font-medium">Lucas Vieira <span class="text-text-muted text-xs">(BRA)</span></td>
+                        <td class="text-right font-heading">7.85</td>
+                        <td class="text-right font-heading">8.20</td>
+                        <td class="text-right font-heading text-lg">16.05</td>
+                    </tr>
+                    <tr>
+                        <td class="font-heading text-lg">4</td>
+                        <td class="font-medium">Sebastián Mora <span class="text-text-muted text-xs">(CHL)</span></td>
+                        <td class="text-right font-heading">7.40</td>
+                        <td class="text-right font-heading">8.05</td>
+                        <td class="text-right font-heading text-lg">15.45</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="px-6 py-3 border-t border-navy-mid text-xs text-text-muted bg-navy-deepest/40">
+            Datos arbitrales provistos por SurfScores. Reproducidos bajo licencia para el ALAS Latin Tour.
+        </footer>
+    </section>
+
+    <!-- TAGS -->
+    <div class="mt-10 flex flex-wrap gap-2">
+        <a href="#" class="px-3 py-1 rounded-full bg-navy-dark border border-navy-mid text-xs text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">#RocaBrujaClassic</a>
+        <a href="#" class="px-3 py-1 rounded-full bg-navy-dark border border-navy-mid text-xs text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">#GabrielVillani</a>
+        <a href="#" class="px-3 py-1 rounded-full bg-navy-dark border border-navy-mid text-xs text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">#Perú</a>
+        <a href="#" class="px-3 py-1 rounded-full bg-navy-dark border border-navy-mid text-xs text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">#OpenHombres</a>
+        <a href="#" class="px-3 py-1 rounded-full bg-navy-dark border border-navy-mid text-xs text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">#ALAS2026</a>
+    </div>
+</article>
+
+<!-- RELATED -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+    <div class="border-t border-navy-mid pt-12">
+        <h2 class="font-heading text-3xl mb-8">También te puede interesar</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-40 bg-gradient-to-br from-orange-brand/30 via-navy-dark to-cyan-brand/20"></div>
+                <div class="p-5">
+                    <span class="font-accent uppercase tracking-wider text-xs text-cyan-brand">Circuito</span>
+                    <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">Sayulita Masters confirma su lista de invitados élite</h3>
+                    <p class="text-xs text-text-muted">12 jun, 2026</p>
+                </div>
+            </a>
+            <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-40 bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/30"></div>
+                <div class="p-5">
+                    <span class="font-accent uppercase tracking-wider text-xs text-orange-brand">Entrevista</span>
+                    <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">Camila Restrepo: la nueva promesa colombiana</h3>
+                    <p class="text-xs text-text-muted">10 jun, 2026</p>
+                </div>
+            </a>
+            <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-40 bg-gradient-to-br from-navy-mid via-cyan-brand/20 to-orange-brand/20"></div>
+                <div class="p-5">
+                    <span class="font-accent uppercase tracking-wider text-xs text-warning-brand">Reglamento</span>
+                    <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">ALAS actualiza criterios de wildcards para 2026</h3>
+                    <p class="text-xs text-text-muted">8 jun, 2026</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto">
+                </div>
+                <p class="text-sm text-text-muted leading-relaxed">Asociación Latinoamericana de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.</p>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Navegación</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="index.html" class="hover:text-cyan-brand transition">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a></li>
+                    <li><a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a></li>
+                    <li><a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a></li>
+                    <li><a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Competidores</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="#" class="hover:text-cyan-brand transition">Inscripciones</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Reglamento ALAS</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Soporte y Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Síguenos</h4>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56-.01-4.81-.07-3.27-.15-4.77-1.7-4.92-4.92C2.21 15.6 2.2 15.23 2.2 12c0-3.2.01-3.56.07-4.81.15-3.23 1.66-4.77 4.92-4.92C8.44 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.72.07-2.18.1-3.28 1.18-3.38 3.38C3.84 8.5 3.83 8.85 3.83 12c0 3.15.01 3.5.07 4.72.1 2.2 1.2 3.28 3.38 3.38 1.22.06 1.57.07 4.72.07s3.5-.01 4.72-.07c2.18-.1 3.28-1.18 3.38-3.38.06-1.22.07-1.57.07-4.72s-.01-3.5-.07-4.72c-.1-2.18-1.2-3.28-3.38-3.38C15.5 4.01 15.15 4 12 4zm0 3.07a4.93 4.93 0 110 9.86 4.93 4.93 0 010-9.86zm0 1.8a3.13 3.13 0 100 6.26 3.13 3.13 0 000-6.26zm5.12-1.36a1.15 1.15 0 110 2.3 1.15 1.15 0 010-2.3z"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a2.99 2.99 0 00-2.1-2.11C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.49A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8c.28 1.04 1.1 1.85 2.1 2.11C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.49a3 3 0 002.1-2.11c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.27 3.6L9.6 15.6z"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.68 0H1.32A1.32 1.32 0 000 1.32v21.36A1.32 1.32 0 001.32 24h11.5v-9.3H9.69v-3.62h3.13V8.41c0-3.1 1.9-4.79 4.66-4.79 1.32 0 2.46.1 2.79.14v3.24h-1.91c-1.5 0-1.8.72-1.8 1.76v2.31h3.59l-.47 3.62h-3.12V24h6.12A1.32 1.32 0 0024 22.68V1.32A1.32 1.32 0 0022.68 0z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,349 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiénes Somos - ALAS Latin Tour</title>
+    <meta name="description" content="Historia, misión y valores de la Asociación Latinoamericana de Surfistas Profesionales. 15 años impulsando el surf de alto rendimiento en Latinoamérica." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #002359; color: #EEEEEE; }
+        h1,h2,h3,h4,h5,h6,.font-heading { font-family:'Oswald',sans-serif; letter-spacing:.02em; }
+        .font-accent { font-family:'Barlow Condensed',sans-serif; letter-spacing:.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -6px;
+            height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+
+        .hero-banner {
+            background:
+                radial-gradient(ellipse at 30% 30%, rgba(0,129,198,0.25), transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0,122,255,0.15), transparent 50%),
+                linear-gradient(160deg, #003873 0%, #002359 100%);
+            position: relative;
+        }
+        .wave-deco {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+            background: linear-gradient(180deg, transparent, rgba(0,129,198,0.06));
+            mask: linear-gradient(180deg, transparent, black);
+        }
+        .timeline-dot {
+            width: 16px; height: 16px; border-radius: 999px;
+            background: #0081C6; box-shadow: 0 0 0 4px rgba(0,129,198,0.18);
+        }
+        .timeline-line { background: linear-gradient(180deg, #0081C6, #004F8E); }
+
+        .stat-card { background: linear-gradient(140deg, #004F8E 0%, #003873 100%); }
+        .avatar-initials {
+            background: linear-gradient(135deg, #0081C6 0%, #007AFF 100%);
+            color: #002359;
+        }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link active">Quiénes Somos</a>
+                <a href="index.html#eventos" class="nav-link">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link">Noticias</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="#" class="px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition font-accent uppercase text-sm tracking-wider">Iniciar sesión</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white transition font-accent uppercase text-sm tracking-wider">Registrarse</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="quienes-somos.html" class="block py-2 text-cyan-brand">Quiénes Somos</a>
+            <a href="index.html#eventos" class="block py-2">Eventos</a>
+            <a href="index.html#ranking" class="block py-2">Ranking</a>
+            <a href="noticias.html" class="block py-2">Noticias</a>
+            <a href="index.html#contacto" class="block py-2">Contacto</a>
+            <div class="flex gap-2 pt-4 border-t border-navy-mid">
+                <a href="#" class="flex-1 text-center px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand">Iniciar sesión</a>
+                <a href="#" class="flex-1 text-center px-4 py-2 rounded-md bg-orange-brand text-white">Registrarse</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO BANNER -->
+<section class="hero-banner py-24 md:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto relative z-10">
+        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-4">Nuestra Historia</p>
+        <h1 class="font-heading text-5xl md:text-7xl lg:text-8xl">Quiénes Somos</h1>
+        <p class="mt-6 max-w-2xl text-lg text-text-muted">Una organización deportiva sin fines de lucro que conecta a la comunidad de surf profesional de doce países de Latinoamérica.</p>
+    </div>
+    <div class="wave-deco"></div>
+</section>
+
+<!-- HISTORIA -->
+<section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div>
+            <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-3">Desde 2008</p>
+            <h2 class="font-heading text-4xl md:text-5xl mb-6 leading-tight">Tres olas, un océano, una sola asociación</h2>
+            <div class="space-y-5 text-text-muted leading-relaxed text-base">
+                <p>ALAS nació en 2008 cuando un pequeño grupo de surfistas profesionales de Perú, Brasil y Chile decidieron unificar criterios de competencia, cobertura mediática y desarrollo deportivo bajo una única federación regional. El objetivo desde el primer día fue claro: dar a los atletas latinoamericanos una vitrina internacional comparable a la de los grandes circuitos europeos y oceánicos.</p>
+                <p>En sus primeros años, el calendario contó con cinco paradas anuales y unos sesenta competidores. Hoy, el ALAS Latin Tour es el principal circuito profesional de surf de la región, con dieciocho eventos por temporada, más de trescientos competidores activos y representación oficial en doce países, desde México hasta Argentina.</p>
+                <p>Esta nueva plataforma digital marca el siguiente paso evolutivo. Reemplaza al portal clásico que acompañó al circuito durante más de una década y consolida en un único entorno todas las operaciones: inscripciones, pagos, rankings en vivo, contenido editorial y la integración directa con el sistema de jueces SurfScores.</p>
+            </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="relative pl-8">
+            <div class="absolute left-2 top-2 bottom-2 w-0.5 timeline-line"></div>
+
+            <div class="relative mb-10">
+                <div class="timeline-dot absolute -left-7 top-1.5"></div>
+                <p class="font-heading text-2xl text-cyan-brand">2008</p>
+                <h3 class="font-heading text-xl mt-1 mb-1">Fundación de ALAS</h3>
+                <p class="text-sm text-text-muted">Asociación creada en Lima por representantes de Perú, Brasil y Chile.</p>
+            </div>
+
+            <div class="relative mb-10">
+                <div class="timeline-dot absolute -left-7 top-1.5"></div>
+                <p class="font-heading text-2xl text-cyan-brand">2012</p>
+                <h3 class="font-heading text-xl mt-1 mb-1">Primera sede internacional</h3>
+                <p class="text-sm text-text-muted">El circuito suma a Costa Rica y México, alcanzando ocho paradas en el año.</p>
+            </div>
+
+            <div class="relative mb-10">
+                <div class="timeline-dot absolute -left-7 top-1.5"></div>
+                <p class="font-heading text-2xl text-cyan-brand">2016</p>
+                <h3 class="font-heading text-xl mt-1 mb-1">Integración digital</h3>
+                <p class="text-sm text-text-muted">Lanzamiento del primer ranking público online y del sistema de inscripciones por web.</p>
+            </div>
+
+            <div class="relative mb-10">
+                <div class="timeline-dot absolute -left-7 top-1.5"></div>
+                <p class="font-heading text-2xl text-cyan-brand">2020</p>
+                <h3 class="font-heading text-xl mt-1 mb-1">Adaptación pandémica</h3>
+                <p class="text-sm text-text-muted">Calendario reducido con protocolos sanitarios y primer evento transmitido en streaming.</p>
+            </div>
+
+            <div class="relative">
+                <div class="timeline-dot absolute -left-7 top-1.5" style="background:#007AFF; box-shadow:0 0 0 4px rgba(0,122,255,0.25);"></div>
+                <p class="font-heading text-2xl text-orange-brand">2024</p>
+                <h3 class="font-heading text-xl mt-1 mb-1">Nueva plataforma PWA</h3>
+                <p class="text-sm text-text-muted">Modernización completa del ecosistema digital con integración SurfScores y pagos digitales.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MISIÓN / VISIÓN / VALORES -->
+<section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark/40 border-y border-navy-mid">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Lo que nos mueve</p>
+            <h2 class="font-heading text-4xl md:text-5xl">Misión, Visión y Valores</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <article class="stat-card rounded-2xl p-8 border border-navy-mid">
+                <div class="w-14 h-14 rounded-xl bg-cyan-brand/15 text-cyan-brand flex items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3 class="font-heading text-2xl mb-3">Misión</h3>
+                <p class="text-text-muted leading-relaxed">Impulsar el surf profesional latinoamericano con un circuito competitivo, transparente y de clase mundial que ofrezca a cada atleta una ruta clara hacia la élite internacional.</p>
+            </article>
+
+            <article class="stat-card rounded-2xl p-8 border border-navy-mid">
+                <div class="w-14 h-14 rounded-xl bg-orange-brand/15 text-orange-brand flex items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </div>
+                <h3 class="font-heading text-2xl mb-3">Visión</h3>
+                <p class="text-text-muted leading-relaxed">Ser el referente del surf de competencia en habla hispana y portuguesa: una plataforma reconocida por su rigor técnico, su cobertura mediática y su impacto cultural en el continente.</p>
+            </article>
+
+            <article class="stat-card rounded-2xl p-8 border border-navy-mid">
+                <div class="w-14 h-14 rounded-xl bg-gold-brand/15 text-gold-brand flex items-center justify-center mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.075 10.1c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.518-4.673z"/></svg>
+                </div>
+                <h3 class="font-heading text-2xl mb-3">Valores</h3>
+                <ul class="text-text-muted leading-relaxed space-y-2 text-sm">
+                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Integridad</span> en cada decisión arbitral.</li>
+                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Excelencia</span> deportiva y administrativa.</li>
+                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Inclusión</span> entre países, géneros y categorías.</li>
+                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Respeto</span> al océano y las comunidades locales.</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- ESTADÍSTICAS -->
+<section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-2">El circuito en números</p>
+            <h2 class="font-heading text-4xl md:text-5xl">Una temporada, un continente</h2>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div class="stat-card rounded-2xl p-6 md:p-8 border border-navy-mid text-center">
+                <p class="font-heading text-5xl md:text-6xl text-cyan-brand">12</p>
+                <p class="font-accent uppercase tracking-wider text-xs md:text-sm text-text-muted mt-2">Países Representados</p>
+            </div>
+            <div class="stat-card rounded-2xl p-6 md:p-8 border border-navy-mid text-center">
+                <p class="font-heading text-5xl md:text-6xl text-cyan-brand">340+</p>
+                <p class="font-accent uppercase tracking-wider text-xs md:text-sm text-text-muted mt-2">Competidores Activos</p>
+            </div>
+            <div class="stat-card rounded-2xl p-6 md:p-8 border border-navy-mid text-center">
+                <p class="font-heading text-5xl md:text-6xl text-cyan-brand">18</p>
+                <p class="font-accent uppercase tracking-wider text-xs md:text-sm text-text-muted mt-2">Eventos por Temporada</p>
+            </div>
+            <div class="stat-card rounded-2xl p-6 md:p-8 border border-navy-mid text-center">
+                <p class="font-heading text-5xl md:text-6xl text-cyan-brand">15</p>
+                <p class="font-accent uppercase tracking-wider text-xs md:text-sm text-text-muted mt-2">Años de Trayectoria</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- EQUIPO DIRECTIVO -->
+<section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark/40 border-t border-navy-mid">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Detrás del Circuito</p>
+            <h2 class="font-heading text-4xl md:text-5xl">Equipo Directivo</h2>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <article class="bg-navy-dark border border-navy-mid rounded-2xl p-6 text-center hover:border-cyan-brand/40 transition">
+                <div class="w-24 h-24 mx-auto rounded-full avatar-initials flex items-center justify-center font-heading text-3xl mb-4">RA</div>
+                <h3 class="font-heading text-xl">Rodrigo Alarcón</h3>
+                <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mt-1">Presidente</p>
+                <p class="text-xs text-text-muted mt-3">Ex-competidor WSL, fundador del circuito en 2008.</p>
+            </article>
+
+            <article class="bg-navy-dark border border-navy-mid rounded-2xl p-6 text-center hover:border-cyan-brand/40 transition">
+                <div class="w-24 h-24 mx-auto rounded-full avatar-initials flex items-center justify-center font-heading text-3xl mb-4">LS</div>
+                <h3 class="font-heading text-xl">Luiza Santos</h3>
+                <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mt-1">Directora Deportiva</p>
+                <p class="text-xs text-text-muted mt-3">Coordina jueces, reglamentos y categorías del tour.</p>
+            </article>
+
+            <article class="bg-navy-dark border border-navy-mid rounded-2xl p-6 text-center hover:border-cyan-brand/40 transition">
+                <div class="w-24 h-24 mx-auto rounded-full avatar-initials flex items-center justify-center font-heading text-3xl mb-4">CM</div>
+                <h3 class="font-heading text-xl">Carlos Mendoza</h3>
+                <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mt-1">Director Comercial</p>
+                <p class="text-xs text-text-muted mt-3">Patrocinios, alianzas estratégicas y derechos de transmisión.</p>
+            </article>
+
+            <article class="bg-navy-dark border border-navy-mid rounded-2xl p-6 text-center hover:border-cyan-brand/40 transition">
+                <div class="w-24 h-24 mx-auto rounded-full avatar-initials flex items-center justify-center font-heading text-3xl mb-4">VC</div>
+                <h3 class="font-heading text-xl">Valeria Castillo</h3>
+                <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mt-1">Comunicaciones</p>
+                <p class="text-xs text-text-muted mt-3">Estrategia editorial, prensa y redes sociales del circuito.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto">
+                </div>
+                <p class="text-sm text-text-muted leading-relaxed">Asociación Latinoamericana de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.</p>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Navegación</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="index.html" class="hover:text-cyan-brand transition">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a></li>
+                    <li><a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a></li>
+                    <li><a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a></li>
+                    <li><a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Competidores</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="#" class="hover:text-cyan-brand transition">Inscripciones</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Reglamento ALAS</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Soporte y Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Síguenos</h4>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56-.01-4.81-.07-3.27-.15-4.77-1.7-4.92-4.92C2.21 15.6 2.2 15.23 2.2 12c0-3.2.01-3.56.07-4.81.15-3.23 1.66-4.77 4.92-4.92C8.44 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.72.07-2.18.1-3.28 1.18-3.38 3.38C3.84 8.5 3.83 8.85 3.83 12c0 3.15.01 3.5.07 4.72.1 2.2 1.2 3.28 3.38 3.38 1.22.06 1.57.07 4.72.07s3.5-.01 4.72-.07c2.18-.1 3.28-1.18 3.38-3.38.06-1.22.07-1.57.07-4.72s-.01-3.5-.07-4.72c-.1-2.18-1.2-3.28-3.38-3.38C15.5 4.01 15.15 4 12 4zm0 3.07a4.93 4.93 0 110 9.86 4.93 4.93 0 010-9.86zm0 1.8a3.13 3.13 0 100 6.26 3.13 3.13 0 000-6.26zm5.12-1.36a1.15 1.15 0 110 2.3 1.15 1.15 0 010-2.3z"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a2.99 2.99 0 00-2.1-2.11C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.49A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8c.28 1.04 1.1 1.85 2.1 2.11C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.49a3 3 0 002.1-2.11c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.27 3.6L9.6 15.6z"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.68 0H1.32A1.32 1.32 0 000 1.32v21.36A1.32 1.32 0 001.32 24h11.5v-9.3H9.69v-3.62h3.13V8.41c0-3.1 1.9-4.79 4.66-4.79 1.32 0 2.46.1 2.79.14v3.24h-1.91c-1.5 0-1.8.72-1.8 1.76v2.31h3.59l-.47 3.62h-3.12V24h6.12A1.32 1.32 0 0024 22.68V1.32A1.32 1.32 0 0022.68 0z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

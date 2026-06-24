@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inscripción al evento — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Completa tu inscripción al circuito ALAS Latin Tour en 3 pasos: datos, categoría y pago." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #002359;
+            color: #EEEEEE;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .step-circle {
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Oswald', sans-serif; font-weight: 600;
+            transition: all .3s ease;
+            border: 2px solid #004F8E;
+            background: #003873;
+            color: #AAAAAA;
+        }
+        .step-circle.active { background: #0081C6; color: #002359; border-color: #0081C6; box-shadow: 0 0 0 6px rgba(0,129,198,0.15); }
+        .step-circle.done { background: #22C55E; color: #fff; border-color: #22C55E; }
+        .step-line { flex: 1; height: 2px; background: #004F8E; margin: 0 8px; transition: all .3s ease; position: relative; top: 24px; max-width: 200px; }
+        .step-line.done { background: #22C55E; }
+        .input-field {
+            background: #002359;
+            border: 1px solid #004F8E;
+            color: #EEEEEE;
+            transition: border-color .2s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #0081C6;
+            box-shadow: 0 0 0 3px rgba(0,129,198,0.15);
+        }
+        .input-field:disabled, .input-field[readonly] { opacity: .7; cursor: not-allowed; background: #003873; }
+        .category-card { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
+        .category-card:hover { border-color: rgba(0,129,198,0.5); }
+        .category-card.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.12), rgba(0,129,198,0.02)); box-shadow: 0 0 0 4px rgba(0,129,198,0.1); }
+        .payment-card { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
+        .payment-card:hover { border-color: rgba(0,129,198,0.5); }
+        .payment-card.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.1), rgba(0,129,198,0.02)); }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- ============= NAV (logged-in) ============= -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
+                <a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a>
+                <a href="eventos.html" class="text-cyan-brand">Eventos</a>
+                <a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a>
+                <a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-navy-dark border border-navy-mid">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-sm">G</div>
+                    <span class="font-accent text-sm uppercase tracking-wider">Gabriel V.</span>
+                </div>
+                <a href="index.html" class="text-xs text-text-muted hover:text-orange-brand transition">Cerrar sesión</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="eventos.html" class="block py-2 text-cyan-brand">Eventos</a>
+            <a href="noticias.html" class="block py-2">Noticias</a>
+            <a href="index.html" class="block py-2 text-orange-brand">Cerrar sesión</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ============= MAIN CHECKOUT ============= -->
+<section x-data="{ step: 1, paymentMethod: '', category: 'open-h', shirtNumber: '23', reglamento: false }" class="py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs font-accent uppercase tracking-wider text-text-muted mb-6">
+            <a href="eventos.html" class="hover:text-cyan-brand">Eventos</a>
+            <span>/</span>
+            <a href="eventos.html" class="hover:text-cyan-brand">Roca Bruja Classic</a>
+            <span>/</span>
+            <span class="text-cyan-brand">Inscripción</span>
+        </nav>
+
+        <h1 class="font-heading text-4xl md:text-5xl mb-2">Inscripción al evento</h1>
+        <p class="text-text-muted mb-10">Completa los 3 pasos para asegurar tu cupo en el circuito ALAS Latin Tour 2026.</p>
+
+        <!-- STEP INDICATOR -->
+        <div class="flex items-start justify-center mb-12 max-w-2xl mx-auto">
+            <div class="flex flex-col items-center">
+                <div class="step-circle" :class="step === 1 ? 'active' : (step > 1 ? 'done' : '')">
+                    <template x-if="step <= 1"><span>1</span></template>
+                    <template x-if="step > 1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    </template>
+                </div>
+                <p class="mt-3 font-accent uppercase tracking-wider text-xs" :class="step >= 1 ? 'text-cyan-brand' : 'text-text-muted'">Datos</p>
+            </div>
+            <div class="step-line" :class="step > 1 ? 'done' : ''"></div>
+            <div class="flex flex-col items-center">
+                <div class="step-circle" :class="step === 2 ? 'active' : (step > 2 ? 'done' : '')">
+                    <template x-if="step <= 2"><span>2</span></template>
+                    <template x-if="step > 2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    </template>
+                </div>
+                <p class="mt-3 font-accent uppercase tracking-wider text-xs" :class="step >= 2 ? 'text-cyan-brand' : 'text-text-muted'">Categoría</p>
+            </div>
+            <div class="step-line" :class="step > 2 ? 'done' : ''"></div>
+            <div class="flex flex-col items-center">
+                <div class="step-circle" :class="step === 3 ? 'active' : ''">
+                    <span>3</span>
+                </div>
+                <p class="mt-3 font-accent uppercase tracking-wider text-xs" :class="step >= 3 ? 'text-cyan-brand' : 'text-text-muted'">Pago</p>
+            </div>
+        </div>
+
+        <!-- Event summary card (always visible) -->
+        <div class="bg-gradient-to-r from-navy-dark via-navy-dark to-navy-mid border border-navy-mid rounded-xl p-5 mb-8 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🇵🇪</span>
+                <div>
+                    <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs">Evento</p>
+                    <h2 class="font-heading text-xl leading-tight">Roca Bruja Classic</h2>
+                </div>
+            </div>
+            <div class="hidden md:block w-px h-10 bg-navy-mid"></div>
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                <div><span class="text-text-muted">Sede:</span> <span>Lobitos, Perú</span></div>
+                <div><span class="text-text-muted">Fechas:</span> <span>12 – 15 Jul 2026</span></div>
+                <div class="flex items-center gap-1 text-gold-brand">★ ★ ★</div>
+            </div>
+        </div>
+
+        <!-- ===== STEP 1 — DATOS ===== -->
+        <div x-show="step === 1" x-transition class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-8" x-cloak>
+            <h3 class="font-heading text-2xl mb-1">Datos del competidor</h3>
+            <p class="text-sm text-text-muted mb-6">Verifica que tus datos sean correctos. Los campos en gris provienen de tu perfil ALAS.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Nombre completo</label>
+                    <input type="text" value="Gabriel Villani Macedo" readonly class="input-field w-full px-4 py-3 rounded-md" />
+                </div>
+                <div>
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Email registrado</label>
+                    <input type="email" value="gabriel.villani@surf.com" readonly class="input-field w-full px-4 py-3 rounded-md" />
+                </div>
+                <div>
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted mb-2">País</label>
+                    <input type="text" value="🇧🇷 Brasil" readonly class="input-field w-full px-4 py-3 rounded-md" />
+                </div>
+                <div>
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Federación afiliada</label>
+                    <input type="text" value="CBSurf — Confederação Brasileira de Surf" readonly class="input-field w-full px-4 py-3 rounded-md" />
+                </div>
+                <div>
+                    <label class="block font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Número de licencia ALAS</label>
+                    <input type="text" value="BR-2310" readonly class="input-field w-full px-4 py-3 rounded-md font-mono" />
+                </div>
+                <div>
+                    <label class="flex items-center justify-between font-accent uppercase tracking-wider text-xs text-cyan-brand mb-2">
+                        Número de camiseta preferido <span class="text-text-muted normal-case font-body">(editable)</span>
+                    </label>
+                    <input type="number" min="0" max="99" x-model="shirtNumber" class="input-field w-full px-4 py-3 rounded-md font-heading text-lg" placeholder="Ej: 23" />
+                    <p class="text-xs text-text-muted mt-1">Si está disponible, te será asignado. Si no, te ofreceremos alternativas en la confirmación.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-navy-mid">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="reglamento" class="mt-1 w-5 h-5 rounded border-navy-mid bg-navy-deepest text-cyan-brand focus:ring-cyan-brand focus:ring-offset-navy-dark" />
+                    <span class="text-sm text-text-light group-hover:text-cyan-brand transition">
+                        Confirmo que he leído y acepto el <a href="#" class="text-cyan-brand hover:underline">reglamento del evento</a> y las <a href="#" class="text-cyan-brand hover:underline">políticas del circuito ALAS</a>.
+                    </span>
+                </label>
+            </div>
+
+            <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+                <a href="eventos.html" class="text-sm text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider">← Volver a eventos</a>
+                <button @click="if (reglamento) step = 2" :disabled="!reglamento" class="px-7 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20" :class="reglamento ? 'bg-orange-brand hover:bg-orange-light text-white' : 'bg-navy-mid text-text-muted cursor-not-allowed shadow-none'">
+                    Siguiente →
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== STEP 2 — CATEGORÍA ===== -->
+        <div x-show="step === 2" x-transition class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-8" x-cloak>
+            <h3 class="font-heading text-2xl mb-1">Selecciona tu categoría</h3>
+            <p class="text-sm text-text-muted mb-6">Elige la categoría en la que quieres competir. La tarifa depende de la categoría y de las estrellas del evento.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Open H -->
+                <label class="category-card rounded-xl p-5 block" :class="category === 'open-h' ? 'selected' : ''" @click="category = 'open-h'">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0">
+                                <div x-show="category === 'open-h'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                            </div>
+                            <div>
+                                <h4 class="font-heading text-lg leading-tight">Open Hombres</h4>
+                                <p class="text-xs text-cyan-brand font-accent uppercase tracking-wider mt-0.5">Principal</p>
+                            </div>
+                        </div>
+                        <span class="font-heading text-xl text-gold-brand">$75</span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-3 leading-relaxed">Categoría élite del circuito. Suma puntos al ranking anual.</p>
+                </label>
+
+                <!-- Sub-18 H -->
+                <label class="category-card rounded-xl p-5 block" :class="category === 'sub18-h' ? 'selected' : ''" @click="category = 'sub18-h'">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0">
+                                <div x-show="category === 'sub18-h'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                            </div>
+                            <div>
+                                <h4 class="font-heading text-lg leading-tight">Sub-18 Hombres</h4>
+                                <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Junior</p>
+                            </div>
+                        </div>
+                        <span class="font-heading text-xl text-gold-brand">$55</span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-3 leading-relaxed">Si tienes menos de 18 años al 1 de enero del 2026.</p>
+                </label>
+
+                <!-- Masters -->
+                <label class="category-card rounded-xl p-5 block" :class="category === 'masters' ? 'selected' : ''" @click="category = 'masters'">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0">
+                                <div x-show="category === 'masters'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                            </div>
+                            <div>
+                                <h4 class="font-heading text-lg leading-tight">Masters +35</h4>
+                                <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Veteranos</p>
+                            </div>
+                        </div>
+                        <span class="font-heading text-xl text-gold-brand">$60</span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-3 leading-relaxed">Si tienes más de 35 años. Ranking separado.</p>
+                </label>
+
+                <!-- Longboard -->
+                <label class="category-card rounded-xl p-5 block" :class="category === 'longboard' ? 'selected' : ''" @click="category = 'longboard'">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0">
+                                <div x-show="category === 'longboard'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                            </div>
+                            <div>
+                                <h4 class="font-heading text-lg leading-tight">Longboard</h4>
+                                <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Modalidad</p>
+                            </div>
+                        </div>
+                        <span class="font-heading text-xl text-gold-brand">$65</span>
+                    </div>
+                    <p class="text-xs text-text-muted mt-3 leading-relaxed">Categoría abierta a todos los géneros. Equipo mínimo 9' (2,7 m).</p>
+                </label>
+            </div>
+
+            <!-- Already-enrolled badge -->
+            <div class="mt-6 flex items-start gap-3 p-4 rounded-lg bg-cyan-brand/8 border border-cyan-brand/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-brand mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="text-sm">
+                    <p class="text-cyan-brand font-semibold">Puedes inscribirte en una categoría adicional</p>
+                    <p class="text-text-muted text-xs mt-1">Si ya estás inscrito en Open Hombres en este evento y deseas competir también en Longboard, completa una nueva inscripción.</p>
+                </div>
+            </div>
+
+            <!-- Total summary -->
+            <div class="mt-6 p-5 rounded-xl bg-navy-deepest border border-navy-mid flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Categoría seleccionada</p>
+                    <p class="font-heading text-xl mt-1">
+                        <span x-text="category === 'open-h' ? 'Open Hombres' : category === 'sub18-h' ? 'Sub-18 Hombres' : category === 'masters' ? 'Masters +35' : 'Longboard'"></span>
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Tarifa</p>
+                    <p class="font-heading text-3xl text-gold-brand mt-1">
+                        $<span x-text="category === 'open-h' ? '75' : category === 'sub18-h' ? '55' : category === 'masters' ? '60' : '65'"></span><span class="text-base text-text-muted ml-1">USD</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+                <button @click="step = 1" class="px-5 py-3 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">← Anterior</button>
+                <button @click="step = 3" class="px-7 py-3 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">Siguiente →</button>
+            </div>
+        </div>
+
+        <!-- ===== STEP 3 — PAGO ===== -->
+        <div x-show="step === 3" x-transition class="bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-8" x-cloak>
+            <h3 class="font-heading text-2xl mb-1">Método de pago</h3>
+            <p class="text-sm text-text-muted mb-6">Elige cómo deseas pagar tu inscripción. Una vez procesado el pago, tu cupo queda confirmado.</p>
+
+            <!-- Order summary -->
+            <div class="bg-navy-deepest border border-navy-mid rounded-xl p-5 mb-6">
+                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-4">Resumen de inscripción</p>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Evento</span>
+                        <span>Roca Bruja Classic</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Categoría</span>
+                        <span x-text="category === 'open-h' ? 'Open Hombres' : category === 'sub18-h' ? 'Sub-18 Hombres' : category === 'masters' ? 'Masters +35' : 'Longboard'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Camiseta solicitada</span>
+                        <span>#<span x-text="shirtNumber"></span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Tarifa de categoría</span>
+                        <span>$<span x-text="category === 'open-h' ? '75' : category === 'sub18-h' ? '55' : category === 'masters' ? '60' : '65'"></span>.00 USD</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Cuota administrativa ALAS</span>
+                        <span>$5.00 USD</span>
+                    </div>
+                    <div class="pt-3 border-t border-navy-mid flex justify-between items-baseline">
+                        <span class="font-heading text-lg">Total</span>
+                        <span class="font-heading text-3xl text-gold-brand">$<span x-text="(category === 'open-h' ? 75 : category === 'sub18-h' ? 55 : category === 'masters' ? 60 : 65) + 5"></span><span class="text-base ml-1">USD</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment method cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- PayPal -->
+                <label class="payment-card rounded-xl p-5 block" :class="paymentMethod === 'paypal' ? 'selected' : ''" @click="paymentMethod = 'paypal'">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0 mt-1">
+                            <div x-show="paymentMethod === 'paypal'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-heading text-lg">PayPal</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-success-brand/15 text-success-brand border border-success-brand/30">Recomendado</span>
+                            </div>
+                            <p class="text-xs text-text-muted leading-relaxed">Pago seguro online. Confirmación inmediata de tu inscripción.</p>
+                        </div>
+                        <!-- PayPal text-logo -->
+                        <div class="font-heading italic text-2xl tracking-tight">
+                            <span style="color:#003087;">Pay</span><span style="color:#009cde;">Pal</span>
+                        </div>
+                    </div>
+                    <div x-show="paymentMethod === 'paypal'" x-transition class="mt-3 pt-3 border-t border-navy-mid" x-cloak>
+                        <button class="w-full py-3 rounded-md bg-yellow-400 hover:bg-yellow-300 transition font-heading italic text-navy-deepest text-lg flex items-center justify-center gap-1">
+                            <span>Pay with </span>
+                            <span class="not-italic font-bold"><span style="color:#003087;">Pay</span><span style="color:#009cde;">Pal</span></span>
+                        </button>
+                        <p class="text-[10px] text-text-muted text-center mt-2">Serás redirigido al checkout seguro de PayPal.</p>
+                    </div>
+                </label>
+
+                <!-- Pago en playa -->
+                <label class="payment-card rounded-xl p-5 block" :class="paymentMethod === 'beach' ? 'selected' : ''" @click="paymentMethod = 'beach'">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0 mt-1">
+                            <div x-show="paymentMethod === 'beach'" class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-heading text-lg">Pago en Playa</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-orange-brand/15 text-orange-brand border border-orange-brand/30">Efectivo</span>
+                            </div>
+                            <p class="text-xs text-text-muted leading-relaxed">Paga al llegar al evento con efectivo. Requiere aprobación administrativa.</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-brand flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Warning box only if Pago en Playa selected -->
+            <div x-show="paymentMethod === 'beach'" x-transition class="mb-6 p-5 rounded-xl bg-orange-brand/8 border border-orange-brand/30 flex items-start gap-3" x-cloak>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <div>
+                    <p class="font-heading text-base text-orange-brand mb-1">Importante: solicitud de token</p>
+                    <p class="text-sm text-text-muted leading-relaxed">Una vez confirmes, notificaremos al administrador. Cuando apruebe tu solicitud, recibirás un <strong class="text-text-light">token de 8 caracteres por correo electrónico</strong>. Tendrás <strong class="text-orange-brand">20 minutos para introducirlo</strong>. Si expira, deberás solicitar uno nuevo.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+                <button @click="step = 2" class="px-5 py-3 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">← Anterior</button>
+                <button @click="if (paymentMethod === 'beach') { window.location.href = 'pago-playa.html'; } else if (paymentMethod === 'paypal') { alert('Redirigiendo a PayPal (prototipo)'); }" :disabled="!paymentMethod" class="px-8 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition shadow-lg" :class="paymentMethod ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed shadow-none'">
+                    Confirmar y pagar
+                </button>
+            </div>
+
+            <p class="text-xs text-text-muted text-center mt-6 leading-relaxed">Al confirmar aceptas el reglamento del circuito y autorizas el cargo a tu medio de pago elegido. Para pagos en playa, tu cupo queda reservado pero pendiente hasta el pago presencial.</p>
+        </div>
+
+    </div>
+</section>
+
+<!-- Footer simplificado -->
+<footer class="bg-navy-deepest border-t border-navy-mid mt-12 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+        <p>© 2026 ALAS Latin Tour. Inscripción segura con cifrado HTTPS.</p>
+        <div class="flex items-center gap-4">
+            <a href="#" class="hover:text-cyan-brand">Reglamento</a>
+            <a href="#" class="hover:text-cyan-brand">Soporte</a>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Noticias y Galería - ALAS Latin Tour</title>
+    <meta name="description" content="Noticias, resultados y galería fotográfica del circuito latinoamericano de surf profesional ALAS Latin Tour." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #002359; color: #EEEEEE; }
+        h1,h2,h3,h4,h5,h6,.font-heading { font-family:'Oswald',sans-serif; letter-spacing:.02em; }
+        .font-accent { font-family:'Barlow Condensed',sans-serif; letter-spacing:.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -6px;
+            height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+
+        .tab-btn { position: relative; padding-bottom: 12px; }
+        .tab-btn.active { color: #0081C6; }
+        .tab-btn.active::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+            height: 3px; background: #0081C6; border-radius: 2px;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #004F8E 0%, #243f63 50%, #004F8E 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s infinite linear;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .masonry {
+            column-count: 2;
+            column-gap: 12px;
+        }
+        @media (min-width: 640px) { .masonry { column-count: 3; } }
+        @media (min-width: 1024px) { .masonry { column-count: 4; } }
+        .masonry > * { break-inside: avoid; margin-bottom: 12px; display: block; }
+
+        .photo-tile { position: relative; overflow: hidden; border-radius: 12px; }
+        .photo-tile .overlay {
+            position: absolute; inset: 0; padding: 14px;
+            background: linear-gradient(180deg, transparent 50%, rgba(0,35,89,0.92));
+            color: #EEEEEE; opacity: 0; transition: opacity .25s ease;
+            display: flex; align-items: flex-end;
+        }
+        .photo-tile:hover .overlay { opacity: 1; }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="index.html#eventos" class="nav-link">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link active">Noticias</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="#" class="px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition font-accent uppercase text-sm tracking-wider">Iniciar sesión</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white transition font-accent uppercase text-sm tracking-wider">Registrarse</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="quienes-somos.html" class="block py-2">Quiénes Somos</a>
+            <a href="index.html#eventos" class="block py-2">Eventos</a>
+            <a href="index.html#ranking" class="block py-2">Ranking</a>
+            <a href="noticias.html" class="block py-2 text-cyan-brand">Noticias</a>
+            <a href="index.html#contacto" class="block py-2">Contacto</a>
+        </div>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
+    <div class="max-w-7xl mx-auto">
+        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Sala de Prensa</p>
+        <h1 class="font-heading text-4xl md:text-6xl">Noticias y Galería</h1>
+        <p class="mt-3 text-text-muted max-w-2xl">Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano.</p>
+    </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<div x-data="{ tab: 'todas', loaded: false }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- FILTER TABS -->
+    <div class="flex flex-wrap items-center gap-6 md:gap-10 border-b border-navy-mid mb-10 font-accent uppercase tracking-wider text-sm text-text-muted">
+        <button @click="tab='todas'" :class="tab==='todas' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Todas</button>
+        <button @click="tab='noticias'" :class="tab==='noticias' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Noticias</button>
+        <button @click="tab='resultados'" :class="tab==='resultados' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Resultados</button>
+        <button @click="tab='fotos'" :class="tab==='fotos' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Fotos</button>
+
+        <button @click="loaded = !loaded" class="ml-auto px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-xs hover:bg-cyan-dark transition">
+            <span x-show="!loaded">Simular carga</span>
+            <span x-show="loaded">Volver a esqueleto</span>
+        </button>
+    </div>
+
+    <!-- FEATURED ARTICLE -->
+    <article class="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-navy-dark border border-navy-mid rounded-2xl overflow-hidden mb-14 hover:border-cyan-brand/40 transition">
+        <div class="h-64 lg:h-auto bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/40 relative">
+            <span class="absolute top-4 left-4 px-3 py-1 bg-orange-brand text-white font-accent uppercase text-xs tracking-wider rounded">Destacado</span>
+            <div class="absolute inset-0 flex items-center justify-center text-text-light/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+        </div>
+        <div class="p-8 lg:p-10 flex flex-col justify-center">
+            <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-3">Resultados • Roca Bruja Classic</p>
+            <h2 class="font-heading text-3xl md:text-4xl leading-tight mb-4">Gabriel Villani domina el Roca Bruja Classic y asciende al liderato</h2>
+            <p class="text-text-muted leading-relaxed mb-5">El brasileño cerró una semana perfecta en Lobitos con una final electrizante frente a Mateo Díaz. Su ola de 9.4 en los últimos minutos selló una victoria que reconfigura por completo el ranking general del circuito a mitad de temporada.</p>
+            <div class="flex items-center justify-between text-xs text-text-muted">
+                <span>15 jun, 2026 · 4 min de lectura</span>
+                <a href="noticia-detalle.html" class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">Leer artículo →</a>
+            </div>
+        </div>
+    </article>
+
+    <!-- NEWS GRID -->
+    <h2 class="font-heading text-3xl mb-6">Últimos artículos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+
+        <!-- Loaded card 1 -->
+        <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+            <div class="h-44 bg-gradient-to-br from-navy-mid via-cyan-brand/20 to-navy-dark"></div>
+            <div class="p-5">
+                <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-cyan-brand/15 text-cyan-brand">Circuito</span>
+                <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">Sayulita Masters confirma su lista de invitados élite</h3>
+                <p class="text-sm text-text-muted mb-3">Los 48 deportistas que disputarán la parada de 5 estrellas en México fueron anunciados oficialmente.</p>
+                <p class="text-xs text-text-muted">12 jun, 2026</p>
+            </div>
+        </article>
+
+        <!-- Loaded card 2 -->
+        <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+            <div class="h-44 bg-gradient-to-br from-orange-brand/30 via-navy-dark to-cyan-brand/20"></div>
+            <div class="p-5">
+                <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-orange-brand/15 text-orange-brand">Entrevista</span>
+                <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">Camila Restrepo: la nueva promesa colombiana</h3>
+                <p class="text-sm text-text-muted mb-3">Con apenas 17 años, irrumpe en el top 10 femenino tras su debut en Matanzas.</p>
+                <p class="text-xs text-text-muted">10 jun, 2026</p>
+            </div>
+        </article>
+
+        <!-- Loaded card 3 -->
+        <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+            <div class="h-44 bg-gradient-to-br from-cyan-brand/20 via-navy-mid to-orange-brand/30"></div>
+            <div class="p-5">
+                <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-warning-brand/15 text-warning-brand">Reglamento</span>
+                <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">ALAS actualiza criterios de wildcards para 2026</h3>
+                <p class="text-sm text-text-muted mb-3">Se amplía la cuota local en eventos de tres estrellas o superiores como parte del nuevo reglamento técnico.</p>
+                <p class="text-xs text-text-muted">8 jun, 2026</p>
+            </div>
+        </article>
+
+        <!-- Skeleton / Loaded card 4 -->
+        <div>
+            <article x-show="loaded" x-transition class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-44 bg-gradient-to-br from-navy-mid via-orange-brand/15 to-cyan-brand/15"></div>
+                <div class="p-5">
+                    <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-success-brand/15 text-success-brand">Resultados</span>
+                    <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">Tomás Herrera se impone en el Sub-18 de Las Palmas</h3>
+                    <p class="text-sm text-text-muted mb-3">El argentino acumula su cuarta final consecutiva del año en la categoría juvenil.</p>
+                    <p class="text-xs text-text-muted">6 jun, 2026</p>
+                </div>
+            </article>
+            <article x-show="!loaded" x-cloak class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid">
+                <div class="h-44 skeleton"></div>
+                <div class="p-5 space-y-3">
+                    <div class="skeleton h-3 rounded w-1/4"></div>
+                    <div class="skeleton h-5 rounded w-5/6"></div>
+                    <div class="skeleton h-3 rounded w-full"></div>
+                    <div class="skeleton h-3 rounded w-2/3"></div>
+                    <div class="skeleton h-3 rounded w-1/3 mt-2"></div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Skeleton / Loaded card 5 -->
+        <div>
+            <article x-show="loaded" x-transition class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-44 bg-gradient-to-br from-cyan-brand/30 via-navy-dark to-navy-mid"></div>
+                <div class="p-5">
+                    <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-cyan-brand/15 text-cyan-brand">Circuito</span>
+                    <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">Ana Souza confirma participación en todo el calendario</h3>
+                    <p class="text-sm text-text-muted mb-3">La brasileña, top 3 mundial femenino, regresará al ALAS Latin Tour después de tres temporadas.</p>
+                    <p class="text-xs text-text-muted">3 jun, 2026</p>
+                </div>
+            </article>
+            <article x-show="!loaded" x-cloak class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid">
+                <div class="h-44 skeleton"></div>
+                <div class="p-5 space-y-3">
+                    <div class="skeleton h-3 rounded w-1/3"></div>
+                    <div class="skeleton h-5 rounded w-4/5"></div>
+                    <div class="skeleton h-3 rounded w-full"></div>
+                    <div class="skeleton h-3 rounded w-3/4"></div>
+                    <div class="skeleton h-3 rounded w-1/4 mt-2"></div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Skeleton / Loaded card 6 -->
+        <div>
+            <article x-show="loaded" x-transition class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                <div class="h-44 bg-gradient-to-br from-orange-brand/30 via-navy-mid to-cyan-brand/20"></div>
+                <div class="p-5">
+                    <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded bg-orange-brand/15 text-orange-brand">Tecnología</span>
+                    <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition">SurfScores y ALAS estrenan integración en vivo</h3>
+                    <p class="text-sm text-text-muted mb-3">La nueva plataforma sincronizará puntajes de jueces en menos de cinco minutos.</p>
+                    <p class="text-xs text-text-muted">1 jun, 2026</p>
+                </div>
+            </article>
+            <article x-show="!loaded" x-cloak class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid">
+                <div class="h-44 skeleton"></div>
+                <div class="p-5 space-y-3">
+                    <div class="skeleton h-3 rounded w-1/4"></div>
+                    <div class="skeleton h-5 rounded w-3/4"></div>
+                    <div class="skeleton h-3 rounded w-full"></div>
+                    <div class="skeleton h-3 rounded w-2/3"></div>
+                    <div class="skeleton h-3 rounded w-1/3 mt-2"></div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <!-- LOAD MORE -->
+    <div class="flex justify-center mb-20">
+        <button class="px-8 py-3 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition">Cargar más artículos</button>
+    </div>
+
+    <!-- PHOTO GALLERY -->
+    <section>
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-2">Banco fotográfico oficial</p>
+                <h2 class="font-heading text-4xl">Galería</h2>
+            </div>
+            <a href="#" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider hidden sm:block">Ver todas →</a>
+        </div>
+
+        <div class="masonry">
+            <div class="photo-tile" style="height:260px; background: linear-gradient(135deg, #0081C6, #004F8E);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Gabriel Villani — Roca Bruja, Perú</p></div>
+            </div>
+            <div class="photo-tile" style="height:180px; background: linear-gradient(135deg, #007AFF, #003873);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Camila Restrepo — Matanzas, Chile</p></div>
+            </div>
+            <div class="photo-tile" style="height:220px; background: linear-gradient(135deg, #004F8E, #0081C6);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Ana Souza — Punta Hermosa, Perú</p></div>
+            </div>
+            <div class="photo-tile" style="height:280px; background: linear-gradient(135deg, #003873, #0D6EFD);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Sebastián Mora — Pichilemu, Chile</p></div>
+            </div>
+            <div class="photo-tile" style="height:200px; background: linear-gradient(135deg, #0081C6, #0081C6);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Final masculina Open — Lobitos</p></div>
+            </div>
+            <div class="photo-tile" style="height:240px; background: linear-gradient(135deg, #007AFF, #004F8E);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Rodrigo Alas — Las Palmas, Costa Rica</p></div>
+            </div>
+            <div class="photo-tile" style="height:190px; background: linear-gradient(135deg, #007AFF, #007AFF);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Mateo Díaz — Sayulita, México</p></div>
+            </div>
+            <div class="photo-tile" style="height:260px; background: linear-gradient(135deg, #004F8E, #0D6EFD);">
+                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Ambiente final — Sayulita Masters</p></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto">
+                </div>
+                <p class="text-sm text-text-muted leading-relaxed">Asociación Latinoamericana de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.</p>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Navegación</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="index.html" class="hover:text-cyan-brand transition">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a></li>
+                    <li><a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a></li>
+                    <li><a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a></li>
+                    <li><a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Competidores</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="#" class="hover:text-cyan-brand transition">Inscripciones</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Reglamento ALAS</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Soporte y Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Síguenos</h4>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56-.01-4.81-.07-3.27-.15-4.77-1.7-4.92-4.92C2.21 15.6 2.2 15.23 2.2 12c0-3.2.01-3.56.07-4.81.15-3.23 1.66-4.77 4.92-4.92C8.44 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.72.07-2.18.1-3.28 1.18-3.38 3.38C3.84 8.5 3.83 8.85 3.83 12c0 3.15.01 3.5.07 4.72.1 2.2 1.2 3.28 3.38 3.38 1.22.06 1.57.07 4.72.07s3.5-.01 4.72-.07c2.18-.1 3.28-1.18 3.38-3.38.06-1.22.07-1.57.07-4.72s-.01-3.5-.07-4.72c-.1-2.18-1.2-3.28-3.38-3.38C15.5 4.01 15.15 4 12 4zm0 3.07a4.93 4.93 0 110 9.86 4.93 4.93 0 010-9.86zm0 1.8a3.13 3.13 0 100 6.26 3.13 3.13 0 000-6.26zm5.12-1.36a1.15 1.15 0 110 2.3 1.15 1.15 0 010-2.3z"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a2.99 2.99 0 00-2.1-2.11C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.49A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8c.28 1.04 1.1 1.85 2.1 2.11C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.49a3 3 0 002.1-2.11c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.27 3.6L9.6 15.6z"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.68 0H1.32A1.32 1.32 0 000 1.32v21.36A1.32 1.32 0 001.32 24h11.5v-9.3H9.69v-3.62h3.13V8.41c0-3.1 1.9-4.79 4.66-4.79 1.32 0 2.46.1 2.79.14v3.24h-1.91c-1.5 0-1.8.72-1.8 1.76v2.31h3.59l-.47 3.62h-3.12V24h6.12A1.32 1.32 0 0024 22.68V1.32A1.32 1.32 0 0022.68 0z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
