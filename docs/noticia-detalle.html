@@ -133,7 +133,7 @@
 </nav>
 
 <!-- SSR DEV-ONLY INDICATOR -->
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8" x-data="{ open: true }">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8" x-data="{ open: true }" style="display: none;">
     <div class="ssr-callout rounded-xl p-5" x-show="open" x-transition>
         <div class="flex items-start justify-between gap-4 mb-3">
             <div class="flex items-center gap-3">
@@ -204,7 +204,7 @@
     <figure class="mb-10 rounded-2xl overflow-hidden border border-navy-mid">
         <div class="h-64 sm:h-80 md:h-[420px] relative bg-gradient-to-br from-cyan-brand/40 via-navy-mid to-orange-brand/40">
             <div class="absolute inset-0 flex items-center justify-center text-text-light/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.66-.9l.82-1.2A2 2 0 0110.07 4h3.86a2 2 0 011.66.9l.82 1.2a2 2 0 001.66.9H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <img src="assets/noticias/48294.jpg" alt="Gabriel Villani en Roca Bruja" class="object-cover w-full h-full">
             </div>
             <span class="absolute bottom-4 right-4 px-3 py-1.5 bg-navy-deepest/80 text-xs text-text-muted rounded backdrop-blur">Foto: ALAS Media · Lobitos, Perú</span>
         </div>
@@ -224,7 +224,7 @@
 
         <figure class="my-8 rounded-xl overflow-hidden border border-navy-mid">
             <div class="h-56 md:h-72 bg-gradient-to-br from-orange-brand/40 via-navy-dark to-cyan-brand/30 flex items-center justify-center text-text-light/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <img src="assets/noticias/47568.jpg" alt="Gabriel Villani y Mateo Díaz en la final" class="object-cover w-full h-full">
             </div>
             <figcaption class="px-4 py-3 bg-navy-dark text-xs text-text-muted italic">El público local recibe a Villani tras la premiación. Lobitos, Perú · Foto: Daniela Quispe</figcaption>
         </figure>
@@ -309,7 +309,9 @@
         <h2 class="font-heading text-3xl mb-8">También te puede interesar</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
-                <div class="h-40 bg-gradient-to-br from-orange-brand/30 via-navy-dark to-cyan-brand/20"></div>
+                <div class="h-40 bg-gradient-to-br from-orange-brand/30 via-navy-dark to-cyan-brand/20">
+                    <img src="assets/noticias/48294.jpg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
+                </div>
                 <div class="p-5">
                     <span class="font-accent uppercase tracking-wider text-xs text-cyan-brand">Circuito</span>
                     <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">Sayulita Masters confirma su lista de invitados élite</h3>
@@ -317,7 +319,9 @@
                 </div>
             </a>
             <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
-                <div class="h-40 bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/30"></div>
+                <div class="h-40 bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/30">
+                    <img src="assets/noticias/47636.jpg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
+                </div>
                 <div class="p-5">
                     <span class="font-accent uppercase tracking-wider text-xs text-orange-brand">Entrevista</span>
                     <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">Camila Restrepo: la nueva promesa colombiana</h3>
@@ -325,7 +329,9 @@
                 </div>
             </a>
             <a href="noticia-detalle.html" class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
-                <div class="h-40 bg-gradient-to-br from-navy-mid via-cyan-brand/20 to-orange-brand/20"></div>
+                <div class="h-40 bg-gradient-to-br from-navy-mid via-cyan-brand/20 to-orange-brand/20">
+                    <img src="assets/noticias/47646.jpeg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
+                </div>
                 <div class="p-5">
                     <span class="font-accent uppercase tracking-wider text-xs text-warning-brand">Reglamento</span>
                     <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition">ALAS actualiza criterios de wildcards para 2026</h3>

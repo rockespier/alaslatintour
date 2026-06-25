@@ -44,7 +44,7 @@ PORTAL PÚBLICO
 │   └── → noticia-detalle.html (click en cualquier artículo)
 └── noticia-detalle.html      → Artículo individual con indicador SSR
 
-FLUJO COMPETIDOR (requiere "Iniciar sesión")
+FLUJO COMPETIDOR (requiere hacer clic en "Iniciar sesión")
 ├── eventos.html              → Listado de eventos + selección de categoría
 │   └── → inscripcion.html   (botón "Inscribirse" en evento abierto)
 ├── inscripcion.html          → Checkout 3 pasos
