@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuración — ALAS Latin Tour Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #003873; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 8px; color: #AAAAAA;
+            font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+            letter-spacing: 0.06em; font-size: 14px; transition: all .2s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: #003873; color: #EEEEEE; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(0,129,198,0.15), rgba(0,129,198,0));
+            color: #0081C6; border-left-color: #0081C6;
+        }
+        .table-row:hover { background: rgba(0,129,198,0.04); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #002359; }
+        ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
+        .tab-btn { padding: 12px 20px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 14px; color: #AAAAAA; border-bottom: 2px solid transparent; transition: all .2s ease; }
+        .tab-btn:hover { color: #EEEEEE; }
+        .tab-btn.active { color: #0081C6; border-bottom-color: #0081C6; }
+        .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
+        .form-input.masked { font-family: monospace; letter-spacing: 0.15em; }
+        .rank-cell { background: #003873; border: 1px solid #004F8E; border-radius: 4px; padding: 6px 10px; color: #EEEEEE; font-size: 13px; width: 80px; text-align: right; font-family: monospace; }
+        .rank-cell:focus { outline: none; border-color: #0081C6; }
+    </style>
+</head>
+<body class="bg-navy-dark text-text-light antialiased">
+
+<div x-data="configuracionApp()" class="flex min-h-screen">
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
+
+        <div class="px-5 py-5 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex items-center gap-3">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <div>
+                    <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-1">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="usuarios.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Usuarios
+            </a>
+            <a href="circuitos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Circuitos
+            </a>
+            <a href="admin-eventos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="categorias.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2h2z"/></svg>
+                Categorías
+            </a>
+            <a href="inscritos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Inscritos
+            </a>
+            <a href="pagos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Pagos
+            </a>
+            <a href="admin-tokens.html" class="sidebar-link">
+                <span class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Tokens
+                </span>
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-orange-brand text-white text-[10px] font-bold leading-none">3</span>
+            </a>
+            <a href="configuracion.html" class="sidebar-link active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configuración
+            </a>
+        </nav>
+
+        <div class="border-t border-navy-mid p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-navy-mid to-cyan-brand flex items-center justify-center font-heading font-bold text-white text-sm">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-heading text-sm leading-tight truncate">Admin ALAS</p>
+                    <p class="text-[10px] text-text-muted truncate">rtres.info@gmail.com</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-md text-text-muted hover:text-error-brand hover:bg-navy-dark transition text-xs font-accent uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 bg-black/60 z-30 lg:hidden" x-cloak></div>
+
+    <div class="flex-1 lg:ml-60 min-w-0 flex flex-col">
+
+        <header class="sticky top-0 z-20 bg-navy-dark/95 backdrop-blur border-b border-navy-mid">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 text-text-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <p class="text-xs text-text-muted font-accent uppercase tracking-wider">
+                            <a href="admin-dashboard.html" class="hover:text-cyan-brand">Admin</a> / Configuración
+                        </p>
+                        <h1 class="font-heading text-2xl">Configuración del Sistema</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="hidden md:block text-xs text-text-muted">Jueves, 25 jun 2026 · 09:00 hrs</p>
+                    <a href="admin-tokens.html" class="relative p-2 rounded-md hover:bg-navy-mid transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-orange-brand rounded-full"></span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="px-4 sm:px-6 lg:px-8 border-t border-navy-mid">
+                <nav class="flex gap-2 overflow-x-auto">
+                    <button @click="tab='general'" :class="tab==='general' ? 'active' : ''" class="tab-btn">General</button>
+                    <button @click="tab='ranking'" :class="tab==='ranking' ? 'active' : ''" class="tab-btn">Ranking</button>
+                    <button @click="tab='integraciones'" :class="tab==='integraciones' ? 'active' : ''" class="tab-btn">Integraciones</button>
+                    <button @click="tab='notificaciones'" :class="tab==='notificaciones' ? 'active' : ''" class="tab-btn">Notificaciones</button>
+                    <button @click="tab='envivo'" :class="tab==='envivo' ? 'active' : ''" class="tab-btn flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-brand opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-error-brand"></span>
+                        </span>
+                        En Vivo
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
+
+            <!-- ============= TAB 1: GENERAL ============= -->
+            <div x-show="tab==='general'" x-transition class="space-y-6">
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Información de la Organización</h2>
+                    <p class="text-sm text-text-muted mb-6">Datos generales que aparecen en el sitio público y comunicaciones.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Nombre de la Organización</label>
+                            <input type="text" class="form-input" value="ALAS Latin Tour">
+                        </div>
+                        <div>
+                            <label class="form-label">Nombre corto / Acrónimo</label>
+                            <input type="text" class="form-input" value="ALAS">
+                        </div>
+                        <div>
+                            <label class="form-label">Email de contacto</label>
+                            <input type="email" class="form-input" value="info@alaslatintour.com">
+                        </div>
+                        <div>
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-input" value="+57 310 000 0000">
+                        </div>
+                        <div>
+                            <label class="form-label">Sitio web</label>
+                            <input type="text" class="form-input" value="www.alaslatintour.com">
+                        </div>
+                        <div>
+                            <label class="form-label">País sede</label>
+                            <select class="form-input">
+                                <option>Colombia</option>
+                                <option>Perú</option>
+                                <option>Chile</option>
+                                <option>Brasil</option>
+                                <option>Argentina</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Redes Sociales</h2>
+                    <p class="text-sm text-text-muted mb-6">Enlaces que se muestran en el footer del sitio público.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label flex items-center gap-2">
+                                <svg class="h-4 w-4 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                                Instagram
+                            </label>
+                            <input type="text" class="form-input" value="@alaslatintour">
+                        </div>
+                        <div>
+                            <label class="form-label flex items-center gap-2">
+                                <svg class="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                Facebook
+                            </label>
+                            <input type="text" class="form-input" value="facebook.com/alaslatintour">
+                        </div>
+                        <div>
+                            <label class="form-label flex items-center gap-2">
+                                <svg class="h-4 w-4 text-text-light" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                Twitter / X
+                            </label>
+                            <input type="text" class="form-input" value="@alaslatintour">
+                        </div>
+                        <div>
+                            <label class="form-label flex items-center gap-2">
+                                <svg class="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                YouTube
+                            </label>
+                            <input type="text" class="form-input" value="youtube.com/@alaslatintour">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Temporada activa</h2>
+                    <p class="text-sm text-text-muted mb-6">Define el período actual del circuito. Afecta cálculos de ranking y reportes.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="form-label">Temporada actual</label>
+                            <select class="form-input">
+                                <option>2026</option>
+                                <option>2025</option>
+                                <option>2024</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Fecha inicio temporada</label>
+                            <input type="date" class="form-input" value="2026-01-01">
+                        </div>
+                        <div>
+                            <label class="form-label">Fecha fin temporada</label>
+                            <input type="date" class="form-input" value="2026-12-31">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button @click="showToast('Configuración guardada correctamente')" class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar cambios</button>
+                </div>
+            </div>
+
+            <!-- ============= TAB 2: RANKING ============= -->
+            <div x-show="tab==='ranking'" x-transition x-cloak class="space-y-6">
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Parámetros de distribución de puntos de ranking</h2>
+                    <p class="text-sm text-text-muted mb-6">Define los puntos otorgados por puesto final según el nivel de estrellas del evento. Estos valores se sincronizan con el motor de ranking de SurfScores.</p>
+
+                    <h3 class="font-heading text-lg mb-3">Puntos por posición final (por nivel de evento)</h3>
+
+                    <div class="bg-navy-dark rounded-lg border border-navy-mid overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="border-b border-navy-mid bg-navy-deepest/50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
+                                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★</span></th>
+                                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★</span></th>
+                                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★</span></th>
+                                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
+                                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-navy-mid/40">
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">1°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="500"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="750"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="1000"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="1500"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="2000"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">2°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="380"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="580"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="760"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="1140"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="1500"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">3°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="280"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="440"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="580"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="860"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="1140"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">4°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="200"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="300"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="420"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="620"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="840"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">5°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="150"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="220"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="300"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="440"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="600"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">6°–8°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="100"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="140"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="200"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="300"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="400"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">9°–16°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="50"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="80"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="110"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="160"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="220"></td>
+                                    </tr>
+                                    <tr class="table-row transition">
+                                        <td class="px-4 py-3 font-heading">17°–32°</td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="10"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="20"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="30"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="40"></td>
+                                        <td class="px-4 py-3 text-right"><input class="rank-cell" value="60"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Configuración de ranking</h2>
+                    <p class="text-sm text-text-muted mb-6">Reglas adicionales para el cálculo del ranking general.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <label class="form-label mb-0">Mejores resultados a contar</label>
+                                <div class="group relative">
+                                    <svg class="h-3.5 w-3.5 text-cyan-brand cursor-help" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span class="absolute left-5 top-0 z-10 hidden group-hover:block bg-navy-deepest border border-cyan-brand/40 rounded-md p-2 text-[11px] text-text-light w-64 shadow-xl">Solo se consideran los N mejores eventos de cada competidor para el ranking final.</span>
+                                </div>
+                            </div>
+                            <input type="number" class="form-input" value="5" min="1" max="10">
+                        </div>
+                        <div>
+                            <label class="form-label">% del puntaje si no compite (DNS)</label>
+                            <input type="text" class="form-input" value="0%">
+                        </div>
+                        <div>
+                            <label class="form-label">Penalización por retiro (DSQ)</label>
+                            <input type="text" class="form-input" value="-50 pts">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button @click="showToast('Parámetros de ranking guardados')" class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar parámetros</button>
+                </div>
+            </div>
+
+            <!-- ============= TAB 3: INTEGRACIONES ============= -->
+            <div x-show="tab==='integraciones'" x-transition x-cloak class="space-y-6">
+
+                <!-- SurfScores card -->
+                <div class="bg-navy-deepest rounded-xl border border-cyan-brand/30 p-6">
+                    <div class="flex items-start justify-between mb-4 flex-col sm:flex-row gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-lg bg-cyan-brand/15 flex items-center justify-center">
+                                <svg class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="font-heading text-xl">SurfScores API</h2>
+                                <p class="text-xs text-text-muted">Integración para extracción de rankings, heats y olas.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="w-2 h-2 rounded-full bg-success-brand animate-pulse"></span>
+                            <span class="text-success-brand font-accent uppercase tracking-wider">Conectado</span>
+                            <span class="text-text-muted">— Última sincronización: hace 23 minutos</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Endpoint</label>
+                            <input type="text" readonly class="form-input bg-navy-dark text-text-muted" value="https://surfscores.com/api/v1/">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">Usuario API</label>
+                                <input type="text" readonly class="form-input masked" value="•••••••••@alaslatintour.com">
+                            </div>
+                            <div>
+                                <label class="form-label">Contraseña</label>
+                                <div class="flex gap-2">
+                                    <input type="password" readonly class="form-input masked" value="••••••••••••">
+                                    <button class="px-3 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-xs rounded-md transition whitespace-nowrap">Cambiar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-navy-dark border border-navy-mid">
+                            <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                            <span class="text-sm">Confirmo que acepto los <a href="#" class="text-cyan-brand hover:underline">términos de uso de la API SurfScores</a></span>
+                        </label>
+
+                        <div>
+                            <label class="form-label flex justify-between">
+                                <span>Caché</span>
+                                <span class="text-cyan-brand">5 minutos</span>
+                            </label>
+                            <select class="form-input">
+                                <option>1 minuto</option>
+                                <option selected>5 minutos</option>
+                                <option>10 minutos</option>
+                                <option>15 minutos</option>
+                                <option>30 minutos</option>
+                                <option>1 hora</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-warning-brand/10 border border-warning-brand/30 rounded-lg p-4 flex gap-3 items-start">
+                            <svg class="h-5 w-5 text-warning-brand flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                            <div>
+                                <p class="text-sm text-warning-brand font-medium mb-1">Advertencia</p>
+                                <p class="text-xs text-text-light leading-relaxed">La API SurfScores prohíbe el uso como marcador en tiempo real (Live Heatboard). El sistema respetará el límite de caché configurado. Polling excesivo puede causar bloqueo de IP.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button @click="showToast('Conexión exitosa: API responde correctamente')" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Probar conexión</button>
+                            <button @click="showToast('Sincronización iniciada')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Sincronizar ahora</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WordPress card -->
+                <div class="bg-navy-deepest rounded-xl border border-success-brand/30 p-6">
+                    <div class="flex items-start justify-between mb-4 flex-col sm:flex-row gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-lg bg-success-brand/15 flex items-center justify-center">
+                                <svg class="h-6 w-6 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="font-heading text-xl">WordPress (Headless CMS)</h2>
+                                <p class="text-xs text-text-muted">Origen de noticias y galerías de fotos.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="w-2 h-2 rounded-full bg-success-brand"></span>
+                            <span class="text-success-brand font-accent uppercase tracking-wider">Conectado</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Endpoint</label>
+                            <input type="text" readonly class="form-input bg-navy-dark text-text-muted" value="https://cms.alaslatintour.com/wp-json/wp/v2/">
+                        </div>
+                        <div>
+                            <label class="form-label">API Key</label>
+                            <input type="text" readonly class="form-input masked" value="•••••••••••••••••••">
+                        </div>
+                        <button @click="showToast('Conexión WordPress OK')" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Probar conexión</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============= TAB 4: NOTIFICACIONES ============= -->
+            <div x-show="tab==='notificaciones'" x-transition x-cloak class="space-y-6">
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Tokens de pago</h2>
+                    <p class="text-sm text-text-muted mb-6">Configuración del flujo de pago en playa con códigos temporales.</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Tiempo de validez del token</label>
+                            <div class="flex gap-2 items-center">
+                                <input type="number" class="form-input max-w-[140px]" value="20">
+                                <span class="text-sm text-text-muted">minutos</span>
+                            </div>
+                            <div class="bg-error-brand/10 border border-error-brand/30 rounded-lg p-3 mt-3 flex gap-2 items-start">
+                                <svg class="h-4 w-4 text-error-brand flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                <p class="text-xs text-error-brand leading-relaxed">Este valor es crítico para el flujo de pago en playa. Cambios aquí afectan a todos los tokens activos.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Email de notificación al administrador</label>
+                            <input type="email" class="form-input" value="rtres.info@gmail.com">
+                        </div>
+
+                        <div>
+                            <label class="form-label">Notificar también a (correos adicionales)</label>
+                            <div class="space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="email" class="form-input" value="mgonzalez@alaslatintour.com">
+                                    <button class="px-3 py-2 border border-error-brand/30 hover:border-error-brand text-error-brand font-accent uppercase tracking-wider text-xs rounded-md transition whitespace-nowrap">Quitar</button>
+                                </div>
+                                <button class="px-3 py-2 border border-cyan-brand/40 hover:border-cyan-brand text-cyan-brand font-accent uppercase tracking-wider text-xs rounded-md transition flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Añadir email
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Plantilla del email al competidor</label>
+                            <textarea class="form-input font-mono text-xs" rows="4">Tu token de pago para [EVENTO] es: [TOKEN]. Válido por 20 minutos. Acércate al kiosco oficial del evento para realizar el pago en efectivo.</textarea>
+                            <p class="text-[11px] text-text-muted mt-1">Variables disponibles: [EVENTO], [TOKEN], [COMPETIDOR], [MONTO]</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <h2 class="font-heading text-xl mb-1">Notificaciones generales</h2>
+                    <p class="text-sm text-text-muted mb-6">Controla qué eventos del sistema disparan notificaciones por email.</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Email de sistema (remitente)</label>
+                            <input type="email" class="form-input" value="noreply@alaslatintour.com">
+                        </div>
+
+                        <div class="space-y-3" x-data="{ notifNew: true, notifPay: true, notifExp: true }">
+                            <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-dark border border-navy-mid">
+                                <div>
+                                    <p class="font-medium text-sm">Notificar nuevas inscripciones al admin</p>
+                                    <p class="text-xs text-text-muted">Envía email cada vez que un competidor se inscribe a un evento.</p>
+                                </div>
+                                <button type="button" @click="notifNew = !notifNew" :class="notifNew ? 'bg-cyan-brand' : 'bg-navy-mid'" class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                                    <span :class="notifNew ? 'translate-x-6' : 'translate-x-0.5'" class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                                </button>
+                            </label>
+
+                            <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-dark border border-navy-mid">
+                                <div>
+                                    <p class="font-medium text-sm">Notificar pagos confirmados</p>
+                                    <p class="text-xs text-text-muted">Email al competidor cuando su pago es validado.</p>
+                                </div>
+                                <button type="button" @click="notifPay = !notifPay" :class="notifPay ? 'bg-cyan-brand' : 'bg-navy-mid'" class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                                    <span :class="notifPay ? 'translate-x-6' : 'translate-x-0.5'" class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                                </button>
+                            </label>
+
+                            <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-dark border border-navy-mid">
+                                <div>
+                                    <p class="font-medium text-sm">Notificar tokens expirados</p>
+                                    <p class="text-xs text-text-muted">Avisa al competidor y admin cuando un token caduca sin ser canjeado.</p>
+                                </div>
+                                <button type="button" @click="notifExp = !notifExp" :class="notifExp ? 'bg-cyan-brand' : 'bg-navy-mid'" class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                                    <span :class="notifExp ? 'translate-x-6' : 'translate-x-0.5'" class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                                </button>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button @click="showToast('Configuración de notificaciones guardada')" class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar configuración</button>
+                </div>
+            </div>
+
+            <!-- ============= TAB 5: EN VIVO ============= -->
+            <div x-show="tab==='envivo'" x-transition x-cloak class="space-y-6" x-data="enVivoPanel()">
+
+                <!-- ── SECCIÓN 1: YouTube Live ── -->
+                <div class="bg-navy-deepest rounded-xl border border-error-brand/40 p-6">
+                    <div class="flex items-start justify-between mb-5 flex-col sm:flex-row gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-lg bg-error-brand/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="h-6 w-6 text-error-brand" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="font-heading text-xl">Streaming en Vivo — YouTube</h2>
+                                <p class="text-xs text-text-muted">Configura la transmisión que se incrusta en la página pública del evento.</p>
+                            </div>
+                        </div>
+                        <!-- Estado del stream -->
+                        <div class="flex items-center gap-3">
+                            <div x-show="ytActive" class="flex items-center gap-2 text-xs" x-cloak>
+                                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-brand opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-error-brand"></span></span>
+                                <span class="text-error-brand font-accent uppercase tracking-wider">En Vivo</span>
+                            </div>
+                            <div x-show="!ytActive" class="flex items-center gap-2 text-xs" x-cloak>
+                                <span class="w-2 h-2 rounded-full bg-text-muted"></span>
+                                <span class="text-text-muted font-accent uppercase tracking-wider">Inactivo</span>
+                            </div>
+                            <!-- Toggle principal -->
+                            <button type="button" @click="ytActive = !ytActive; if(ytActive) configuracionApp_showToast('Streaming activado y visible en el sitio')" :class="ytActive ? 'bg-error-brand' : 'bg-navy-mid'" class="relative w-14 h-7 rounded-full transition flex-shrink-0">
+                                <span :class="ytActive ? 'translate-x-7' : 'translate-x-0.5'" class="absolute top-1 w-5 h-5 rounded-full bg-white transition-transform shadow"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- Columna de configuración -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">Evento en emisión</label>
+                                <select class="form-input" x-model="ytEvento">
+                                    <option value="">— Seleccionar evento —</option>
+                                    <option value="roca-bruja" selected>Roca Bruja Classic 2026 · Perú</option>
+                                    <option value="sayulita">Sayulita Masters 2026 · México</option>
+                                    <option value="punta-hermosa">Punta Hermosa Pro 2026 · Perú</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label flex items-center gap-2">
+                                    URL o ID del video / stream de YouTube
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-brand/20 text-cyan-brand font-accent uppercase tracking-wider">Requerido</span>
+                                </label>
+                                <input type="text" class="form-input font-mono text-sm" x-model="ytVideoId" placeholder="ej: dQw4w9WgXcQ  ó  https://youtu.be/dQw4w9WgXcQ">
+                                <p class="text-[11px] text-text-muted mt-1">Acepta el ID corto o la URL completa de YouTube. El BFF .NET extraerá el ID automáticamente.</p>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Privacidad del embed</label>
+                                <div class="flex gap-3">
+                                    <label class="flex items-center gap-2 cursor-pointer text-sm" x-data>
+                                        <input type="radio" name="yt-privacy" value="public" checked class="text-cyan-brand">
+                                        Público
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer text-sm">
+                                        <input type="radio" name="yt-privacy" value="unlisted" class="text-cyan-brand">
+                                        No listado
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="form-label">Ancho del embed</label>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="number" class="form-input" x-model="ytWidth" value="100">
+                                        <select class="form-input w-auto px-2">
+                                            <option>%</option>
+                                            <option>px</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Alto del embed</label>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="number" class="form-input" x-model="ytHeight" value="480">
+                                        <span class="text-text-muted text-sm">px</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Código de embed generado</label>
+                                <div class="relative">
+                                    <textarea readonly rows="3" class="form-input font-mono text-[11px] bg-navy-dark pr-10 resize-none"
+                                        :value="`<iframe width=&quot;${ytWidth}%&quot; height=&quot;${ytHeight}&quot; src=&quot;https://www.youtube.com/embed/${ytVideoId || 'VIDEO_ID'}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&origin=https://alaslatintour.com&quot; frameborder=&quot;0&quot; allow=&quot;autoplay; encrypted-media; picture-in-picture&quot; allowfullscreen></iframe>`"></textarea>
+                                    <button @click="$refs.ytCode.select(); document.execCommand('copy'); showToast('Código copiado al portapapeles')" class="absolute top-2 right-2 p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-text-light" title="Copiar">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna de previsualización -->
+                        <div class="space-y-3">
+                            <p class="form-label">Previsualización en el sitio público</p>
+                            <div class="rounded-xl overflow-hidden border border-navy-mid bg-navy-dark">
+                                <!-- Simulación del embed -->
+                                <div class="relative bg-black" style="padding-top: 56.25%">
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                                        <div x-show="!ytVideoId" class="text-center text-text-muted text-sm">
+                                            <svg class="h-10 w-10 mx-auto mb-2 text-navy-mid" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                            <p>Ingresa un ID de video para ver la previsualización</p>
+                                        </div>
+                                        <div x-show="ytVideoId" x-cloak class="absolute inset-0 flex items-center justify-center bg-black">
+                                            <div class="text-center">
+                                                <div class="w-16 h-16 rounded-full bg-error-brand flex items-center justify-center mx-auto mb-3 shadow-lg shadow-error-brand/40">
+                                                    <svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                </div>
+                                                <p class="text-white font-heading text-lg" x-text="ytEvento || 'Evento en vivo'"></p>
+                                                <p class="text-text-muted text-xs mt-1">ALAS Latin Tour · En Vivo</p>
+                                                <div class="flex items-center justify-center gap-2 mt-2">
+                                                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-brand opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-error-brand"></span></span>
+                                                    <span class="text-error-brand text-xs font-accent uppercase tracking-wider">En Vivo</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Simulación de chrome del sitio -->
+                                <div class="p-3 border-t border-navy-mid bg-navy-deepest flex items-center justify-between">
+                                    <span class="text-xs text-text-muted font-accent uppercase tracking-wider">Vista pública del evento</span>
+                                    <span x-show="ytActive" class="text-[10px] px-2 py-0.5 rounded-full bg-error-brand/20 text-error-brand font-accent uppercase tracking-wider" x-cloak>Visible</span>
+                                    <span x-show="!ytActive" class="text-[10px] px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted font-accent uppercase tracking-wider">Oculto</span>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-text-muted">El embed aparece en la página del evento en el portal público solo cuando el toggle "En Vivo" está activo.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-navy-mid">
+                        <button @click="showToast('Configuración de streaming guardada')" class="px-5 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar streaming</button>
+                        <button @click="ytActive = false; showToast('Streaming desactivado del sitio público')" class="px-5 py-2.5 border border-error-brand/40 hover:border-error-brand text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Desactivar y ocultar</button>
+                    </div>
+                </div>
+
+                <!-- ── SECCIÓN 2: SurfScores Puntajes en Vivo ── -->
+                <div class="bg-navy-deepest rounded-xl border border-cyan-brand/30 p-6">
+                    <div class="flex items-start justify-between mb-5 flex-col sm:flex-row gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-lg bg-cyan-brand/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="font-heading text-xl">Puntajes en Vivo — SurfScores</h2>
+                                <p class="text-xs text-text-muted">Iframe de resultados de heat embebido en la página del evento.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div x-show="ssActive" class="flex items-center gap-2 text-xs" x-cloak>
+                                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-brand opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-brand"></span></span>
+                                <span class="text-cyan-brand font-accent uppercase tracking-wider">Activo</span>
+                            </div>
+                            <div x-show="!ssActive" class="flex items-center gap-2 text-xs">
+                                <span class="w-2 h-2 rounded-full bg-text-muted"></span>
+                                <span class="text-text-muted font-accent uppercase tracking-wider">Inactivo</span>
+                            </div>
+                            <button type="button" @click="ssActive = !ssActive" :class="ssActive ? 'bg-cyan-brand' : 'bg-navy-mid'" class="relative w-14 h-7 rounded-full transition flex-shrink-0">
+                                <span :class="ssActive ? 'translate-x-7' : 'translate-x-0.5'" class="absolute top-1 w-5 h-5 rounded-full bg-white transition-transform shadow"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advertencia crítica -->
+                    <div class="bg-warning-brand/10 border border-warning-brand/40 rounded-xl p-4 flex gap-3 items-start mb-6">
+                        <svg class="h-5 w-5 text-warning-brand flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                        <div>
+                            <p class="text-sm text-warning-brand font-semibold mb-1">Restricción contractual — Live Heatboard</p>
+                            <p class="text-xs text-text-light leading-relaxed">SurfScores prohíbe explícitamente usar su API como marcador en tiempo real. Este iframe sirve para pantallas de exhibición locales del evento (TVs en la playa, backstage), <strong>no para el sitio público</strong>. Activarlo en producción puede resultar en bloqueo de IP. El BFF .NET aplica un caché mínimo de 5 minutos.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- Columna de configuración -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">Evento a mostrar</label>
+                                <select class="form-input" x-model="ssEvento">
+                                    <option value="">— Seleccionar evento —</option>
+                                    <option value="roca-bruja" selected>Roca Bruja Classic 2026 · Perú</option>
+                                    <option value="sayulita">Sayulita Masters 2026 · México</option>
+                                    <option value="punta-hermosa">Punta Hermosa Pro 2026 · Perú</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label">URL del iframe de SurfScores</label>
+                                <input type="text" class="form-input font-mono text-sm" x-model="ssUrl" placeholder="https://surfscores.com/embed/event/CODIGO-EVENTO">
+                                <p class="text-[11px] text-text-muted mt-1">La URL de embed es provista por SurfScores al crear el evento. Formato: <code class="bg-navy-dark px-1 rounded">surfscores.com/embed/event/[ID]</code></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="form-label">Ancho</label>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="number" class="form-input" x-model="ssWidth" value="100">
+                                        <select class="form-input w-auto px-2">
+                                            <option>%</option>
+                                            <option>px</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Alto</label>
+                                    <div class="flex gap-2 items-center">
+                                        <input type="number" class="form-input" x-model="ssHeight" value="600">
+                                        <span class="text-text-muted text-sm">px</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label flex justify-between items-center">
+                                    <span>Actualización automática</span>
+                                    <span class="text-cyan-brand text-[11px]" x-text="ssRefresh + ' min (mínimo recomendado: 5)'"></span>
+                                </label>
+                                <input type="range" min="5" max="60" step="5" x-model="ssRefresh" class="w-full accent-cyan-brand cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-text-muted mt-1">
+                                    <span>5 min</span>
+                                    <span>30 min</span>
+                                    <span>60 min</span>
+                                </div>
+                                <p class="text-[11px] text-warning-brand mt-2">⚠ Valores menores a 5 minutos infringen los términos de la API SurfScores.</p>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Uso permitido</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer text-sm p-2 rounded-lg border border-navy-mid hover:border-cyan-brand/40 transition">
+                                        <input type="checkbox" checked class="text-cyan-brand" x-model="ssUsoLocal">
+                                        <span>Pantallas locales del evento (TVs en la playa, backstage)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer text-sm p-2 rounded-lg border border-error-brand/30">
+                                        <input type="checkbox" disabled class="text-error-brand opacity-50">
+                                        <span class="text-text-muted line-through">Sitio público (prohibido por términos SurfScores)</span>
+                                        <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-error-brand/20 text-error-brand font-accent uppercase">Bloqueado</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Código de embed</label>
+                                <div class="relative">
+                                    <textarea readonly rows="3" class="form-input font-mono text-[11px] bg-navy-dark resize-none"
+                                        :value="`<iframe src=&quot;${ssUrl || 'https://surfscores.com/embed/event/CODIGO'}&quot; width=&quot;${ssWidth}%&quot; height=&quot;${ssHeight}&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot; title=&quot;SurfScores Live — ${ssEvento || 'Evento'}&quot;></iframe>\n<!-- Results by SurfScores.com —required attribution —>`"></textarea>
+                                    <button @click="showToast('Código SurfScores copiado')" class="absolute top-2 right-2 p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-text-light" title="Copiar">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </button>
+                                </div>
+                                <p class="text-[11px] text-text-muted mt-1">El comentario de atribución <code class="bg-navy-dark px-1 rounded">Results by SurfScores.com</code> es <strong class="text-warning-brand">obligatorio</strong> por contrato.</p>
+                            </div>
+                        </div>
+
+                        <!-- Columna de previsualización -->
+                        <div class="space-y-3">
+                            <p class="form-label">Previsualización del iframe</p>
+                            <div class="rounded-xl overflow-hidden border border-navy-mid bg-navy-dark">
+                                <div class="bg-navy-deepest px-3 py-2 flex items-center justify-between border-b border-navy-mid">
+                                    <span class="font-mono text-[10px] text-text-muted truncate" x-text="ssUrl || 'surfscores.com/embed/event/…'"></span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-navy-mid text-text-muted font-accent uppercase tracking-wider flex-shrink-0 ml-2">iframe</span>
+                                </div>
+                                <div class="p-4 min-h-[320px] flex flex-col">
+                                    <div x-show="!ssUrl" class="flex-1 flex flex-col items-center justify-center text-center text-text-muted">
+                                        <svg class="h-10 w-10 mb-3 text-navy-mid" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        <p class="text-sm">Ingresa la URL de SurfScores para previsualizar</p>
+                                    </div>
+                                    <!-- Mock heat scoreboard -->
+                                    <div x-show="ssUrl" x-cloak class="flex-1 space-y-2">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="font-heading text-sm" x-text="ssEvento || 'Evento'"></p>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-brand opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-brand"></span></span>
+                                                <span class="text-cyan-brand text-[10px] font-accent uppercase tracking-wider">SurfScores Live</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] text-text-muted font-accent uppercase tracking-wider mb-2">Heat Final — Open Hombres</p>
+                                        <!-- Filas de heat simuladas -->
+                                        <div class="space-y-1.5">
+                                            <div class="flex items-center gap-2 bg-navy-deepest rounded p-2">
+                                                <span class="w-5 h-5 rounded-full bg-warning-brand/20 text-warning-brand text-[10px] flex items-center justify-center font-heading flex-shrink-0">1</span>
+                                                <span class="text-xs flex-1">Villani, G.</span>
+                                                <span class="font-mono text-cyan-brand text-xs font-semibold">17.95</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 bg-navy-deepest rounded p-2">
+                                                <span class="w-5 h-5 rounded-full bg-text-muted/20 text-text-muted text-[10px] flex items-center justify-center font-heading flex-shrink-0">2</span>
+                                                <span class="text-xs flex-1">Díaz, M.</span>
+                                                <span class="font-mono text-text-light text-xs font-semibold">17.55</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 bg-navy-deepest rounded p-2">
+                                                <span class="w-5 h-5 rounded-full bg-orange-brand/20 text-orange-brand text-[10px] flex items-center justify-center font-heading flex-shrink-0">3</span>
+                                                <span class="text-xs flex-1">Mora, S.</span>
+                                                <span class="font-mono text-text-light text-xs font-semibold">16.40</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 bg-navy-deepest rounded p-2">
+                                                <span class="w-5 h-5 rounded-full bg-navy-mid/50 text-text-muted text-[10px] flex items-center justify-center font-heading flex-shrink-0">4</span>
+                                                <span class="text-xs flex-1">Vieira, L.</span>
+                                                <span class="font-mono text-text-muted text-xs">15.80</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 pt-2 border-t border-navy-mid">
+                                            <a href="https://surfscores.com" target="_blank" class="text-[10px] text-cyan-brand hover:underline">Results by SurfScores.com</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-text-muted">Esta previsualización es simulada. El iframe real carga el contenido directamente de SurfScores en el dispositivo de exhibición.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-navy-mid">
+                        <button @click="showToast('Configuración de puntajes guardada')" class="px-5 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar configuración</button>
+                        <button @click="ssActive = false; showToast('Iframe de SurfScores desactivado')" class="px-5 py-2.5 border border-navy-mid hover:border-error-brand text-text-muted hover:text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Desactivar iframe</button>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ============= FIN TAB EN VIVO ============= -->
+
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 bg-navy-deepest border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3" x-cloak>
+        <svg class="h-5 w-5 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        <p class="text-sm" x-text="toast.message"></p>
+    </div>
+
+</div>
+
+<script>
+function configuracionApp() {
+    return {
+        sidebarOpen: false,
+        tab: 'general',
+        toast: { show: false, message: '' },
+        showToast(msg) {
+            this.toast.message = msg;
+            this.toast.show = true;
+            setTimeout(() => this.toast.show = false, 3000);
+        }
+    }
+}
+</script>
+
+</body>
+</html>

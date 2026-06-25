@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagos — ALAS Latin Tour Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #003873; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 8px; color: #AAAAAA;
+            font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+            letter-spacing: 0.06em; font-size: 14px; transition: all .2s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: #003873; color: #EEEEEE; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(0,129,198,0.15), rgba(0,129,198,0));
+            color: #0081C6; border-left-color: #0081C6;
+        }
+        .table-row:hover { background: rgba(0,129,198,0.04); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #002359; }
+        ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
+        .tab-btn { padding: 12px 20px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 14px; color: #AAAAAA; border-bottom: 2px solid transparent; transition: all .2s ease; }
+        .tab-btn:hover { color: #EEEEEE; }
+        .tab-btn.active { color: #0081C6; border-bottom-color: #0081C6; }
+        .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
+        .chart-bar {
+            background: linear-gradient(180deg, rgba(0,129,198,0.6), rgba(0,129,198,0.2));
+            border-top: 2px solid #0081C6;
+            position: relative;
+            transition: all .3s ease;
+        }
+        .chart-bar.current {
+            background: linear-gradient(180deg, rgba(34,197,94,0.7), rgba(34,197,94,0.2));
+            border-top: 2px solid #22C55E;
+        }
+    </style>
+</head>
+<body class="bg-navy-dark text-text-light antialiased">
+
+<div x-data="pagosApp()" class="flex min-h-screen">
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
+
+        <div class="px-5 py-5 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex items-center gap-3">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <div>
+                    <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-1">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="usuarios.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Usuarios
+            </a>
+            <a href="circuitos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Circuitos
+            </a>
+            <a href="admin-eventos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="categorias.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2h2z"/></svg>
+                Categorías
+            </a>
+            <a href="inscritos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Inscritos
+            </a>
+            <a href="pagos.html" class="sidebar-link active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Pagos
+            </a>
+            <a href="admin-tokens.html" class="sidebar-link">
+                <span class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Tokens
+                </span>
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-orange-brand text-white text-[10px] font-bold leading-none">3</span>
+            </a>
+            <a href="configuracion.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configuración
+            </a>
+        </nav>
+
+        <div class="border-t border-navy-mid p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-navy-mid to-cyan-brand flex items-center justify-center font-heading font-bold text-white text-sm">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-heading text-sm leading-tight truncate">Admin ALAS</p>
+                    <p class="text-[10px] text-text-muted truncate">rtres.info@gmail.com</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-md text-text-muted hover:text-error-brand hover:bg-navy-dark transition text-xs font-accent uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 bg-black/60 z-30 lg:hidden" x-cloak></div>
+
+    <div class="flex-1 lg:ml-60 min-w-0 flex flex-col">
+
+        <header class="sticky top-0 z-20 bg-navy-dark/95 backdrop-blur border-b border-navy-mid">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 text-text-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <p class="text-xs text-text-muted font-accent uppercase tracking-wider">
+                            <a href="admin-dashboard.html" class="hover:text-cyan-brand">Admin</a> / Pagos
+                        </p>
+                        <h1 class="font-heading text-2xl">Pagos y Recaudación</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="hidden md:block text-xs text-text-muted">Jueves, 25 jun 2026 · 09:00 hrs</p>
+                    <a href="admin-tokens.html" class="relative p-2 rounded-md hover:bg-navy-mid transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-orange-brand rounded-full"></span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="px-4 sm:px-6 lg:px-8 border-t border-navy-mid">
+                <nav class="flex gap-2 overflow-x-auto">
+                    <button @click="tab='resumen'" :class="tab==='resumen' ? 'active' : ''" class="tab-btn">Resumen</button>
+                    <button @click="tab='inscripciones'" :class="tab==='inscripciones' ? 'active' : ''" class="tab-btn">Inscripciones</button>
+                    <button @click="tab='membresias'" :class="tab==='membresias' ? 'active' : ''" class="tab-btn">Membresías</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- ============= TAB 1: RESUMEN ============= -->
+            <div x-show="tab==='resumen'" x-transition>
+
+                <!-- Stats row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-navy-deepest rounded-xl border border-cyan-brand/30 p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Total recaudado (mes)</p>
+                            <span class="text-xs font-accent uppercase tracking-wider text-success-brand flex items-center gap-1">
+                                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"/></svg>
+                                +12%
+                            </span>
+                        </div>
+                        <p class="font-heading text-3xl text-cyan-brand">$4,280<span class="text-base text-text-muted ml-1">USD</span></p>
+                        <p class="text-xs text-text-muted mt-1">vs $3,820 mes anterior</p>
+                    </div>
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Pagos PayPal confirmados</p>
+                        <p class="font-heading text-3xl text-success-brand">$3,750<span class="text-base text-text-muted ml-1">USD</span></p>
+                        <p class="text-xs text-text-muted mt-1">132 transacciones</p>
+                    </div>
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Pagos en playa validados</p>
+                        <p class="font-heading text-3xl text-orange-brand">$380<span class="text-base text-text-muted ml-1">USD</span></p>
+                        <p class="text-xs text-text-muted mt-1">18 validaciones · 6 pendientes</p>
+                    </div>
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Membresías activas</p>
+                        <p class="font-heading text-3xl text-cyan-dark">$150<span class="text-base text-text-muted ml-1">USD</span></p>
+                        <p class="text-xs text-text-muted mt-1">3 membresías</p>
+                    </div>
+                </div>
+
+                <!-- Revenue chart -->
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="font-heading text-xl">Recaudación mensual 2026</h2>
+                            <p class="text-sm text-text-muted">En USD · Total año a la fecha: $8,560</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-cyan-brand/60 border-t-2 border-cyan-brand"></span><span class="text-text-muted">Histórico</span></span>
+                            <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-success-brand/60 border-t-2 border-success-brand"></span><span class="text-text-muted">Mes actual</span></span>
+                        </div>
+                    </div>
+
+                    <div class="relative h-72">
+                        <!-- Y axis labels -->
+                        <div class="absolute left-0 top-0 bottom-8 w-12 flex flex-col justify-between text-[10px] text-text-muted text-right pr-2">
+                            <span>$5,000</span>
+                            <span>$4,000</span>
+                            <span>$3,000</span>
+                            <span>$2,000</span>
+                            <span>$1,000</span>
+                            <span>$0</span>
+                        </div>
+                        <!-- Bars -->
+                        <div class="absolute inset-0 left-12 flex items-end justify-around gap-3 pb-8 border-l border-b border-navy-mid">
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-text-muted mb-1">$620</p>
+                                <div class="chart-bar w-full rounded-t" style="height: 12%"></div>
+                            </div>
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-text-muted mb-1">$840</p>
+                                <div class="chart-bar w-full rounded-t" style="height: 17%"></div>
+                            </div>
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-text-muted mb-1">$760</p>
+                                <div class="chart-bar w-full rounded-t" style="height: 15%"></div>
+                            </div>
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-text-muted mb-1">$1,100</p>
+                                <div class="chart-bar w-full rounded-t" style="height: 22%"></div>
+                            </div>
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-text-muted mb-1">$960</p>
+                                <div class="chart-bar w-full rounded-t" style="height: 19%"></div>
+                            </div>
+                            <div class="flex flex-col items-center flex-1 max-w-[60px] h-full justify-end">
+                                <p class="text-[10px] text-success-brand mb-1 font-medium">$4,280</p>
+                                <div class="chart-bar current w-full rounded-t" style="height: 85%"></div>
+                            </div>
+                        </div>
+                        <!-- X axis labels -->
+                        <div class="absolute bottom-0 left-12 right-0 flex justify-around gap-3 text-[11px] text-text-muted font-accent uppercase tracking-wider">
+                            <span class="flex-1 max-w-[60px] text-center">Ene</span>
+                            <span class="flex-1 max-w-[60px] text-center">Feb</span>
+                            <span class="flex-1 max-w-[60px] text-center">Mar</span>
+                            <span class="flex-1 max-w-[60px] text-center">Abr</span>
+                            <span class="flex-1 max-w-[60px] text-center">May</span>
+                            <span class="flex-1 max-w-[60px] text-center text-success-brand">Jun</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent transactions -->
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                    <div class="px-6 py-4 border-b border-navy-mid">
+                        <h2 class="font-heading text-xl">Transacciones recientes</h2>
+                        <p class="text-sm text-text-muted">Últimas 10 transacciones registradas</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Fecha</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Monto</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Método</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">ID Transacción</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">24 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Lucas Vieira</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja Classic</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs font-accent uppercase tracking-wider">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">T8-XF12-AB</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">24 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Camila Restrepo</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita Masters</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Mujeres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$120.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-9X8C7B2A</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">24 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Sebastián Mora</td>
+                                    <td class="px-4 py-3 text-text-muted">Matanzas Invitacional</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-9X4D2K81</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">23 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Mateo Díaz</td>
+                                    <td class="px-4 py-3 text-text-muted">Punta Hermosa Pro</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$90.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-7A1F9B33</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">23 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Gabriel Villani</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita Masters</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$120.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-6B2C8E10</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">22 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Rodrigo Alas</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita Masters</td>
+                                    <td class="px-4 py-3 text-text-muted">Sub-18 Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$90.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs font-accent uppercase tracking-wider">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-warning-brand">T7-XF12-AB</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider">Pendiente</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">22 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Pablo Medina</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja Classic</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-5C8X1Y22</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">21 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Ana Souza</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja Classic</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Mujeres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-4D7B6L99</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">20 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Diego Núñez</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita Masters</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Hombres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$120.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs font-accent uppercase tracking-wider">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">T6-AB11-CD</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">20 jun 2026</td>
+                                    <td class="px-4 py-3 font-medium">Camila Restrepo</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja Classic</td>
+                                    <td class="px-4 py-3 text-text-muted">Open Mujeres</td>
+                                    <td class="px-4 py-3 text-right font-medium">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs font-accent uppercase tracking-wider">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-3E2A1Y44</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============= TAB 2: INSCRIPCIONES ============= -->
+            <div x-show="tab==='inscripciones'" x-transition x-cloak>
+
+                <!-- Filter bar -->
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-4 mb-6 flex flex-col xl:flex-row gap-3">
+                    <select class="form-input xl:max-w-[200px]">
+                        <option>Todos los eventos</option>
+                        <option>Roca Bruja Classic</option>
+                        <option>Sayulita Masters</option>
+                    </select>
+                    <select class="form-input xl:max-w-[180px]">
+                        <option>Todas las categorías</option>
+                        <option>Open Hombres</option>
+                        <option>Open Mujeres</option>
+                    </select>
+                    <select class="form-input xl:max-w-[180px]">
+                        <option>Todos los métodos</option>
+                        <option>PayPal</option>
+                        <option>Efectivo</option>
+                    </select>
+                    <select class="form-input xl:max-w-[180px]">
+                        <option>Todos los estados</option>
+                        <option>Confirmado</option>
+                        <option>Pendiente</option>
+                    </select>
+                    <input type="date" class="form-input xl:max-w-[160px]" value="2026-06-01">
+                    <input type="date" class="form-input xl:max-w-[160px]" value="2026-06-25">
+                </div>
+
+                <!-- Summary cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-navy-deepest rounded-xl border border-success-brand/30 p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Inscripciones PayPal</p>
+                        <p class="font-heading text-2xl text-success-brand">132 inscripciones</p>
+                        <p class="text-sm text-text-muted mt-1">Total: $9,900</p>
+                    </div>
+                    <div class="bg-navy-deepest rounded-xl border border-orange-brand/30 p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Efectivo validado</p>
+                        <p class="font-heading text-2xl text-orange-brand">18 inscripciones</p>
+                        <p class="text-sm text-text-muted mt-1">Total: $1,350</p>
+                    </div>
+                    <div class="bg-navy-deepest rounded-xl border border-warning-brand/30 p-5">
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Pendiente</p>
+                        <p class="font-heading text-2xl text-warning-brand">6 inscripciones</p>
+                        <p class="text-sm text-text-muted mt-1">Total: $450</p>
+                    </div>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                    <div class="px-4 py-3 border-b border-navy-mid flex justify-between items-center">
+                        <p class="text-sm text-text-muted">Mostrando 12 transacciones de inscripción</p>
+                        <button @click="showToast('Exportando CSV...')" class="px-3 py-1.5 border border-orange-brand/50 hover:border-orange-brand text-orange-brand font-accent uppercase tracking-wider text-xs rounded-md transition flex items-center gap-1.5">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Exportar CSV
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Fecha</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Monto</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Método</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">ID</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">24 jun</td>
+                                    <td class="px-4 py-3 font-medium">Lucas Vieira</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja</td>
+                                    <td class="px-4 py-3 text-text-muted">Open H</td>
+                                    <td class="px-4 py-3 text-right">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">T8-XF12-AB</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">24 jun</td>
+                                    <td class="px-4 py-3 font-medium">Camila Restrepo</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita</td>
+                                    <td class="px-4 py-3 text-text-muted">Open M</td>
+                                    <td class="px-4 py-3 text-right">$120.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-9X8C7B2A</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">22 jun</td>
+                                    <td class="px-4 py-3 font-medium">Rodrigo Alas</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita</td>
+                                    <td class="px-4 py-3 text-text-muted">Sub-18 H</td>
+                                    <td class="px-4 py-3 text-right">$90.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-warning-brand">T7-XF12-AB</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider">Pendiente</span></td>
+                                    <td class="px-4 py-3 text-right"><button @click="showValidateModal = true" class="px-2 py-1 bg-success-brand/10 hover:bg-success-brand/20 text-success-brand border border-success-brand/30 font-accent uppercase tracking-wider text-[10px] rounded transition">Validar Pago</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">22 jun</td>
+                                    <td class="px-4 py-3 font-medium">Pablo Medina</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja</td>
+                                    <td class="px-4 py-3 text-text-muted">Open H</td>
+                                    <td class="px-4 py-3 text-right">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-5C8X1Y22</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">21 jun</td>
+                                    <td class="px-4 py-3 font-medium">Tomás Herrera</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja</td>
+                                    <td class="px-4 py-3 text-text-muted">Open H</td>
+                                    <td class="px-4 py-3 text-right">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-warning-brand">T5-CC22-FF</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider">Pendiente</span></td>
+                                    <td class="px-4 py-3 text-right"><button @click="showValidateModal = true" class="px-2 py-1 bg-success-brand/10 hover:bg-success-brand/20 text-success-brand border border-success-brand/30 font-accent uppercase tracking-wider text-[10px] rounded transition">Validar Pago</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">21 jun</td>
+                                    <td class="px-4 py-3 font-medium">Ana Souza</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja</td>
+                                    <td class="px-4 py-3 text-text-muted">Open M</td>
+                                    <td class="px-4 py-3 text-right">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-4D7B6L99</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">20 jun</td>
+                                    <td class="px-4 py-3 font-medium">Diego Núñez</td>
+                                    <td class="px-4 py-3 text-text-muted">Sayulita</td>
+                                    <td class="px-4 py-3 text-text-muted">Open H</td>
+                                    <td class="px-4 py-3 text-right">$120.00</td>
+                                    <td class="px-4 py-3"><span class="text-orange-brand text-xs">Efectivo</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">T6-AB11-CD</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3 text-xs text-text-muted">19 jun</td>
+                                    <td class="px-4 py-3 font-medium">Mateo Díaz</td>
+                                    <td class="px-4 py-3 text-text-muted">Roca Bruja</td>
+                                    <td class="px-4 py-3 text-text-muted">Open H</td>
+                                    <td class="px-4 py-3 text-right">$75.00</td>
+                                    <td class="px-4 py-3"><span class="text-success-brand text-xs">PayPal</span></td>
+                                    <td class="px-4 py-3 font-mono text-xs text-cyan-brand">PP-8K2DA117</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Confirmado</span></td>
+                                    <td class="px-4 py-3 text-right"><button class="text-xs text-cyan-brand hover:underline">Ver</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============= TAB 3: MEMBRESÍAS ============= -->
+            <div x-show="tab==='membresias'" x-transition x-cloak>
+
+                <div class="bg-cyan-brand/10 border border-cyan-brand/30 rounded-xl p-5 mb-6 flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-brand/20 flex items-center justify-center flex-shrink-0">
+                        <svg class="h-5 w-5 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-heading text-base mb-1">¿Qué es una membresía?</h3>
+                        <p class="text-sm text-text-muted">Las membresías permiten a clubes y federaciones afiliar a múltiples competidores bajo una tarifa especial. Pueden ser mensuales (acceso completo) o por evento (descuento específico).</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                    <h2 class="font-heading text-xl">Membresías activas</h2>
+                    <button @click="showCreateMember = true" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Nueva Membresía
+                    </button>
+                </div>
+
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Club/Federación</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Plan</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidores Afiliados</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Vencimiento</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Monto</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-brand to-navy-mid flex items-center justify-center font-heading text-white text-xs">CS</div>
+                                            <span class="font-medium">Club Surf Perú</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-text-muted">🇵🇪 PER</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Mensual</span></td>
+                                    <td class="px-4 py-3">24 competidores</td>
+                                    <td class="px-4 py-3 text-text-muted">15 Jul 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right font-medium">$50/mes</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <button @click="showToast('Membresía renovada')" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Renovar</button>
+                                        <button class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light">Ver detalles</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-brand to-navy-mid flex items-center justify-center font-heading text-white text-xs">FC</div>
+                                            <span class="font-medium">Federación Surf Chile</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-text-muted">🇨🇱 CHL</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Mensual</span></td>
+                                    <td class="px-4 py-3">18 competidores</td>
+                                    <td class="px-4 py-3 text-warning-brand text-xs">30 Jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider">⚠ Vence pronto</span></td>
+                                    <td class="px-4 py-3 text-right font-medium">$50/mes</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <button @click="showToast('Membresía renovada')" class="text-xs font-accent uppercase tracking-wider text-warning-brand hover:text-yellow-400 mr-2">Renovar</button>
+                                        <button class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light">Ver detalles</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-success-brand to-cyan-brand flex items-center justify-center font-heading text-white text-xs">SB</div>
+                                            <span class="font-medium">Surf Brasil Pro</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider">Por evento</span></td>
+                                    <td class="px-4 py-3">12 competidores</td>
+                                    <td class="px-4 py-3 text-text-muted">—</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right font-medium">$80/evento</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <button class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light">Ver detalles</button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============= VALIDATE PAYMENT MODAL ============= -->
+    <div x-show="showValidateModal" x-transition.opacity class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" x-cloak>
+        <div @click.outside="showValidateModal = false" class="bg-navy-deepest border border-navy-mid rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+                <h3 class="font-heading text-xl">Validar Pago en Playa</h3>
+                <button @click="showValidateModal = false" class="text-text-muted hover:text-text-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-text-muted">Confirma que recibiste el monto correcto en efectivo para la siguiente inscripción:</p>
+                <div class="bg-navy-dark rounded-lg border border-navy-mid p-4 space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-text-muted">Competidor:</span><span class="font-medium">Rodrigo Alas</span></div>
+                    <div class="flex justify-between"><span class="text-text-muted">Evento:</span><span>Sayulita Masters</span></div>
+                    <div class="flex justify-between"><span class="text-text-muted">Categoría:</span><span>Sub-18 Hombres</span></div>
+                    <div class="flex justify-between"><span class="text-text-muted">Monto esperado:</span><span class="font-heading text-cyan-brand">USD $90.00</span></div>
+                    <div class="flex justify-between"><span class="text-text-muted">Token:</span><code class="text-warning-brand font-mono">T7-XF12-AB</code></div>
+                </div>
+                <div>
+                    <label class="form-label">Notas (opcional)</label>
+                    <textarea class="form-input" rows="2" placeholder="Recibido por..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button @click="showValidateModal = false" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+                <button @click="showValidateModal = false; showToast('Pago validado correctamente')" class="px-4 py-2 bg-success-brand hover:bg-green-600 text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Membership modal -->
+    <div x-show="showCreateMember" x-transition.opacity class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" x-cloak>
+        <div @click.outside="showCreateMember = false" class="bg-navy-deepest border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+                <h3 class="font-heading text-xl">Nueva Membresía</h3>
+                <button @click="showCreateMember = false" class="text-text-muted hover:text-text-light"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="form-label">Club / Federación</label>
+                    <input type="text" class="form-input" placeholder="Nombre del club">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">País</label>
+                        <select class="form-input"><option>Perú</option><option>Chile</option><option>Brasil</option><option>Argentina</option><option>México</option></select>
+                    </div>
+                    <div>
+                        <label class="form-label">Plan</label>
+                        <select class="form-input"><option>Mensual ($50/mes)</option><option>Por evento ($80/evento)</option></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Inicio vigencia</label>
+                        <input type="date" class="form-input" value="2026-06-25">
+                    </div>
+                    <div>
+                        <label class="form-label">Vencimiento</label>
+                        <input type="date" class="form-input" value="2026-07-25">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Email de contacto</label>
+                    <input type="email" class="form-input" placeholder="contacto@club.com">
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button @click="showCreateMember = false" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+                <button @click="showCreateMember = false; showToast('Membresía creada')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Crear Membresía</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 bg-navy-deepest border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3" x-cloak>
+        <svg class="h-5 w-5 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        <p class="text-sm" x-text="toast.message"></p>
+    </div>
+
+</div>
+
+<script>
+function pagosApp() {
+    return {
+        sidebarOpen: false,
+        tab: 'resumen',
+        showValidateModal: false,
+        showCreateMember: false,
+        toast: { show: false, message: '' },
+        showToast(msg) {
+            this.toast.message = msg;
+            this.toast.show = true;
+            setTimeout(() => this.toast.show = false, 3000);
+        }
+    }
+}
+</script>
+
+</body>
+</html>

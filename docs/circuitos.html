@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Circuitos — ALAS Latin Tour Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #003873; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 8px; color: #AAAAAA;
+            font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+            letter-spacing: 0.06em; font-size: 14px; transition: all .2s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: #003873; color: #EEEEEE; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(0,129,198,0.15), rgba(0,129,198,0));
+            color: #0081C6; border-left-color: #0081C6;
+        }
+        .table-row:hover { background: rgba(0,129,198,0.04); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #002359; }
+        ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
+        .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
+    </style>
+</head>
+<body class="bg-navy-dark text-text-light antialiased">
+
+<div x-data="circuitosApp()" class="flex min-h-screen">
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
+
+        <div class="px-5 py-5 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex items-center gap-3">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <div>
+                    <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-1">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="usuarios.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Usuarios
+            </a>
+            <a href="circuitos.html" class="sidebar-link active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Circuitos
+            </a>
+            <a href="admin-eventos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="categorias.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2h2z"/></svg>
+                Categorías
+            </a>
+            <a href="inscritos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Inscritos
+            </a>
+            <a href="pagos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Pagos
+            </a>
+            <a href="admin-tokens.html" class="sidebar-link">
+                <span class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Tokens
+                </span>
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-orange-brand text-white text-[10px] font-bold leading-none">3</span>
+            </a>
+            <a href="configuracion.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configuración
+            </a>
+        </nav>
+
+        <div class="border-t border-navy-mid p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-navy-mid to-cyan-brand flex items-center justify-center font-heading font-bold text-white text-sm">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-heading text-sm leading-tight truncate">Admin ALAS</p>
+                    <p class="text-[10px] text-text-muted truncate">rtres.info@gmail.com</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-md text-text-muted hover:text-error-brand hover:bg-navy-dark transition text-xs font-accent uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 bg-black/60 z-30 lg:hidden" x-cloak></div>
+
+    <div class="flex-1 lg:ml-60 min-w-0 flex flex-col">
+
+        <header class="sticky top-0 z-20 bg-navy-dark/95 backdrop-blur border-b border-navy-mid">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 text-text-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <p class="text-xs text-text-muted font-accent uppercase tracking-wider">
+                            <a href="admin-dashboard.html" class="hover:text-cyan-brand">Admin</a> / Circuitos
+                        </p>
+                        <h1 class="font-heading text-2xl">Gestión de Circuitos</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="hidden md:block text-xs text-text-muted">Jueves, 25 jun 2026 · 09:00 hrs</p>
+                    <a href="admin-tokens.html" class="relative p-2 rounded-md hover:bg-navy-mid transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-orange-brand rounded-full"></span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Top stats row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-brand/15 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Circuitos Activos</p>
+                    </div>
+                    <p class="font-heading text-4xl">3</p>
+                </div>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-lg bg-orange-brand/15 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Total Eventos en Circuitos</p>
+                    </div>
+                    <p class="font-heading text-4xl">18</p>
+                </div>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-lg bg-success-brand/15 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        </div>
+                        <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Competidores Inscritos</p>
+                    </div>
+                    <p class="font-heading text-4xl">342</p>
+                </div>
+            </div>
+
+            <!-- Section header -->
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                <h2 class="font-heading text-xl">Circuitos activos</h2>
+                <button @click="showCreateModal = true; editingCircuit = null" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Nuevo Circuito
+                </button>
+            </div>
+
+            <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-navy-mid">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Nombre</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Temporada</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Región</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Nº Eventos</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Inscritos</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Código SurfScores</th>
+                                <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-navy-mid/50">
+
+                            <!-- Row 1: ALAS Open 2026 -->
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-heading">ALAS Open</td>
+                                <td class="px-4 py-4">2026</td>
+                                <td class="px-4 py-4 text-text-muted">Latinoamérica</td>
+                                <td class="px-4 py-4">8 eventos</td>
+                                <td class="px-4 py-4">186 competidores</td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider"><svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Activo</span></td>
+                                <td class="px-4 py-4"><code class="px-2 py-1 rounded bg-navy-dark border border-navy-mid font-mono text-xs text-cyan-brand">ALAS-OPEN-26</code></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <button @click="expanded === 'open26' ? expanded = null : expanded = 'open26'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver</button>
+                                    <button @click="showCreateModal=true; editingCircuit='ALAS Open 2026'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Circuito archivado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-warning-brand">Archivar</button>
+                                </td>
+                            </tr>
+                            <tr x-show="expanded === 'open26'" x-transition x-cloak>
+                                <td colspan="8" class="p-0">
+                                    <div class="bg-navy-dark border-y-2 border-cyan-brand/30 p-6">
+                                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            <div class="lg:col-span-2">
+                                                <h4 class="font-heading text-base mb-3 flex items-center gap-2"><svg class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Eventos del circuito</h4>
+                                                <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
+                                                    <table class="w-full text-xs">
+                                                        <thead class="border-b border-navy-mid bg-navy-deepest">
+                                                            <tr>
+                                                                <th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Evento</th>
+                                                                <th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Fecha</th>
+                                                                <th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Ubicación</th>
+                                                                <th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Inscritos</th>
+                                                                <th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Estado</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-navy-mid/40">
+                                                            <tr><td class="px-3 py-2">Las Palmas Open</td><td class="px-3 py-2 text-text-muted">5–8 jun 2026</td><td class="px-3 py-2 text-text-muted">Las Palmas, CRI</td><td class="px-3 py-2">78/80</td><td class="px-3 py-2"><span class="text-success-brand">Completado</span></td></tr>
+                                                            <tr><td class="px-3 py-2">Roca Bruja Classic</td><td class="px-3 py-2 text-text-muted">12–15 jul 2026</td><td class="px-3 py-2 text-text-muted">Lima, PER</td><td class="px-3 py-2">47/80</td><td class="px-3 py-2"><span class="text-cyan-brand">Activo</span></td></tr>
+                                                            <tr><td class="px-3 py-2">Sayulita Masters</td><td class="px-3 py-2 text-text-muted">3–7 ago 2026</td><td class="px-3 py-2 text-text-muted">Sayulita, MEX</td><td class="px-3 py-2">23/60</td><td class="px-3 py-2"><span class="text-cyan-brand">Activo</span></td></tr>
+                                                            <tr><td class="px-3 py-2">Punta Hermosa Pro</td><td class="px-3 py-2 text-text-muted">4–8 sep 2026</td><td class="px-3 py-2 text-text-muted">Punta Hermosa, PER</td><td class="px-3 py-2">0/80</td><td class="px-3 py-2"><span class="text-text-muted">Próximamente</span></td></tr>
+                                                            <tr><td class="px-3 py-2">Matanzas Invitacional</td><td class="px-3 py-2 text-text-muted">15–19 oct 2026</td><td class="px-3 py-2 text-text-muted">Matanzas, CHL</td><td class="px-3 py-2">0/80</td><td class="px-3 py-2"><span class="text-text-muted">Próximamente</span></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="space-y-4">
+                                                <div class="bg-navy-deepest rounded-lg border border-cyan-brand/30 p-4">
+                                                    <h4 class="font-heading text-base mb-3 flex items-center gap-2"><svg class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>API SurfScores</h4>
+                                                    <div class="space-y-3 text-xs">
+                                                        <div>
+                                                            <p class="font-accent uppercase tracking-wider text-text-muted mb-1">Código de sincronización</p>
+                                                            <code class="block px-2 py-1.5 rounded bg-navy-dark border border-navy-mid font-mono text-cyan-brand">ALAS-OPEN-26</code>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-accent uppercase tracking-wider text-text-muted mb-1">Última sincronización</p>
+                                                            <p class="text-text-light">25 jun 2026, 08:37 hrs</p>
+                                                            <p class="text-text-muted text-[11px]">Hace 23 minutos</p>
+                                                        </div>
+                                                        <button @click="showToast('Sincronización iniciada')" class="w-full mt-2 px-3 py-1.5 bg-cyan-brand/20 hover:bg-cyan-brand/30 text-cyan-brand border border-cyan-brand/30 font-accent uppercase tracking-wider text-xs rounded-md transition">Sincronizar ahora</button>
+                                                    </div>
+                                                </div>
+                                                <a href="#" class="flex items-center justify-between px-4 py-3 bg-navy-deepest rounded-lg border border-navy-mid hover:border-cyan-brand transition">
+                                                    <span class="font-accent uppercase tracking-wider text-sm text-text-light">Ver ranking del circuito</span>
+                                                    <svg class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2: ALAS Junior 2026 -->
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-heading">ALAS Junior</td>
+                                <td class="px-4 py-4">2026</td>
+                                <td class="px-4 py-4 text-text-muted">Latinoamérica</td>
+                                <td class="px-4 py-4">6 eventos</td>
+                                <td class="px-4 py-4">124 competidores</td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider"><svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Activo</span></td>
+                                <td class="px-4 py-4"><code class="px-2 py-1 rounded bg-navy-dark border border-navy-mid font-mono text-xs text-cyan-brand">ALAS-JR-26</code></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <button @click="expanded === 'jr26' ? expanded = null : expanded = 'jr26'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver</button>
+                                    <button @click="showCreateModal=true; editingCircuit='ALAS Junior 2026'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Circuito archivado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-warning-brand">Archivar</button>
+                                </td>
+                            </tr>
+                            <tr x-show="expanded === 'jr26'" x-transition x-cloak>
+                                <td colspan="8" class="p-0">
+                                    <div class="bg-navy-dark border-y-2 border-cyan-brand/30 p-6">
+                                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            <div class="lg:col-span-2">
+                                                <h4 class="font-heading text-base mb-3">Eventos del circuito Junior</h4>
+                                                <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
+                                                    <table class="w-full text-xs">
+                                                        <thead class="border-b border-navy-mid">
+                                                            <tr><th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Evento</th><th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Fecha</th><th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Ubicación</th><th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Inscritos</th><th class="px-3 py-2 text-left font-accent uppercase tracking-wider text-text-muted">Estado</th></tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-navy-mid/40">
+                                                            <tr><td class="px-3 py-2">Lobitos Qualifier</td><td class="px-3 py-2 text-text-muted">1–3 oct 2026</td><td class="px-3 py-2 text-text-muted">Lobitos, PER</td><td class="px-3 py-2">0/60</td><td class="px-3 py-2"><span class="text-text-muted">Próximamente</span></td></tr>
+                                                            <tr><td class="px-3 py-2">Ñuble Junior Open</td><td class="px-3 py-2 text-text-muted">15–17 nov 2026</td><td class="px-3 py-2 text-text-muted">Ñuble, CHL</td><td class="px-3 py-2">0/60</td><td class="px-3 py-2"><span class="text-text-muted">Próximamente</span></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="space-y-4">
+                                                <div class="bg-navy-deepest rounded-lg border border-cyan-brand/30 p-4">
+                                                    <h4 class="font-heading text-base mb-3">API SurfScores</h4>
+                                                    <div class="space-y-3 text-xs">
+                                                        <code class="block px-2 py-1.5 rounded bg-navy-dark border border-navy-mid font-mono text-cyan-brand">ALAS-JR-26</code>
+                                                        <p class="text-text-muted">Última sincronización: 25 jun 2026, 08:30 hrs</p>
+                                                        <button @click="showToast('Sincronización iniciada')" class="w-full px-3 py-1.5 bg-cyan-brand/20 hover:bg-cyan-brand/30 text-cyan-brand border border-cyan-brand/30 font-accent uppercase tracking-wider text-xs rounded-md transition">Sincronizar ahora</button>
+                                                    </div>
+                                                </div>
+                                                <a href="#" class="flex items-center justify-between px-4 py-3 bg-navy-deepest rounded-lg border border-navy-mid hover:border-cyan-brand transition"><span class="font-accent uppercase tracking-wider text-sm">Ver ranking del circuito</span><svg class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3: ALAS Masters 2026 -->
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-heading">ALAS Masters</td>
+                                <td class="px-4 py-4">2026</td>
+                                <td class="px-4 py-4 text-text-muted">Latinoamérica</td>
+                                <td class="px-4 py-4">4 eventos</td>
+                                <td class="px-4 py-4">32 competidores</td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider"><svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Activo</span></td>
+                                <td class="px-4 py-4"><code class="px-2 py-1 rounded bg-navy-dark border border-navy-mid font-mono text-xs text-cyan-brand">ALAS-MAST-26</code></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <button @click="expanded === 'mast26' ? expanded = null : expanded = 'mast26'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver</button>
+                                    <button @click="showCreateModal=true; editingCircuit='ALAS Masters 2026'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Circuito archivado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-warning-brand">Archivar</button>
+                                </td>
+                            </tr>
+                            <tr x-show="expanded === 'mast26'" x-transition x-cloak>
+                                <td colspan="8" class="p-0">
+                                    <div class="bg-navy-dark border-y-2 border-cyan-brand/30 p-6">
+                                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            <div class="lg:col-span-2">
+                                                <h4 class="font-heading text-base mb-3">Eventos Masters</h4>
+                                                <div class="bg-navy-deepest rounded-lg border border-navy-mid p-4 text-sm text-text-muted">
+                                                    4 eventos programados para mayores de 35 años. Calendario completo disponible en el módulo de Eventos.
+                                                </div>
+                                            </div>
+                                            <div class="space-y-4">
+                                                <div class="bg-navy-deepest rounded-lg border border-cyan-brand/30 p-4">
+                                                    <h4 class="font-heading text-base mb-3">API SurfScores</h4>
+                                                    <code class="block px-2 py-1.5 rounded bg-navy-dark border border-navy-mid font-mono text-cyan-brand text-xs mb-2">ALAS-MAST-26</code>
+                                                    <p class="text-text-muted text-xs">Última sincronización: 25 jun 2026, 08:32 hrs</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 4: ALAS Open 2025 (Archived) -->
+                            <tr class="table-row transition opacity-70">
+                                <td class="px-4 py-4 font-heading">ALAS Open</td>
+                                <td class="px-4 py-4">2025</td>
+                                <td class="px-4 py-4 text-text-muted">Latinoamérica</td>
+                                <td class="px-4 py-4">10 eventos</td>
+                                <td class="px-4 py-4">198 competidores</td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted text-xs font-accent uppercase tracking-wider">Archivado</span></td>
+                                <td class="px-4 py-4"><code class="px-2 py-1 rounded bg-navy-dark border border-navy-mid font-mono text-xs text-text-muted">ALAS-OPEN-25</code></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <button @click="expanded === 'open25' ? expanded = null : expanded = 'open25'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver</button>
+                                    <button @click="showToast('Circuito restaurado')" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Restaurar</button>
+                                </td>
+                            </tr>
+                            <tr x-show="expanded === 'open25'" x-transition x-cloak>
+                                <td colspan="8" class="p-0">
+                                    <div class="bg-navy-dark border-y-2 border-text-muted/30 p-6">
+                                        <p class="text-sm text-text-muted">Circuito histórico de la temporada 2025. Resultados y estadísticas archivados. Para acceder al ranking final consulte el módulo de archivos.</p>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============= CREATE / EDIT CIRCUIT MODAL ============= -->
+    <div x-show="showCreateModal" x-transition.opacity class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" x-cloak>
+        <div @click.outside="showCreateModal = false" class="bg-navy-deepest border border-navy-mid rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+                <h3 class="font-heading text-xl" x-text="editingCircuit ? 'Editar Circuito: ' + editingCircuit : 'Nuevo Circuito'"></h3>
+                <button @click="showCreateModal = false" class="text-text-muted hover:text-text-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="form-label">Nombre del Circuito</label>
+                    <input type="text" class="form-input" placeholder="Ej: ALAS Open" value="ALAS Open">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Temporada (año)</label>
+                        <input type="number" class="form-input" value="2026" min="2020" max="2030">
+                    </div>
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select class="form-input">
+                            <option>Activo</option>
+                            <option>Borrador</option>
+                            <option>Archivado</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" rows="3" placeholder="Breve descripción del circuito...">Circuito principal del ALAS Latin Tour. Eventos de máxima categoría con tarifas y puntos completos.</textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Región geográfica</label>
+                        <select class="form-input">
+                            <option>Latinoamérica</option>
+                            <option>América del Sur</option>
+                            <option>América Central</option>
+                            <option>América del Norte</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Modalidad</label>
+                        <select class="form-input">
+                            <option>Shortboard</option>
+                            <option>Longboard</option>
+                            <option>Mixed</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <label class="form-label mb-0">Código SurfScores</label>
+                        <div class="group relative">
+                            <svg class="h-3.5 w-3.5 text-cyan-brand cursor-help" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                            <span class="absolute left-5 top-0 z-10 hidden group-hover:block bg-navy-deepest border border-cyan-brand/40 rounded-md p-2 text-[11px] text-text-light w-64 shadow-xl">Código asignado por SurfScores para sincronización de rankings.</span>
+                        </div>
+                    </div>
+                    <input type="text" class="form-input font-mono" placeholder="ALAS-OPEN-26" value="ALAS-OPEN-26">
+                </div>
+                <div class="bg-warning-brand/10 border border-warning-brand/30 rounded-lg p-3 flex gap-3 items-start">
+                    <svg class="h-5 w-5 text-warning-brand flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                    <p class="text-xs text-warning-brand leading-relaxed">El código SurfScores es sensible. Asegúrate de que coincida exactamente con el asignado por la plataforma externa.</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button @click="showCreateModal = false" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+                <button @click="showCreateModal = false; showToast(editingCircuit ? 'Circuito actualizado' : 'Circuito creado')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition" x-text="editingCircuit ? 'Guardar cambios' : 'Crear Circuito'"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 bg-navy-deepest border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3" x-cloak>
+        <svg class="h-5 w-5 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        <p class="text-sm" x-text="toast.message"></p>
+    </div>
+
+</div>
+
+<script>
+function circuitosApp() {
+    return {
+        sidebarOpen: false,
+        expanded: null,
+        showCreateModal: false,
+        editingCircuit: null,
+        toast: { show: false, message: '' },
+        showToast(msg) {
+            this.toast.message = msg;
+            this.toast.show = true;
+            setTimeout(() => this.toast.show = false, 3000);
+        }
+    }
+}
+</script>
+
+</body>
+</html>

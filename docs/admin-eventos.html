@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eventos (Admin) — ALAS Latin Tour Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #003873; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 8px; color: #AAAAAA;
+            font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+            letter-spacing: 0.06em; font-size: 14px; transition: all .2s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: #003873; color: #EEEEEE; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(0,129,198,0.15), rgba(0,129,198,0));
+            color: #0081C6; border-left-color: #0081C6;
+        }
+        .table-row:hover { background: rgba(0,129,198,0.04); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #002359; }
+        ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
+        .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
+        .modal-tab { padding: 10px 16px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: #AAAAAA; border-bottom: 2px solid transparent; transition: all .2s; }
+        .modal-tab.active { color: #0081C6; border-bottom-color: #0081C6; }
+    </style>
+</head>
+<body class="bg-navy-dark text-text-light antialiased">
+
+<div x-data="adminEventosApp()" class="flex min-h-screen">
+
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
+
+        <div class="px-5 py-5 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex items-center gap-3">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <div>
+                    <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-1">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="usuarios.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Usuarios
+            </a>
+            <a href="circuitos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Circuitos
+            </a>
+            <a href="admin-eventos.html" class="sidebar-link active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="categorias.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2h2z"/></svg>
+                Categorías
+            </a>
+            <a href="inscritos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Inscritos
+            </a>
+            <a href="pagos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Pagos
+            </a>
+            <a href="admin-tokens.html" class="sidebar-link">
+                <span class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Tokens
+                </span>
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-orange-brand text-white text-[10px] font-bold leading-none">3</span>
+            </a>
+            <a href="configuracion.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configuración
+            </a>
+        </nav>
+
+        <div class="border-t border-navy-mid p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-navy-mid to-cyan-brand flex items-center justify-center font-heading font-bold text-white text-sm">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-heading text-sm leading-tight truncate">Admin ALAS</p>
+                    <p class="text-[10px] text-text-muted truncate">rtres.info@gmail.com</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-md text-text-muted hover:text-error-brand hover:bg-navy-dark transition text-xs font-accent uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 bg-black/60 z-30 lg:hidden" x-cloak></div>
+
+    <div class="flex-1 lg:ml-60 min-w-0 flex flex-col">
+
+        <header class="sticky top-0 z-20 bg-navy-dark/95 backdrop-blur border-b border-navy-mid">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 text-text-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <p class="text-xs text-text-muted font-accent uppercase tracking-wider">
+                            <a href="admin-dashboard.html" class="hover:text-cyan-brand">Admin</a> / Eventos
+                        </p>
+                        <h1 class="font-heading text-2xl">Gestión de Eventos</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="hidden md:block text-xs text-text-muted">Jueves, 25 jun 2026 · 09:00 hrs</p>
+                    <a href="admin-tokens.html" class="relative p-2 rounded-md hover:bg-navy-mid transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-orange-brand rounded-full"></span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Top stats -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Eventos Activos</p>
+                    <p class="font-heading text-4xl text-cyan-brand">3</p>
+                </div>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Eventos Próximos</p>
+                    <p class="font-heading text-4xl text-text-light">2</p>
+                </div>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Eventos Completados</p>
+                    <p class="font-heading text-4xl text-text-muted">1</p>
+                </div>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-5">
+                    <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Inscripciones Abiertas</p>
+                    <p class="font-heading text-4xl text-success-brand">2</p>
+                </div>
+            </div>
+
+            <!-- Filter bar + New Event -->
+            <div class="bg-navy-deepest rounded-xl border border-navy-mid p-4 mb-6 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+                <div class="flex flex-col sm:flex-row gap-3 flex-1 flex-wrap">
+                    <div class="relative flex-1 max-w-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" placeholder="Buscar evento..." class="form-input pl-9">
+                    </div>
+                    <select class="form-input sm:max-w-[180px]">
+                        <option>Todos los circuitos</option>
+                        <option>ALAS Open 2026</option>
+                        <option>ALAS Junior 2026</option>
+                        <option>ALAS Masters 2026</option>
+                    </select>
+                    <select class="form-input sm:max-w-[160px]">
+                        <option>Todos los estados</option>
+                        <option>Activo</option>
+                        <option>Próximamente</option>
+                        <option>Completado</option>
+                    </select>
+                    <select class="form-input sm:max-w-[160px]">
+                        <option>Todos los países</option>
+                        <option>Perú</option>
+                        <option>México</option>
+                        <option>Chile</option>
+                        <option>Costa Rica</option>
+                        <option>Brasil</option>
+                    </select>
+                </div>
+                <button @click="showCreateModal = true; editingEvent = null; modalTab = 'general'" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Nuevo Evento
+                </button>
+            </div>
+
+            <!-- Events table -->
+            <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-navy-mid">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Circuito</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Fechas</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estrellas</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Inscritos/Cap.</th>
+                                <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-navy-mid/50">
+
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-medium">Roca Bruja Classic</td>
+                                <td class="px-4 py-4 text-text-muted">🇵🇪 PER</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Open 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">12–15 Jul 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">47/80</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-brand" style="width:58%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Inscritos</a>
+                                    <button @click="showCreateModal=true; editingEvent='Roca Bruja Classic'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento eliminado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Eliminar</button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-medium">Sayulita Masters</td>
+                                <td class="px-4 py-4 text-text-muted">🇲🇽 MEX</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Open 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">3–7 Ago 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★★★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">23/60</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-brand" style="width:38%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Inscritos</a>
+                                    <button @click="showCreateModal=true; editingEvent='Sayulita Masters'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento eliminado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Eliminar</button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-medium">Punta Hermosa Pro</td>
+                                <td class="px-4 py-4 text-text-muted">🇵🇪 PER</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Open 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">4–8 Sep 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">0/80</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-brand" style="width:0%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Próximamente</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Inscritos</a>
+                                    <button @click="showCreateModal=true; editingEvent='Punta Hermosa Pro'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento eliminado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Eliminar</button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-medium">Matanzas Invitacional</td>
+                                <td class="px-4 py-4 text-text-muted">🇨🇱 CHL</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Open 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">15–19 Oct 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">0/80</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-brand" style="width:0%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Próximamente</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Inscritos</a>
+                                    <button @click="showCreateModal=true; editingEvent='Matanzas Invitacional'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento eliminado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Eliminar</button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-row transition">
+                                <td class="px-4 py-4 font-medium">Lobitos Qualifier</td>
+                                <td class="px-4 py-4 text-text-muted">🇵🇪 PER</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Junior 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">1–3 Oct 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">0/60</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-cyan-brand" style="width:0%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Próximamente</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Inscritos</a>
+                                    <button @click="showCreateModal=true; editingEvent='Lobitos Qualifier'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento eliminado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Eliminar</button>
+                                </td>
+                            </tr>
+
+                            <tr class="table-row transition opacity-70">
+                                <td class="px-4 py-4 font-medium">Las Palmas Open</td>
+                                <td class="px-4 py-4 text-text-muted">🇨🇷 CRI</td>
+                                <td class="px-4 py-4 text-text-muted">ALAS Open 2026</td>
+                                <td class="px-4 py-4 text-text-muted whitespace-nowrap">5–8 Jun 2026</td>
+                                <td class="px-4 py-4 text-warning-brand whitespace-nowrap">★★</td>
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">78/80</span>
+                                        <div class="w-20 h-1.5 bg-navy-mid rounded-full overflow-hidden">
+                                            <div class="h-full bg-success-brand" style="width:98%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted text-xs font-accent uppercase tracking-wider">Completado</span></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap">
+                                    <a href="inscritos.html" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver Resultados</a>
+                                    <button @click="showCreateModal=true; editingEvent='Las Palmas Open'; modalTab='general'" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Editar</button>
+                                    <button @click="showToast('Evento archivado')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-warning-brand">Archivar</button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="border-t border-navy-mid px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+                    <p>Mostrando 6 de 6 eventos</p>
+                    <div class="flex items-center gap-2">
+                        <button class="px-3 py-1.5 border border-navy-mid rounded-md hover:border-cyan-brand transition">Anterior</button>
+                        <span class="px-2">Página 1 de 1</span>
+                        <button class="px-3 py-1.5 border border-navy-mid rounded-md hover:border-cyan-brand transition">Siguiente</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============= CREATE / EDIT EVENT MODAL ============= -->
+    <div x-show="showCreateModal" x-transition.opacity class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" x-cloak>
+        <div @click.outside="showCreateModal = false" class="bg-navy-deepest border border-navy-mid rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+                <h3 class="font-heading text-xl" x-text="editingEvent ? 'Editar Evento: ' + editingEvent : 'Nuevo Evento'"></h3>
+                <button @click="showCreateModal = false" class="text-text-muted hover:text-text-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Modal tabs -->
+            <div class="px-6 border-b border-navy-mid flex gap-2">
+                <button @click="modalTab = 'general'" :class="modalTab === 'general' ? 'active' : ''" class="modal-tab">Datos Generales</button>
+                <button @click="modalTab = 'categorias'" :class="modalTab === 'categorias' ? 'active' : ''" class="modal-tab">Categorías habilitadas</button>
+                <button @click="modalTab = 'tarifas'" :class="modalTab === 'tarifas' ? 'active' : ''" class="modal-tab">Tarifas</button>
+            </div>
+
+            <!-- General -->
+            <div x-show="modalTab === 'general'" class="p-6 space-y-4">
+                <div>
+                    <label class="form-label">Nombre del Evento</label>
+                    <input type="text" class="form-input" placeholder="Ej: Roca Bruja Classic" value="Roca Bruja Classic">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="form-label">País</label>
+                        <select class="form-input">
+                            <option>Perú</option><option>México</option><option>Chile</option><option>Costa Rica</option><option>Brasil</option><option>Argentina</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" class="form-input" value="Lima">
+                    </div>
+                    <div>
+                        <label class="form-label">Playa</label>
+                        <input type="text" class="form-input" value="La Herradura">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Circuito</label>
+                    <select class="form-input">
+                        <option>ALAS Open 2026</option><option>ALAS Junior 2026</option><option>ALAS Masters 2026</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="form-label">Fecha inicio</label>
+                        <input type="date" class="form-input" value="2026-07-12">
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha fin</label>
+                        <input type="date" class="form-input" value="2026-07-15">
+                    </div>
+                    <div>
+                        <label class="form-label">Capacidad máxima</label>
+                        <input type="number" class="form-input" value="80">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Nivel de estrellas</label>
+                    <div class="flex gap-2 flex-wrap">
+                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border border-navy-mid hover:border-cyan-brand transition">
+                            <input type="radio" name="stars" class="text-cyan-brand"> <span class="text-warning-brand">★</span><span class="text-xs">1</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border border-navy-mid hover:border-cyan-brand transition">
+                            <input type="radio" name="stars" class="text-cyan-brand"> <span class="text-warning-brand">★★</span><span class="text-xs">2</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border-2 border-cyan-brand bg-cyan-brand/10 transition">
+                            <input type="radio" name="stars" checked class="text-cyan-brand"> <span class="text-warning-brand">★★★</span><span class="text-xs">3</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border border-navy-mid hover:border-cyan-brand transition">
+                            <input type="radio" name="stars" class="text-cyan-brand"> <span class="text-warning-brand">★★★★</span><span class="text-xs">4</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md border border-navy-mid hover:border-cyan-brand transition">
+                            <input type="radio" name="stars" class="text-cyan-brand"> <span class="text-warning-brand">★★★★★</span><span class="text-xs">5</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Código SurfScores del evento</label>
+                        <input type="text" class="form-input font-mono" value="RBC-2026-PER">
+                    </div>
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select class="form-input">
+                            <option>Activo (inscripciones abiertas)</option><option>Próximamente</option><option>Completado</option><option>Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorías -->
+            <div x-show="modalTab === 'categorias'" class="p-6 space-y-3" x-cloak>
+                <p class="text-sm text-text-muted mb-3">Selecciona las categorías que estarán disponibles para inscripción en este evento.</p>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Open Hombres</p>
+                            <p class="text-xs text-text-muted">Sin restricción de edad</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-success-brand">Habilitada</span>
+                </label>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Open Mujeres</p>
+                            <p class="text-xs text-text-muted">Sin restricción de edad</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-success-brand">Habilitada</span>
+                </label>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Sub-18 Hombres</p>
+                            <p class="text-xs text-text-muted">Hasta 17 años al 1 ene</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-success-brand">Habilitada</span>
+                </label>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Sub-18 Mujeres</p>
+                            <p class="text-xs text-text-muted">Hasta 17 años al 1 ene</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-success-brand">Habilitada</span>
+                </label>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Longboard</p>
+                            <p class="text-xs text-text-muted">Sin restricción</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-text-muted">Deshabilitada</span>
+                </label>
+                <label class="flex items-center justify-between p-3 rounded-lg border border-navy-mid hover:border-cyan-brand transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                        <div>
+                            <p class="font-medium">Masters +35</p>
+                            <p class="text-xs text-text-muted">Mayores de 35 años</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-accent uppercase tracking-wider text-text-muted">Deshabilitada</span>
+                </label>
+            </div>
+
+            <!-- Tarifas -->
+            <div x-show="modalTab === 'tarifas'" class="p-6 space-y-4" x-cloak x-data="{ useCircuitTariffs: true }">
+                <div class="bg-navy-dark rounded-lg border border-navy-mid p-4">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <div>
+                            <p class="font-medium mb-1">Usar tarifas del circuito</p>
+                            <p class="text-xs text-text-muted">Las tarifas serán heredadas del circuito y nivel de estrellas (★★★ — USD $75).</p>
+                        </div>
+                        <button type="button" @click="useCircuitTariffs = !useCircuitTariffs" :class="useCircuitTariffs ? 'bg-cyan-brand' : 'bg-navy-mid'" class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                            <span :class="useCircuitTariffs ? 'translate-x-6' : 'translate-x-0.5'" class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                        </button>
+                    </label>
+                </div>
+
+                <div x-show="!useCircuitTariffs" x-transition class="space-y-3">
+                    <p class="text-sm text-text-muted">Define tarifas personalizadas por categoría para este evento:</p>
+                    <div class="bg-navy-dark rounded-lg border border-navy-mid overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
+                                    <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Tarifa USD</th>
+                                    <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Tarifa COP</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+                                <tr><td class="px-3 py-2">Open Hombres</td><td class="px-3 py-2"><input class="form-input py-1" value="75"></td><td class="px-3 py-2"><input class="form-input py-1" value="308000"></td></tr>
+                                <tr><td class="px-3 py-2">Open Mujeres</td><td class="px-3 py-2"><input class="form-input py-1" value="75"></td><td class="px-3 py-2"><input class="form-input py-1" value="308000"></td></tr>
+                                <tr><td class="px-3 py-2">Sub-18 Hombres</td><td class="px-3 py-2"><input class="form-input py-1" value="45"></td><td class="px-3 py-2"><input class="form-input py-1" value="185000"></td></tr>
+                                <tr><td class="px-3 py-2">Sub-18 Mujeres</td><td class="px-3 py-2"><input class="form-input py-1" value="45"></td><td class="px-3 py-2"><input class="form-input py-1" value="185000"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div x-show="useCircuitTariffs" x-transition class="bg-cyan-brand/10 border border-cyan-brand/30 rounded-lg p-4">
+                    <p class="text-sm">Tarifas aplicadas para evento de ★★★ (3 estrellas):</p>
+                    <ul class="mt-2 text-sm space-y-1">
+                        <li class="flex justify-between"><span class="text-text-muted">Open Hombres / Mujeres:</span><span class="font-mono">USD $75 · COP $308,000</span></li>
+                        <li class="flex justify-between"><span class="text-text-muted">Sub-18 Hombres / Mujeres:</span><span class="font-mono">USD $45 · COP $185,000</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button @click="showCreateModal = false" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+                <button @click="showCreateModal = false; showToast(editingEvent ? 'Evento actualizado' : 'Evento creado')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition" x-text="editingEvent ? 'Guardar cambios' : 'Crear Evento'"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 bg-navy-deepest border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3" x-cloak>
+        <svg class="h-5 w-5 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        <p class="text-sm" x-text="toast.message"></p>
+    </div>
+
+</div>
+
+<script>
+function adminEventosApp() {
+    return {
+        sidebarOpen: false,
+        showCreateModal: false,
+        editingEvent: null,
+        modalTab: 'general',
+        toast: { show: false, message: '' },
+        showToast(msg) {
+            this.toast.message = msg;
+            this.toast.show = true;
+            setTimeout(() => this.toast.show = false, 3000);
+        }
+    }
+}
+</script>
+
+</body>
+</html>

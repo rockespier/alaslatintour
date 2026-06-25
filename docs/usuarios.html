@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuarios — ALAS Latin Tour Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'gold-brand': '#0081C6',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #003873; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        [x-cloak] { display: none !important; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: 8px; color: #AAAAAA;
+            font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+            letter-spacing: 0.06em; font-size: 14px; transition: all .2s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: #003873; color: #EEEEEE; }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(0,129,198,0.15), rgba(0,129,198,0));
+            color: #0081C6; border-left-color: #0081C6;
+        }
+        .table-row:hover { background: rgba(0,129,198,0.04); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #002359; }
+        ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
+        .tab-btn { padding: 12px 20px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 14px; color: #AAAAAA; border-bottom: 2px solid transparent; transition: all .2s ease; }
+        .tab-btn:hover { color: #EEEEEE; }
+        .tab-btn.active { color: #0081C6; border-bottom-color: #0081C6; }
+        .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
+    </style>
+</head>
+<body class="bg-navy-dark text-text-light antialiased">
+
+<div x-data="usuariosApp()" class="flex min-h-screen">
+
+    <!-- ============= SIDEBAR ============= -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+           class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
+
+        <div class="px-5 py-5 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex items-center gap-3">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <div>
+                    <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-5 space-y-1">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+            <a href="usuarios.html" class="sidebar-link active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Usuarios
+            </a>
+            <a href="circuitos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Circuitos
+            </a>
+            <a href="admin-eventos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Eventos
+            </a>
+            <a href="categorias.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2h2z"/></svg>
+                Categorías
+            </a>
+            <a href="inscritos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                Inscritos
+            </a>
+            <a href="pagos.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Pagos
+            </a>
+            <a href="admin-tokens.html" class="sidebar-link">
+                <span class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Tokens
+                </span>
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-orange-brand text-white text-[10px] font-bold leading-none">3</span>
+            </a>
+            <a href="configuracion.html" class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Configuración
+            </a>
+        </nav>
+
+        <div class="border-t border-navy-mid p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-navy-mid to-cyan-brand flex items-center justify-center font-heading font-bold text-white text-sm">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-heading text-sm leading-tight truncate">Admin ALAS</p>
+                    <p class="text-[10px] text-text-muted truncate">rtres.info@gmail.com</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center gap-2 px-3 py-2 rounded-md text-text-muted hover:text-error-brand hover:bg-navy-dark transition text-xs font-accent uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity class="fixed inset-0 bg-black/60 z-30 lg:hidden" x-cloak></div>
+
+    <div class="flex-1 lg:ml-60 min-w-0 flex flex-col">
+
+        <!-- ============= TOP HEADER ============= -->
+        <header class="sticky top-0 z-20 bg-navy-dark/95 backdrop-blur border-b border-navy-mid">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 text-text-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <p class="text-xs text-text-muted font-accent uppercase tracking-wider">
+                            <a href="admin-dashboard.html" class="hover:text-cyan-brand">Admin</a> / Usuarios
+                        </p>
+                        <h1 class="font-heading text-2xl">Gestión de Usuarios</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <p class="hidden md:block text-xs text-text-muted">Jueves, 25 jun 2026 · 09:00 hrs</p>
+                    <a href="admin-tokens.html" class="relative p-2 rounded-md hover:bg-navy-mid transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-orange-brand rounded-full"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="px-4 sm:px-6 lg:px-8 border-t border-navy-mid">
+                <nav class="flex gap-2 overflow-x-auto">
+                    <button @click="tab='usuarios'" :class="tab==='usuarios' ? 'active' : ''" class="tab-btn">Usuarios</button>
+                    <button @click="tab='roles'" :class="tab==='roles' ? 'active' : ''" class="tab-btn">Roles y Perfiles</button>
+                    <button @click="tab='permisos'" :class="tab==='permisos' ? 'active' : ''" class="tab-btn">Permisos</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- ============= TAB 1: USUARIOS ============= -->
+            <div x-show="tab==='usuarios'" x-transition>
+
+                <!-- Filter bar -->
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-4 mb-6 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+                    <div class="flex flex-col sm:flex-row gap-3 flex-1">
+                        <div class="relative flex-1 max-w-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" placeholder="Buscar por nombre o email..." class="form-input pl-9">
+                        </div>
+                        <select class="form-input sm:max-w-[180px]">
+                            <option>Todos los roles</option>
+                            <option>Super Admin</option>
+                            <option>Admin</option>
+                            <option>Árbitro</option>
+                            <option>Revisor</option>
+                        </select>
+                        <select class="form-input sm:max-w-[180px]">
+                            <option>Todos los estados</option>
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </div>
+                    <button @click="showCreateModal = true; editingUser = null" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Nuevo Usuario
+                    </button>
+                </div>
+
+                <!-- Users table -->
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Avatar</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Nombre Completo</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Email</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Rol</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Última sesión</th>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-brand to-navy-mid flex items-center justify-center font-heading text-white text-xs">RT</div></td>
+                                    <td class="px-4 py-3 font-medium">Ricardo Torres</td>
+                                    <td class="px-4 py-3 text-text-muted">rtres.info@gmail.com</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 text-xs font-accent uppercase tracking-wider">Super Admin</span></td>
+                                    <td class="px-4 py-3 text-text-muted">Hace 2 horas</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Ricardo Torres'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('Ricardo Torres')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-orange-brand to-cyan-brand flex items-center justify-center font-heading text-white text-xs">MG</div></td>
+                                    <td class="px-4 py-3 font-medium">María González</td>
+                                    <td class="px-4 py-3 text-text-muted">mgonzalez@alaslatintour.com</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Admin</span></td>
+                                    <td class="px-4 py-3 text-text-muted">Ayer 14:30</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='María González'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('María González')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-success-brand to-navy-mid flex items-center justify-center font-heading text-white text-xs">CI</div></td>
+                                    <td class="px-4 py-3 font-medium">Carlos Ibáñez</td>
+                                    <td class="px-4 py-3 text-text-muted">cibanez@alaslatintour.com</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider">Árbitro</span></td>
+                                    <td class="px-4 py-3 text-text-muted">20 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Carlos Ibáñez'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('Carlos Ibáñez')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-warning-brand to-orange-brand flex items-center justify-center font-heading text-white text-xs">AP</div></td>
+                                    <td class="px-4 py-3 font-medium">Ana Pérez</td>
+                                    <td class="px-4 py-3 text-text-muted">aperez@surf.pe</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted text-xs font-accent uppercase tracking-wider">Revisor</span></td>
+                                    <td class="px-4 py-3 text-text-muted">18 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Ana Pérez'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('Ana Pérez')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition opacity-60">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center font-heading text-white text-xs">LH</div></td>
+                                    <td class="px-4 py-3 font-medium">Luis Herrera</td>
+                                    <td class="px-4 py-3 text-text-muted">lherrera@alaslatintour.com</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Admin</span></td>
+                                    <td class="px-4 py-3 text-text-muted">15 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-brand/15 text-error-brand text-xs font-accent uppercase tracking-wider">Inactivo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Luis Herrera'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="showToast('Usuario activado')" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Activar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center font-heading text-white text-xs">SM</div></td>
+                                    <td class="px-4 py-3 font-medium">Sofia Morales</td>
+                                    <td class="px-4 py-3 text-text-muted">smorales@surf.cl</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider">Árbitro</span></td>
+                                    <td class="px-4 py-3 text-text-muted">12 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Sofia Morales'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('Sofia Morales')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center font-heading text-white text-xs">JR</div></td>
+                                    <td class="px-4 py-3 font-medium">José Ramírez</td>
+                                    <td class="px-4 py-3 text-text-muted">jramirez@surf.mx</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted text-xs font-accent uppercase tracking-wider">Revisor</span></td>
+                                    <td class="px-4 py-3 text-text-muted">10 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='José Ramírez'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('José Ramírez')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-3"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-500 to-orange-brand flex items-center justify-center font-heading text-white text-xs">VC</div></td>
+                                    <td class="px-4 py-3 font-medium">Valentina Cruz</td>
+                                    <td class="px-4 py-3 text-text-muted">vcruz@surf.br</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider">Árbitro</span></td>
+                                    <td class="px-4 py-3 text-text-muted">5 jun 2026</td>
+                                    <td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider">Activo</span></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button @click="showCreateModal=true; editingUser='Valentina Cruz'" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                                        <button @click="confirmDeactivate('Valentina Cruz')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="border-t border-navy-mid px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+                        <p>Mostrando 8 de 8 usuarios</p>
+                        <div class="flex items-center gap-2">
+                            <button class="px-3 py-1.5 border border-navy-mid rounded-md hover:border-cyan-brand transition">Anterior</button>
+                            <span class="px-2">Página 1 de 1</span>
+                            <button class="px-3 py-1.5 border border-navy-mid rounded-md hover:border-cyan-brand transition">Siguiente</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============= TAB 2: ROLES Y PERFILES ============= -->
+            <div x-show="tab==='roles'" x-transition x-cloak>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+                    <!-- Super Admin card -->
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6 hover:border-purple-500/50 transition">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-500/15 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </div>
+                            <span class="text-xs font-accent uppercase tracking-wider text-purple-400 bg-purple-500/15 px-2 py-1 rounded-full">1 usuario</span>
+                        </div>
+                        <h3 class="font-heading text-xl mb-2">Super Admin</h3>
+                        <p class="text-sm text-text-muted leading-relaxed mb-4">Acceso completo al sistema, incluyendo configuración y gestión de usuarios.</p>
+                        <button class="w-full px-4 py-2 border border-navy-mid hover:border-purple-500 text-text-muted hover:text-purple-400 font-accent uppercase tracking-wider text-sm rounded-md transition">Editar Rol</button>
+                    </div>
+
+                    <!-- Admin card -->
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6 hover:border-cyan-brand/50 transition">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-cyan-brand/15 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <span class="text-xs font-accent uppercase tracking-wider text-cyan-brand bg-cyan-brand/15 px-2 py-1 rounded-full">3 usuarios</span>
+                        </div>
+                        <h3 class="font-heading text-xl mb-2">Admin</h3>
+                        <p class="text-sm text-text-muted leading-relaxed mb-4">Gestión de circuitos, eventos, inscritos y pagos. Sin acceso a configuración de sistema.</p>
+                        <button class="w-full px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Editar Rol</button>
+                    </div>
+
+                    <!-- Árbitro card -->
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6 hover:border-orange-brand/50 transition">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-orange-brand/15 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                            </div>
+                            <span class="text-xs font-accent uppercase tracking-wider text-orange-brand bg-orange-brand/15 px-2 py-1 rounded-full">3 usuarios</span>
+                        </div>
+                        <h3 class="font-heading text-xl mb-2">Árbitro</h3>
+                        <p class="text-sm text-text-muted leading-relaxed mb-4">Acceso de solo lectura a inscritos y resultados. Validación de pagos en playa.</p>
+                        <button class="w-full px-4 py-2 border border-navy-mid hover:border-orange-brand text-text-muted hover:text-orange-brand font-accent uppercase tracking-wider text-sm rounded-md transition">Editar Rol</button>
+                    </div>
+
+                    <!-- Revisor card -->
+                    <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6 hover:border-text-muted/80 transition">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-navy-mid flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </div>
+                            <span class="text-xs font-accent uppercase tracking-wider text-text-muted bg-navy-mid/50 px-2 py-1 rounded-full">2 usuarios</span>
+                        </div>
+                        <h3 class="font-heading text-xl mb-2">Revisor</h3>
+                        <p class="text-sm text-text-muted leading-relaxed mb-4">Solo lectura. Puede exportar reportes.</p>
+                        <button class="w-full px-4 py-2 border border-navy-mid hover:border-text-muted text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Editar Rol</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ============= TAB 3: PERMISOS ============= -->
+            <div x-show="tab==='permisos'" x-transition x-cloak>
+                <div class="bg-navy-deepest rounded-xl border border-navy-mid p-6">
+                    <div class="flex items-start justify-between mb-6 flex-col sm:flex-row gap-3">
+                        <div>
+                            <h2 class="font-heading text-xl mb-1">Matriz de Permisos</h2>
+                            <p class="text-sm text-text-muted">Configura los accesos por rol y módulo del sistema.</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs">
+                            <span class="flex items-center gap-1.5"><svg class="h-4 w-4 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg><span class="text-text-muted">Acceso total</span></span>
+                            <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-full bg-cyan-brand/50 border border-cyan-brand"></span><span class="text-text-muted">Solo lectura</span></span>
+                            <span class="flex items-center gap-1.5"><span class="text-text-muted text-lg leading-none">—</span><span class="text-text-muted">Sin acceso</span></span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="border-b border-navy-mid">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted sticky left-0 bg-navy-deepest">Rol</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Dashboard</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Usuarios</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Circuitos</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Eventos</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Categorías</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Inscritos</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Pagos</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Tokens</th>
+                                    <th class="px-4 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Config.</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-navy-mid/50">
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-4 sticky left-0 bg-navy-deepest"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 text-xs font-accent uppercase tracking-wider">Super Admin</span></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-4 sticky left-0 bg-navy-deepest"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider">Admin</span></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-4 sticky left-0 bg-navy-deepest"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider">Árbitro</span></td>
+                                    <td class="px-4 py-4 text-center"><span class="inline-block h-4 w-4 rounded-full bg-cyan-brand/40 border-2 border-cyan-brand"></span></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center"><span class="inline-block h-4 w-4 rounded-full bg-cyan-brand/40 border-2 border-cyan-brand"></span></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center"><svg class="h-5 w-5 text-success-brand inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                </tr>
+                                <tr class="table-row transition">
+                                    <td class="px-4 py-4 sticky left-0 bg-navy-deepest"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy-mid/50 text-text-muted text-xs font-accent uppercase tracking-wider">Revisor</span></td>
+                                    <td class="px-4 py-4 text-center"><span class="inline-block h-4 w-4 rounded-full bg-cyan-brand/40 border-2 border-cyan-brand"></span></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center"><span class="inline-block h-4 w-4 rounded-full bg-cyan-brand/40 border-2 border-cyan-brand"></span></td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                    <td class="px-4 py-4 text-center text-text-muted text-lg leading-none">—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-navy-mid flex flex-col sm:flex-row justify-end gap-3">
+                        <button class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Restablecer</button>
+                        <button @click="showToast('Permisos guardados correctamente')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Guardar permisos</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============= CREATE / EDIT USER MODAL ============= -->
+    <div x-show="showCreateModal" x-transition.opacity class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" x-cloak>
+        <div @click.outside="showCreateModal = false" class="bg-navy-deepest border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+                <h3 class="font-heading text-xl" x-text="editingUser ? 'Editar Usuario' : 'Nuevo Usuario'"></h3>
+                <button @click="showCreateModal = false" class="text-text-muted hover:text-text-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-input" placeholder="María">
+                    </div>
+                    <div>
+                        <label class="form-label">Apellido</label>
+                        <input type="text" class="form-input" placeholder="González">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="usuario@alaslatintour.com">
+                </div>
+                <div>
+                    <label class="form-label">Rol</label>
+                    <select class="form-input">
+                        <option>Selecciona un rol</option>
+                        <option>Super Admin</option>
+                        <option>Admin</option>
+                        <option>Árbitro</option>
+                        <option>Revisor</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Contraseña temporal</label>
+                    <input type="text" class="form-input font-mono" placeholder="Generada automáticamente" value="aLas2026-Tmp7">
+                    <p class="text-[11px] text-text-muted mt-1">El usuario deberá cambiarla en su primer inicio de sesión.</p>
+                </div>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
+                    <span class="text-sm">Enviar invitación por correo electrónico</span>
+                </label>
+            </div>
+            <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button @click="showCreateModal = false" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+                <button @click="showCreateModal = false; showToast(editingUser ? 'Usuario actualizado' : 'Usuario creado')" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition" x-text="editingUser ? 'Guardar cambios' : 'Crear Usuario'"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============= TOAST ============= -->
+    <div x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 bg-navy-deepest border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3" x-cloak>
+        <svg class="h-5 w-5 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        <p class="text-sm" x-text="toast.message"></p>
+    </div>
+
+</div>
+
+<script>
+function usuariosApp() {
+    return {
+        sidebarOpen: false,
+        tab: 'usuarios',
+        showCreateModal: false,
+        editingUser: null,
+        toast: { show: false, message: '' },
+        showToast(msg) {
+            this.toast.message = msg;
+            this.toast.show = true;
+            setTimeout(() => this.toast.show = false, 3000);
+        },
+        confirmDeactivate(name) {
+            this.showToast('Usuario ' + name + ' desactivado');
+        }
+    }
+}
+</script>
+
+</body>
+</html>
