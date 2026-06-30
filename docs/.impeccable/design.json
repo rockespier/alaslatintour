@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-30T00:00:00Z",
+  "title": "Design System: ALAS Latin Tour",
+  "extensions": {
+    "colorMeta": {
+      "navy-deepest": { "role": "neutral", "displayName": "Navy Deepest", "canonical": "oklch(24% 0.09 262)", "tonalRamp": ["#061f47", "#0b3a84", "#0f53bd", "#1d6eed", "#5593f1", "#8eb7f6", "#c6dbfa", "#e7f0fd"] },
+      "navy-dark": { "role": "neutral", "displayName": "Navy Dark", "canonical": "oklch(28% 0.10 258)", "tonalRamp": ["#062547", "#0b4684", "#0f64bd", "#1d82ed", "#55a1f1", "#8ec0f6", "#c6e0fa", "#e7f2fd"] },
+      "navy-mid": { "role": "neutral", "displayName": "Navy Mid", "canonical": "oklch(36% 0.12 250)", "tonalRamp": ["#062a47", "#0b4e84", "#0f70bd", "#1d90ed", "#55acf1", "#8ec8f6", "#c6e3fa", "#e7f3fd"] },
+      "sky-cyan": { "role": "secondary", "displayName": "Sky Cyan", "canonical": "oklch(54% 0.13 232)", "tonalRamp": ["#063047", "#0b5a84", "#0f80bd", "#1da4ed", "#55bbf1", "#8ed2f6", "#c6e8fa", "#e7f6fd"] },
+      "azure-cta": { "role": "primary", "displayName": "Azure CTA", "canonical": "oklch(56% 0.18 255)", "tonalRamp": ["#062547", "#0b4584", "#0f62bd", "#1d80ed", "#55a0f1", "#8ec0f6", "#c6dffa", "#e7f2fd"] },
+      "azure-cta-hover": { "role": "primary", "displayName": "Azure CTA Hover", "canonical": "oklch(60% 0.19 257)", "tonalRamp": ["#062046", "#0c3c83", "#1156bb", "#1e71eb", "#5694f0", "#8fb8f5", "#c7dbfa", "#e8f0fd"] },
+      "text-light": { "role": "neutral", "displayName": "Text Light", "canonical": "oklch(94% 0.00 0)" },
+      "text-muted": { "role": "neutral", "displayName": "Text Muted", "canonical": "oklch(70% 0.00 0)" },
+      "success": { "role": "status", "displayName": "Success Green", "canonical": "oklch(72% 0.17 152)", "tonalRamp": ["#0f3d20", "#1d723c", "#29a356", "#3bce71", "#6cda95", "#9de7b8", "#cef3dc", "#ebfaf0"] },
+      "warning": { "role": "status", "displayName": "Warning Amber", "canonical": "oklch(83% 0.15 85)", "tonalRamp": ["#463407", "#82610d", "#ba8b12", "#e9b120", "#eec458", "#f4d890", "#f9ebc7", "#fdf7e8"] },
+      "error": { "role": "status", "displayName": "Error Red", "canonical": "oklch(63% 0.21 25)", "tonalRamp": ["#420b0b", "#7b1414", "#af1d1d", "#dc2d2d", "#e56161", "#ee9696", "#f6caca", "#fbe9e9"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines on public pages only. Capped at clamp(2.5rem, 6vw, 6rem)." },
+      "headline": { "displayName": "Headline", "purpose": "Section titles, admin page titles." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy, table cells, form helper text." },
+      "label": { "displayName": "Label", "purpose": "Nav links, buttons, badges, table headers, stat-card eyebrows — the font-accent utility." },
+      "mono": { "displayName": "Mono", "purpose": "Token codes, masked credential fields, JSON/embed-code snippets only — never headings, labels, or body copy." }
+    },
+    "shadows": [
+      { "name": "cta-glow", "value": "0 10px 15px -3px rgb(0 122 255 / 0.2)", "purpose": "Primary CTA buttons and the hero card only — signals 'hottest element,' not elevation." },
+      { "name": "nav-scrim", "value": "backdrop-filter: blur(8px); background: rgb(0 35 89 / 0.85)", "purpose": "Sticky nav bar over scrolling content. Only sanctioned blur usage." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.165, 0.84, 0.44, 1)", "purpose": "Default ease-out-quart for hover/transition states (cards, nav underline, buttons)." },
+      { "name": "duration-fast", "value": "200ms", "purpose": "Color/border transitions (hover states, focus)." },
+      { "name": "duration-standard", "value": "250-350ms", "purpose": "Transform transitions (card lift, nav underline scale)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action per screen — hero CTA, form submit.",
+      "html": "<button class=\"ds-btn-primary\">Inscribirme</button>",
+      "css": ".ds-btn-primary { background: #007AFF; color: #FFFFFF; padding: 16px 32px; border-radius: 6px; border: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease; cursor: pointer; } .ds-btn-primary:hover { background: #0D6EFD; } .ds-btn-primary:focus-visible { outline: 2px solid #0081C6; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outline button — used wherever azure-cta is already taken on screen.",
+      "html": "<button class=\"ds-btn-secondary\">Ver Calendario</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: #0081C6; padding: 14px 30px; border-radius: 6px; border: 2px solid #0081C6; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; transition: background 0.2s ease, color 0.2s ease; cursor: pointer; } .ds-btn-secondary:hover { background: #0081C6; color: #002359; } .ds-btn-secondary:focus-visible { outline: 2px solid #0081C6; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "Pending/approved/rejected/live pill — color is the only variant axis.",
+      "html": "<span class=\"ds-badge ds-badge--warning\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"5\" cy=\"5\" r=\"4\" stroke=\"currentColor\" stroke-width=\"1.5\"/></svg>Pendiente</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; border-width: 1px; border-style: solid; } .ds-badge--warning { background: rgb(251 191 36 / 0.2); color: #FBBF24; border-color: rgb(251 191 36 / 0.3); } .ds-badge--success { background: rgb(34 197 94 / 0.2); color: #22C55E; border-color: rgb(34 197 94 / 0.3); } .ds-badge--error { background: rgb(239 68 68 / 0.2); color: #EF4444; border-color: rgb(239 68 68 / 0.3); }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Admin dashboard stat tile — flat, border-led, no shadow at rest.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card__label\">Inscritos Activos</p><p class=\"ds-card__value\">248</p></div>",
+      "css": ".ds-card { background: #002359; border: 1px solid #004F8E; border-radius: 12px; padding: 20px; transition: border-color 0.25s ease, transform 0.25s ease; } .ds-card:hover { border-color: #0081C6; transform: translateY(-4px); } .ds-card__label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #AAAAAA; margin-bottom: 6px; } .ds-card__value { font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 700; color: #EEEEEE; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Standard form field across admin and public registration forms.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Nombre completo\" />",
+      "css": ".ds-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-family: 'Inter', sans-serif; font-size: 14px; transition: border-color 0.2s ease; } .ds-input::placeholder { color: #AAAAAA; } .ds-input:focus { outline: none; border-color: #0081C6; }"
+    },
+    {
+      "name": "Live Status Indicator",
+      "kind": "custom",
+      "refersTo": "live-dot",
+      "description": "Pulsing dot for 'recently updated' ranking callouts — must be paired with cached-as-of copy, never claim real-time live scoring.",
+      "html": "<span class=\"ds-live-dot\" aria-hidden=\"true\"></span>",
+      "css": ".ds-live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; background: #22C55E; box-shadow: 0 0 0 0 rgb(34 197 94 / 0.7); animation: ds-pulse-live 1.6s infinite; } @keyframes ds-pulse-live { 0% { box-shadow: 0 0 0 0 rgb(34 197 94 / 0.6); } 70% { box-shadow: 0 0 0 10px rgb(34 197 94 / 0); } 100% { box-shadow: 0 0 0 0 rgb(34 197 94 / 0); } } @media (prefers-reduced-motion: reduce) { .ds-live-dot { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tour Broadcast",
+    "overview": "This system reads like the on-screen graphics package for a live international surf broadcast, not a generic web app. The base is a stacked navy field — navy-deepest → navy-dark → navy-mid — that holds the screen the way a broadcast lower-third holds the bottom of a frame: dark, stable, never competing for attention. Condensed, uppercase Barlow Condensed labels and Oswald display headlines carry the authority of a results board; the sky-cyan and azure-cta accents do the work that broadcast graphics use a single hot color for — live indicators, the one action that matters, the number that just changed.\n\nThe system explicitly rejects the cream/card-grid SaaS dashboard look and the cluttered, low-density federation-site look this platform replaces (see PRODUCT.md anti-references). It is built for two postures from one palette: the public surfaces broadcast the tour outward (bigger type, motion, gradient hero treatment), while the admin/competitor console runs the tour internally (denser, border-led, fewer flourishes) — but both pull from the exact same navy/azure/cyan tokens, never a second palette.",
+    "keyCharacteristics": [
+      "Navy-on-navy layering (3 steps of the same hue) instead of light/dark contrast for surface hierarchy",
+      "One hot accent (azure-cta, #007AFF) reserved for the single primary action per screen",
+      "Condensed, uppercase, tracked labels (font-accent / Barlow Condensed) for anything chip-, nav-, or status-shaped",
+      "Flat surfaces, 1px borders for separation — shadows are rare and reserved for accent glows, not structure",
+      "Status meaning (success/warning/error/live) always carried by a named color token, never decoration alone"
+    ],
+    "rules": [
+      { "name": "The Honest Naming Rule", "body": "The live Tailwind config still names a token orange-brand even though it resolves to #007AFF (actually azure) — leftover naming from an earlier orange accent swapped to blue and never renamed. (gold-brand, which duplicated cyan-brand exactly, has already been consolidated.) Document true colors under honest names; treat the orange-brand/orange-light rename as an outstanding polish item.", "section": "colors" },
+      { "name": "The One Hot Color Rule", "body": "azure-cta appears on exactly one element class of action per screen. If two buttons fight for azure-cta, one is wrong — demote it to sky-cyan outline or ghost.", "section": "colors" },
+      { "name": "The Status-Never-Alone Rule", "body": "Success/warning/error meaning is never carried by color alone — always pair with an icon, label, or shape.", "section": "colors" },
+      { "name": "The One Voice Per Element Rule", "body": "Headings are always Oswald, body is always Inter, anything uppercase-and-tracked is always Barlow Condensed. Never mix.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces sit flush against their navy layer. Reach for a border before reaching for a shadow. Reserve shadow/glow for the single hottest element on screen.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the navy three-step layering as the only depth mechanism on a given screen",
+      "Do reserve azure-cta (#007AFF) for exactly one primary action per screen",
+      "Do set anything chip-, nav-, or label-shaped in Barlow Condensed, uppercase, 0.08em tracking",
+      "Do pair every status color with an icon or label, never color alone",
+      "Do keep 'Results by SurfScores.com' visible and linked on every screen showing scores or rankings",
+      "Do cap display headings at clamp(2.5rem, 6vw, 6rem)",
+      "Do rename the drifted orange-brand/orange-light Tailwind tokens to their true azure value as a future polish cleanup",
+      "Do use 'ALAS Latin Tour' consistently across every page title"
+    ],
+    "donts": [
+      "Don't introduce a second brand hue family — status colors are the only departure from navy/azure/cyan",
+      "Don't use rounded-full on anything but badges/pills/avatars/dots",
+      "Don't add box-shadows for structural elevation",
+      "Don't use cream/card-grid SaaS dashboard patterns, hero-metric templates, tiny uppercase eyebrows, nested cards, or side-stripe colored borders",
+      "Don't ship the cluttered, dense, unstyled-table look of the legacy ASP-era site",
+      "Don't mix font families across the same element type",
+      "Don't imply real-time live scoring anywhere"
+    ]
+  }
+}

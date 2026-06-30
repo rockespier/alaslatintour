@@ -21,7 +21,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -60,7 +59,7 @@
         ::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 8px; }
         ::-webkit-scrollbar-thumb:hover { background: #0081C6; }
         .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
-        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-input:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 3px rgba(0,129,198,0.15); }
         .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
         .modal-tab { padding: 10px 16px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; color: #AAAAAA; border-bottom: 2px solid transparent; transition: all .2s; }
         .modal-tab.active { color: #0081C6; border-bottom-color: #0081C6; }
@@ -73,9 +72,9 @@
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
            class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
 
-        <div class="px-5 py-5 border-b border-navy-mid">
-            <a href="admin-dashboard.html" class="flex items-center gap-3">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+        <div class="px-5 py-6 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex flex-col items-start gap-2">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
                 <div>
                     <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
                     <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>

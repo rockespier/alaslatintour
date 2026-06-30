@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -95,6 +94,11 @@
             transition: border-color .25s ease;
         }
         .token-input:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 4px rgba(0,129,198,0.15); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-ring { animation: none; }
+            .countdown-warn { animation: none; color: #EF4444; }
+        }
     </style>
 </head>
 <body class="bg-navy-deepest text-text-light antialiased" x-data="paymentFlow()" x-init="init()">
@@ -102,9 +106,9 @@
 <!-- ============= NAV (logged-in) ============= -->
 <nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between py-5">
             <a href="index.html" class="flex items-center gap-2 group">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
             </a>
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
                 <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
@@ -173,7 +177,7 @@
             </div>
             <div class="text-right">
                 <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Monto a pagar</p>
-                <p class="font-heading text-3xl text-gold-brand">$75 <span class="text-sm">USD</span></p>
+                <p class="font-heading text-3xl text-cyan-brand">$75 <span class="text-sm">USD</span></p>
             </div>
         </div>
 
@@ -208,7 +212,7 @@
                         <span class="w-9 h-9 rounded-full bg-cyan-brand/15 border border-cyan-brand text-cyan-brand font-heading flex items-center justify-center flex-shrink-0">3</span>
                         <div>
                             <p class="font-heading text-base">Introduce el token aquí</p>
-                            <p class="text-sm text-text-muted mt-0.5">Tienes 20 minutos para usarlo. Una vez validado, tu inscripción quedará reservada con estado <strong class="text-warning-brand">pago pendiente</strong>.</p>
+                            <p class="text-sm text-text-muted mt-0.5">Tienes 24 horas para usarlo. Una vez validado, tu inscripción quedará reservada con estado <strong class="text-warning-brand">pago pendiente</strong>.</p>
                         </div>
                     </li>
                 </ol>
@@ -302,7 +306,7 @@
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-navy-mid text-center">
-                    <p class="text-xs text-text-muted leading-relaxed max-w-lg mx-auto">Por tu seguridad, este código es de un solo uso y expira automáticamente a los 20 minutos. No lo compartas con nadie.</p>
+                    <p class="text-xs text-text-muted leading-relaxed max-w-lg mx-auto">Por tu seguridad, este código es de un solo uso y expira automáticamente a los 24 horas. No lo compartas con nadie.</p>
                 </div>
             </div>
         </div>
@@ -315,7 +319,7 @@
                 </div>
                 <p class="font-accent uppercase tracking-[0.3em] text-error-brand text-xs mb-2">Estado: expirado</p>
                 <h2 class="font-heading text-2xl md:text-3xl text-error-brand mb-3">Token expirado</h2>
-                <p class="text-text-muted max-w-md mx-auto">El código que recibiste ha caducado. Esto ocurre 20 minutos después de su generación por tu seguridad.</p>
+                <p class="text-text-muted max-w-md mx-auto">El código que recibiste ha caducado. Esto ocurre 24 horas después de su generación por tu seguridad.</p>
             </div>
 
             <!-- HTTP debug callout -->
@@ -371,7 +375,7 @@
                     <div class="flex justify-between"><dt class="text-text-muted">Evento</dt><dd>Roca Bruja Classic</dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Categoría</dt><dd>Open Hombres</dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Fechas</dt><dd>12 – 15 Jul 2026</dd></div>
-                    <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-gold-brand font-heading text-base">$75 USD</dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-cyan-brand font-heading text-base">$75 USD</dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Método de pago</dt><dd>Efectivo en playa</dd></div>
                     <div class="flex justify-between pt-3 border-t border-navy-mid"><dt class="text-text-muted">Estado</dt><dd class="text-warning-brand font-accent uppercase tracking-wider">Pendiente de pago</dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Referencia</dt><dd class="font-mono text-xs">ALAS-RBC-2026-0048</dd></div>
@@ -401,7 +405,7 @@
         <div class="flex items-center gap-4">
             <a href="#" class="hover:text-cyan-brand">Soporte</a>
             <a href="#" class="hover:text-cyan-brand">Reglamento</a>
-            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+            
         </div>
     </div>
 </footer>

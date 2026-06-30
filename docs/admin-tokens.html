@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -83,6 +82,11 @@
             to { transform: translateX(0); opacity: 1; }
         }
         .toast-in { animation: slide-in-right .3s ease-out; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-orange { animation: none; }
+            .toast-in { animation: none; }
+        }
     </style>
 </head>
 <body class="bg-navy-dark text-text-light antialiased">
@@ -91,9 +95,9 @@
 
     <!-- ============= SIDEBAR ============= -->
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'" class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
-        <div class="px-5 py-5 border-b border-navy-mid">
-            <a href="admin-dashboard.html" class="flex items-center gap-3">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+        <div class="px-5 py-6 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex flex-col items-start gap-2">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
                 <div>
                     <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
                     <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
@@ -181,7 +185,7 @@
                 </div>
             </div>
             <div class="px-4 sm:px-6 lg:px-8 pb-4">
-                <p class="text-sm text-text-muted">Solicitudes de pago en efectivo que requieren tu aprobación. Cada token aprobado se envía automáticamente al correo del competidor y tiene una validez de 20 minutos.</p>
+                <p class="text-sm text-text-muted">Solicitudes de pago en efectivo que requieren tu aprobación. Cada token aprobado se envía automáticamente al correo del competidor y tiene una validez de 24 horas.</p>
             </div>
         </header>
 
@@ -250,7 +254,7 @@
                                         <td class="px-3 py-4 text-text-muted text-xs" x-text="req.email"></td>
                                         <td class="px-3 py-4" x-text="req.event"></td>
                                         <td class="px-3 py-4" x-text="req.category"></td>
-                                        <td class="px-3 py-4 text-right text-gold-brand font-heading text-base" x-text="'$' + req.amount"></td>
+                                        <td class="px-3 py-4 text-right text-cyan-brand font-heading text-base" x-text="'$' + req.amount"></td>
                                         <td class="px-5 py-4 text-right">
                                             <div class="inline-flex gap-2">
                                                 <button @click="openApprove(req)" class="px-4 py-2 rounded-md bg-success-brand hover:bg-green-600 text-white font-accent uppercase tracking-wider text-xs transition flex items-center gap-1">
@@ -467,14 +471,14 @@
                 </div>
                 <div class="flex-1">
                     <h3 class="font-heading text-lg mb-1">Política de pagos en playa</h3>
-                    <p class="text-sm text-text-muted leading-relaxed">Cada token aprobado genera un código alfanumérico de 8 caracteres válido por 20 minutos. La inscripción se reserva con estado "pago pendiente" y debe regularizarse con efectivo al llegar al evento. Si el competidor no se presenta, su cupo se libera automáticamente 24 horas antes del inicio.</p>
+                    <p class="text-sm text-text-muted leading-relaxed">Cada token aprobado genera un código alfanumérico de 8 caracteres válido por 24 horas. La inscripción se reserva con estado "pago pendiente" y debe regularizarse con efectivo al llegar al evento. Si el competidor no se presenta, su cupo se libera automáticamente 24 horas antes del inicio.</p>
                 </div>
                 <a href="#" class="font-accent uppercase tracking-wider text-sm text-cyan-brand hover:text-cyan-dark whitespace-nowrap">Ver políticas →</a>
             </div>
 
             <footer class="pt-6 border-t border-navy-mid flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
                 <p>© 2026 ALAS Latin Tour — Panel administrativo · Build 2.4.1</p>
-                <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+                
             </footer>
         </main>
     </div>
@@ -498,15 +502,15 @@
                     <div class="flex justify-between"><dt class="text-text-muted">Email destino</dt><dd class="text-cyan-brand" x-text="selectedReq?.email"></dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Evento</dt><dd x-text="selectedReq?.event"></dd></div>
                     <div class="flex justify-between"><dt class="text-text-muted">Categoría</dt><dd x-text="selectedReq?.category"></dd></div>
-                    <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-gold-brand font-heading" x-text="'$' + (selectedReq?.amount || '') + ' USD'"></dd></div>
+                    <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-cyan-brand font-heading" x-text="'$' + (selectedReq?.amount || '') + ' USD'"></dd></div>
                 </dl>
             </div>
 
             <div class="bg-warning-brand/8 border border-warning-brand/30 rounded-lg p-4 mb-5 flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="text-sm">
-                    <p class="text-warning-brand font-semibold">Validez: 20 minutos</p>
-                    <p class="text-text-muted text-xs mt-1">El token será enviado automáticamente al correo del competidor y expirará tras 20 minutos.</p>
+                    <p class="text-warning-brand font-semibold">Validez: 24 horas</p>
+                    <p class="text-text-muted text-xs mt-1">El token será enviado automáticamente al correo del competidor y expirará tras 24 horas.</p>
                 </div>
             </div>
 
@@ -562,9 +566,11 @@
 
     <!-- ============= TOAST ============= -->
     <div x-show="toast.visible" x-transition class="fixed top-6 right-6 z-[60] toast-in" x-cloak>
-        <div class="bg-navy-deepest border-l-4 rounded-lg shadow-2xl px-5 py-4 flex items-center gap-3 max-w-sm" :class="toast.type === 'success' ? 'border-success-brand' : 'border-error-brand'">
-            <svg x-show="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-brand flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-            <svg x-show="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-error-brand flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+        <div class="bg-navy-deepest border rounded-lg shadow-2xl px-5 py-4 flex items-center gap-3 max-w-sm" :class="toast.type === 'success' ? 'border-success-brand/40' : 'border-error-brand/40'">
+            <span class="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center" :class="toast.type === 'success' ? 'bg-success-brand/15' : 'bg-error-brand/15'">
+                <svg x-show="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <svg x-show="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-error-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </span>
             <p class="text-sm" x-text="toast.message"></p>
         </div>
     </div>

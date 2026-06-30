@@ -42,11 +42,11 @@ El sistema en .NET notifica vía correo al administrador.
 
 El administrador aprueba la solicitud a través del CMS.
 
-El sistema genera un token aleatorio de uso único con una estricta validez de 20 minutos y lo envía al correo del competidor.
+El sistema genera un token aleatorio de uso único con una validez de 24 horas y lo envía al correo del competidor. El token es válido para todas las categorías seleccionadas en el mismo proceso de inscripción.
 
 El competidor introduce el token en la PWA; su inscripción se habilita pero el sistema marca internamente el estado financiero como "pendiente".
 
-Escenario de error: Si el competidor introduce el código en el minuto 21, el BFF de .NET rechaza el token devolviendo un estado HTTP 400. Angular le notifica el error y le da un botón de "Re-solicitar token".
+Escenario de error: Si el competidor introduce el código después de 24 horas de su emisión, el BFF de .NET rechaza el token devolviendo un estado HTTP 400. Angular le notifica el error y le da un botón de "Re-solicitar token".
 
 ## 7. Arquitectura Técnica
 
@@ -71,3 +71,15 @@ Definition of Done (DoD): Una tarea o User Story estará terminada cuando:
 2) La vista se adapte visualmente a dispositivos móviles (PWA). 
 3) Se verifique que el contenido cuenta con SEO dinámico (SSR). 
 4) Los tokens y secretos de API nunca se expongan en el entorno de Angular.
+
+## 9. Reglas de Negocio
+
+Capacidad de eventos: Cada evento y categoría tendrá un número máximo de inscritos configurable. El sistema debe bloquear nuevas inscripciones al alcanzar el cupo y notificar al competidor que el evento está lleno. El administrador puede ajustar el cupo desde el CMS.
+
+Token de pago en playa: Un solo token generado y aprobado es válido para todas las categorías que el competidor haya seleccionado en el mismo proceso de inscripción. No se requieren tokens adicionales por categoría adicional dentro de la misma sesión de inscripción. Duración del token: 24 horas desde su emisión.
+
+Categoría sucesiva: Cada categoría con restricción de edad debe tener configurada una "categoría sucesiva" a la que el competidor pasa automáticamente al superar el límite de edad. Esta relación se configura desde el módulo de Categorías del CMS. Ejemplo: Sub-14 → Sub-16 → Sub-18 → Open.
+
+Dominio de correos institucionales: Todas las comunicaciones del sistema (notificaciones, tokens, confirmaciones) deben enviarse desde direcciones con el dominio @alasglobaltour.com.
+
+Reporte de inscritos: El reporte de inscritos por evento debe incluir la posición del ranking del año anterior (temporada pasada) y la posición del ranking del año en curso, por cada competidor y categoría.

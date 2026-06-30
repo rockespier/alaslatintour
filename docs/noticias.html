@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -82,6 +81,10 @@
             display: flex; align-items: flex-end;
         }
         .photo-tile:hover .overlay { opacity: 1; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton { animation: none; background: #003873; }
+        }
     </style>
 </head>
 <body class="bg-navy-deepest text-text-light antialiased">
@@ -89,9 +92,9 @@
 <!-- NAV -->
 <nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between py-5">
             <a href="index.html" class="flex items-center gap-2 group">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
             </a>
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
                 <a href="index.html" class="nav-link">Inicio</a>
@@ -126,7 +129,6 @@
 <!-- PAGE HEADER -->
 <section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
     <div class="max-w-7xl mx-auto">
-        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Sala de Prensa</p>
         <h1 class="font-heading text-4xl md:text-6xl">Noticias y Galería</h1>
         <p class="mt-3 text-text-muted max-w-2xl">Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano.</p>
     </div>
@@ -141,6 +143,7 @@
         <button @click="tab='noticias'" :class="tab==='noticias' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Noticias</button>
         <button @click="tab='resultados'" :class="tab==='resultados' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Resultados</button>
         <button @click="tab='fotos'" :class="tab==='fotos' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Fotos</button>
+        <button @click="tab='videos'" :class="tab==='videos' ? 'active text-cyan-brand' : 'hover:text-text-light'" class="tab-btn">Videos</button>
 
         <button @click="loaded = !loaded" class="ml-auto px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-xs hover:bg-cyan-dark transition">
             <span x-show="!loaded">Simular carga</span>
@@ -291,50 +294,247 @@
         <button class="px-8 py-3 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition">Cargar más artículos</button>
     </div>
 
-    <!-- PHOTO GALLERY -->
-    <section>
-        <div class="flex items-end justify-between mb-8">
+    <!-- GALERÍA DE FOTOS Y VIDEOS -->
+    <section x-data="{ galTab: 'fotos' }">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-4">
             <div>
-                <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-2">Banco fotográfico oficial</p>
                 <h2 class="font-heading text-4xl">Galería</h2>
             </div>
-            <a href="#" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider hidden sm:block">Ver todas →</a>
+            <div class="flex items-center gap-2">
+                <button @click="galTab='fotos'" :class="galTab==='fotos' ? 'bg-cyan-brand text-navy-deepest' : 'border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light'" class="px-4 py-1.5 rounded-md font-accent uppercase text-xs tracking-wider transition flex items-center gap-1.5">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Fotos
+                </button>
+                <button @click="galTab='videos'" :class="galTab==='videos' ? 'bg-cyan-brand text-navy-deepest' : 'border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light'" class="px-4 py-1.5 rounded-md font-accent uppercase text-xs tracking-wider transition flex items-center gap-1.5">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    Videos
+                </button>
+            </div>
         </div>
 
-        <div class="masonry">
-            <div class="photo-tile" style="height:260px; background: linear-gradient(135deg, #0081C6, #004F8E);">
-                <img src="assets/noticias/48294.jpg" alt="Gabriel Villani en Roca Bruja" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Gabriel Villani — Roca Bruja, Perú</p></div>
-            </div>
-            <div class="photo-tile" style="height:180px; background: linear-gradient(135deg, #007AFF, #003873);">
-                <img src="assets/noticias/47558.jpg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Camila Restrepo — Matanzas, Chile</p></div>
-            </div>
-            <div class="photo-tile" style="height:220px; background: linear-gradient(135deg, #004F8E, #0081C6);">
-                <img src="assets/noticias/48222.jpg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Ana Souza — Punta Hermosa, Perú</p></div>
-            </div>
-            <div class="photo-tile" style="height:280px; background: linear-gradient(135deg, #003873, #0D6EFD);">
-                <img src="assets/noticias/47980.jpg" alt="Sayulita Masters 2026" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Sebastián Mora — Pichilemu, Chile</p></div>
-            </div>
-            <div class="photo-tile" style="height:200px; background: linear-gradient(135deg, #0081C6, #0081C6);">
-                <img src="assets/noticias/47636.jpg" alt="Final masculina Open — Lobitos" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Final masculina Open — Lobitos</p></div>
-            </div>
-            <div class="photo-tile" style="height:240px; background: linear-gradient(135deg, #007AFF, #004F8E);">
-                <img src="assets/noticias/47646.jpeg" alt="Rodrigo Alas — Las Palmas, Costa Rica" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Rodrigo Alas — Las Palmas, Costa Rica</p></div>
-            </div>
-            <div class="photo-tile" style="height:190px; background: linear-gradient(135deg, #007AFF, #007AFF);">
-                <img src="assets/noticias/47568.jpg" alt="Mateo Díaz — Sayulita, México" class="object-cover w-full h-full">
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Mateo Díaz — Sayulita, México</p></div>
-            </div>
-            <div class="photo-tile" style="height:260px; background: linear-gradient(135deg, #004F8E, #0D6EFD);">
-                <img src="assets/noticias/51148.jpg" alt="Ambiente final — Sayulita Masters" class="object-cover w-full h-full">    
-                <div class="overlay"><p class="text-xs font-accent uppercase tracking-wider">Ambiente final — Sayulita Masters</p></div>
+        <!-- SUB-TAB: FOTOS -->
+        <div x-show="galTab==='fotos'" x-transition>
+            <p class="text-xs text-text-muted mb-5">Cada foto está disponible en resolución web (baja) y resolución de impresión (alta). Haz clic en <strong class="text-text-light">Descargar</strong> para elegir el formato.</p>
+            <div class="masonry">
+                <!-- Photo 1 -->
+                <div class="photo-tile group" style="height:260px; background: linear-gradient(135deg, #0081C6, #004F8E);">
+                    <img src="assets/noticias/48294.jpg" alt="Gabriel Villani en Roca Bruja" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Gabriel Villani — Roca Bruja, Perú</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Baja
+                                </a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Alta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 2 -->
+                <div class="photo-tile group" style="height:180px; background: linear-gradient(135deg, #007AFF, #003873);">
+                    <img src="assets/noticias/47558.jpg" alt="Camila Restrepo — Matanzas" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Camila Restrepo — Matanzas, Chile</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 3 -->
+                <div class="photo-tile group" style="height:220px; background: linear-gradient(135deg, #004F8E, #0081C6);">
+                    <img src="assets/noticias/48222.jpg" alt="Ana Souza — Punta Hermosa" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Ana Souza — Punta Hermosa, Perú</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 4 -->
+                <div class="photo-tile group" style="height:280px; background: linear-gradient(135deg, #003873, #0D6EFD);">
+                    <img src="assets/noticias/47980.jpg" alt="Sebastián Mora — Pichilemu" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Sebastián Mora — Pichilemu, Chile</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 5 -->
+                <div class="photo-tile group" style="height:200px; background: linear-gradient(135deg, #0081C6, #003873);">
+                    <img src="assets/noticias/47636.jpg" alt="Final masculina Open — Lobitos" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Final masculina Open — Lobitos</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 6 -->
+                <div class="photo-tile group" style="height:240px; background: linear-gradient(135deg, #007AFF, #004F8E);">
+                    <img src="assets/noticias/47646.jpeg" alt="Rodrigo Alas — Las Palmas" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Rodrigo Alas — Las Palmas, Costa Rica</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 7 -->
+                <div class="photo-tile group" style="height:190px; background: linear-gradient(135deg, #007AFF, #003873);">
+                    <img src="assets/noticias/47568.jpg" alt="Mateo Díaz — Sayulita" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Mateo Díaz — Sayulita, México</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Photo 8 -->
+                <div class="photo-tile group" style="height:260px; background: linear-gradient(135deg, #004F8E, #0D6EFD);">
+                    <img src="assets/noticias/51148.jpg" alt="Ambiente final — Sayulita Masters" class="object-cover w-full h-full">
+                    <div class="overlay flex flex-col justify-between p-3">
+                        <div></div>
+                        <div>
+                            <p class="text-xs font-accent uppercase tracking-wider mb-2">Ambiente final — Sayulita Masters</p>
+                            <div class="flex gap-2">
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Baja</a>
+                                <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition flex items-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Alta</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- SUB-TAB: VIDEOS -->
+        <div x-show="galTab==='videos'" x-transition x-cloak>
+            <p class="text-xs text-text-muted mb-5">Videos oficiales del circuito disponibles en resolución estándar (480p) y alta definición (1080p) para descarga.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Video 1 -->
+                <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                    <div class="relative h-44 bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center">
+                        <img src="assets/noticias/48294.jpg" alt="Final Open Hombres — Roca Bruja" class="object-cover w-full h-full opacity-50">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
+                                <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <span class="absolute top-3 left-3 px-2 py-0.5 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand">18:42</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-heading text-base mb-1 group-hover:text-cyan-brand transition">Final Open Hombres — Roca Bruja Classic</h3>
+                        <p class="text-xs text-text-muted mb-3">Lobitos, Perú · 14 jun 2026</p>
+                        <div class="flex gap-2">
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-navy-mid hover:border-cyan-brand text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition flex items-center justify-center gap-1">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                480p
+                            </a>
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-warning-brand/40 hover:border-warning-brand text-[11px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand/10 transition flex items-center justify-center gap-1">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                1080p
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video 2 -->
+                <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                    <div class="relative h-44 bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center">
+                        <img src="assets/noticias/47980.jpg" alt="Highlights Sayulita Masters" class="object-cover w-full h-full opacity-50">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
+                                <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <span class="absolute top-3 left-3 px-2 py-0.5 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand">24:15</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-heading text-base mb-1 group-hover:text-cyan-brand transition">Highlights Sayulita Masters 2026</h3>
+                        <p class="text-xs text-text-muted mb-3">Sayulita, México · 20 sep 2026</p>
+                        <div class="flex gap-2">
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-navy-mid hover:border-cyan-brand text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>480p</a>
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-warning-brand/40 hover:border-warning-brand text-[11px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand/10 transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>1080p</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video 3 -->
+                <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                    <div class="relative h-44 bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center">
+                        <img src="assets/noticias/48506.jpg" alt="Entrevista Camila Restrepo" class="object-cover w-full h-full opacity-50">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
+                                <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <span class="absolute top-3 left-3 px-2 py-0.5 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand">08:30</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-heading text-base mb-1 group-hover:text-cyan-brand transition">Entrevista: Camila Restrepo — Top 10 a los 17</h3>
+                        <p class="text-xs text-text-muted mb-3">Matanzas, Chile · 5 jun 2026</p>
+                        <div class="flex gap-2">
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-navy-mid hover:border-cyan-brand text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>480p</a>
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-warning-brand/40 hover:border-warning-brand text-[11px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand/10 transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>1080p</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video 4 -->
+                <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                    <div class="relative h-44 bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center">
+                        <img src="assets/noticias/47636.jpg" alt="Resumen temporada Open Hombres" class="object-cover w-full h-full opacity-50">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
+                                <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <span class="absolute top-3 left-3 px-2 py-0.5 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand">35:00</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-heading text-base mb-1 group-hover:text-cyan-brand transition">Resumen Mid-Season — Open Hombres 2026</h3>
+                        <p class="text-xs text-text-muted mb-3">ALAS Latin Tour · 25 jun 2026</p>
+                        <div class="flex gap-2">
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-navy-mid hover:border-cyan-brand text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>480p</a>
+                            <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-warning-brand/40 hover:border-warning-brand text-[11px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand/10 transition flex items-center justify-center gap-1"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>1080p</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </section>
 </div>
 
@@ -383,7 +583,7 @@
         </div>
         <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
             <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
-            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+            
         </div>
     </div>
 </footer>

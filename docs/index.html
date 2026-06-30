@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALAS Global Tour 2026 - Circuito Continental de Surf Profesional</title>
-    <meta name="description" content="Plataforma oficial del ALAS Global Tour. Calendario de eventos, ranking en vivo, noticias y registro de competidores del circuito continental de surf de alto rendimiento." />
+    <title>ALAS Latin Tour 2026 - Circuito Continental de Surf Profesional</title>
+    <meta name="description" content="Plataforma oficial del ALAS Latin Tour. Calendario de eventos, ranking en vivo, noticias y registro de competidores del circuito continental de surf de alto rendimiento." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -79,7 +78,7 @@
         .scroll-snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
         .scroll-snap-x > * { scroll-snap-align: start; }
         .scroll-snap-x::-webkit-scrollbar { height: 6px; }
-        .scroll-snap-x::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 999px; }
+        .scroll-snap-x::-webkit-scrollbar-thumb { background: #004F8E; border-radius: 9999px; }
         .sponsor-card { filter: grayscale(100%); opacity: .55; transition: all .35s ease; }
         .sponsor-card:hover { filter: grayscale(0); opacity: 1; transform: translateY(-2px); }
         .nav-link { position: relative; transition: color .2s; }
@@ -97,6 +96,26 @@
         .card-event:hover { border-color: rgba(0,129,198,0.45); transform: translateY(-4px); }
         .card-event { transition: all .3s ease; }
         .ranking-row:hover { background: rgba(0,129,198,0.06); }
+
+        .input-field {
+            width: 100%;
+            background: #002359;
+            border: 1px solid #004F8E;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #EEEEEE;
+            font-size: 14px;
+            transition: border-color .2s ease;
+        }
+        .input-field::placeholder { color: #AAAAAA; }
+        .input-field:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 3px rgba(0,129,198,0.15); }
+        .input-field.field-error { border-color: #EF4444; }
+        .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .live-dot { animation: none; }
+            .card-event:hover { transform: none; }
+        }
     </style>
 </head>
 <body class="bg-navy-deepest text-text-light antialiased">
@@ -104,9 +123,9 @@
 <!-- ============= NAV ============= -->
 <nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between py-5">
             <a href="index.html" class="flex items-center gap-2 group">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Global Tour" class="h-10 w-auto">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
             </a>
 
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
@@ -160,14 +179,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
 	
         <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm md:text-base mb-4">Temporada 2026 • Circuito Continental de Surfistas Profesionales</p>
-        <h1 class="font-heading font-bold leading-[0.9] text-5xl sm:text-7xl md:text-8xl lg:text-9xl">
+        <h1 class="font-heading font-bold leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
             ALAS<br />
             <span class="text-orange-brand">TOUR</span><br />
             <span class="text-text-light/90">2026</span>
         </h1>
         <p class="mt-6 max-w-2xl text-lg md:text-xl text-text-muted font-light leading-relaxed">El circuito continental de surf de alto rendimiento. Doce países, dieciocho paradas, una sola pasión: las olas del continente.</p>
         <div class="mt-10 flex flex-col sm:flex-row gap-4">
-            <a href="#eventos" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition shadow-lg shadow-orange-brand/20">
+            <a href="calendario.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition shadow-lg shadow-orange-brand/20">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 Ver Calendario
             </a>
@@ -191,14 +210,14 @@
 </section>
 
 <!-- ============= PRÓXIMAS PARADAS ============= -->
-<section id="eventos" class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-deepest">
+<section id="eventos" class="py-14 px-4 sm:px-6 lg:px-8 bg-navy-deepest">
     <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
-            <div>
-                <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-2">Calendario 2026</p>
+            <div class="flex items-center gap-3 flex-wrap">
                 <h2 class="font-heading text-4xl md:text-5xl">Próximas paradas del circuito</h2>
+                <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-brand border border-orange-brand/30">Calendario 2026</span>
             </div>
-            <a href="#" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider flex items-center gap-1">
+            <a href="calendario.html" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider flex items-center gap-1">
                 Ver todos los eventos
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </a>
@@ -213,7 +232,7 @@
                 </div>
                 <h3 class="font-heading text-2xl leading-tight mb-2">Roca Bruja Classic</h3>
                 <p class="text-sm text-text-muted mb-4">Lobitos, Perú</p>
-                <div class="flex items-center gap-1 text-gold-brand mb-4">
+                <div class="flex items-center gap-1 text-cyan-brand mb-4">
                     <span>★</span><span>★</span><span>★</span>
                     <span class="text-text-muted">★</span><span class="text-text-muted">★</span>
                 </div>
@@ -238,7 +257,7 @@
                 </div>
                 <h3 class="font-heading text-2xl leading-tight mb-2">Punta Hermosa Pro</h3>
                 <p class="text-sm text-text-muted mb-4">Punta Hermosa, Perú</p>
-                <div class="flex items-center gap-1 text-gold-brand mb-4">
+                <div class="flex items-center gap-1 text-cyan-brand mb-4">
                     <span>★</span><span>★</span><span>★</span><span>★</span>
                     <span class="text-text-muted">★</span>
                 </div>
@@ -262,7 +281,7 @@
                 </div>
                 <h3 class="font-heading text-2xl leading-tight mb-2">Las Palmas Open</h3>
                 <p class="text-sm text-text-muted mb-4">Esterillos, Costa Rica</p>
-                <div class="flex items-center gap-1 text-gold-brand mb-4">
+                <div class="flex items-center gap-1 text-cyan-brand mb-4">
                     <span>★</span><span>★</span>
                     <span class="text-text-muted">★</span><span class="text-text-muted">★</span><span class="text-text-muted">★</span>
                 </div>
@@ -286,7 +305,7 @@
                 </div>
                 <h3 class="font-heading text-2xl leading-tight mb-2">Sayulita Masters</h3>
                 <p class="text-sm text-text-muted mb-4">Sayulita, México</p>
-                <div class="flex items-center gap-1 text-gold-brand mb-4">
+                <div class="flex items-center gap-1 text-cyan-brand mb-4">
                     <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
                 <div class="mt-auto pt-4 border-t border-navy-mid">
@@ -305,21 +324,18 @@
 </section>
 
 <!-- ============= RANKING EN VIVO ============= -->
-<section id="ranking" class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-navy-deepest to-navy-dark">
-    <div class="max-w-6xl mx-auto">
+<section id="ranking" class="py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-navy-deepest to-navy-dark">
+    <div class="max-w-7xl mx-auto">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl overflow-hidden shadow-2xl shadow-cyan-brand/5">
             <header class="p-6 md:p-8 border-b border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
                         <span class="live-dot"></span>
-                        <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">EN VIVO</span>
+                        <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">Actualizado</span>
                     </div>
                     <h2 class="font-heading text-3xl md:text-4xl">Ranking 2026</h2>
-                    <p class="text-sm text-text-muted mt-1">Categoría Open Hombres — Actualizado hace 8 minutos</p>
+                    <p class="text-sm text-text-muted mt-1">Categoría Open Hombres — Última sincronización hace 8 minutos</p>
                 </div>
-                <a href="https://surfscores.com" target="_blank" rel="noopener" class="text-xs text-text-muted hover:text-cyan-brand underline underline-offset-4 transition">
-                    Results by SurfScores.com
-                </a>
             </header>
 
             <div class="overflow-x-auto">
@@ -335,7 +351,7 @@
                     </thead>
                     <tbody class="divide-y divide-navy-mid/50">
                         <tr class="ranking-row transition">
-                            <td class="px-4 py-3 font-heading text-gold-brand text-lg">1</td>
+                            <td class="px-4 py-3 font-heading text-cyan-brand text-lg">1</td>
                             <td class="px-4 py-3 font-medium">Gabriel Villani</td>
                             <td class="px-4 py-3 text-text-muted">🇧🇷 Brasil</td>
                             <td class="px-4 py-3 text-right font-heading text-lg">12,840</td>
@@ -394,20 +410,18 @@
                 </table>
             </div>
 
-            <footer class="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-navy-deepest/40 border-t border-navy-mid">
-                <p class="text-xs text-text-muted">Datos provistos por SurfScores con caché de 5 minutos.</p>
-                <a href="#" class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition">Ver Ranking Completo</a>
+            <footer class="p-6 flex items-center justify-end bg-navy-deepest/40 border-t border-navy-mid">
+                <a href="ranking.html" class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition">Ver Ranking Completo</a>
             </footer>
         </div>
     </div>
 </section>
 
 <!-- ============= ÚLTIMAS NOTICIAS ============= -->
-<section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-deepest">
+<section class="py-14 px-4 sm:px-6 lg:px-8 bg-navy-deepest">
     <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
             <div>
-                <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Sala de Prensa</p>
                 <h2 class="font-heading text-4xl md:text-5xl">Últimas Noticias</h2>
             </div>
             <a href="noticias.html" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider">Ver todas →</a>
@@ -468,25 +482,83 @@
     </div>
 </section>
 
-<!-- ============= PATROCINADORES ============= -->
-<section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark/40 border-y border-navy-mid">
-    <div class="max-w-7xl mx-auto text-center">
-        <p class="font-accent uppercase tracking-[0.3em] text-text-muted text-sm mb-3">Patrocinadores Oficiales 2026</p>
-        <h2 class="font-heading text-3xl md:text-4xl mb-12">Quienes hacen posible el circuito</h2>
+<!-- ============= CONTACTO ============= -->
+<section id="contacto" class="py-16 px-4 sm:px-6 lg:px-8 bg-navy-dark border-t border-navy-mid">
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="font-heading text-4xl md:text-5xl">Hablemos</h2>
+            <p class="mt-3 text-text-muted">¿Consultas sobre el circuito, prensa o patrocinios? Escríbenos y te respondemos a la brevedad.</p>
+        </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">PACIFICO</div>
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">WAVE&amp;CO</div>
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">MARÍN</div>
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">SAL&amp;SOL</div>
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">RIPCURL</div>
-            <div class="sponsor-card h-24 rounded-lg bg-navy-dark border border-navy-mid flex items-center justify-center font-heading text-text-light text-xl">ATLAS</div>
+        <div x-data="contactForm()" class="bg-navy-deepest border border-navy-mid rounded-2xl p-6 md:p-10">
+            <!-- Success state -->
+            <div x-show="sent" x-cloak class="text-center py-10">
+                <div class="w-14 h-14 rounded-full bg-success-brand/15 flex items-center justify-center mx-auto mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <h3 class="font-heading text-2xl mb-2">Mensaje enviado</h3>
+                <p class="text-text-muted max-w-sm mx-auto">Gracias por escribirnos. Te responderemos a tu correo en un plazo de 2 a 3 días hábiles.</p>
+                <button @click="reset()" class="mt-6 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">Enviar otro mensaje</button>
+            </div>
+
+            <!-- Form -->
+            <form x-show="!sent" @submit.prevent="submit" novalidate class="space-y-5">
+                <!-- Honeypot: hidden from real users, catches basic bots -->
+                <div class="honeypot" aria-hidden="true">
+                    <label for="website">No completar este campo</label>
+                    <input type="text" id="website" name="website" x-model="honeypot" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label for="contact-name" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-2 block">Nombre</label>
+                        <input type="text" id="contact-name" x-model="name" required class="input-field" placeholder="Tu nombre completo">
+                    </div>
+                    <div>
+                        <label for="contact-email" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-2 block">Correo electrónico</label>
+                        <input type="email" id="contact-email" x-model="email" required class="input-field" placeholder="tu@correo.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="contact-subject" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-2 block">Asunto</label>
+                    <select id="contact-subject" x-model="subject" required class="input-field">
+                        <option value="" disabled selected>Selecciona un motivo</option>
+                        <option value="general">Consulta general</option>
+                        <option value="prensa">Prensa y medios</option>
+                        <option value="patrocinios">Patrocinios</option>
+                        <option value="soporte">Soporte técnico</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="contact-message" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-2 block">Mensaje</label>
+                    <textarea id="contact-message" x-model="message" required rows="5" class="input-field resize-none" placeholder="Cuéntanos en qué podemos ayudarte"></textarea>
+                </div>
+
+                <!-- Captcha -->
+                <div class="bg-navy-dark border border-navy-mid rounded-lg p-4">
+                    <label :for="'captcha-answer'" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-2 block">Verificación de seguridad</label>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="font-heading text-lg" x-text="'¿Cuánto es ' + captchaA + ' + ' + captchaB + '?'"></span>
+                        <input type="text" inputmode="numeric" id="captcha-answer" x-model="captchaAnswer" required class="input-field w-24" :class="captchaError ? 'field-error' : ''" placeholder="Resultado" aria-describedby="captcha-help">
+                        <button type="button" @click="newChallenge()" class="text-xs text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            Nuevo desafío
+                        </button>
+                    </div>
+                    <p id="captcha-help" class="text-xs mt-2" :class="captchaError ? 'text-error-brand' : 'text-text-muted'" x-text="captchaError ? 'Respuesta incorrecta, intenta de nuevo.' : 'Confirma que no eres un robot resolviendo la operación.'"></p>
+                </div>
+
+                <button type="submit" class="w-full px-6 py-3.5 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition">Enviar mensaje</button>
+            </form>
         </div>
     </div>
 </section>
 
 <!-- ============= FOOTER ============= -->
-<footer id="contacto" class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             <div>
@@ -532,17 +604,49 @@
                 </div>
                 <div class="mt-6">
                     <p class="text-xs text-text-muted mb-2">Contacto:</p>
-                    <a href="mailto:info@alasGlobaltour.com" class="text-sm text-cyan-brand hover:text-cyan-dark">info@alaslatintour.com</a>
+                    <a href="mailto:info@alasglobaltour.com" class="text-sm text-cyan-brand hover:text-cyan-dark">info@alasglobaltour.com</a>
                 </div>
             </div>
         </div>
 
         <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
             <p>© 2026 Circuito Continental de Surfistas Profesionales. Todos los derechos reservados.</p>
-            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
         </div>
     </div>
 </footer>
+
+<script>
+function contactForm() {
+    return {
+        name: '', email: '', subject: '', message: '',
+        honeypot: '',
+        captchaA: 0, captchaB: 0, captchaAnswer: '',
+        captchaError: false,
+        sent: false,
+        init() { this.newChallenge(); },
+        newChallenge() {
+            this.captchaA = Math.floor(Math.random() * 8) + 1;
+            this.captchaB = Math.floor(Math.random() * 8) + 1;
+            this.captchaAnswer = '';
+            this.captchaError = false;
+        },
+        submit() {
+            if (this.honeypot) return; // bot caught by honeypot, fail silently
+            if (parseInt(this.captchaAnswer, 10) !== this.captchaA + this.captchaB) {
+                this.captchaError = true;
+                return;
+            }
+            // TODO: POST to .NET BFF /api/contact once available; client-side only for now.
+            this.sent = true;
+        },
+        reset() {
+            this.name = ''; this.email = ''; this.subject = ''; this.message = '';
+            this.sent = false;
+            this.newChallenge();
+        }
+    };
+}
+</script>
 
 </body>
 </html>

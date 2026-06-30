@@ -21,7 +21,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -63,7 +62,7 @@
         .tab-btn:hover { color: #EEEEEE; }
         .tab-btn.active { color: #0081C6; border-bottom-color: #0081C6; }
         .form-input { width: 100%; background: #003873; border: 1px solid #004F8E; border-radius: 6px; padding: 10px 12px; color: #EEEEEE; font-size: 14px; transition: border-color .2s ease; }
-        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-input:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 3px rgba(0,129,198,0.15); }
         .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px; color: #AAAAAA; margin-bottom: 6px; }
         .inline-cell-edit { background: #002359; border: 1px solid #0081C6; border-radius: 4px; padding: 4px 8px; color: #EEEEEE; font-size: 13px; width: 90px; text-align: right; }
         .podium-block { transition: all .3s ease; }
@@ -76,9 +75,9 @@
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
            class="fixed inset-y-0 left-0 z-40 w-60 bg-navy-deepest border-r border-navy-mid transform transition-transform duration-200 ease-in-out flex flex-col">
 
-        <div class="px-5 py-5 border-b border-navy-mid">
-            <a href="admin-dashboard.html" class="flex items-center gap-3">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+        <div class="px-5 py-6 border-b border-navy-mid">
+            <a href="admin-dashboard.html" class="flex flex-col items-start gap-2">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
                 <div>
                     <p class="font-heading text-lg leading-tight">ALAS<span class="text-cyan-brand">.</span></p>
                     <p class="font-accent uppercase tracking-wider text-[10px] text-text-muted">Admin Panel</p>
@@ -241,6 +240,8 @@
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">#</th>
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
+                                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2025</th>
+                                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2026</th>
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
                                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Inscripción</th>
@@ -262,6 +263,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">001</td>
                                     <td class="px-3 py-3 font-medium">Gabriel Villani</td>
                                     <td class="px-3 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-warning-brand">3°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-cyan-brand">1°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">15 jun 2026</td>
@@ -273,7 +276,7 @@
                                     </td>
                                 </tr>
                                 <tr x-show="expanded === 1" x-transition x-cloak>
-                                    <td colspan="9" class="p-0">
+                                    <td colspan="11" class="p-0">
                                         <div class="bg-navy-dark border-y-2 border-cyan-brand/30 p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <p class="font-accent uppercase text-xs tracking-wider text-text-muted mb-2">Perfil</p>
@@ -300,6 +303,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">002</td>
                                     <td class="px-3 py-3 font-medium">Mateo Díaz</td>
                                     <td class="px-3 py-3 text-text-muted">🇵🇪 PER</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">2°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">2°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">16 jun 2026</td>
@@ -311,7 +316,7 @@
                                     </td>
                                 </tr>
                                 <tr x-show="expanded === 2" x-transition x-cloak>
-                                    <td colspan="9" class="p-0">
+                                    <td colspan="11" class="p-0">
                                         <div class="bg-navy-dark border-y-2 border-cyan-brand/30 p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <p class="font-accent uppercase text-xs tracking-wider text-text-muted mb-2">Perfil</p>
@@ -338,6 +343,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">003</td>
                                     <td class="px-3 py-3 font-medium">Sebastián Mora</td>
                                     <td class="px-3 py-3 text-text-muted">🇨🇱 CHL</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">5°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">3°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">18 jun 2026</td>
@@ -349,7 +356,7 @@
                                     </td>
                                 </tr>
                                 <tr x-show="expanded === 3" x-transition x-cloak>
-                                    <td colspan="9" class="p-0">
+                                    <td colspan="11" class="p-0">
                                         <div class="bg-navy-dark border-y-2 border-warning-brand/30 p-5">
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                                 <div>
@@ -379,6 +386,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">004</td>
                                     <td class="px-3 py-3 font-medium">Tomás Herrera</td>
                                     <td class="px-3 py-3 text-text-muted">🇦🇷 ARG</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">4°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">4°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">19 jun 2026</td>
@@ -395,6 +404,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">005</td>
                                     <td class="px-3 py-3 font-medium">Lucas Vieira</td>
                                     <td class="px-3 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">7°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">5°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">19 jun 2026</td>
@@ -411,6 +422,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">006</td>
                                     <td class="px-3 py-3 font-medium">Camila Restrepo</td>
                                     <td class="px-3 py-3 text-text-muted">🇨🇴 COL</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">—</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">8°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Mujeres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">20 jun 2026</td>
@@ -427,6 +440,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">007</td>
                                     <td class="px-3 py-3 font-medium">Diego Núñez</td>
                                     <td class="px-3 py-3 text-text-muted">🇲🇽 MEX</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">6°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">6°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">20 jun 2026</td>
@@ -443,6 +458,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">008</td>
                                     <td class="px-3 py-3 font-medium">Ana Souza</td>
                                     <td class="px-3 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-warning-brand">1°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">12°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Mujeres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">21 jun 2026</td>
@@ -459,6 +476,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">009</td>
                                     <td class="px-3 py-3 font-medium">Rodrigo Alas</td>
                                     <td class="px-3 py-3 text-text-muted">🇨🇷 CRI</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">14°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">9°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Sub-18 Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">22 jun 2026</td>
@@ -470,7 +489,7 @@
                                     </td>
                                 </tr>
                                 <tr x-show="expanded === 9" x-transition x-cloak>
-                                    <td colspan="9" class="p-0">
+                                    <td colspan="11" class="p-0">
                                         <div class="bg-navy-dark border-y-2 border-warning-brand/30 p-5">
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                                 <div>
@@ -498,6 +517,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">010</td>
                                     <td class="px-3 py-3 font-medium">Pablo Medina</td>
                                     <td class="px-3 py-3 text-text-muted">🇪🇨 ECU</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">9°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">7°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">22 jun 2026</td>
@@ -514,6 +535,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">011</td>
                                     <td class="px-3 py-3 font-medium">Gabriel Villani</td>
                                     <td class="px-3 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-warning-brand">3°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-cyan-brand">1°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">23 jun 2026</td>
@@ -530,6 +553,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">012</td>
                                     <td class="px-3 py-3 font-medium">Mateo Díaz</td>
                                     <td class="px-3 py-3 text-text-muted">🇵🇪 PER</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">2°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">2°</td>
                                     <td class="px-3 py-3 text-text-muted">Punta Hermosa Pro</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">23 jun 2026</td>
@@ -546,6 +571,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">013</td>
                                     <td class="px-3 py-3 font-medium">Sebastián Mora</td>
                                     <td class="px-3 py-3 text-text-muted">🇨🇱 CHL</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">5°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-light">3°</td>
                                     <td class="px-3 py-3 text-text-muted">Matanzas Invitacional</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">24 jun 2026</td>
@@ -562,6 +589,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">014</td>
                                     <td class="px-3 py-3 font-medium">Camila Restrepo</td>
                                     <td class="px-3 py-3 text-text-muted">🇨🇴 COL</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">—</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">8°</td>
                                     <td class="px-3 py-3 text-text-muted">Sayulita Masters</td>
                                     <td class="px-3 py-3 text-text-muted">Open Mujeres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">24 jun 2026</td>
@@ -578,6 +607,8 @@
                                     <td class="px-3 py-3 font-mono text-text-muted">015</td>
                                     <td class="px-3 py-3 font-medium">Lucas Vieira</td>
                                     <td class="px-3 py-3 text-text-muted">🇧🇷 BRA</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">7°</td>
+                                    <td class="px-3 py-3 text-center font-mono text-sm text-text-muted">5°</td>
                                     <td class="px-3 py-3 text-text-muted">Roca Bruja Classic</td>
                                     <td class="px-3 py-3 text-text-muted">Open Hombres</td>
                                     <td class="px-3 py-3 text-xs text-text-muted">24 jun 2026</td>
@@ -871,7 +902,7 @@
                 <div class="bg-navy-deepest rounded-xl border border-navy-mid overflow-hidden">
                     <div class="px-6 py-4 border-b border-navy-mid flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
                         <h3 class="font-heading text-lg">Resultados completos</h3>
-                        <p class="text-xs text-text-muted">Results by <a href="#" class="text-cyan-brand hover:underline">SurfScores.com</a></p>
+                        
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">

@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -86,9 +85,9 @@
 <!-- ============= NAV (logged-in) ============= -->
 <nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between py-5">
             <a href="index.html" class="flex items-center gap-2 group">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
             </a>
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
                 <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
@@ -179,7 +178,7 @@
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 <div><span class="text-text-muted">Sede:</span> <span>Lobitos, Perú</span></div>
                 <div><span class="text-text-muted">Fechas:</span> <span>12 – 15 Jul 2026</span></div>
-                <div class="flex items-center gap-1 text-gold-brand">★ ★ ★</div>
+                <div class="flex items-center gap-1 text-cyan-brand">★ ★ ★</div>
             </div>
         </div>
 
@@ -253,7 +252,7 @@
                                 <p class="text-xs text-cyan-brand font-accent uppercase tracking-wider mt-0.5">Principal</p>
                             </div>
                         </div>
-                        <span class="font-heading text-xl text-gold-brand">$75</span>
+                        <span class="font-heading text-xl text-cyan-brand">$75</span>
                     </div>
                     <p class="text-xs text-text-muted mt-3 leading-relaxed">Categoría élite del circuito. Suma puntos al ranking anual.</p>
                 </label>
@@ -270,7 +269,7 @@
                                 <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Junior</p>
                             </div>
                         </div>
-                        <span class="font-heading text-xl text-gold-brand">$55</span>
+                        <span class="font-heading text-xl text-cyan-brand">$55</span>
                     </div>
                     <p class="text-xs text-text-muted mt-3 leading-relaxed">Si tienes menos de 18 años al 1 de enero del 2026.</p>
                 </label>
@@ -287,7 +286,7 @@
                                 <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Veteranos</p>
                             </div>
                         </div>
-                        <span class="font-heading text-xl text-gold-brand">$60</span>
+                        <span class="font-heading text-xl text-cyan-brand">$60</span>
                     </div>
                     <p class="text-xs text-text-muted mt-3 leading-relaxed">Si tienes más de 35 años. Ranking separado.</p>
                 </label>
@@ -304,7 +303,7 @@
                                 <p class="text-xs text-text-muted font-accent uppercase tracking-wider mt-0.5">Modalidad</p>
                             </div>
                         </div>
-                        <span class="font-heading text-xl text-gold-brand">$65</span>
+                        <span class="font-heading text-xl text-cyan-brand">$65</span>
                     </div>
                     <p class="text-xs text-text-muted mt-3 leading-relaxed">Categoría abierta a todos los géneros. Equipo mínimo 9' (2,7 m).</p>
                 </label>
@@ -329,7 +328,7 @@
                 </div>
                 <div class="text-right">
                     <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Tarifa</p>
-                    <p class="font-heading text-3xl text-gold-brand mt-1">
+                    <p class="font-heading text-3xl text-cyan-brand mt-1">
                         $<span x-text="category === 'open-h' ? '75' : category === 'sub18-h' ? '55' : category === 'masters' ? '60' : '65'"></span><span class="text-base text-text-muted ml-1">USD</span>
                     </p>
                 </div>
@@ -372,7 +371,7 @@
                     </div>
                     <div class="pt-3 border-t border-navy-mid flex justify-between items-baseline">
                         <span class="font-heading text-lg">Total</span>
-                        <span class="font-heading text-3xl text-gold-brand">$<span x-text="(category === 'open-h' ? 75 : category === 'sub18-h' ? 55 : category === 'masters' ? 60 : 65) + 5"></span><span class="text-base ml-1">USD</span></span>
+                        <span class="font-heading text-3xl text-cyan-brand">$<span x-text="(category === 'open-h' ? 75 : category === 'sub18-h' ? 55 : category === 'masters' ? 60 : 65) + 5"></span><span class="text-base ml-1">USD</span></span>
                     </div>
                 </div>
             </div>
@@ -431,7 +430,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <div>
                     <p class="font-heading text-base text-orange-brand mb-1">Importante: solicitud de token</p>
-                    <p class="text-sm text-text-muted leading-relaxed">Una vez confirmes, notificaremos al administrador. Cuando apruebe tu solicitud, recibirás un <strong class="text-text-light">token de 8 caracteres por correo electrónico</strong>. Tendrás <strong class="text-orange-brand">20 minutos para introducirlo</strong>. Si expira, deberás solicitar uno nuevo.</p>
+                    <p class="text-sm text-text-muted leading-relaxed">Una vez confirmes, notificaremos al administrador. Cuando apruebe tu solicitud, recibirás un <strong class="text-text-light">token de 8 caracteres por correo electrónico</strong>. Tendrás <strong class="text-orange-brand">24 horas para introducirlo</strong>. Si expira, deberás solicitar uno nuevo.</p>
                 </div>
             </div>
 
@@ -455,7 +454,7 @@
         <div class="flex items-center gap-4">
             <a href="#" class="hover:text-cyan-brand">Reglamento</a>
             <a href="#" class="hover:text-cyan-brand">Soporte</a>
-            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+            
         </div>
     </div>
 </footer>

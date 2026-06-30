@@ -22,7 +22,6 @@
                         'cyan-dark': '#007AFF',
                         'orange-brand': '#007AFF',
                         'orange-light': '#0D6EFD',
-                        'gold-brand': '#0081C6',
                         'text-light': '#EEEEEE',
                         'text-muted': '#AAAAAA',
                         'success-brand': '#22C55E',
@@ -64,7 +63,7 @@
             mask: linear-gradient(180deg, transparent, black);
         }
         .timeline-dot {
-            width: 16px; height: 16px; border-radius: 999px;
+            width: 16px; height: 16px; border-radius: 9999px;
             background: #0081C6; box-shadow: 0 0 0 4px rgba(0,129,198,0.18);
         }
         .timeline-line { background: linear-gradient(180deg, #0081C6, #004F8E); }
@@ -81,9 +80,9 @@
 <!-- NAV -->
 <nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between py-5">
             <a href="index.html" class="flex items-center gap-2 group">
-                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
             </a>
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
                 <a href="index.html" class="nav-link">Inicio</a>
@@ -122,7 +121,6 @@
 <!-- HERO BANNER -->
 <section class="hero-banner py-24 md:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
     <div class="max-w-7xl mx-auto relative z-10">
-        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-4">Nuestra Historia</p>
         <h1 class="font-heading text-5xl md:text-7xl lg:text-8xl">Quiénes Somos</h1>
         <p class="mt-6 max-w-2xl text-lg text-text-muted">Una organización deportiva sin fines de lucro que conecta a la comunidad de surf profesional de doce países del continente.</p>
     </div>
@@ -133,8 +131,10 @@
 <section class="py-20 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
         <div>
-            <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-3">Desde 2008</p>
-            <h2 class="font-heading text-4xl md:text-5xl mb-6 leading-tight">Tres olas, un océano, una sola asociación</h2>
+            <div class="flex items-center gap-3 flex-wrap mb-6">
+                <h2 class="font-heading text-4xl md:text-5xl leading-tight">Tres olas, un océano, una sola asociación</h2>
+                <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-brand border border-orange-brand/30">Desde 2008</span>
+            </div>
             <div class="space-y-5 text-text-muted leading-relaxed text-base">
                 <p>ALAS nació en 2008 cuando un pequeño grupo de surfistas profesionales de Perú, Brasil y Chile decidieron unificar criterios de competencia, cobertura mediática y desarrollo deportivo bajo una única federación regional. El objetivo desde el primer día fue claro: dar a los atletas latinoamericanos una vitrina internacional comparable a la de los grandes circuitos europeos y oceánicos.</p>
                 <p>En sus primeros años, el calendario contó con cinco paradas anuales y unos sesenta competidores. Hoy, el ALAS Latin Tour es el principal circuito profesional de surf de la región, con dieciocho eventos por temporada, más de trescientos competidores activos y representación oficial en doce países, desde México hasta Argentina.</p>
@@ -188,7 +188,6 @@
 <section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark/40 border-y border-navy-mid">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-12">
-            <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Lo que nos mueve</p>
             <h2 class="font-heading text-4xl md:text-5xl">Misión, Visión y Valores</h2>
         </div>
 
@@ -210,15 +209,15 @@
             </article>
 
             <article class="stat-card rounded-2xl p-8 border border-navy-mid">
-                <div class="w-14 h-14 rounded-xl bg-gold-brand/15 text-gold-brand flex items-center justify-center mb-5">
+                <div class="w-14 h-14 rounded-xl bg-cyan-brand/15 text-cyan-brand flex items-center justify-center mb-5">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.075 10.1c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.518-4.673z"/></svg>
                 </div>
                 <h3 class="font-heading text-2xl mb-3">Valores</h3>
                 <ul class="text-text-muted leading-relaxed space-y-2 text-sm">
-                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Integridad</span> en cada decisión arbitral.</li>
-                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Excelencia</span> deportiva y administrativa.</li>
-                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Inclusión</span> entre países, géneros y categorías.</li>
-                    <li><span class="text-gold-brand font-accent uppercase tracking-wider">• Respeto</span> al océano y las comunidades locales.</li>
+                    <li><span class="text-cyan-brand font-accent uppercase tracking-wider">• Integridad</span> en cada decisión arbitral.</li>
+                    <li><span class="text-cyan-brand font-accent uppercase tracking-wider">• Excelencia</span> deportiva y administrativa.</li>
+                    <li><span class="text-cyan-brand font-accent uppercase tracking-wider">• Inclusión</span> entre países, géneros y categorías.</li>
+                    <li><span class="text-cyan-brand font-accent uppercase tracking-wider">• Respeto</span> al océano y las comunidades locales.</li>
                 </ul>
             </article>
         </div>
@@ -229,7 +228,6 @@
 <section class="py-20 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-12">
-            <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-sm mb-2">El circuito en números</p>
             <h2 class="font-heading text-4xl md:text-5xl">Una temporada, un continente</h2>
         </div>
 
@@ -258,7 +256,6 @@
 <section class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark/40 border-t border-navy-mid">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-12">
-            <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-2">Detrás del Circuito</p>
             <h2 class="font-heading text-4xl md:text-5xl">Equipo Directivo</h2>
         </div>
 
@@ -339,7 +336,7 @@
         </div>
         <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
             <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
-            <a href="https://surfscores.com" target="_blank" rel="noopener" class="hover:text-cyan-brand underline underline-offset-4">Results by SurfScores.com</a>
+            
         </div>
     </div>
 </footer>

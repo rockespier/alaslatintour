@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ranking Completo — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Ranking oficial del ALAS Latin Tour por categoría y temporada. Posiciones, puntos y variación de los competidores del circuito continental de surf." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #002359; color: #EEEEEE; }
+        h1,h2,h3,h4,h5,h6,.font-heading { font-family:'Oswald',sans-serif; letter-spacing:.02em; }
+        .font-accent { font-family:'Barlow Condensed',sans-serif; letter-spacing:.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -6px;
+            height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+
+        .tab-btn { position: relative; transition: all .2s ease; }
+        .tab-btn.active { color: #0081C6; background: rgba(0,129,198,0.08); border-color: #0081C6; }
+
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background-color: #22C55E;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            animation: pulse-live 1.6s infinite;
+        }
+        @keyframes pulse-live {
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+        .ranking-row { transition: background .2s ease; }
+        .ranking-row:hover { background: rgba(0,129,198,0.06); }
+        [x-cloak] { display: none !important; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .live-dot { animation: none; }
+        }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- ============= NAV ============= -->
+<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-5">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="index.html#eventos" class="nav-link">Eventos</a>
+                <a href="ranking.html" class="nav-link active">Ranking</a>
+                <a href="noticias.html" class="nav-link">Noticias</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="#" class="px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition font-accent uppercase text-sm tracking-wider">Iniciar sesión</a>
+                <a href="#" class="px-4 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white transition font-accent uppercase text-sm tracking-wider">Registrarse</a>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="quienes-somos.html" class="block py-2">Quiénes Somos</a>
+            <a href="index.html#eventos" class="block py-2">Eventos</a>
+            <a href="ranking.html" class="block py-2 text-cyan-brand">Ranking</a>
+            <a href="noticias.html" class="block py-2">Noticias</a>
+            <a href="index.html#contacto" class="block py-2">Contacto</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ============= PAGE HEADER ============= -->
+<section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="font-heading text-4xl md:text-6xl">Ranking del Circuito</h1>
+        <p class="mt-3 text-text-muted max-w-2xl">Posiciones oficiales por categoría y temporada del ALAS Latin Tour, sincronizadas con el sistema de jueces SurfScores.</p>
+    </div>
+</section>
+
+<!-- ============= RANKING ============= -->
+<div x-data="rankingTable()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Filters -->
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-6">
+        <div>
+            <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-3">Categoría</p>
+            <div class="flex flex-wrap gap-2">
+                <template x-for="cat in categories" :key="cat.id">
+                    <button @click="category = cat.id" class="tab-btn px-4 py-2 rounded-md border border-navy-mid font-accent uppercase text-sm tracking-wider text-text-muted hover:text-text-light" :class="category === cat.id ? 'active' : ''" x-text="cat.label"></button>
+                </template>
+            </div>
+        </div>
+        <div class="lg:w-48">
+            <label for="year-select" class="font-accent uppercase text-xs text-text-muted tracking-wider mb-3 block">Temporada</label>
+            <select id="year-select" x-model="year" class="w-full bg-navy-dark border border-navy-mid rounded-md px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-brand focus:ring-2 focus:ring-cyan-brand/15">
+                <template x-for="y in years" :key="y">
+                    <option :value="y" x-text="y"></option>
+                </template>
+            </select>
+        </div>
+    </div>
+
+    <div class="bg-navy-dark border border-navy-mid rounded-2xl overflow-hidden shadow-2xl shadow-cyan-brand/5">
+        <header class="p-6 md:p-8 border-b border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3 mb-2" x-show="year === '2026'">
+                    <span class="live-dot"></span>
+                    <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">Actualizado</span>
+                </div>
+                <h2 class="font-heading text-2xl md:text-3xl" x-text="currentCategory.label"></h2>
+                <p class="text-sm text-text-muted mt-1" x-text="statusLine"></p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider whitespace-nowrap" :class="year === '2026' ? 'bg-cyan-brand/15 text-cyan-brand border border-cyan-brand/30' : 'bg-navy-mid text-text-muted border border-navy-mid'" x-text="year === '2026' ? 'Temporada en curso' : 'Temporada finalizada'"></span>
+        </header>
+
+        <!-- Populated table -->
+        <div class="overflow-x-auto" x-show="rows.length > 0">
+            <table class="w-full text-sm">
+                <thead class="bg-navy-mid/40 font-accent uppercase tracking-wider text-text-muted text-xs">
+                    <tr>
+                        <th class="px-4 py-3 text-left">Pos</th>
+                        <th class="px-4 py-3 text-left">Surfista</th>
+                        <th class="px-4 py-3 text-left">País</th>
+                        <th class="px-4 py-3 text-right hidden sm:table-cell">Eventos</th>
+                        <th class="px-4 py-3 text-right">Puntos</th>
+                        <th class="px-4 py-3 text-right" x-show="year === '2026'">Var.</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-navy-mid/50">
+                    <template x-for="row in rows" :key="row.pos">
+                        <tr class="ranking-row">
+                            <td class="px-4 py-3 font-heading text-lg" :class="row.pos === 1 ? 'text-cyan-brand' : (row.pos <= 3 ? 'text-text-light' : 'text-text-muted')" x-text="row.pos"></td>
+                            <td class="px-4 py-3 font-medium">
+                                <span x-text="row.name"></span>
+                                <span x-show="row.pos === 1 && year !== '2026'" class="ml-2 text-[10px] font-accent uppercase tracking-wider text-cyan-brand border border-cyan-brand/30 bg-cyan-brand/15 rounded-full px-2 py-0.5">Campeón</span>
+                            </td>
+                            <td class="px-4 py-3 text-text-muted" x-text="row.flag + ' ' + row.country"></td>
+                            <td class="px-4 py-3 text-right text-text-muted hidden sm:table-cell" x-text="row.events"></td>
+                            <td class="px-4 py-3 text-right font-heading text-lg" x-text="row.points.toLocaleString('es-PE')"></td>
+                            <td class="px-4 py-3 text-right font-medium" x-show="year === '2026'">
+                                <span x-show="row.variation > 0" class="text-success-brand" x-text="'▲ ' + row.variation"></span>
+                                <span x-show="row.variation < 0" class="text-error-brand" x-text="'▼ ' + Math.abs(row.variation)"></span>
+                                <span x-show="row.variation === 0" class="text-text-muted">—</span>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty state -->
+        <div x-show="rows.length === 0" x-cloak class="px-6 py-16 text-center">
+            <div class="w-14 h-14 rounded-full bg-navy-mid/40 flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+            </div>
+            <h3 class="font-heading text-xl mb-2">Ranking histórico no disponible</h3>
+            <p class="text-sm text-text-muted max-w-md mx-auto">Las temporadas previas a 2025 corresponden a la plataforma anterior del circuito y aún no han sido migradas a este sistema. Prueba con una temporada más reciente.</p>
+        </div>
+
+        <footer class="p-6 flex items-center justify-end bg-navy-deepest/40 border-t border-navy-mid">
+            <p class="text-xs text-text-muted" x-show="rows.length > 0">Mostrando <span x-text="rows.length"></span> competidores de <span x-text="currentCategory.label"></span></p>
+        </footer>
+    </div>
+</div>
+
+<!-- ============= FOOTER ============= -->
+<footer class="bg-navy-deepest border-t border-navy-mid mt-10 pt-10 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b border-navy-mid">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-md bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-xl">A</div>
+                <div>
+                    <p class="font-heading text-lg tracking-wider">ALAS<span class="text-cyan-brand">.</span></p>
+                    <p class="text-xs text-text-muted">Asociación Latinoamericana de Surfistas Profesionales</p>
+                </div>
+            </div>
+            <nav class="flex flex-wrap gap-x-6 gap-y-2 font-accent uppercase text-xs tracking-wider text-text-muted">
+                <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
+                <a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes somos</a>
+                <a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a>
+                <a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a>
+                <a href="#" class="hover:text-cyan-brand transition">Reglamento</a>
+                <a href="#" class="hover:text-cyan-brand transition">Soporte</a>
+            </nav>
+        </div>
+        <div class="pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+function rankingTable() {
+    return {
+        category: 'open-hombres',
+        year: '2026',
+        categories: [
+            { id: 'open-hombres', label: 'Open Hombres' },
+            { id: 'open-mujeres', label: 'Open Mujeres' },
+            { id: 'sub18-hombres', label: 'Sub-18 Hombres' },
+            { id: 'sub18-mujeres', label: 'Sub-18 Mujeres' },
+            { id: 'masters', label: 'Masters +35' },
+            { id: 'longboard', label: 'Longboard' }
+        ],
+        years: ['2026', '2025', '2024'],
+        data: {
+            '2026': {
+                'open-hombres': [
+                    { pos: 1, name: 'Gabriel Villani', flag: '🇧🇷', country: 'Brasil', points: 12840, events: 5, variation: 2 },
+                    { pos: 2, name: 'Mateo Díaz', flag: '🇵🇪', country: 'Perú', points: 11925, events: 5, variation: -1 },
+                    { pos: 3, name: 'Sebastián Mora', flag: '🇨🇱', country: 'Chile', points: 10460, events: 5, variation: 1 },
+                    { pos: 4, name: 'Tomás Herrera', flag: '🇦🇷', country: 'Argentina', points: 9815, events: 4, variation: 0 },
+                    { pos: 5, name: 'Lucas Vieira', flag: '🇧🇷', country: 'Brasil', points: 9210, events: 5, variation: 3 },
+                    { pos: 6, name: 'Diego Núñez', flag: '🇲🇽', country: 'México', points: 8770, events: 4, variation: -2 },
+                    { pos: 7, name: 'Rodrigo Alas', flag: '🇨🇷', country: 'Costa Rica', points: 8205, events: 5, variation: 1 },
+                    { pos: 8, name: 'Pablo Medina', flag: '🇪🇨', country: 'Ecuador', points: 7890, events: 4, variation: 0 },
+                    { pos: 9, name: 'Joaquín Pizarro', flag: '🇨🇱', country: 'Chile', points: 7340, events: 5, variation: -1 },
+                    { pos: 10, name: 'Felipe Souza', flag: '🇧🇷', country: 'Brasil', points: 6980, events: 4, variation: 2 },
+                    { pos: 11, name: 'Andrés Castillo', flag: '🇵🇪', country: 'Perú', points: 6510, events: 4, variation: 0 },
+                    { pos: 12, name: 'Marco Salinas', flag: '🇲🇽', country: 'México', points: 6105, events: 3, variation: -1 },
+                    { pos: 13, name: 'Iker Beristain', flag: '🇲🇽', country: 'México', points: 5740, events: 4, variation: 1 },
+                    { pos: 14, name: 'Bruno Lima', flag: '🇧🇷', country: 'Brasil', points: 5320, events: 3, variation: 0 },
+                    { pos: 15, name: 'Emilio Vargas', flag: '🇨🇷', country: 'Costa Rica', points: 4890, events: 3, variation: -1 }
+                ],
+                'open-mujeres': [
+                    { pos: 1, name: 'Camila Restrepo', flag: '🇨🇱', country: 'Chile', points: 11240, events: 5, variation: 1 },
+                    { pos: 2, name: 'Ana Souza', flag: '🇵🇪', country: 'Perú', points: 10580, events: 5, variation: -1 },
+                    { pos: 3, name: 'Valentina Rojas', flag: '🇧🇷', country: 'Brasil', points: 9460, events: 4, variation: 2 },
+                    { pos: 4, name: 'Daniela Fuentes', flag: '🇨🇱', country: 'Chile', points: 8715, events: 5, variation: 0 },
+                    { pos: 5, name: 'María José Ortiz', flag: '🇲🇽', country: 'México', points: 8120, events: 4, variation: -1 },
+                    { pos: 6, name: 'Luana Costa', flag: '🇧🇷', country: 'Brasil', points: 7430, events: 4, variation: 1 },
+                    { pos: 7, name: 'Renata Quispe', flag: '🇵🇪', country: 'Perú', points: 6980, events: 3, variation: 0 },
+                    { pos: 8, name: 'Sofía Mendoza', flag: '🇪🇨', country: 'Ecuador', points: 6210, events: 4, variation: -1 },
+                    { pos: 9, name: 'Carla Jiménez', flag: '🇨🇷', country: 'Costa Rica', points: 5640, events: 3, variation: 1 },
+                    { pos: 10, name: 'Brenda Lara', flag: '🇲🇽', country: 'México', points: 5085, events: 3, variation: 0 },
+                    { pos: 11, name: 'Pilar Navarro', flag: '🇦🇷', country: 'Argentina', points: 4520, events: 3, variation: -1 },
+                    { pos: 12, name: 'Isadora Pinto', flag: '🇧🇷', country: 'Brasil', points: 3990, events: 2, variation: 0 }
+                ],
+                'sub18-hombres': [
+                    { pos: 1, name: 'Thiago Ramos', flag: '🇧🇷', country: 'Brasil', points: 4820, events: 4, variation: 1 },
+                    { pos: 2, name: 'Mauro Espinoza', flag: '🇵🇪', country: 'Perú', points: 4510, events: 4, variation: -1 },
+                    { pos: 3, name: 'Benjamín Soto', flag: '🇨🇱', country: 'Chile', points: 4105, events: 3, variation: 0 },
+                    { pos: 4, name: 'Lautaro Méndez', flag: '🇦🇷', country: 'Argentina', points: 3780, events: 3, variation: 2 },
+                    { pos: 5, name: 'Kevin Torres', flag: '🇲🇽', country: 'México', points: 3420, events: 3, variation: -1 },
+                    { pos: 6, name: 'Diego Paredes', flag: '🇪🇨', country: 'Ecuador', points: 3015, events: 2, variation: 0 },
+                    { pos: 7, name: 'Santiago Roca', flag: '🇨🇷', country: 'Costa Rica', points: 2680, events: 2, variation: 1 },
+                    { pos: 8, name: 'Iván Castro', flag: '🇵🇪', country: 'Perú', points: 2340, events: 2, variation: -1 },
+                    { pos: 9, name: 'Rafael Duarte', flag: '🇧🇷', country: 'Brasil', points: 1990, events: 2, variation: 0 },
+                    { pos: 10, name: 'Tomás Bravo', flag: '🇨🇱', country: 'Chile', points: 1640, events: 1, variation: 0 }
+                ],
+                'sub18-mujeres': [
+                    { pos: 1, name: 'Antonella Ríos', flag: '🇵🇪', country: 'Perú', points: 4280, events: 4, variation: 0 },
+                    { pos: 2, name: 'Bianca Ferreira', flag: '🇧🇷', country: 'Brasil', points: 3950, events: 4, variation: 1 },
+                    { pos: 3, name: 'Constanza Vidal', flag: '🇨🇱', country: 'Chile', points: 3510, events: 3, variation: -1 },
+                    { pos: 4, name: 'Ximena Solano', flag: '🇲🇽', country: 'México', points: 3025, events: 3, variation: 0 },
+                    { pos: 5, name: 'Lucía Aguirre', flag: '🇦🇷', country: 'Argentina', points: 2640, events: 2, variation: 0 },
+                    { pos: 6, name: 'Paula Hidalgo', flag: '🇨🇷', country: 'Costa Rica', points: 2190, events: 2, variation: 1 },
+                    { pos: 7, name: 'Gabriela Núñez', flag: '🇪🇨', country: 'Ecuador', points: 1750, events: 1, variation: 0 }
+                ],
+                'masters': [
+                    { pos: 1, name: 'Ricardo Salcedo', flag: '🇵🇪', country: 'Perú', points: 6240, events: 4, variation: 0 },
+                    { pos: 2, name: 'Fernando Alencar', flag: '🇧🇷', country: 'Brasil', points: 5870, events: 4, variation: 1 },
+                    { pos: 3, name: 'Patricio Lagos', flag: '🇨🇱', country: 'Chile', points: 5310, events: 3, variation: -1 },
+                    { pos: 4, name: 'Hugo Martínez', flag: '🇲🇽', country: 'México', points: 4690, events: 3, variation: 0 },
+                    { pos: 5, name: 'Esteban Rivas', flag: '🇨🇷', country: 'Costa Rica', points: 4120, events: 3, variation: 1 },
+                    { pos: 6, name: 'Adrián Campos', flag: '🇦🇷', country: 'Argentina', points: 3580, events: 2, variation: -1 },
+                    { pos: 7, name: 'Gustavo Reyes', flag: '🇪🇨', country: 'Ecuador', points: 2990, events: 2, variation: 0 },
+                    { pos: 8, name: 'Marcelo Ibáñez', flag: '🇵🇪', country: 'Perú', points: 2410, events: 2, variation: 0 }
+                ],
+                'longboard': [
+                    { pos: 1, name: 'Joaquín Del Solar', flag: '🇵🇪', country: 'Perú', points: 3680, events: 3, variation: 0 },
+                    { pos: 2, name: 'Caio Almeida', flag: '🇧🇷', country: 'Brasil', points: 3320, events: 3, variation: 1 },
+                    { pos: 3, name: 'Ignacio Pardo', flag: '🇨🇱', country: 'Chile', points: 2940, events: 2, variation: -1 },
+                    { pos: 4, name: 'Renato Vega', flag: '🇲🇽', country: 'México', points: 2510, events: 2, variation: 0 },
+                    { pos: 5, name: 'Cristóbal Aranda', flag: '🇨🇷', country: 'Costa Rica', points: 2080, events: 2, variation: 0 },
+                    { pos: 6, name: 'Manuel Quiroga', flag: '🇦🇷', country: 'Argentina', points: 1650, events: 1, variation: 0 }
+                ]
+            },
+            '2025': {
+                'open-hombres': [
+                    { pos: 1, name: 'Mateo Díaz', flag: '🇵🇪', country: 'Perú', points: 24680, events: 18 },
+                    { pos: 2, name: 'Gabriel Villani', flag: '🇧🇷', country: 'Brasil', points: 23910, events: 18 },
+                    { pos: 3, name: 'Lucas Vieira', flag: '🇧🇷', country: 'Brasil', points: 21340, events: 17 },
+                    { pos: 4, name: 'Sebastián Mora', flag: '🇨🇱', country: 'Chile', points: 20105, events: 18 },
+                    { pos: 5, name: 'Rodrigo Alas', flag: '🇨🇷', country: 'Costa Rica', points: 18760, events: 16 },
+                    { pos: 6, name: 'Diego Núñez', flag: '🇲🇽', country: 'México', points: 17420, events: 17 },
+                    { pos: 7, name: 'Tomás Herrera', flag: '🇦🇷', country: 'Argentina', points: 16190, events: 15 },
+                    { pos: 8, name: 'Pablo Medina', flag: '🇪🇨', country: 'Ecuador', points: 14850, events: 16 }
+                ],
+                'open-mujeres': [
+                    { pos: 1, name: 'Ana Souza', flag: '🇵🇪', country: 'Perú', points: 22150, events: 18 },
+                    { pos: 2, name: 'Camila Restrepo', flag: '🇨🇱', country: 'Chile', points: 21480, events: 18 },
+                    { pos: 3, name: 'Daniela Fuentes', flag: '🇨🇱', country: 'Chile', points: 18920, events: 17 },
+                    { pos: 4, name: 'Valentina Rojas', flag: '🇧🇷', country: 'Brasil', points: 17340, events: 16 },
+                    { pos: 5, name: 'María José Ortiz', flag: '🇲🇽', country: 'México', points: 15780, events: 16 },
+                    { pos: 6, name: 'Luana Costa', flag: '🇧🇷', country: 'Brasil', points: 14210, events: 15 }
+                ],
+                'sub18-hombres': [
+                    { pos: 1, name: 'Mauro Espinoza', flag: '🇵🇪', country: 'Perú', points: 9840, events: 12 },
+                    { pos: 2, name: 'Thiago Ramos', flag: '🇧🇷', country: 'Brasil', points: 9210, events: 12 },
+                    { pos: 3, name: 'Benjamín Soto', flag: '🇨🇱', country: 'Chile', points: 8430, events: 11 },
+                    { pos: 4, name: 'Kevin Torres', flag: '🇲🇽', country: 'México', points: 7650, events: 10 }
+                ],
+                'sub18-mujeres': [
+                    { pos: 1, name: 'Bianca Ferreira', flag: '🇧🇷', country: 'Brasil', points: 8920, events: 12 },
+                    { pos: 2, name: 'Antonella Ríos', flag: '🇵🇪', country: 'Perú', points: 8340, events: 11 },
+                    { pos: 3, name: 'Constanza Vidal', flag: '🇨🇱', country: 'Chile', points: 7510, events: 10 }
+                ],
+                'masters': [
+                    { pos: 1, name: 'Fernando Alencar', flag: '🇧🇷', country: 'Brasil', points: 12480, events: 13 },
+                    { pos: 2, name: 'Ricardo Salcedo', flag: '🇵🇪', country: 'Perú', points: 11920, events: 13 },
+                    { pos: 3, name: 'Patricio Lagos', flag: '🇨🇱', country: 'Chile', points: 10340, events: 12 }
+                ],
+                'longboard': [
+                    { pos: 1, name: 'Caio Almeida', flag: '🇧🇷', country: 'Brasil', points: 7680, events: 11 },
+                    { pos: 2, name: 'Joaquín Del Solar', flag: '🇵🇪', country: 'Perú', points: 7120, events: 11 },
+                    { pos: 3, name: 'Ignacio Pardo', flag: '🇨🇱', country: 'Chile', points: 6340, events: 10 }
+                ]
+            },
+            '2024': {}
+        },
+        get currentCategory() {
+            return this.categories.find(c => c.id === this.category);
+        },
+        get rows() {
+            return (this.data[this.year] && this.data[this.year][this.category]) || [];
+        },
+        get statusLine() {
+            if (this.year === '2026') return 'Temporada en curso — Última sincronización hace 8 minutos';
+            if (this.rows.length > 0) return 'Posiciones finales de la temporada ' + this.year;
+            return 'Sin datos para la temporada ' + this.year;
+        }
+    };
+}
+</script>
+
+</body>
+</html>
