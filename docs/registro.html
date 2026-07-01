@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear cuenta — ALAS Latin Tour</title>
+    <meta name="description" content="Únete al ALAS Latin Tour como espectador o competidor. Crea tu cuenta y sigue o compite en el circuito latinoamericano de surf profesional." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #002359; color: #EEEEEE; min-height: 100vh; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+
+        .page-bg {
+            background: radial-gradient(ellipse at top left, #004F8E 0%, #003873 40%, #002359 100%);
+            position: relative;
+        }
+        .page-bg::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(0,129,198,0.12), transparent 50%),
+                        radial-gradient(circle at 10% 80%, rgba(0,122,255,0.07), transparent 40%);
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0,56,115,0.6);
+            border: 1px solid #004F8E;
+            border-radius: 8px;
+            padding: 11px 14px;
+            color: #EEEEEE;
+            font-size: 14px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-input::placeholder { color: #6B8DAF; }
+        .form-input:focus { outline: none; border-color: #0081C6; box-shadow: 0 0 0 3px rgba(0,129,198,0.18); }
+        .form-input.error { border-color: #EF4444; }
+        select.form-input option { background: #002359; }
+
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; color: #AAAAAA; margin-bottom: 6px; }
+
+        .type-card {
+            border: 2px solid #004F8E;
+            border-radius: 16px;
+            background: linear-gradient(160deg, #003873 0%, #002359 100%);
+            transition: all .25s ease;
+            cursor: pointer;
+        }
+        .type-card:hover { border-color: #0081C6; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+        .type-card.selected { border-color: #0081C6; background: linear-gradient(160deg, #004F8E 0%, #003873 100%); box-shadow: 0 0 0 4px rgba(0,129,198,0.18), 0 12px 32px rgba(0,0,0,0.4); }
+
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; transition: all .3s; }
+        .step-dot.active { background: #0081C6; width: 24px; border-radius: 4px; }
+        .step-dot.done { background: #22C55E; }
+        .step-dot.pending { background: #004F8E; }
+
+        .honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="page-bg antialiased">
+
+<!-- TOP BAR -->
+<header class="relative z-10 flex items-center justify-between px-4 sm:px-8 py-5 max-w-7xl mx-auto">
+    <a href="index.html" class="flex items-center gap-2 group">
+        <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-16 w-auto">
+    </a>
+    <p class="text-sm text-text-muted">
+        ¿Ya tienes cuenta?
+        <a href="eventos.html" class="text-cyan-brand hover:underline ml-1 font-accent uppercase tracking-wider text-xs">Iniciar sesión</a>
+    </p>
+</header>
+
+<!-- MAIN -->
+<main class="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pb-20 pt-4"
+    x-data="{
+        step: 1,
+        tipo: '',
+        reglamento: false,
+        terminos: false,
+        newsletter: true,
+        submitOk: false,
+
+        seleccionar(t) {
+            this.tipo = t;
+            this.step = 2;
+            this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        },
+        volver() {
+            this.step = 1;
+            this.tipo = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        enviar() {
+            this.submitOk = true;
+            this.step = 3;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }">
+
+    <!-- STEP INDICATOR -->
+    <div class="flex items-center justify-center gap-2 mb-10">
+        <div class="step-dot" :class="step === 1 ? 'active' : (step > 1 ? 'done' : 'pending')"></div>
+        <div class="step-dot" :class="step === 2 ? 'active' : (step > 2 ? 'done' : 'pending')"></div>
+        <div class="step-dot" :class="step === 3 ? 'active' : 'pending'"></div>
+    </div>
+
+    <!-- ===== STEP 1: SELECTOR DE TIPO ===== -->
+    <div x-show="step === 1" x-transition.opacity>
+        <div class="text-center mb-10">
+            <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-3">Bienvenido al circuito</p>
+            <h1 class="font-heading text-4xl md:text-5xl mb-3">¿Cómo quieres<br>participar?</h1>
+            <p class="text-text-muted text-sm max-w-md mx-auto">Elige tu tipo de cuenta. Podrás cambiarlo más adelante contactando a soporte.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+            <!-- ESPECTADOR -->
+            <button class="type-card p-7 text-left" @click="seleccionar('espectador')" :class="tipo === 'espectador' ? 'selected' : ''">
+                <div class="w-14 h-14 rounded-xl bg-cyan-brand/15 border border-cyan-brand/30 flex items-center justify-center mb-5">
+                    <!-- Binoculars icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.87V18a1 1 0 01-1 1H4a1 1 0 01-1-1V8.87a1 1 0 011.447-.917L9 10m6 0v8m0-8H9m0 0V10m0 8"/>
+                    </svg>
+                </div>
+                <h2 class="font-heading text-2xl mb-2">Espectador</h2>
+                <p class="text-sm text-text-muted leading-relaxed mb-5">Sigue el circuito como fan. Recibe noticias, resultados y notificaciones de eventos en tiempo real.</p>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Acceso a ranking y resultados</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Newsletter y noticias</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Notificaciones de eventos</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-text-muted">—</span> Sin acceso a inscripciones</li>
+                </ul>
+                <div class="mt-6 flex items-center gap-2 text-cyan-brand font-accent uppercase tracking-wider text-xs">
+                    Elegir <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </div>
+            </button>
+
+            <!-- COMPETIDOR -->
+            <button class="type-card p-7 text-left" @click="seleccionar('competidor')" :class="tipo === 'competidor' ? 'selected' : ''">
+                <div class="w-14 h-14 rounded-xl bg-orange-brand/15 border border-orange-brand/30 flex items-center justify-center mb-5">
+                    <!-- Trophy / wave icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                </div>
+                <h2 class="font-heading text-2xl mb-2">Competidor</h2>
+                <p class="text-sm text-text-muted leading-relaxed mb-5">Crea tu perfil como surfista y accede al sistema de inscripciones, pagos y ranking del circuito.</p>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Inscripción a eventos</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Pago online y en playa</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Panel con historial de puntos</li>
+                    <li class="flex items-center gap-2 text-text-muted"><span class="text-success-brand">✓</span> Licencia ALAS + calendario</li>
+                </ul>
+                <div class="mt-6 flex items-center gap-2 text-orange-brand font-accent uppercase tracking-wider text-xs">
+                    Elegir <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </div>
+            </button>
+        </div>
+
+        <p class="text-center text-xs text-text-muted">
+            Puedes empezar como Espectador y solicitar el upgrade a Competidor desde tu perfil una vez que obtengas tu licencia ALAS.
+        </p>
+    </div>
+
+    <!-- ===== STEP 2: FORMULARIO ===== -->
+    <div x-show="step === 2" x-transition.opacity x-cloak>
+
+        <!-- HEADER FORM -->
+        <div class="flex items-center gap-3 mb-8">
+            <button @click="volver()" class="w-9 h-9 rounded-md border border-navy-mid hover:border-cyan-brand flex items-center justify-center transition flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div>
+                <p class="font-accent uppercase tracking-[0.25em] text-xs mb-0.5" :class="tipo === 'competidor' ? 'text-orange-brand' : 'text-cyan-brand'" x-text="tipo === 'competidor' ? 'Cuenta competidor' : 'Cuenta espectador'"></p>
+                <h1 class="font-heading text-3xl md:text-4xl" x-text="tipo === 'competidor' ? 'Datos del competidor' : 'Tus datos'"></h1>
+            </div>
+        </div>
+
+        <!-- ===== FORM ESPECTADOR ===== -->
+        <form x-show="tipo === 'espectador'" @submit.prevent="enviar()" class="space-y-5">
+            <div class="honeypot" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Nombre(s) *</label>
+                    <input type="text" class="form-input" placeholder="Tu nombre" required>
+                </div>
+                <div>
+                    <label class="form-label">Apellido(s) *</label>
+                    <input type="text" class="form-input" placeholder="Tu apellido" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Correo electrónico *</label>
+                <input type="email" class="form-input" placeholder="tu@correo.com" required>
+            </div>
+
+            <div>
+                <label class="form-label">Contraseña *</label>
+                <input type="password" class="form-input" placeholder="Mínimo 8 caracteres" required minlength="8">
+                <p class="text-xs text-text-muted mt-1">Al menos 8 caracteres, una mayúscula y un número.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">País</label>
+                    <select class="form-input">
+                        <option value="">Selecciona tu país</option>
+                        <option>Argentina</option><option>Bolivia</option><option>Brasil</option>
+                        <option>Chile</option><option>Colombia</option><option>Costa Rica</option>
+                        <option>Ecuador</option><option>México</option><option>Panamá</option>
+                        <option>Perú</option><option>Uruguay</option><option>Venezuela</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Idioma preferido</label>
+                    <select class="form-input">
+                        <option selected>Español</option>
+                        <option>Português</option>
+                        <option>English</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="newsletter" class="mt-0.5 accent-cyan-brand w-4 h-4 flex-shrink-0 cursor-pointer">
+                    <span class="text-sm text-text-muted group-hover:text-text-light transition">Quiero recibir el newsletter con noticias, resultados y calendario del ALAS Latin Tour.</span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="terminos" class="mt-0.5 accent-cyan-brand w-4 h-4 flex-shrink-0 cursor-pointer" required>
+                    <span class="text-sm text-text-muted group-hover:text-text-light transition">
+                        Acepto los <a href="#" class="text-cyan-brand hover:underline">Términos de uso</a> y la <a href="#" class="text-cyan-brand hover:underline">Política de privacidad</a> del ALAS Latin Tour. *
+                    </span>
+                </label>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-widest text-sm transition shadow-lg shadow-cyan-brand/20">
+                Crear mi cuenta de espectador
+            </button>
+        </form>
+
+        <!-- ===== FORM COMPETIDOR ===== -->
+        <form x-show="tipo === 'competidor'" @submit.prevent="enviar()" class="space-y-5" x-cloak>
+            <div class="honeypot" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+
+            <!-- Datos personales -->
+            <div class="bg-navy-dark/60 border border-navy-mid/60 rounded-xl p-5 space-y-4">
+                <h3 class="font-heading text-lg text-cyan-brand">Datos personales</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nombre(s) *</label>
+                        <input type="text" class="form-input" placeholder="Tu nombre" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Apellido(s) *</label>
+                        <input type="text" class="form-input" placeholder="Tu apellido" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Fecha de nacimiento *</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Género *</label>
+                        <select class="form-input" required>
+                            <option value="">Selecciona</option>
+                            <option>Masculino</option>
+                            <option>Femenino</option>
+                            <option>Prefiero no indicar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">País de representación *</label>
+                        <select class="form-input" required>
+                            <option value="">Selecciona tu país</option>
+                            <option>Argentina</option><option>Bolivia</option><option>Brasil</option>
+                            <option>Chile</option><option>Colombia</option><option>Costa Rica</option>
+                            <option>Ecuador</option><option>México</option><option>Panamá</option>
+                            <option>Perú</option><option>Uruguay</option><option>Venezuela</option>
+                            <option>Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Teléfono / WhatsApp *</label>
+                        <input type="tel" class="form-input" placeholder="+51 999 000 000" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos deportivos -->
+            <div class="bg-navy-dark/60 border border-navy-mid/60 rounded-xl p-5 space-y-4">
+                <h3 class="font-heading text-lg text-cyan-brand">Datos deportivos</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Postura</label>
+                        <select class="form-input">
+                            <option value="">Selecciona</option>
+                            <option>Regular</option>
+                            <option>Goofy</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Talla de camiseta</label>
+                        <select class="form-input">
+                            <option value="">Selecciona</option>
+                            <option>XS</option><option>S</option><option>M</option>
+                            <option>L</option><option>XL</option><option>XXL</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Club / Academia</label>
+                    <input type="text" class="form-input" placeholder="Nombre de tu club o academia (opcional)">
+                </div>
+                <div>
+                    <label class="form-label">Patrocinadores</label>
+                    <input type="text" class="form-input" placeholder="Rip Curl, Oakley… (opcional)">
+                </div>
+            </div>
+
+            <!-- Acceso -->
+            <div class="bg-navy-dark/60 border border-navy-mid/60 rounded-xl p-5 space-y-4">
+                <h3 class="font-heading text-lg text-cyan-brand">Acceso a la cuenta</h3>
+                <div>
+                    <label class="form-label">Correo electrónico *</label>
+                    <input type="email" class="form-input" placeholder="tu@correo.com" required>
+                    <p class="text-xs text-text-muted mt-1">Aquí recibirás tokens de pago, confirmaciones e inscripciones.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Contraseña *</label>
+                        <input type="password" class="form-input" placeholder="Mínimo 8 caracteres" required minlength="8">
+                    </div>
+                    <div>
+                        <label class="form-label">Confirmar contraseña *</label>
+                        <input type="password" class="form-input" placeholder="Repite la contraseña" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aviso de licencia -->
+            <div class="flex gap-3 bg-cyan-brand/8 border border-cyan-brand/25 rounded-xl p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-xs text-text-muted leading-relaxed">
+                    Al registrarte como competidor, tu licencia ALAS quedará en estado <strong class="text-text-light">pendiente de validación</strong>. El equipo ALAS revisará tu solicitud y activará tu licencia en un plazo de 48 horas hábiles. Recibirás un correo de confirmación desde <strong class="text-text-light">noreply@alasglobaltour.com</strong>.
+                </p>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 space-y-3">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="reglamento" class="mt-0.5 accent-cyan-brand w-4 h-4 flex-shrink-0 cursor-pointer" required>
+                    <span class="text-sm text-text-muted group-hover:text-text-light transition">
+                        He leído y acepto el <a href="#" class="text-cyan-brand hover:underline">Reglamento oficial ALAS Latin Tour 2026</a>, incluyendo las normas de competencia y el código de conducta. *
+                    </span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="terminos" class="mt-0.5 accent-cyan-brand w-4 h-4 flex-shrink-0 cursor-pointer" required>
+                    <span class="text-sm text-text-muted group-hover:text-text-light transition">
+                        Acepto los <a href="#" class="text-cyan-brand hover:underline">Términos de uso</a> y la <a href="#" class="text-cyan-brand hover:underline">Política de privacidad</a>. *
+                    </span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" x-model="newsletter" class="mt-0.5 accent-cyan-brand w-4 h-4 flex-shrink-0 cursor-pointer">
+                    <span class="text-sm text-text-muted group-hover:text-text-light transition">Quiero recibir el newsletter del ALAS Latin Tour con novedades del circuito.</span>
+                </label>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-widest text-sm transition shadow-lg shadow-orange-brand/20">
+                Crear mi cuenta de competidor
+            </button>
+        </form>
+    </div>
+
+    <!-- ===== STEP 3: ÉXITO ===== -->
+    <div x-show="step === 3" x-transition.opacity class="text-center py-10" x-cloak>
+
+        <!-- Éxito espectador -->
+        <div x-show="tipo === 'espectador'">
+            <div class="w-20 h-20 rounded-full bg-success-brand/15 border border-success-brand/40 flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <p class="font-accent uppercase tracking-[0.3em] text-success-brand text-xs mb-3">¡Bienvenido al circuito!</p>
+            <h2 class="font-heading text-4xl md:text-5xl mb-4">Cuenta creada</h2>
+            <p class="text-text-muted max-w-md mx-auto mb-8 leading-relaxed">Tu cuenta de espectador está lista. Hemos enviado un correo de confirmación a tu dirección. Ahora puedes seguir el ranking, noticias y resultados del ALAS Latin Tour.</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="index.html" class="px-6 py-3 rounded-xl bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm transition">Ir al inicio</a>
+                <a href="noticias.html" class="px-6 py-3 rounded-xl border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">Ver noticias</a>
+            </div>
+        </div>
+
+        <!-- Éxito competidor -->
+        <div x-show="tipo === 'competidor'" x-cloak>
+            <div class="w-20 h-20 rounded-full bg-warning-brand/15 border border-warning-brand/40 flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-warning-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p class="font-accent uppercase tracking-[0.3em] text-warning-brand text-xs mb-3">Solicitud enviada</p>
+            <h2 class="font-heading text-4xl md:text-5xl mb-4">¡Casi listo!</h2>
+            <p class="text-text-muted max-w-md mx-auto mb-6 leading-relaxed">Tu solicitud de cuenta competidor ha sido recibida. El equipo ALAS verificará tu información y activará tu licencia en las próximas 48 horas hábiles.</p>
+
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 max-w-sm mx-auto mb-8 text-left space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-success-brand/15 border border-success-brand/40 flex items-center justify-center text-success-brand text-xs flex-shrink-0">✓</span>
+                    <p class="text-sm">Solicitud recibida</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-warning-brand/15 border border-warning-brand/40 flex items-center justify-center text-warning-brand text-xs flex-shrink-0">⏳</span>
+                    <p class="text-sm text-text-muted">Revisión por el equipo ALAS <span class="text-xs">(hasta 48 h)</span></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-navy-mid flex items-center justify-center text-text-muted text-xs flex-shrink-0">3</span>
+                    <p class="text-sm text-text-muted">Activación de licencia + correo desde <span class="font-mono text-xs">@alasglobaltour.com</span></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-navy-mid flex items-center justify-center text-text-muted text-xs flex-shrink-0">4</span>
+                    <p class="text-sm text-text-muted">Ya puedes inscribirte a eventos</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="index.html" class="px-6 py-3 rounded-xl bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition">Ir al inicio</a>
+                <a href="eventos.html" class="px-6 py-3 rounded-xl border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">Ver eventos</a>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- FOOTER MÍNIMO -->
+<footer class="relative z-10 border-t border-navy-mid/50 px-4 py-6 text-center text-xs text-text-muted">
+    © 2026 Asociación Latinoamericana de Surfistas Profesionales · <a href="index.html" class="hover:text-cyan-brand transition">alasglobaltour.com</a>
+</footer>
+
+</body>
+</html>

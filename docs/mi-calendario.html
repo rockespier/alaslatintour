@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Calendario — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Calendario personalizado con tus eventos inscritos en el ALAS Latin Tour 2026." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #002359; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+        .cal-day { min-height: 80px; }
+        .cal-event { font-size: 10px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV (LOGGED-IN) -->
+<nav x-data="{ open: false, profile: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-5">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="eventos.html" class="nav-link active">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link">Noticias</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3 relative">
+                <button @click="profile = !profile" class="flex items-center gap-2 px-3 py-2 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand transition">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-sm">G</div>
+                    <span class="font-accent text-sm uppercase tracking-wider">Mi Perfil</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-muted" :class="profile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="profile" @click.outside="profile = false" x-transition class="absolute right-0 top-12 w-64 bg-navy-dark border border-navy-mid rounded-lg shadow-2xl shadow-black/60 overflow-hidden z-50" x-cloak>
+                    <div class="p-4 border-b border-navy-mid">
+                        <p class="font-heading text-base">Gabriel Villani</p>
+                        <p class="text-xs text-text-muted">gabriel.villani@surf.com</p>
+                        <p class="text-xs text-cyan-brand mt-1">Licencia ALAS #BR-2310</p>
+                    </div>
+                    <a href="mis-inscripciones.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Mis inscripciones</a>
+                    <a href="mi-calendario.html" class="block px-4 py-2.5 text-sm bg-navy-mid text-cyan-brand font-medium">Mi calendario</a>
+                    <a href="historial-puntos.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Historial de puntos</a>
+                    <a href="datos-personales.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Datos personales</a>
+                    <a href="index.html" class="block px-4 py-2.5 text-sm text-orange-brand hover:bg-navy-mid border-t border-navy-mid transition">Cerrar sesión</a>
+                </div>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="eventos.html" class="block py-2 text-cyan-brand">Eventos</a>
+            <div class="pt-4 border-t border-navy-mid space-y-2">
+                <a href="mis-inscripciones.html" class="block py-2">Mis inscripciones</a>
+                <a href="mi-calendario.html" class="block py-2 text-cyan-brand font-medium">Mi calendario</a>
+                <a href="historial-puntos.html" class="block py-2">Historial de puntos</a>
+                <a href="datos-personales.html" class="block py-2">Datos personales</a>
+                <a href="index.html" class="block py-2 text-orange-brand">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div x-data="{ mes: 'julio' }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+
+    <!-- PAGE HEADER -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 text-sm text-text-muted mb-2">
+            <a href="eventos.html" class="hover:text-cyan-brand transition">Eventos</a>
+            <span>/</span>
+            <span class="text-text-light">Mi Calendario</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">Gabriel Villani · Temporada 2026</p>
+                <h1 class="font-heading text-4xl md:text-5xl">Mi Calendario</h1>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="alert('Función disponible en la versión final: exporta un archivo .ics compatible con Google Calendar, Outlook y Apple Calendar.')" class="px-4 py-2.5 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Exportar .ics
+                </button>
+                <button onclick="alert('Función disponible en la versión final: abre el flujo OAuth de Google Calendar para agregar tus eventos automáticamente.')" class="px-4 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Google Calendar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTH NAV -->
+    <div class="flex items-center gap-3 mb-6">
+        <button @click="mes = 'junio'" :class="mes === 'junio' ? 'bg-navy-mid text-text-light' : 'text-text-muted hover:text-text-light'" class="px-4 py-2 rounded-md border border-navy-mid font-accent uppercase tracking-wider text-sm transition">Jun</button>
+        <button @click="mes = 'julio'" :class="mes === 'julio' ? 'bg-navy-mid text-text-light' : 'text-text-muted hover:text-text-light'" class="px-4 py-2 rounded-md border border-navy-mid font-accent uppercase tracking-wider text-sm transition">Jul</button>
+        <button @click="mes = 'agosto'" :class="mes === 'agosto' ? 'bg-navy-mid text-text-light' : 'text-text-muted hover:text-text-light'" class="px-4 py-2 rounded-md border border-navy-mid font-accent uppercase tracking-wider text-sm transition">Ago</button>
+        <button @click="mes = 'septiembre'" :class="mes === 'septiembre' ? 'bg-navy-mid text-text-light' : 'text-text-muted hover:text-text-light'" class="px-4 py-2 rounded-md border border-navy-mid font-accent uppercase tracking-wider text-sm transition">Sep</button>
+        <button @click="mes = 'octubre'" :class="mes === 'octubre' ? 'bg-navy-mid text-text-light' : 'text-text-muted hover:text-text-light'" class="px-4 py-2 rounded-md border border-navy-mid font-accent uppercase tracking-wider text-sm transition">Oct</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- CALENDAR GRID -->
+        <div class="lg:col-span-2">
+
+            <!-- JULIO -->
+            <div x-show="mes === 'julio'" class="bg-navy-dark border border-navy-mid rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid flex items-center justify-between">
+                    <h2 class="font-heading text-2xl">Julio 2026</h2>
+                    <span class="font-accent uppercase text-xs text-cyan-brand tracking-wider">1 evento inscrito</span>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-7 mb-2">
+                        <template x-for="d in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']">
+                            <div class="text-center font-accent uppercase text-xs text-text-muted tracking-wider py-2" x-text="d"></div>
+                        </template>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">
+                        <!-- July 2026: starts Wednesday (offset 2) -->
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">1</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">2</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">3</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">4</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">5</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">6</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">7</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">8</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">9</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">10</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">11</span></div>
+                        <div class="cal-day rounded-md bg-cyan-brand/10 border border-cyan-brand/40 p-1">
+                            <span class="text-xs text-cyan-brand font-bold">12</span>
+                            <div class="cal-event mt-1 bg-cyan-brand/20 text-cyan-brand rounded px-1 py-0.5">🇵🇪 Roca Bruja</div>
+                        </div>
+                        <div class="cal-day rounded-md bg-cyan-brand/10 border border-cyan-brand/40 p-1">
+                            <span class="text-xs text-cyan-brand">13</span>
+                            <div class="cal-event mt-1 bg-cyan-brand/20 text-cyan-brand rounded px-1 py-0.5">Roca Bruja</div>
+                        </div>
+                        <div class="cal-day rounded-md bg-cyan-brand/10 border border-cyan-brand/40 p-1">
+                            <span class="text-xs text-cyan-brand">14</span>
+                            <div class="cal-event mt-1 bg-cyan-brand/20 text-cyan-brand rounded px-1 py-0.5">Roca Bruja</div>
+                        </div>
+                        <div class="cal-day rounded-md bg-cyan-brand/10 border border-cyan-brand/40 p-1">
+                            <span class="text-xs text-cyan-brand">15</span>
+                            <div class="cal-event mt-1 bg-cyan-brand/20 text-cyan-brand rounded px-1 py-0.5">Final</div>
+                        </div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">16</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">17</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">18</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">19</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">20</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">21</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">22</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">23</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">24</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">25</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">26</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">27</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">28</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">29</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">30</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">31</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGOSTO -->
+            <div x-show="mes === 'agosto'" class="bg-navy-dark border border-navy-mid rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid flex items-center justify-between">
+                    <h2 class="font-heading text-2xl">Agosto 2026</h2>
+                    <span class="font-accent uppercase text-xs text-warning-brand tracking-wider">1 evento · pago pendiente</span>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-7 mb-2">
+                        <template x-for="d in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']">
+                            <div class="text-center font-accent uppercase text-xs text-text-muted tracking-wider py-2" x-text="d"></div>
+                        </template>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1"></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">1</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">2</span></div>
+                        <div class="cal-day rounded-md bg-warning-brand/10 border border-warning-brand/40 p-1">
+                            <span class="text-xs text-warning-brand font-bold">3</span>
+                            <div class="cal-event mt-1 bg-warning-brand/20 text-warning-brand rounded px-1 py-0.5">🇲🇽 Sayulita</div>
+                        </div>
+                        <div class="cal-day rounded-md bg-warning-brand/10 border border-warning-brand/40 p-1"><span class="text-xs text-warning-brand">4</span><div class="cal-event mt-1 bg-warning-brand/20 text-warning-brand rounded px-1 py-0.5">Sayulita</div></div>
+                        <div class="cal-day rounded-md bg-warning-brand/10 border border-warning-brand/40 p-1"><span class="text-xs text-warning-brand">5</span><div class="cal-event mt-1 bg-warning-brand/20 text-warning-brand rounded px-1 py-0.5">Sayulita</div></div>
+                        <div class="cal-day rounded-md bg-warning-brand/10 border border-warning-brand/40 p-1"><span class="text-xs text-warning-brand">6</span><div class="cal-event mt-1 bg-warning-brand/20 text-warning-brand rounded px-1 py-0.5">Sayulita</div></div>
+                        <div class="cal-day rounded-md bg-warning-brand/10 border border-warning-brand/40 p-1"><span class="text-xs text-warning-brand">7</span><div class="cal-event mt-1 bg-warning-brand/20 text-warning-brand rounded px-1 py-0.5">Final</div></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">8</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">9</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">10</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">11</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">12</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">13</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">14</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">15</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">16</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">17</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">18</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">19</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">20</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">21</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">22</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">23</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">24</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">25</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">26</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">27</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">28</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">29</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">30</span></div>
+                        <div class="cal-day rounded-md p-1 text-center"><span class="text-xs text-text-muted">31</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTROS MESES (sin eventos) -->
+            <div x-show="mes === 'junio' || mes === 'septiembre' || mes === 'octubre'" class="bg-navy-dark border border-navy-mid rounded-xl p-8 text-center" x-cloak>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-text-muted mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <p class="font-heading text-xl mb-2" x-text="mes.charAt(0).toUpperCase() + mes.slice(1) + ' 2026'"></p>
+                <p class="text-text-muted text-sm">No tienes eventos inscritos en este mes.</p>
+                <a href="eventos.html" class="inline-block mt-4 px-4 py-2 rounded-md border border-navy-mid hover:border-cyan-brand text-text-muted font-accent uppercase tracking-wider text-xs transition">Ver eventos disponibles</a>
+            </div>
+
+            <!-- LEYENDA -->
+            <div class="mt-4 flex flex-wrap gap-4 text-xs text-text-muted">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-cyan-brand/40 border border-cyan-brand/60"></span>Evento confirmado</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-warning-brand/40 border border-warning-brand/60"></span>Pago pendiente</div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR: próximos eventos -->
+        <div class="space-y-4">
+            <h3 class="font-heading text-xl">Próximos eventos</h3>
+
+            <!-- Evento confirmado -->
+            <div class="bg-navy-dark border border-cyan-brand/40 rounded-xl p-5">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full bg-success-brand flex-shrink-0"></span>
+                    <span class="font-accent uppercase text-xs text-success-brand tracking-wider">Confirmado</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-lg bg-navy-mid flex items-center justify-center font-heading text-2xl text-cyan-brand">12</div>
+                    <div>
+                        <p class="text-xs text-text-muted">12 – 15 Jul · Lobitos, Perú</p>
+                        <h4 class="font-heading text-lg leading-tight">Roca Bruja Classic</h4>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs mb-4">
+                    <div><p class="text-text-muted">Categoría</p><p class="font-heading text-sm">Open Hombres</p></div>
+                    <div><p class="text-text-muted">Camiseta</p><p class="font-heading text-sm">#23</p></div>
+                    <div><p class="text-text-muted">Circuito</p><p class="font-heading text-sm">ALAS Open</p></div>
+                    <div><p class="text-text-muted">Estrellas</p><p class="font-heading text-sm">★★★</p></div>
+                </div>
+                <div class="bg-cyan-brand/10 border border-cyan-brand/30 rounded-lg px-3 py-2 text-xs text-cyan-brand mb-4">
+                    Faltan <strong>17 días</strong> para el inicio del evento.
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="alert('Descargará un archivo roca-bruja-classic.ics')" class="flex-1 text-center px-2 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-xs transition">Exportar</button>
+                    <a href="mis-inscripciones.html" class="flex-1 text-center px-2 py-2 rounded-md border border-navy-mid text-text-muted hover:border-cyan-brand font-accent uppercase tracking-wider text-xs transition">Detalle</a>
+                </div>
+            </div>
+
+            <!-- Evento pendiente de pago -->
+            <div class="bg-navy-dark border border-warning-brand/40 rounded-xl p-5">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full bg-warning-brand flex-shrink-0"></span>
+                    <span class="font-accent uppercase text-xs text-warning-brand tracking-wider">Pago pendiente</span>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-lg bg-navy-mid flex items-center justify-center font-heading text-2xl text-warning-brand">03</div>
+                    <div>
+                        <p class="text-xs text-text-muted">03 – 07 Ago · Sayulita, México</p>
+                        <h4 class="font-heading text-lg leading-tight">Sayulita Masters</h4>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs mb-4">
+                    <div><p class="text-text-muted">Categoría</p><p class="font-heading text-sm">Open Hombres</p></div>
+                    <div><p class="text-text-muted">Monto</p><p class="font-heading text-sm text-cyan-brand">$80 USD</p></div>
+                    <div><p class="text-text-muted">Método</p><p class="font-heading text-sm">Pago en playa</p></div>
+                    <div><p class="text-text-muted">Estrellas</p><p class="font-heading text-sm">★★★★★</p></div>
+                </div>
+                <a href="pago-playa.html" class="block text-center px-2 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-xs transition">Ver token de pago</a>
+            </div>
+
+            <!-- Próximamente -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 opacity-70">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-2 h-2 rounded-full bg-text-muted flex-shrink-0"></span>
+                    <span class="font-accent uppercase text-xs text-text-muted tracking-wider">Por abrir inscripciones</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg bg-navy-mid flex items-center justify-center font-heading text-2xl text-text-muted">04</div>
+                    <div>
+                        <p class="text-xs text-text-muted">04 – 08 Sep · Punta Hermosa, Perú</p>
+                        <h4 class="font-heading text-lg leading-tight text-text-muted">Punta Hermosa Pro</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -86,7 +86,7 @@
             <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
                 <a href="index.html" class="nav-link">Inicio</a>
                 <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
-                <a href="index.html#eventos" class="nav-link">Eventos</a>
+                <a href="calendario.html" class="nav-link">Eventos</a>
                 <a href="ranking.html" class="nav-link active">Ranking</a>
                 <a href="noticias.html" class="nav-link">Noticias</a>
                 <a href="index.html#contacto" class="nav-link">Contacto</a>
@@ -207,31 +207,57 @@
     </div>
 </div>
 
-<!-- ============= FOOTER ============= -->
-<footer class="bg-navy-deepest border-t border-navy-mid mt-10 pt-10 pb-8 px-4 sm:px-6 lg:px-8">
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-8 border-b border-navy-mid">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-md bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-xl">A</div>
-                <div>
-                    <p class="font-heading text-lg tracking-wider">ALAS<span class="text-cyan-brand">.</span></p>
-                    <p class="text-xs text-text-muted">Asociación Latinoamericana de Surfistas Profesionales</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto">
+                </div>
+                <p class="text-sm text-text-muted leading-relaxed">Asociación Latinoamericana de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.</p>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Navegación</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="index.html" class="hover:text-cyan-brand transition">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a></li>
+                    <li><a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a></li>
+                    <li><a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a></li>
+                    <li><a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Competidores</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="#" class="hover:text-cyan-brand transition">Inscripciones</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Reglamento ALAS</a></li>
+                    <li><a href="#" class="hover:text-cyan-brand transition">Soporte y Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Síguenos</h4>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56-.01-4.81-.07-3.27-.15-4.77-1.7-4.92-4.92C2.21 15.6 2.2 15.23 2.2 12c0-3.2.01-3.56.07-4.81.15-3.23 1.66-4.77 4.92-4.92C8.44 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.72.07-2.18.1-3.28 1.18-3.38 3.38C3.84 8.5 3.83 8.85 3.83 12c0 3.15.01 3.5.07 4.72.1 2.2 1.2 3.28 3.38 3.38 1.22.06 1.57.07 4.72.07s3.5-.01 4.72-.07c2.18-.1 3.28-1.18 3.38-3.38.06-1.22.07-1.57.07-4.72s-.01-3.5-.07-4.72c-.1-2.18-1.2-3.28-3.38-3.38C15.5 4.01 15.15 4 12 4zm0 3.07a4.93 4.93 0 110 9.86 4.93 4.93 0 010-9.86zm0 1.8a3.13 3.13 0 100 6.26 3.13 3.13 0 000-6.26zm5.12-1.36a1.15 1.15 0 110 2.3 1.15 1.15 0 010-2.3z"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a2.99 2.99 0 00-2.1-2.11C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.49A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8c.28 1.04 1.1 1.85 2.1 2.11C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.49a3 3 0 002.1-2.11c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.27 3.6L9.6 15.6z"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.68 0H1.32A1.32 1.32 0 000 1.32v21.36A1.32 1.32 0 001.32 24h11.5v-9.3H9.69v-3.62h3.13V8.41c0-3.1 1.9-4.79 4.66-4.79 1.32 0 2.46.1 2.79.14v3.24h-1.91c-1.5 0-1.8.72-1.8 1.76v2.31h3.59l-.47 3.62h-3.12V24h6.12A1.32 1.32 0 0024 22.68V1.32A1.32 1.32 0 0022.68 0z"/></svg>
+                    </a>
                 </div>
             </div>
-            <nav class="flex flex-wrap gap-x-6 gap-y-2 font-accent uppercase text-xs tracking-wider text-text-muted">
-                <a href="index.html" class="hover:text-cyan-brand transition">Inicio</a>
-                <a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes somos</a>
-                <a href="index.html#eventos" class="hover:text-cyan-brand transition">Eventos</a>
-                <a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a>
-                <a href="#" class="hover:text-cyan-brand transition">Reglamento</a>
-                <a href="#" class="hover:text-cyan-brand transition">Soporte</a>
-            </nav>
         </div>
-        <div class="pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
+        <div class="pt-8 border-t border-navy-mid flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
             <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+            
         </div>
     </div>
 </footer>
+
 
 <script>
 function rankingTable() {

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mis Inscripciones — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Historial y estado de todas tus inscripciones en el circuito ALAS Latin Tour." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #002359; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+        .tab-btn { position: relative; transition: all .25s ease; }
+        .tab-btn.active { color: #0081C6; background: rgba(0,129,198,0.08); border-color: #0081C6; }
+        .card-inscripcion { background: linear-gradient(160deg, #004F8E 0%, #003873 70%, #002359 100%); border: 1px solid rgba(0,129,198,0.15); transition: all .3s ease; }
+        .card-inscripcion:hover { border-color: rgba(0,129,198,0.4); }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV (LOGGED-IN) -->
+<nav x-data="{ open: false, profile: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-5">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="eventos.html" class="nav-link active">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link">Noticias</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3 relative">
+                <button @click="profile = !profile" class="flex items-center gap-2 px-3 py-2 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand transition">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-sm">G</div>
+                    <span class="font-accent text-sm uppercase tracking-wider">Mi Perfil</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-muted" :class="profile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="profile" @click.outside="profile = false" x-transition class="absolute right-0 top-12 w-64 bg-navy-dark border border-navy-mid rounded-lg shadow-2xl shadow-black/60 overflow-hidden z-50" x-cloak>
+                    <div class="p-4 border-b border-navy-mid">
+                        <p class="font-heading text-base">Gabriel Villani</p>
+                        <p class="text-xs text-text-muted">gabriel.villani@surf.com</p>
+                        <p class="text-xs text-cyan-brand mt-1">Licencia ALAS #BR-2310</p>
+                    </div>
+                    <a href="mis-inscripciones.html" class="block px-4 py-2.5 text-sm bg-navy-mid text-cyan-brand font-medium">Mis inscripciones</a>
+                    <a href="mi-calendario.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Mi calendario</a>
+                    <a href="historial-puntos.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Historial de puntos</a>
+                    <a href="datos-personales.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Datos personales</a>
+                    <a href="index.html" class="block px-4 py-2.5 text-sm text-orange-brand hover:bg-navy-mid border-t border-navy-mid transition">Cerrar sesión</a>
+                </div>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light" aria-label="Abrir menú">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="quienes-somos.html" class="block py-2">Quiénes Somos</a>
+            <a href="eventos.html" class="block py-2 text-cyan-brand">Eventos</a>
+            <a href="index.html#ranking" class="block py-2">Ranking</a>
+            <a href="noticias.html" class="block py-2">Noticias</a>
+            <div class="pt-4 border-t border-navy-mid space-y-2">
+                <a href="mis-inscripciones.html" class="block py-2 text-cyan-brand font-medium">Mis inscripciones</a>
+                <a href="mi-calendario.html" class="block py-2">Mi calendario</a>
+                <a href="historial-puntos.html" class="block py-2">Historial de puntos</a>
+                <a href="datos-personales.html" class="block py-2">Datos personales</a>
+                <a href="index.html" class="block py-2 text-orange-brand">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div x-data="{
+    filtro: 'todas',
+    inscripciones: [
+        { id: 1, evento: 'Roca Bruja Classic', pais: '🇵🇪', lugar: 'Lobitos, Perú', fechas: '12 – 15 Jul 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#23', monto: '$75 USD', metodo: 'PayPal', estado: 'confirmado' },
+        { id: 2, evento: 'Sayulita Masters', pais: '🇲🇽', lugar: 'Sayulita, México', fechas: '03 – 07 Ago 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '—', monto: '$80 USD', metodo: 'Pago en playa', estado: 'pendiente' },
+        { id: 3, evento: 'Las Palmas Open', pais: '🇨🇷', lugar: 'Esterillos, Costa Rica', fechas: '22 – 26 May 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#07', monto: '$70 USD', metodo: 'PayPal', estado: 'completado', resultado: '3° lugar · 920 pts' },
+        { id: 4, evento: 'Panamá Pro Surf', pais: '🇵🇦', lugar: 'Santa Catalina, Panamá', fechas: '14 – 18 Abr 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#07', monto: '$65 USD', metodo: 'PayPal', estado: 'completado', resultado: '1° lugar · 1,500 pts' },
+        { id: 5, evento: 'Chicama Wave Festival', pais: '🇵🇪', lugar: 'Chicama, Perú', fechas: '08 – 12 Mar 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#07', monto: '$65 USD', metodo: 'PayPal', estado: 'completado', resultado: '5° lugar · 680 pts' },
+        { id: 6, evento: 'Montañita Classic', pais: '🇪🇨', lugar: 'Montañita, Ecuador', fechas: '20 – 23 Feb 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#07', monto: '$60 USD', metodo: 'PayPal', estado: 'completado', resultado: '2° lugar · 1,200 pts' },
+        { id: 7, evento: 'Viña del Mar Open', pais: '🇨🇱', lugar: 'Viña del Mar, Chile', fechas: '10 – 14 Ene 2026', categoria: 'Open Hombres', circuito: 'ALAS Open', camiseta: '#07', monto: '$60 USD', metodo: 'PayPal', estado: 'completado', resultado: '8° lugar · 420 pts' }
+    ],
+    get filtradas() {
+        if (this.filtro === 'activas') return this.inscripciones.filter(i => i.estado === 'confirmado' || i.estado === 'pendiente');
+        if (this.filtro === 'completadas') return this.inscripciones.filter(i => i.estado === 'completado');
+        return this.inscripciones;
+    }
+}" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+
+    <!-- PAGE HEADER -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 text-sm text-text-muted mb-2">
+            <a href="eventos.html" class="hover:text-cyan-brand transition">Eventos</a>
+            <span>/</span>
+            <span class="text-text-light">Mis Inscripciones</span>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">Gabriel Villani · Temporada 2026</p>
+                <h1 class="font-heading text-4xl md:text-5xl">Mis Inscripciones</h1>
+            </div>
+            <div class="flex gap-3">
+                <a href="mi-calendario.html" class="px-4 py-2.5 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Ver calendario
+                </a>
+                <a href="eventos.html" class="px-4 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition">+ Nueva inscripción</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-navy-dark border border-navy-mid rounded-xl p-4">
+            <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Total 2026</p>
+            <p class="font-heading text-3xl">7</p>
+        </div>
+        <div class="bg-navy-dark border border-navy-mid rounded-xl p-4">
+            <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Activas</p>
+            <p class="font-heading text-3xl text-cyan-brand">2</p>
+        </div>
+        <div class="bg-navy-dark border border-navy-mid rounded-xl p-4">
+            <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Completadas</p>
+            <p class="font-heading text-3xl text-success-brand">5</p>
+        </div>
+        <div class="bg-navy-dark border border-navy-mid rounded-xl p-4">
+            <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Pago pendiente</p>
+            <p class="font-heading text-3xl text-warning-brand">1</p>
+        </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="flex flex-wrap gap-2 border-b border-navy-mid pb-1 mb-6">
+        <button @click="filtro = 'todas'" class="tab-btn px-5 py-2.5 rounded-t-md border-b-2 border-transparent font-accent uppercase text-sm tracking-wider text-text-muted hover:text-text-light" :class="filtro === 'todas' ? 'active' : ''">Todas (7)</button>
+        <button @click="filtro = 'activas'" class="tab-btn px-5 py-2.5 rounded-t-md border-b-2 border-transparent font-accent uppercase text-sm tracking-wider text-text-muted hover:text-text-light" :class="filtro === 'activas' ? 'active' : ''">Activas (2)</button>
+        <button @click="filtro = 'completadas'" class="tab-btn px-5 py-2.5 rounded-t-md border-b-2 border-transparent font-accent uppercase text-sm tracking-wider text-text-muted hover:text-text-light" :class="filtro === 'completadas' ? 'active' : ''">Completadas (5)</button>
+    </div>
+
+    <!-- INSCRIPCIONES LIST -->
+    <div class="space-y-4">
+        <template x-for="ins in filtradas" :key="ins.id">
+            <div class="card-inscripcion rounded-xl p-5 md:p-6">
+                <div class="flex flex-col md:flex-row md:items-center gap-5">
+                    <!-- FLAG + DATES -->
+                    <div class="flex items-center gap-4 md:w-40 md:flex-shrink-0">
+                        <span class="text-3xl" x-text="ins.pais"></span>
+                        <div>
+                            <p class="text-xs text-text-muted font-accent uppercase tracking-wider" x-text="ins.fechas.split(' ')[ins.fechas.split(' ').length - 1]"></p>
+                            <p class="font-heading text-2xl text-cyan-brand leading-none" x-text="ins.fechas.split(' ')[0]"></p>
+                        </div>
+                    </div>
+                    <!-- EVENT INFO -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
+                            <div>
+                                <p class="text-xs text-text-muted mb-0.5" x-text="ins.lugar"></p>
+                                <h3 class="font-heading text-xl md:text-2xl leading-tight" x-text="ins.evento"></h3>
+                                <p class="text-sm text-text-muted mt-0.5" x-text="ins.categoria + ' · ' + ins.circuito"></p>
+                            </div>
+                            <div>
+                                <span x-show="ins.estado === 'confirmado'" class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-success-brand/15 text-success-brand border border-success-brand/30">Confirmado ✓</span>
+                                <span x-show="ins.estado === 'pendiente'" class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-warning-brand/15 text-warning-brand border border-warning-brand/30">Pago Pendiente ⚠️</span>
+                                <span x-show="ins.estado === 'completado'" class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-navy-mid text-text-muted border border-navy-mid">Completado</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                            <div>
+                                <span class="text-text-muted">Camiseta</span>
+                                <span class="ml-2 font-heading text-base" x-text="ins.camiseta"></span>
+                            </div>
+                            <div>
+                                <span class="text-text-muted">Pago</span>
+                                <span class="ml-2 font-heading text-base" x-text="ins.metodo"></span>
+                            </div>
+                            <div>
+                                <span class="text-text-muted">Monto</span>
+                                <span class="ml-2 font-heading text-base text-cyan-brand" x-text="ins.monto"></span>
+                            </div>
+                            <div x-show="ins.resultado">
+                                <span class="text-text-muted">Resultado</span>
+                                <span class="ml-2 font-heading text-base text-success-brand" x-text="ins.resultado"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ACTIONS -->
+                    <div class="flex flex-wrap gap-2 md:flex-col md:w-36 md:flex-shrink-0">
+                        <template x-if="ins.estado === 'pendiente'">
+                            <a href="pago-playa.html" class="flex-1 md:flex-none text-center px-3 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-xs transition">Ver token</a>
+                        </template>
+                        <template x-if="ins.estado === 'confirmado'">
+                            <a href="mi-calendario.html" class="flex-1 md:flex-none text-center px-3 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-xs transition">+ Calendario</a>
+                        </template>
+                        <template x-if="ins.estado === 'completado'">
+                            <a href="historial-puntos.html" class="flex-1 md:flex-none text-center px-3 py-2 rounded-md border border-navy-mid hover:border-cyan-brand text-text-muted font-accent uppercase tracking-wider text-xs transition">Ver puntos</a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- EMPTY STATE -->
+        <div x-show="filtradas.length === 0" class="text-center py-20" x-cloak>
+            <p class="text-text-muted text-lg mb-4">No hay inscripciones en esta categoría.</p>
+            <a href="eventos.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition">Ver eventos disponibles</a>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto">
+                </div>
+                <p class="text-sm text-text-muted leading-relaxed">Asociación Latinoamericana de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.</p>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Navegación</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="index.html" class="hover:text-cyan-brand transition">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="hover:text-cyan-brand transition">Quiénes Somos</a></li>
+                    <li><a href="eventos.html" class="hover:text-cyan-brand transition">Eventos</a></li>
+                    <li><a href="index.html#ranking" class="hover:text-cyan-brand transition">Ranking</a></li>
+                    <li><a href="noticias.html" class="hover:text-cyan-brand transition">Noticias</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Mi perfil</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="mis-inscripciones.html" class="hover:text-cyan-brand transition">Mis inscripciones</a></li>
+                    <li><a href="mi-calendario.html" class="hover:text-cyan-brand transition">Mi calendario</a></li>
+                    <li><a href="historial-puntos.html" class="hover:text-cyan-brand transition">Historial de puntos</a></li>
+                    <li><a href="datos-personales.html" class="hover:text-cyan-brand transition">Datos personales</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-accent uppercase tracking-wider text-sm text-cyan-brand mb-4">Síguenos</h4>
+                <div class="flex gap-3">
+                    <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.62.07 4.81 0 3.2-.01 3.56-.07 4.81-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07-3.2 0-3.56-.01-4.81-.07-3.27-.15-4.77-1.7-4.92-4.92C2.21 15.6 2.2 15.23 2.2 12c0-3.2.01-3.56.07-4.81.15-3.23 1.66-4.77 4.92-4.92C8.44 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.72.07-2.18.1-3.28 1.18-3.38 3.38C3.84 8.5 3.83 8.85 3.83 12c0 3.15.01 3.5.07 4.72.1 2.2 1.2 3.28 3.38 3.38 1.22.06 1.57.07 4.72.07s3.5-.01 4.72-.07c2.18-.1 3.28-1.18 3.38-3.38.06-1.22.07-1.57.07-4.72s-.01-3.5-.07-4.72c-.1-2.18-1.2-3.28-3.38-3.38C15.5 4.01 15.15 4 12 4zm0 3.07a4.93 4.93 0 110 9.86 4.93 4.93 0 010-9.86zm0 1.8a3.13 3.13 0 100 6.26 3.13 3.13 0 000-6.26zm5.12-1.36a1.15 1.15 0 110 2.3 1.15 1.15 0 010-2.3z"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-md bg-navy-dark border border-navy-mid flex items-center justify-center text-text-muted hover:text-cyan-brand hover:border-cyan-brand transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a2.99 2.99 0 00-2.1-2.11C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.49A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8c.28 1.04 1.1 1.85 2.1 2.11C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.49a3 3 0 002.1-2.11c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.27 3.6L9.6 15.6z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-navy-mid text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

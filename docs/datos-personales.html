@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Datos Personales — ALAS Latin Tour 2026</title>
+    <meta name="description" content="Administra tu información personal, licencia y preferencias en el ALAS Latin Tour." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-deepest': '#002359',
+                        'navy-dark': '#003873',
+                        'navy-mid': '#004F8E',
+                        'cyan-brand': '#0081C6',
+                        'cyan-dark': '#007AFF',
+                        'orange-brand': '#007AFF',
+                        'orange-light': '#0D6EFD',
+                        'text-light': '#EEEEEE',
+                        'text-muted': '#AAAAAA',
+                        'success-brand': '#22C55E',
+                        'warning-brand': '#FBBF24',
+                        'error-brand': '#EF4444'
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        accent: ['"Barlow Condensed"', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #002359; color: #EEEEEE; }
+        h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Oswald', sans-serif; letter-spacing: 0.02em; }
+        .font-accent { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; }
+        .nav-link { position: relative; transition: color .2s; }
+        .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #0081C6; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+        .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+        .nav-link.active { color: #0081C6; }
+        .form-input {
+            width: 100%;
+            background: #003873;
+            border: 1px solid #004F8E;
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #EEEEEE;
+            font-size: 14px;
+            transition: border-color .2s;
+        }
+        .form-input:focus { outline: none; border-color: #0081C6; }
+        .form-input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .form-label { display: block; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; color: #AAAAAA; margin-bottom: 6px; }
+        select.form-input option { background: #002359; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-navy-deepest text-text-light antialiased">
+
+<!-- NAV (LOGGED-IN) -->
+<nav x-data="{ open: false, profile: false }" class="sticky top-0 z-50 bg-navy-deepest/85 backdrop-blur border-b border-navy-mid/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-5">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto">
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-accent uppercase text-sm">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="quienes-somos.html" class="nav-link">Quiénes Somos</a>
+                <a href="eventos.html" class="nav-link active">Eventos</a>
+                <a href="index.html#ranking" class="nav-link">Ranking</a>
+                <a href="noticias.html" class="nav-link">Noticias</a>
+            </div>
+            <div class="hidden lg:flex items-center gap-3 relative">
+                <button @click="profile = !profile" class="flex items-center gap-2 px-3 py-2 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand transition">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading font-bold text-navy-deepest text-sm">G</div>
+                    <span class="font-accent text-sm uppercase tracking-wider">Mi Perfil</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-muted" :class="profile ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="profile" @click.outside="profile = false" x-transition class="absolute right-0 top-12 w-64 bg-navy-dark border border-navy-mid rounded-lg shadow-2xl shadow-black/60 overflow-hidden z-50" x-cloak>
+                    <div class="p-4 border-b border-navy-mid">
+                        <p class="font-heading text-base">Gabriel Villani</p>
+                        <p class="text-xs text-text-muted">gabriel.villani@surf.com</p>
+                        <p class="text-xs text-cyan-brand mt-1">Licencia ALAS #BR-2310</p>
+                    </div>
+                    <a href="mis-inscripciones.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Mis inscripciones</a>
+                    <a href="mi-calendario.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Mi calendario</a>
+                    <a href="historial-puntos.html" class="block px-4 py-2.5 text-sm hover:bg-navy-mid transition">Historial de puntos</a>
+                    <a href="datos-personales.html" class="block px-4 py-2.5 text-sm bg-navy-mid text-cyan-brand font-medium">Datos personales</a>
+                    <a href="index.html" class="block px-4 py-2.5 text-sm text-orange-brand hover:bg-navy-mid border-t border-navy-mid transition">Cerrar sesión</a>
+                </div>
+            </div>
+            <button @click="open = !open" class="lg:hidden p-2 text-text-light">
+                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="open" x-transition class="lg:hidden border-t border-navy-mid bg-navy-dark" x-cloak>
+        <div class="px-4 py-4 space-y-2 font-accent uppercase tracking-wider">
+            <a href="index.html" class="block py-2">Inicio</a>
+            <a href="eventos.html" class="block py-2 text-cyan-brand">Eventos</a>
+            <div class="pt-4 border-t border-navy-mid space-y-2">
+                <a href="mis-inscripciones.html" class="block py-2">Mis inscripciones</a>
+                <a href="mi-calendario.html" class="block py-2">Mi calendario</a>
+                <a href="historial-puntos.html" class="block py-2">Historial de puntos</a>
+                <a href="datos-personales.html" class="block py-2 text-cyan-brand font-medium">Datos personales</a>
+                <a href="index.html" class="block py-2 text-orange-brand">Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div x-data="{
+    saved: false,
+    pwSaved: false,
+    notif: { email: true, push: true, resultados: true, inscripciones: true, tokens: true },
+    save() { this.saved = true; setTimeout(() => this.saved = false, 3000); },
+    savePw() { this.pwSaved = true; setTimeout(() => this.pwSaved = false, 3000); }
+}" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+
+    <!-- SUCCESS TOAST -->
+    <div x-show="saved" x-transition.opacity class="fixed top-6 right-6 z-50 bg-success-brand text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-accent uppercase tracking-wider text-sm" x-cloak>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Datos guardados correctamente
+    </div>
+    <div x-show="pwSaved" x-transition.opacity class="fixed top-6 right-6 z-50 bg-success-brand text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-accent uppercase tracking-wider text-sm" x-cloak>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Contraseña actualizada
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="mb-8">
+        <div class="flex items-center gap-2 text-sm text-text-muted mb-2">
+            <a href="eventos.html" class="hover:text-cyan-brand transition">Eventos</a>
+            <span>/</span>
+            <span class="text-text-light">Datos Personales</span>
+        </div>
+        <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">Gabriel Villani · Licencia #BR-2310</p>
+        <h1 class="font-heading text-4xl md:text-5xl">Datos Personales</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- SIDEBAR: AVATAR + LICENCIA -->
+        <div class="space-y-5">
+            <!-- Foto de perfil -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-6 text-center">
+                <div class="relative inline-block mb-4">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-brand to-orange-brand flex items-center justify-center font-heading text-5xl font-bold text-navy-deepest mx-auto">G</div>
+                    <button onclick="alert('En la versión final: permite subir una foto JPG/PNG de hasta 5MB.')" class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-cyan-brand hover:bg-cyan-dark flex items-center justify-center transition shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </button>
+                </div>
+                <h3 class="font-heading text-xl">Gabriel Villani</h3>
+                <p class="text-sm text-text-muted">gabriel.villani@surf.com</p>
+                <p class="text-xs text-cyan-brand mt-1">🇧🇷 Brasil</p>
+            </div>
+
+            <!-- Licencia ALAS -->
+            <div class="bg-gradient-to-br from-cyan-brand/15 to-navy-dark border border-cyan-brand/40 rounded-xl p-5">
+                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-3">Licencia ALAS 2026</p>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-text-muted">Número</p>
+                        <p class="font-heading text-xl">#BR-2310</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-text-muted">Categorías habilitadas</p>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            <span class="px-2 py-0.5 rounded-full text-xs bg-navy-mid font-accent uppercase">Open Hombres</span>
+                            <span class="px-2 py-0.5 rounded-full text-xs bg-navy-mid font-accent uppercase">Longboard</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-text-muted">Estado</p>
+                        <p class="font-accent uppercase text-sm text-success-brand tracking-wider mt-0.5">● Activa</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-text-muted">Vencimiento</p>
+                        <p class="text-sm font-heading">31 Dic 2026</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posición actual -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl p-5">
+                <p class="font-accent uppercase tracking-wider text-text-muted text-xs mb-3">Posición actual 2026</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <p class="text-xs text-text-muted">Open</p>
+                        <p class="font-heading text-3xl text-cyan-brand">#4</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-text-muted">Puntos</p>
+                        <p class="font-heading text-3xl">8,540</p>
+                    </div>
+                </div>
+                <a href="historial-puntos.html" class="inline-block mt-3 text-xs text-cyan-brand hover:underline font-accent uppercase tracking-wider">Ver historial completo →</a>
+            </div>
+        </div>
+
+        <!-- MAIN FORM -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- DATOS PERSONALES FORM -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid">
+                    <h2 class="font-heading text-xl">Información personal</h2>
+                </div>
+                <form class="p-6" @submit.prevent="save()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="form-label">Nombre(s)</label>
+                            <input type="text" class="form-input" value="Gabriel">
+                        </div>
+                        <div>
+                            <label class="form-label">Apellido(s)</label>
+                            <input type="text" class="form-input" value="Villani">
+                        </div>
+                        <div>
+                            <label class="form-label">Fecha de nacimiento</label>
+                            <input type="date" class="form-input" value="1998-04-22">
+                        </div>
+                        <div>
+                            <label class="form-label">Género</label>
+                            <select class="form-input">
+                                <option selected>Masculino</option>
+                                <option>Femenino</option>
+                                <option>Prefiero no indicar</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">País</label>
+                            <select class="form-input">
+                                <option>Argentina</option>
+                                <option>Bolivia</option>
+                                <option selected>Brasil</option>
+                                <option>Chile</option>
+                                <option>Colombia</option>
+                                <option>Costa Rica</option>
+                                <option>Ecuador</option>
+                                <option>México</option>
+                                <option>Panamá</option>
+                                <option>Perú</option>
+                                <option>Uruguay</option>
+                                <option>Venezuela</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Teléfono / WhatsApp</label>
+                            <input type="tel" class="form-input" value="+55 11 9 8765-4321">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-input" value="gabriel.villani@surf.com">
+                            <p class="text-xs text-text-muted mt-1">Este correo se usa para notificaciones y tokens de pago.</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="form-label">Club / Academia</label>
+                            <input type="text" class="form-input" value="Escola de Surf Villani — Santos, SP">
+                        </div>
+                    </div>
+
+                    <h3 class="font-heading text-lg mb-4 pt-2 border-t border-navy-mid">Datos deportivos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                        <div>
+                            <label class="form-label">Postura</label>
+                            <select class="form-input">
+                                <option selected>Regular</option>
+                                <option>Goofy</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Talla de camiseta</label>
+                            <select class="form-input">
+                                <option>XS</option>
+                                <option>S</option>
+                                <option selected>M</option>
+                                <option>L</option>
+                                <option>XL</option>
+                                <option>XXL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Número preferido</label>
+                            <input type="text" class="form-input" value="#23" placeholder="Ej: #07">
+                            <p class="text-xs text-text-muted mt-1">Sujeto a disponibilidad por evento.</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Código SurfScores</label>
+                            <input type="text" class="form-input" value="SS-BR-2310" disabled>
+                            <p class="text-xs text-text-muted mt-1">Asignado por el sistema. No editable.</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="form-label">Patrocinadores (visible en ranking)</label>
+                            <input type="text" class="form-input" value="Rip Curl, Oakley, Reef">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- NOTIFICACIONES -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid">
+                    <h2 class="font-heading text-xl">Preferencias de notificación</h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium">Notificaciones por correo</p>
+                            <p class="text-xs text-text-muted">Recibe resúmenes y confirmaciones en tu correo</p>
+                        </div>
+                        <button @click="notif.email = !notif.email" class="relative w-11 h-6 rounded-full transition-colors duration-200" :class="notif.email ? 'bg-cyan-brand' : 'bg-navy-mid'">
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200" :class="notif.email ? 'translate-x-5' : 'translate-x-0'"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-navy-mid">
+                        <div>
+                            <p class="text-sm font-medium">Notificaciones push (PWA)</p>
+                            <p class="text-xs text-text-muted">Alertas en tiempo real en tu dispositivo</p>
+                        </div>
+                        <button @click="notif.push = !notif.push" class="relative w-11 h-6 rounded-full transition-colors duration-200" :class="notif.push ? 'bg-cyan-brand' : 'bg-navy-mid'">
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200" :class="notif.push ? 'translate-x-5' : 'translate-x-0'"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-navy-mid">
+                        <div>
+                            <p class="text-sm font-medium">Resultados publicados</p>
+                            <p class="text-xs text-text-muted">Cuando se publican resultados de un evento tuyo</p>
+                        </div>
+                        <button @click="notif.resultados = !notif.resultados" class="relative w-11 h-6 rounded-full transition-colors duration-200" :class="notif.resultados ? 'bg-cyan-brand' : 'bg-navy-mid'">
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200" :class="notif.resultados ? 'translate-x-5' : 'translate-x-0'"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-navy-mid">
+                        <div>
+                            <p class="text-sm font-medium">Confirmación de inscripción</p>
+                            <p class="text-xs text-text-muted">Cuando una inscripción es confirmada o rechazada</p>
+                        </div>
+                        <button @click="notif.inscripciones = !notif.inscripciones" class="relative w-11 h-6 rounded-full transition-colors duration-200" :class="notif.inscripciones ? 'bg-cyan-brand' : 'bg-navy-mid'">
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200" :class="notif.inscripciones ? 'translate-x-5' : 'translate-x-0'"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-navy-mid">
+                        <div>
+                            <p class="text-sm font-medium">Token de pago en playa</p>
+                            <p class="text-xs text-text-muted">Cuando el admin aprueba o rechaza tu solicitud de token</p>
+                        </div>
+                        <button @click="notif.tokens = !notif.tokens" class="relative w-11 h-6 rounded-full transition-colors duration-200 cursor-not-allowed opacity-60" disabled>
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 translate-x-5"></span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-text-muted pt-1">Las notificaciones de token siempre están activas. Son críticas para el proceso de inscripción.</p>
+                </div>
+            </div>
+
+            <!-- CAMBIAR CONTRASEÑA -->
+            <div class="bg-navy-dark border border-navy-mid rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid">
+                    <h2 class="font-heading text-xl">Cambiar contraseña</h2>
+                </div>
+                <form class="p-6" @submit.prevent="savePw()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div class="md:col-span-2">
+                            <label class="form-label">Contraseña actual</label>
+                            <input type="password" class="form-input" placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label class="form-label">Nueva contraseña</label>
+                            <input type="password" class="form-input" placeholder="Mín. 8 caracteres">
+                        </div>
+                        <div>
+                            <label class="form-label">Confirmar nueva contraseña</label>
+                            <input type="password" class="form-input" placeholder="Repite la nueva contraseña">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-text-muted">La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.</p>
+                        <button type="submit" class="px-6 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition flex-shrink-0 ml-4">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ZONA DE PELIGRO -->
+            <div class="bg-error-brand/5 border border-error-brand/30 rounded-xl p-5">
+                <h3 class="font-heading text-lg text-error-brand mb-2">Zona de peligro</h3>
+                <p class="text-sm text-text-muted mb-4">Eliminar tu cuenta borrará permanentemente tu perfil, historial de puntos e inscripciones. Esta acción no se puede deshacer.</p>
+                <button onclick="alert('En la versión final: abre un flujo de confirmación con reingreso de contraseña antes de eliminar la cuenta.')" class="px-4 py-2 rounded-md border border-error-brand text-error-brand hover:bg-error-brand hover:text-white font-accent uppercase tracking-wider text-xs transition">Eliminar mi cuenta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-navy-deepest border-t border-navy-mid pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-text-muted">
+            <p>© 2026 Asociación Latinoamericana de Surfistas Profesionales. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
