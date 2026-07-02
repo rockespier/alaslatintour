@@ -1,0 +1,22 @@
+# Normalizar archivos de texto en el repositorio
+* text=auto
+
+# Markdown siempre con LF
+*.md text eol=lf
+
+# YAML / JSON / scripts también con LF
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+
+# PowerShell puede usar CRLF en Windows
+*.ps1 text eol=crlf
+
+# Archivos binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary

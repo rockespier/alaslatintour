@@ -1,0 +1,6 @@
+@AlasApp.Api_HostAddress = http://localhost:5132
+
+GET {{AlasApp.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

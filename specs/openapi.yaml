@@ -1,0 +1,3436 @@
+openapi: 3.0.3
+info:
+  title: Enterprise AlasGlobalTour API
+  version: 1.0.0
+  description: >
+    API oficial de la plataforma ALAS Global Tour. Gestiona circuitos, eventos,
+    competidores, inscripciones, pagos, rankings y contenido editorial.
+    Todos los endpoints que expongan puntajes de SurfScores deben incluir
+    la atribución "Results by SurfScores.com" en la respuesta.
+  contact:
+    email: dev@alasglobaltour.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.alasglobaltour.com/v1
+    description: Producción
+  - url: https://api-staging.alasglobaltour.com/v1
+    description: Staging
+
+components:
+  securitySchemes:
+    bearerAuth: # Este es un nombre arbitrario
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Introduce el token JWT de Firebase aquí."
+      
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Autenticación y gestión de sesiones
+  - name: Circuits
+    description: Gestión de circuitos
+  - name: Events
+    description: Gestión de eventos
+  - name: Categories
+    description: Categorías de surf y tarifas
+  - name: Competitors
+    description: Perfil y datos del competidor
+  - name: Inscriptions
+    description: Inscripciones a eventos
+  - name: Payments
+    description: Pagos y transacciones
+  - name: Beach Tokens
+    description: Tokens de pago en playa (flujo efectivo)
+  - name: Rankings
+    description: Rankings y posiciones de liga (caché desde SurfScores)
+  - name: Articles
+    description: Noticias y contenido editorial (proxy WordPress headless)
+  - name: Admin Users
+    description: Gestión de usuarios administrativos y roles
+  - name: Memberships
+    description: Membresías de federaciones y clubes
+  - name: Dashboard
+    description: Estadísticas y métricas administrativas
+  - name: SurfScores
+    description: Integración con la API externa de SurfScores
+
+paths:
+
+  # ═══════════════════════════ AUTH ═══════════════════════════
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registro de nuevo usuario (espectador o competidor)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuario registrado. Los competidores quedan en estado "Pendiente de validación" hasta 48 h.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: El correo electrónico ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/password-reset/request:
+    post:
+      tags: [Auth]
+      summary: Solicitar enlace de recuperación de contraseña
+      description: Siempre responde 200 para evitar enumeración de correos. Enlace enviado desde noreply@alasglobaltour.com, expira en 30 minutos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Enlace enviado (respuesta uniforme independientemente de si el correo existe)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [Auth]
+      summary: Confirmar nueva contraseña con token de recuperación
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '200':
+          description: Contraseña actualizada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesión e invalidar token JWT
+      responses:
+        '200':
+          description: Sesión cerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ CIRCUITS ═══════════════════════════
+
+  /circuits:
+    get:
+      tags: [Circuits]
+      summary: Listar circuitos
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CircuitStatus'
+        - name: year
+          in: query
+          schema:
+            type: integer
+            minimum: 2020
+            maximum: 2030
+        - name: modalidad
+          in: query
+          schema:
+            $ref: '#/components/schemas/CircuitModalidad'
+      responses:
+        '200':
+          description: Lista de circuitos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Circuits]
+      summary: Crear circuito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CircuitRequest'
+      responses:
+        '201':
+          description: Circuito creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /circuits/{circuitId}:
+    parameters:
+      - $ref: '#/components/parameters/CircuitId'
+    get:
+      tags: [Circuits]
+      summary: Obtener circuito por ID
+      responses:
+        '200':
+          description: Circuito encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Circuits]
+      summary: Actualizar circuito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CircuitRequest'
+      responses:
+        '200':
+          description: Circuito actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CircuitResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Circuits]
+      summary: Eliminar circuito
+      responses:
+        '204':
+          description: Circuito eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No se puede eliminar un circuito con eventos asociados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ EVENTS ═══════════════════════════
+
+  /events:
+    get:
+      tags: [Events]
+      summary: Listar eventos (público y admin)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: circuitId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/EventStatusPublic'
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: stars
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+      responses:
+        '200':
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Events]
+      summary: Crear evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '201':
+          description: Evento creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      summary: Obtener evento por ID
+      responses:
+        '200':
+          description: Evento encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Events]
+      summary: Actualizar evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '200':
+          description: Evento actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Events]
+      summary: Eliminar evento
+      responses:
+        '204':
+          description: Evento eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No se puede eliminar un evento con inscripciones confirmadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}/categories:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      summary: Categorías habilitadas para el evento (con cupo y tarifas efectivas)
+      responses:
+        '200':
+          description: Categorías del evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  useCircuitTariffs:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventCategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Events]
+      summary: Actualizar categorías y tarifas habilitadas para el evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categories]
+              properties:
+                useCircuitTariffs:
+                  type: boolean
+                  description: true hereda tarifas del circuito; false usa tarifas personalizadas por categoría
+                categories:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EventCategoryRequest'
+      responses:
+        '200':
+          description: Categorías actualizadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventCategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}/inscriptions:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      summary: Inscritos de un evento con ranking previo y actual (vista admin)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/InscriptionStatusAdmin'
+      responses:
+        '200':
+          description: Lista de inscritos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInscriptionListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}/results:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      summary: Resultados del evento por categoría
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultados con atribución obligatoria de SurfScores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attribution:
+                    type: string
+                    example: Results by SurfScores.com
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventResultResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Events]
+      summary: Registrar resultados de un evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryId, results]
+              properties:
+                categoryId:
+                  type: string
+                results:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EventResultRequest'
+      responses:
+        '201':
+          description: Resultados registrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventResultResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}/prize-distribution:
+    parameters:
+      - $ref: '#/components/parameters/EventId'
+    get:
+      tags: [Events]
+      summary: Distribución de premios según el nivel de estrellas del evento
+      responses:
+        '200':
+          description: Tabla de premios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stars:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrizeDistributionRow'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ CATEGORIES ═══════════════════════════
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Listar categorías de surf
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CategoryStatus'
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CategoryResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Categories]
+      summary: Crear categoría
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Categoría creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{categoryId}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+    get:
+      tags: [Categories]
+      summary: Obtener categoría por ID
+      responses:
+        '200':
+          description: Categoría encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Categories]
+      summary: Actualizar categoría (incluye categoría sucesiva por límite de edad)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          description: Categoría actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Categories]
+      summary: Eliminar categoría
+      responses:
+        '204':
+          description: Categoría eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Categoría en uso, no se puede eliminar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{categoryId}/tariffs:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+    get:
+      tags: [Categories]
+      summary: Matriz de tarifas de la categoría (5 filas, una por nivel de estrellas)
+      responses:
+        '200':
+          description: Tarifas de la categoría
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    minItems: 5
+                    maxItems: 5
+                    items:
+                      $ref: '#/components/schemas/TariffResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{categoryId}/tariffs/{starLevel}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+      - name: starLevel
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+    put:
+      tags: [Categories]
+      summary: Actualizar tarifa para un nivel de estrellas específico
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TariffRequest'
+      responses:
+        '200':
+          description: Tarifa actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TariffResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ COMPETITORS ═══════════════════════════
+
+  /competitors:
+    get:
+      tags: [Competitors]
+      summary: Listar competidores
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+        - name: licenseStatus
+          in: query
+          schema:
+            $ref: '#/components/schemas/LicenseStatus'
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Busca por nombre, apellido o número de licencia
+      responses:
+        '200':
+          description: Lista de competidores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Competitors]
+      summary: Crear perfil de competidor (invocado internamente tras registro)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitorRequest'
+      responses:
+        '201':
+          description: Competidor creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Obtener perfil del competidor
+      responses:
+        '200':
+          description: Perfil del competidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Competitors]
+      summary: Actualizar perfil del competidor (datos personales y deportivos)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitorRequest'
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Competitors]
+      summary: Eliminar cuenta del competidor
+      responses:
+        '204':
+          description: Cuenta eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/license:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    put:
+      tags: [Competitors]
+      summary: Actualizar estado de licencia ALAS (sólo admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/LicenseStatus'
+                licenseNumber:
+                  type: string
+                  example: BR-2310
+                expirationDate:
+                  type: string
+                  format: date
+                enabledCategories:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Licencia actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/notifications:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Obtener preferencias de notificaciones
+      responses:
+        '200':
+          description: Preferencias actuales
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferencesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Competitors]
+      summary: Actualizar preferencias de notificaciones
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferencesRequest'
+      responses:
+        '200':
+          description: Preferencias actualizadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferencesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/inscriptions:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Inscripciones del competidor (Mi perfil → Mis inscripciones)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/InscriptionStatusCompetitor'
+      responses:
+        '200':
+          description: Inscripciones del competidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/points-history:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Historial de puntos (Mi perfil → Historial de puntos)
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+            example: 2026
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Historial de puntos con atribución de SurfScores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsHistoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/calendar:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Eventos inscritos del competidor (Mi perfil → Mi calendario)
+      responses:
+        '200':
+          description: Calendario de eventos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarEventResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /competitors/{competitorId}/calendar/export:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Exportar calendario en formato iCal (.ics)
+      responses:
+        '200':
+          description: Archivo iCal para importar en Google Calendar u otros
+          content:
+            text/calendar:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ INSCRIPTIONS ═══════════════════════════
+
+  /inscriptions:
+    get:
+      tags: [Inscriptions]
+      summary: Listar inscripciones (admin)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: eventId
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/InscriptionStatusAdmin'
+      responses:
+        '200':
+          description: Lista de inscripciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInscriptionListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Inscriptions]
+      summary: Crear inscripción (paso 3 del wizard de inscripción)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscriptionRequest'
+      responses:
+        '201':
+          description: Inscripción creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Cupo agotado o el competidor ya está inscrito en esta categoría
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inscriptions/{inscriptionId}:
+    parameters:
+      - $ref: '#/components/parameters/InscriptionId'
+    get:
+      tags: [Inscriptions]
+      summary: Obtener inscripción por ID
+      responses:
+        '200':
+          description: Inscripción encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Inscriptions]
+      summary: Actualizar inscripción (número de camiseta, estado, notas)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscriptionUpdateRequest'
+      responses:
+        '200':
+          description: Inscripción actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Inscriptions]
+      summary: Cancelar inscripción
+      responses:
+        '204':
+          description: Inscripción cancelada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No se puede cancelar una inscripción ya completada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ PAYMENTS ═══════════════════════════
+
+  /payments:
+    get:
+      tags: [Payments]
+      summary: Listar transacciones de pago (admin)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: method
+          in: query
+          schema:
+            $ref: '#/components/schemas/PaymentMethodEnum'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/PaymentStatusAdmin'
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de pagos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Payments]
+      summary: Registrar pago (callback de PayPal o confirmación de pago en playa)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201':
+          description: Pago registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/kpis:
+    get:
+      tags: [Payments]
+      summary: KPIs financieros del mes actual (dashboard de pagos)
+      responses:
+        '200':
+          description: KPIs del módulo de pagos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentKpiResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/{paymentId}:
+    parameters:
+      - $ref: '#/components/parameters/PaymentId'
+    get:
+      tags: [Payments]
+      summary: Obtener pago por ID
+      responses:
+        '200':
+          description: Pago encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Payments]
+      summary: Actualizar estado de pago (p.ej. validar pago en playa)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentUpdateRequest'
+      responses:
+        '200':
+          description: Pago actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ BEACH TOKENS ═══════════════════════════
+
+  /payments/beach/request:
+    post:
+      tags: [Beach Tokens]
+      summary: Competidor solicita token de pago en playa
+      description: >
+        El sistema notifica al administrador por correo. El token generado es válido
+        para todas las categorías del mismo proceso de inscripción. TTL del token: 24 h.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeachTokenRequest'
+      responses:
+        '201':
+          description: Solicitud enviada, pendiente de aprobación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenPendingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Ya existe una solicitud de token activa para esta inscripción
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/beach/redeem:
+    post:
+      tags: [Beach Tokens]
+      summary: Competidor canjea un token para activar su inscripción
+      description: >
+        HTTP 400 con código "token_expired" si han pasado más de 24 h desde la emisión.
+        El frontend invitará al usuario a re-solicitar un token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeachTokenRedeemRequest'
+      responses:
+        '200':
+          description: Token válido — inscripción activada con estado financiero pendiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenRedeemResponse'
+        '400':
+          description: Token inválido, expirado o ya utilizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/beach/tokens:
+    get:
+      tags: [Beach Tokens]
+      summary: Listar solicitudes y tokens (admin)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TokenHistoryStatus'
+      responses:
+        '200':
+          description: Solicitudes pendientes e historial de tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenAdminListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/beach/tokens/{tokenId}/approve:
+    parameters:
+      - $ref: '#/components/parameters/TokenId'
+    post:
+      tags: [Beach Tokens]
+      summary: Administrador aprueba solicitud de token — genera código y lo envía por correo
+      responses:
+        '200':
+          description: Token aprobado y enviado al correo del competidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenAdminResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: La solicitud ya fue procesada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /payments/beach/tokens/{tokenId}/reject:
+    parameters:
+      - $ref: '#/components/parameters/TokenId'
+    post:
+      tags: [Beach Tokens]
+      summary: Administrador rechaza solicitud de token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  minLength: 10
+                  example: Documentación incompleta
+      responses:
+        '200':
+          description: Solicitud rechazada, competidor notificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeachTokenAdminResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: La solicitud ya fue procesada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ RANKINGS ═══════════════════════════
+
+  /rankings:
+    get:
+      tags: [Rankings]
+      summary: Ranking por categoría y temporada (caché desde SurfScores)
+      description: >
+        No usar como live heatboard. Los datos provienen de la caché del BFF .NET.
+        La respuesta siempre incluye el campo "attribution" con valor "Results by SurfScores.com".
+      parameters:
+        - name: categoryId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: open-hombres
+        - name: year
+          in: query
+          schema:
+            type: integer
+            example: 2026
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Ranking con atribución obligatoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /rankings/categories:
+    get:
+      tags: [Rankings]
+      summary: Categorías disponibles en el ranking con años disponibles
+      responses:
+        '200':
+          description: Categorías disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        nombre:
+                          type: string
+                        availableYears:
+                          type: array
+                          items:
+                            type: integer
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ ARTICLES ═══════════════════════════
+
+  /articles:
+    get:
+      tags: [Articles]
+      summary: Listar artículos y noticias (datos limpios desde WordPress headless CMS)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/ArticleCategory'
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de artículos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Articles]
+      summary: Crear artículo (proxy hacia WordPress REST API)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleRequest'
+      responses:
+        '201':
+          description: Artículo creado en WordPress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /articles/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: gabriel-villani-roca-bruja-classic
+    get:
+      tags: [Articles]
+      summary: Obtener artículo por slug
+      responses:
+        '200':
+          description: Artículo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Articles]
+      summary: Actualizar artículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleRequest'
+      responses:
+        '200':
+          description: Artículo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Articles]
+      summary: Eliminar artículo
+      responses:
+        '204':
+          description: Artículo eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ ADMIN USERS ═══════════════════════════
+
+  /admin/users:
+    get:
+      tags: [Admin Users]
+      summary: Listar usuarios administrativos
+      parameters:
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/AdminRole'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AdminUserStatus'
+      responses:
+        '200':
+          description: Lista de usuarios administrativos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Admin Users]
+      summary: Crear usuario administrativo con contraseña temporal y correo de invitación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: El correo ya está en uso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Admin Users]
+      summary: Obtener usuario administrativo
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Admin Users]
+      summary: Actualizar rol o estado del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserUpdateRequest'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Admin Users]
+      summary: Eliminar usuario administrativo
+      responses:
+        '204':
+          description: Usuario eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No se puede eliminar el propio usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/roles:
+    get:
+      tags: [Admin Users]
+      summary: Listar roles con su matriz de permisos por módulo
+      responses:
+        '200':
+          description: Roles y permisos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ MEMBERSHIPS ═══════════════════════════
+
+  /memberships:
+    get:
+      tags: [Memberships]
+      summary: Listar membresías de federaciones y clubes
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/MembershipStatus'
+      responses:
+        '200':
+          description: Lista de membresías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Memberships]
+      summary: Crear membresía
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipRequest'
+      responses:
+        '201':
+          description: Membresía creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /memberships/{membershipId}:
+    parameters:
+      - name: membershipId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Memberships]
+      summary: Obtener membresía
+      responses:
+        '200':
+          description: Membresía encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags: [Memberships]
+      summary: Actualizar membresía
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipRequest'
+      responses:
+        '200':
+          description: Membresía actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [Memberships]
+      summary: Cancelar membresía
+      responses:
+        '204':
+          description: Membresía cancelada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ DASHBOARD ═══════════════════════════
+
+  /admin/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: KPIs y actividad reciente del panel administrativo
+      responses:
+        '200':
+          description: Métricas del dashboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ═══════════════════════════ SURFSCORES ═══════════════════════════
+
+  /surfscores/sync/{circuitId}:
+    parameters:
+      - $ref: '#/components/parameters/CircuitId'
+    post:
+      tags: [SurfScores]
+      summary: Sincronizar ranking de un circuito con surfscores.com
+      description: >
+        El BFF autentica contra surfscores.com/api/v1/users/login con credenciales
+        almacenadas en servidor (nunca expuestas al cliente Angular).
+        Resultado guardado en caché. Prohibido usar como live heatboard.
+      responses:
+        '200':
+          description: Sincronización exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  syncedAt:
+                    type: string
+                    format: date-time
+                  recordsUpdated:
+                    type: integer
+                  circuitCode:
+                    type: string
+                    example: ALAS-OPEN-26
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          description: Rate limit de SurfScores alcanzado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Error al conectar con la API de SurfScores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# ═══════════════════════════════════════════════════════════════════
+# COMPONENTS
+# ═══════════════════════════════════════════════════════════════════
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─── PARAMETERS ───────────────────────────────────────────────
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    CircuitId:
+      name: circuitId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: open26
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: evt-rbc-2026
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: open-hombres
+    CompetitorId:
+      name: competitorId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: comp-br-2310
+    InscriptionId:
+      name: inscriptionId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: ins-00123
+    PaymentId:
+      name: paymentId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: pay-00456
+    TokenId:
+      name: tokenId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: tok-00789
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: usr-001
+
+  # ─── REUSABLE RESPONSES ───────────────────────────────────────
+  responses:
+    BadRequest:
+      description: Error de validación en la solicitud
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    Unauthorized:
+      description: No autenticado o token inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ─── SCHEMAS ──────────────────────────────────────────────────
+  schemas:
+
+    # ── ENUMS ─────────────────────────────────────────────────────
+
+    CircuitStatus:
+      type: string
+      enum: [Activo, Borrador, Archivado, Próximo]
+
+    CircuitRegion:
+      type: string
+      enum: [Latinoamérica, América del Sur, América Central, América del Norte]
+
+    CircuitModalidad:
+      type: string
+      enum: [Shortboard, Longboard, Mixed]
+
+    EventStatusPublic:
+      type: string
+      enum: [Inscripciones Abiertas, Próximamente, Completado, Cerrado]
+
+    EventStatusAdmin:
+      type: string
+      enum: [Activo, Próximamente, Completado, Cancelado, Borrador]
+
+    EventAccessType:
+      type: string
+      enum: [Abierto, Restringido, Solo invitación]
+
+    CategoryStatus:
+      type: string
+      enum: [Activo, Inactivo]
+
+    CategoryGender:
+      type: string
+      enum: [Masculino, Femenino, Ambos]
+
+    InscriptionStatusAdmin:
+      type: string
+      enum: [Pagado, Pendiente]
+
+    InscriptionStatusCompetitor:
+      type: string
+      enum: [confirmado, pendiente, completado]
+
+    PaymentMethodEnum:
+      type: string
+      enum: [paypal, beach]
+
+    PaymentStatusAdmin:
+      type: string
+      enum: [Confirmado, Pendiente]
+
+    LicenseStatus:
+      type: string
+      enum: [Activa, Pendiente de validación]
+
+    TokenHistoryStatus:
+      type: string
+      enum: [Usado, Expirado, Rechazado, Pendiente]
+
+    AdminRole:
+      type: string
+      enum: [Super Admin, Admin, Árbitro, Revisor]
+
+    AdminUserStatus:
+      type: string
+      enum: [Activo, Inactivo]
+
+    MembershipPlan:
+      type: string
+      enum: [Mensual, Por evento]
+
+    MembershipStatus:
+      type: string
+      enum: [Activo, Vence pronto]
+
+    ArticleCategory:
+      type: string
+      enum: [Resultados, Circuito, Entrevista, Reglamento, Tecnología]
+
+    ShirtSize:
+      type: string
+      enum: [XS, S, M, L, XL, XXL]
+
+    Postura:
+      type: string
+      enum: [Regular, Goofy]
+
+    UserType:
+      type: string
+      enum: [espectador, competidor]
+
+    PreferredLanguage:
+      type: string
+      enum: [Español, Português, English]
+
+    PermissionLevel:
+      type: string
+      enum: [full, read-only, none]
+
+    AdminModule:
+      type: string
+      enum: [Dashboard, Usuarios, Circuitos, Eventos, Categorías, Inscritos, Pagos, Tokens, Configuración]
+
+    # ── AUTH ──────────────────────────────────────────────────────
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: gabriel.villani@surf.com
+        password:
+          type: string
+          minLength: 8
+        rememberMe:
+          type: boolean
+          default: false
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT Bearer token
+        expiresIn:
+          type: integer
+          example: 3600
+          description: Segundos hasta expiración
+        user:
+          $ref: '#/components/schemas/AuthenticatedUser'
+
+    AuthenticatedUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/UserType'
+        adminRole:
+          $ref: '#/components/schemas/AdminRole'
+          nullable: true
+
+    RegisterRequest:
+      type: object
+      required: [email, password, nombre, apellido, tipo, terminos]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          description: Mínimo 8 caracteres, 1 mayúscula, 1 dígito
+        nombre:
+          type: string
+        apellido:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/UserType'
+        pais:
+          type: string
+          example: Brasil
+        idiomaPreferido:
+          $ref: '#/components/schemas/PreferredLanguage'
+        newsletter:
+          type: boolean
+          default: true
+        terminos:
+          type: boolean
+          description: Debe ser true para completar el registro
+        reglamento:
+          type: boolean
+          description: Requerido sólo cuando tipo = competidor
+        fechaNacimiento:
+          type: string
+          format: date
+          description: Requerido cuando tipo = competidor
+        genero:
+          $ref: '#/components/schemas/CategoryGender'
+        telefono:
+          type: string
+          example: '+55 11 9 8765-4321'
+        club:
+          type: string
+        postura:
+          $ref: '#/components/schemas/Postura'
+        tallaCamiseta:
+          $ref: '#/components/schemas/ShirtSize'
+        federacion:
+          type: string
+        patrocinadores:
+          type: string
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        tipo:
+          $ref: '#/components/schemas/UserType'
+        licenseStatus:
+          $ref: '#/components/schemas/LicenseStatus'
+          nullable: true
+          description: Solo presente cuando tipo = competidor; valor inicial "Pendiente de validación"
+        message:
+          type: string
+          example: Registro exitoso. Tu licencia será validada en las próximas 48 horas.
+
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+          description: Token recibido por correo; expira en 30 minutos
+        newPassword:
+          type: string
+          minLength: 8
+
+    # ── CIRCUITS ──────────────────────────────────────────────────
+
+    CircuitRequest:
+      type: object
+      required: [nombre, temporada, modalidad, region]
+      properties:
+        nombre:
+          type: string
+          example: ALAS Open
+        temporada:
+          type: integer
+          minimum: 2020
+          maximum: 2030
+          example: 2026
+        descripcion:
+          type: string
+        region:
+          $ref: '#/components/schemas/CircuitRegion'
+        modalidad:
+          $ref: '#/components/schemas/CircuitModalidad'
+        estado:
+          $ref: '#/components/schemas/CircuitStatus'
+          default: Borrador
+        surfScoresCode:
+          type: string
+          example: ALAS-OPEN-26
+
+    CircuitResponse:
+      allOf:
+        - $ref: '#/components/schemas/CircuitRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: open26
+            eventsCount:
+              type: integer
+            competidoresCount:
+              type: integer
+            totalPrizeUsd:
+              type: number
+              format: float
+            lastSyncAt:
+              type: string
+              format: date-time
+              nullable: true
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    CircuitListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CircuitResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── EVENTS ────────────────────────────────────────────────────
+
+    EventRequest:
+      type: object
+      required: [nombre, circuitId, fechaInicio, fechaFin, pais, ciudad, playa, stars]
+      properties:
+        nombre:
+          type: string
+          example: Roca Bruja Classic
+        circuitId:
+          type: string
+          example: open26
+        fechaInicio:
+          type: string
+          format: date
+          example: '2026-07-12'
+        fechaFin:
+          type: string
+          format: date
+          example: '2026-07-15'
+        pais:
+          type: string
+          example: Perú
+        ciudad:
+          type: string
+          example: Chicama
+        playa:
+          type: string
+          example: Roca Bruja
+        stars:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 3
+        capacidadMaxima:
+          type: integer
+          example: 60
+        prizeAmountUsd:
+          type: number
+          format: float
+          example: 5000
+        surfScoresCode:
+          type: string
+          example: RBC-2026-PER
+        accessType:
+          $ref: '#/components/schemas/EventAccessType'
+        estado:
+          $ref: '#/components/schemas/EventStatusAdmin'
+          default: Borrador
+
+    EventResponse:
+      allOf:
+        - $ref: '#/components/schemas/EventRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: evt-rbc-2026
+            enrolledCount:
+              type: integer
+            statusPublic:
+              $ref: '#/components/schemas/EventStatusPublic'
+            lugar:
+              type: string
+              example: Chicama, Perú
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    EventListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    EventCategoryRequest:
+      type: object
+      required: [categoryId]
+      properties:
+        categoryId:
+          type: string
+        customTariffUsd:
+          type: number
+          format: float
+          nullable: true
+          description: null hereda tarifa del circuito
+        customTariffCop:
+          type: number
+          format: float
+          nullable: true
+        capacidad:
+          type: integer
+          nullable: true
+
+    EventCategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/EventCategoryRequest'
+        - type: object
+          properties:
+            categoryName:
+              type: string
+            effectiveTariffUsd:
+              type: number
+              format: float
+            effectiveTariffCop:
+              type: number
+              format: float
+            enrolledCount:
+              type: integer
+
+    # ── CATEGORIES ────────────────────────────────────────────────
+
+    CategoryRequest:
+      type: object
+      required: [nombre, gender]
+      properties:
+        nombre:
+          type: string
+          example: Open Hombres
+        descripcion:
+          type: string
+        gender:
+          $ref: '#/components/schemas/CategoryGender'
+        ageRestriction:
+          type: boolean
+          default: false
+        minAge:
+          type: integer
+          nullable: true
+        maxAge:
+          type: integer
+          nullable: true
+        successorCategoryId:
+          type: string
+          nullable: true
+          description: ID de la categoría a la que el competidor pasa al superar el límite de edad (Sub-18 → Open)
+        status:
+          $ref: '#/components/schemas/CategoryStatus'
+          default: Activo
+
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/CategoryRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: open-hombres
+            successorCategory:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                nombre:
+                  type: string
+            createdAt:
+              type: string
+              format: date-time
+
+    TariffRequest:
+      type: object
+      required: [usd, cop]
+      properties:
+        usd:
+          type: number
+          format: float
+          example: 75
+        cop:
+          type: number
+          format: float
+          example: 308000
+        active:
+          type: boolean
+          default: true
+
+    TariffResponse:
+      allOf:
+        - $ref: '#/components/schemas/TariffRequest'
+        - type: object
+          properties:
+            starLevel:
+              type: integer
+              minimum: 1
+              maximum: 5
+
+    # ── COMPETITORS ───────────────────────────────────────────────
+
+    CompetitorRequest:
+      type: object
+      required: [nombre, apellido, email, pais, fechaNacimiento]
+      properties:
+        nombre:
+          type: string
+        apellido:
+          type: string
+        email:
+          type: string
+          format: email
+        fechaNacimiento:
+          type: string
+          format: date
+          example: '1998-04-22'
+        genero:
+          type: string
+          enum: [Masculino, Femenino, Prefiero no indicar]
+        pais:
+          type: string
+          example: Brasil
+        telefono:
+          type: string
+          example: '+55 11 9 8765-4321'
+        club:
+          type: string
+        postura:
+          $ref: '#/components/schemas/Postura'
+        tallaCamiseta:
+          $ref: '#/components/schemas/ShirtSize'
+        numeroCamiseta:
+          type: string
+          example: '#23'
+        patrocinadores:
+          type: string
+        federacion:
+          type: string
+
+    CompetitorResponse:
+      allOf:
+        - $ref: '#/components/schemas/CompetitorRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: comp-br-2310
+            surfScoresCode:
+              type: string
+              example: SS-BR-2310
+              description: Asignado por el sistema; no editable por el usuario
+            license:
+              $ref: '#/components/schemas/LicenseInfo'
+            createdAt:
+              type: string
+              format: date-time
+
+    LicenseInfo:
+      type: object
+      properties:
+        number:
+          type: string
+          example: BR-2310
+        numberLong:
+          type: string
+          example: BRA-2026-0142
+        status:
+          $ref: '#/components/schemas/LicenseStatus'
+        expirationDate:
+          type: string
+          format: date
+        enabledCategories:
+          type: array
+          items:
+            type: string
+
+    CompetitorListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetitorResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    NotificationPreferencesRequest:
+      type: object
+      properties:
+        email:
+          type: boolean
+        push:
+          type: boolean
+        resultados:
+          type: boolean
+        inscripciones:
+          type: boolean
+
+    NotificationPreferencesResponse:
+      allOf:
+        - $ref: '#/components/schemas/NotificationPreferencesRequest'
+        - type: object
+          properties:
+            tokens:
+              type: boolean
+              description: Siempre true; no configurable por el usuario
+
+    CalendarEventResponse:
+      type: object
+      properties:
+        eventId:
+          type: string
+        nombre:
+          type: string
+        lugar:
+          type: string
+        fechaInicio:
+          type: string
+          format: date
+        fechaFin:
+          type: string
+          format: date
+        categoria:
+          type: string
+        inscriptionStatus:
+          $ref: '#/components/schemas/InscriptionStatusCompetitor'
+        stars:
+          type: integer
+
+    # ── INSCRIPTIONS ──────────────────────────────────────────────
+
+    InscriptionRequest:
+      type: object
+      required: [competitorId, eventId, categoryId, paymentMethod, reglamento]
+      properties:
+        competitorId:
+          type: string
+        eventId:
+          type: string
+        categoryId:
+          type: string
+        shirtNumber:
+          type: string
+          example: '#23'
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        reglamento:
+          type: boolean
+          description: El competidor acepta el reglamento ALAS
+
+    InscriptionUpdateRequest:
+      type: object
+      properties:
+        shirtNumber:
+          type: string
+        estadoAdmin:
+          $ref: '#/components/schemas/InscriptionStatusAdmin'
+        notes:
+          type: string
+
+    InscriptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ins-00123
+        competitor:
+          type: object
+          properties:
+            id:
+              type: string
+            fullName:
+              type: string
+            country:
+              type: string
+        event:
+          type: object
+          properties:
+            id:
+              type: string
+            nombre:
+              type: string
+            lugar:
+              type: string
+        category:
+          type: object
+          properties:
+            id:
+              type: string
+            nombre:
+              type: string
+        circuit:
+          type: object
+          properties:
+            id:
+              type: string
+            nombre:
+              type: string
+        shirtNumber:
+          type: string
+          nullable: true
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        montoUsd:
+          type: number
+          format: float
+        estadoAdmin:
+          $ref: '#/components/schemas/InscriptionStatusAdmin'
+        estadoCompetidor:
+          $ref: '#/components/schemas/InscriptionStatusCompetitor'
+        resultado:
+          type: string
+          nullable: true
+          example: 3° lugar · 920 pts
+        transaccionId:
+          type: string
+          nullable: true
+        inscripcionAt:
+          type: string
+          format: date-time
+
+    InscriptionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/InscriptionResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    AdminInscriptionRow:
+      type: object
+      properties:
+        id:
+          type: string
+        sequentialNumber:
+          type: string
+          description: Número secuencial de 3 dígitos (e.g., "001")
+          example: '007'
+        fullName:
+          type: string
+        country:
+          type: string
+        ranking2025:
+          type: string
+          nullable: true
+          example: '3°'
+        ranking2026:
+          type: string
+          nullable: true
+        categoria:
+          type: string
+        inscripcionDate:
+          type: string
+          format: date
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        montoUsd:
+          type: number
+          format: float
+        estadoAdmin:
+          $ref: '#/components/schemas/InscriptionStatusAdmin'
+        federacion:
+          type: string
+        licenciaNumber:
+          type: string
+        transaccionId:
+          type: string
+          nullable: true
+        notas:
+          type: string
+          nullable: true
+
+    AdminInscriptionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminInscriptionRow'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── PAYMENTS ──────────────────────────────────────────────────
+
+    PaymentRequest:
+      type: object
+      required: [inscriptionId, method, amountUsd, transactionId]
+      properties:
+        inscriptionId:
+          type: string
+        method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        amountUsd:
+          type: number
+          format: float
+        transactionId:
+          type: string
+          description: "PayPal: PP-XXXXXXXX | Beach token: XXXX-XXXX"
+          example: PP-9X8C7B2A
+
+    PaymentUpdateRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/PaymentStatusAdmin'
+        notes:
+          type: string
+
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: pay-00456
+        fecha:
+          type: string
+          format: date
+        competidor:
+          type: string
+        evento:
+          type: string
+        categoria:
+          type: string
+        montoUsd:
+          type: number
+          format: float
+        metodo:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        transaccionId:
+          type: string
+        estado:
+          $ref: '#/components/schemas/PaymentStatusAdmin'
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PaymentKpiResponse:
+      type: object
+      properties:
+        totalRecaudadoMes:
+          type: number
+          format: float
+        tendenciaPercent:
+          type: integer
+          description: Variación porcentual respecto al mes anterior
+        pagoPaypalConfirmados:
+          type: object
+          properties:
+            amountUsd:
+              type: number
+            count:
+              type: integer
+        pagosPlayaValidados:
+          type: object
+          properties:
+            amountUsd:
+              type: number
+            count:
+              type: integer
+            pendingCount:
+              type: integer
+        membresiasActivas:
+          type: object
+          properties:
+            amountUsd:
+              type: number
+            count:
+              type: integer
+
+    # ── BEACH TOKENS ──────────────────────────────────────────────
+
+    BeachTokenRequest:
+      type: object
+      required: [inscriptionId]
+      properties:
+        inscriptionId:
+          type: string
+          description: El token aprobado es válido para todas las categorías del mismo proceso de inscripción
+
+    BeachTokenPendingResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+        status:
+          type: string
+          enum: [pending]
+        message:
+          type: string
+          example: Solicitud enviada. El administrador aprobará tu token en breve.
+
+    BeachTokenRedeemRequest:
+      type: object
+      required: [inscriptionId, tokenCode]
+      properties:
+        inscriptionId:
+          type: string
+        tokenCode:
+          type: string
+          pattern: '^[A-Z0-9]{4}-[A-Z0-9]{4}$'
+          example: A3K9-Z2MX
+
+    BeachTokenRedeemResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        reference:
+          type: string
+          example: ALAS-RBC-2026-0048
+        evento:
+          type: string
+        categoria:
+          type: string
+        montoUsd:
+          type: number
+        financialStatus:
+          type: string
+          enum: [pendiente]
+          description: Estado financiero pendiente; se validará presencialmente en el evento
+
+    BeachTokenErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [token_expired, token_invalid, token_already_used, token_rejected]
+        message:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiredAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    BeachTokenAdminResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        competitorName:
+          type: string
+        competitorEmail:
+          type: string
+          format: email
+        event:
+          type: string
+        category:
+          type: string
+        amountUsd:
+          type: number
+        tokenCode:
+          type: string
+          nullable: true
+          description: Presente sólo cuando status = Usado o recién aprobado
+        status:
+          $ref: '#/components/schemas/TokenHistoryStatus'
+        generadoAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiracionAt:
+          type: string
+          format: date-time
+          nullable: true
+        usadoEn:
+          type: string
+          format: date-time
+          nullable: true
+
+    BeachTokenAdminListResponse:
+      type: object
+      properties:
+        pendingRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeachTokenAdminResponse'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeachTokenAdminResponse'
+        dailyStats:
+          type: object
+          properties:
+            pendingCount:
+              type: integer
+            approvedToday:
+              type: integer
+            rejectedToday:
+              type: integer
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── RANKINGS ──────────────────────────────────────────────────
+
+    RankingEntry:
+      type: object
+      properties:
+        pos:
+          type: integer
+          example: 1
+        name:
+          type: string
+        country:
+          type: string
+          example: Perú
+        points:
+          type: integer
+          example: 9860
+        events:
+          type: integer
+        variation:
+          type: integer
+          nullable: true
+          description: Variación de posición vs. semana anterior (positivo = subió)
+
+    RankingResponse:
+      type: object
+      properties:
+        categoryId:
+          type: string
+        categoryName:
+          type: string
+        year:
+          type: integer
+        cachedAt:
+          type: string
+          format: date-time
+        attribution:
+          type: string
+          example: Results by SurfScores.com
+          description: Campo obligatorio por contrato con SurfScores; debe mostrarse en toda UI que presente estos datos
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RankingEntry'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── POINTS HISTORY ────────────────────────────────────────────
+
+    PointsHistoryEntry:
+      type: object
+      properties:
+        eventoId:
+          type: string
+        eventoNombre:
+          type: string
+        ubicacion:
+          type: string
+          example: Chicama, Perú
+        stars:
+          type: integer
+        fechaInicio:
+          type: string
+          format: date
+        fechaFin:
+          type: string
+          format: date
+        categoria:
+          type: string
+        puesto:
+          type: string
+          example: '1°'
+        puntos:
+          type: integer
+        cuenta:
+          type: boolean
+          description: True si este resultado cuenta para el total del ranking (regla de los 5 mejores)
+
+    PointsHistoryResponse:
+      type: object
+      properties:
+        competitorId:
+          type: string
+        temporada:
+          type: integer
+        categoryId:
+          type: string
+        stats:
+          type: object
+          properties:
+            posicion:
+              type: string
+              example: '#4'
+            puntosAcumulados:
+              type: integer
+            eventosDisputados:
+              type: integer
+            totalEventos:
+              type: integer
+            mejorResultado:
+              type: string
+              example: '1°'
+            mejorResultadoEvento:
+              type: string
+        attribution:
+          type: string
+          example: Results by SurfScores.com
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointsHistoryEntry'
+
+    # ── EVENT RESULTS ──────────────────────────────────────────────
+
+    EventResultRequest:
+      type: object
+      required: [competitorId, place, ligaPoints]
+      properties:
+        competitorId:
+          type: string
+        place:
+          type: string
+          example: '1°'
+        ligaPoints:
+          type: integer
+        prizeUsd:
+          type: number
+          format: float
+          nullable: true
+        heatOla1:
+          type: number
+          format: float
+          nullable: true
+        heatOla2:
+          type: number
+          format: float
+          nullable: true
+
+    EventResultResponse:
+      allOf:
+        - $ref: '#/components/schemas/EventResultRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+            competitorName:
+              type: string
+            country:
+              type: string
+            heatScoreTotal:
+              type: number
+              format: float
+              nullable: true
+              description: Suma de ola1 + ola2
+
+    PrizeDistributionRow:
+      type: object
+      properties:
+        placeLabel:
+          type: string
+          example: '1°'
+        prizeUsd:
+          type: number
+          format: float
+          description: Premio en USD para el nivel de estrellas del evento
+
+    # ── ARTICLES ──────────────────────────────────────────────────
+
+    ArticleRequest:
+      type: object
+      required: [titulo, categoria]
+      properties:
+        titulo:
+          type: string
+        resumen:
+          type: string
+        categoria:
+          $ref: '#/components/schemas/ArticleCategory'
+        autor:
+          type: string
+        autorTitulo:
+          type: string
+          example: Periodista ALAS
+        imagenUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        featured:
+          type: boolean
+          default: false
+        relatedEventId:
+          type: string
+          nullable: true
+
+    ArticleResponse:
+      allOf:
+        - $ref: '#/components/schemas/ArticleRequest'
+        - type: object
+          properties:
+            slug:
+              type: string
+              example: gabriel-villani-roca-bruja-classic
+            fechaPublicacion:
+              type: string
+              format: date
+            tiempoLecturaMin:
+              type: integer
+
+    ArticleListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── ADMIN USERS ───────────────────────────────────────────────
+
+    AdminUserRequest:
+      type: object
+      required: [nombre, apellido, email, rol]
+      properties:
+        nombre:
+          type: string
+        apellido:
+          type: string
+        email:
+          type: string
+          format: email
+        rol:
+          $ref: '#/components/schemas/AdminRole'
+        sendInvitationEmail:
+          type: boolean
+          default: true
+
+    AdminUserUpdateRequest:
+      type: object
+      properties:
+        rol:
+          $ref: '#/components/schemas/AdminRole'
+        status:
+          $ref: '#/components/schemas/AdminUserStatus'
+
+    AdminUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        initials:
+          type: string
+          example: GV
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/AdminRole'
+        status:
+          $ref: '#/components/schemas/AdminUserStatus'
+        lastSession:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminUserListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserResponse'
+
+    RolePermission:
+      type: object
+      properties:
+        module:
+          $ref: '#/components/schemas/AdminModule'
+        level:
+          $ref: '#/components/schemas/PermissionLevel'
+
+    RoleResponse:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/AdminRole'
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolePermission'
+
+    RoleListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleResponse'
+
+    # ── MEMBERSHIPS ───────────────────────────────────────────────
+
+    MembershipRequest:
+      type: object
+      required: [clubFederacion, pais, plan, emailContacto]
+      properties:
+        clubFederacion:
+          type: string
+        pais:
+          type: string
+        plan:
+          $ref: '#/components/schemas/MembershipPlan'
+        inicioVigencia:
+          type: string
+          format: date
+        vencimiento:
+          type: string
+          format: date
+        emailContacto:
+          type: string
+          format: email
+
+    MembershipResponse:
+      allOf:
+        - $ref: '#/components/schemas/MembershipRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+            competidoresAfiliados:
+              type: integer
+            estado:
+              $ref: '#/components/schemas/MembershipStatus'
+            createdAt:
+              type: string
+              format: date-time
+
+    MembershipListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipResponse'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ── DASHBOARD ─────────────────────────────────────────────────
+
+    DashboardResponse:
+      type: object
+      properties:
+        kpis:
+          type: object
+          properties:
+            totalCompetidores:
+              type: integer
+            totalEventosActivos:
+              type: integer
+            totalInscripciones:
+              type: integer
+            recaudacionMesUsd:
+              type: number
+              format: float
+            tokensPendientes:
+              type: integer
+        activeEvents:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              nombre:
+                type: string
+              fechaInicio:
+                type: string
+                format: date
+              estado:
+                $ref: '#/components/schemas/EventStatusAdmin'
+              inscritosCount:
+                type: integer
+        recentInscriptions:
+          type: array
+          items:
+            type: object
+            properties:
+              competitorName:
+                type: string
+              evento:
+                type: string
+              categoria:
+                type: string
+              inscripcionAt:
+                type: string
+                format: date-time
+
+    # ── SHARED ────────────────────────────────────────────────────
+
+    PaginationMeta:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        itemsPerPage:
+          type: integer
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+        timestamp:
+          type: string
+          format: date-time

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/src/AlasApp.Api/AlasApp.Api.csproj" />
+    <Project Path="backend/src/AlasApp.Application/AlasApp.Application.csproj" />
+    <Project Path="backend/src/AlasApp.Domain/AlasApp.Domain.csproj" />
+    <Project Path="backend/src/AlasApp.Infrastructure/AlasApp.Infrastructure.csproj" />
+    <Project Path="backend/tests/AlasApp.Api.Tests/AlasApp.Api.Tests.csproj" />
+  </Folder>
+</Solution>
