@@ -39,6 +39,7 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
     public Task<Category?> GetEntityByIdAsync(Guid categoryId, CancellationToken cancellationToken)
     {
         return dbContext.Categories
+            .Include(x => x.Tariffs)
             .Include(x => x.EventCategories)
             .FirstOrDefaultAsync(x => x.Id == categoryId, cancellationToken);
     }

@@ -14,6 +14,17 @@ public sealed class ExceptionHandlingMiddleware(
         {
             await next(context);
         }
+        catch (BeachTokenOperationException exception)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = exception.ErrorCode,
+                message = exception.Message,
+                issuedAt = exception.IssuedAt,
+                expiredAt = exception.ExpiredAt
+            });
+        }
         catch (ValidationException exception)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -41,6 +52,16 @@ public sealed class ExceptionHandlingMiddleware(
             await context.Response.WriteAsJsonAsync(new
             {
                 error = "CONFLICT",
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            });
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = "UNAUTHORIZED",
                 message = exception.Message,
                 timestamp = DateTimeOffset.UtcNow
             });

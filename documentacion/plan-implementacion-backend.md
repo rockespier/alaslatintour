@@ -1,6 +1,6 @@
 # Plan de Implementacion Backend ALAS
 
-Ultima actualizacion: 2026-07-02 15:20:00 +02:00
+Ultima actualizacion: 2026-07-07 11:35:00 +02:00
 
 ## Objetivo
 
@@ -82,15 +82,92 @@ Endpoints objetivo:
 - Implementacion de endpoints `GET/PUT /v1/events/{eventId}/categories`.
 - Persistencia EF Core para categorias, tarifas y categorias habilitadas por evento.
 - Tests de integracion HTTP para `Categories` y `Event Categories`.
+- Implementacion de endpoints `GET /v1/categories/{categoryId}/tariffs` y `PUT /v1/categories/{categoryId}/tariffs/{starLevel}`.
+- Modelado completo de `Competitors`.
+- Persistencia EF Core code-first para `Competitors` y categorias habilitadas de licencia.
+- Implementacion de endpoints CRUD base para `Competitors`:
+  - `GET /v1/competitors`
+  - `POST /v1/competitors`
+  - `GET /v1/competitors/{competitorId}`
+  - `PUT /v1/competitors/{competitorId}`
+  - `DELETE /v1/competitors/{competitorId}`
+- Implementacion de endpoints restantes de `Competitors`:
+  - `PUT /v1/competitors/{competitorId}/license`
+  - `GET /v1/competitors/{competitorId}/notifications`
+  - `PUT /v1/competitors/{competitorId}/notifications`
+  - `GET /v1/competitors/{competitorId}/inscriptions`
+  - `GET /v1/competitors/{competitorId}/points-history`
+  - `GET /v1/competitors/{competitorId}/calendar`
+  - `GET /v1/competitors/{competitorId}/calendar/export`
+- Tests de integracion HTTP para `Category Tariffs` y CRUD base de `Competitors`.
+- Tests de integracion HTTP para licencia, notificaciones, historial y calendario de `Competitors`.
+- Modelado completo de `Inscriptions`.
+- Persistencia EF Core code-first para `Inscriptions`.
+- Implementacion de endpoints de `Inscriptions`:
+  - `GET /v1/events/{eventId}/inscriptions`
+  - `GET /v1/inscriptions`
+  - `POST /v1/inscriptions`
+  - `GET /v1/inscriptions/{inscriptionId}`
+  - `PUT /v1/inscriptions/{inscriptionId}`
+  - `DELETE /v1/inscriptions/{inscriptionId}`
+- Integracion de `Inscriptions` con `Competitors` para:
+  - `GET /v1/competitors/{competitorId}/inscriptions`
+  - `GET /v1/competitors/{competitorId}/calendar`
+  - `GET /v1/competitors/{competitorId}/calendar/export`
+- Tests de integracion HTTP para `Inscriptions`.
+- Modelado completo de `Payments`.
+- Modelado completo de `Beach Tokens`.
+- Persistencia EF Core code-first para `Payments` y `BeachTokens`.
+- Implementacion de endpoints de `Payments`:
+  - `GET /v1/payments`
+  - `POST /v1/payments`
+  - `GET /v1/payments/{paymentId}`
+  - `PUT /v1/payments/{paymentId}`
+  - `GET /v1/payments/kpis`
+- Implementacion de endpoints de `Beach Tokens`:
+  - `POST /v1/payments/beach/request`
+  - `POST /v1/payments/beach/redeem`
+  - `GET /v1/payments/beach/tokens`
+  - `POST /v1/payments/beach/tokens/{tokenId}/approve`
+  - `POST /v1/payments/beach/tokens/{tokenId}/reject`
+- Integracion de `Beach Tokens` con `Inscriptions` y `Payments` para:
+  - solicitud
+  - aprobacion/rechazo
+  - canje con pago pendiente
+  - validacion posterior del pago en playa
+- Migracion EF Core para `Payments` + `BeachTokens`.
+- Tests de integracion HTTP para `Payments` y `Beach Tokens`.
+- Modelado completo de `Rankings`.
+- Persistencia EF Core code-first para `RankingSnapshots` y `RankingSnapshotEntries`.
+- Implementacion de endpoints de `Rankings`:
+  - `GET /v1/rankings`
+  - `GET /v1/rankings/categories`
+- Implementacion del adapter interno `SurfScores` para construir cache deterministico desde datos locales.
+- Implementacion de endpoint de sincronizacion:
+  - `POST /v1/surfscores/sync/{circuitId}`
+- Tests de integracion HTTP para sincronizacion y consulta de rankings.
+- Slice de autenticacion y sesiones base:
+  - `POST /v1/auth/login`
+  - `POST /v1/auth/register`
+  - `POST /v1/auth/password-reset/request`
+  - `POST /v1/auth/password-reset/confirm`
+  - `POST /v1/auth/logout`
+- Modelado code-first de `UserAccount` y `PasswordResetToken`.
+- Persistencia SQL Server para autenticacion con migracion EF Core dedicada.
+- Hash de contraseña con PBKDF2 y emision/validacion de JWT con invalidacion por version de token.
+- Registro de competidores desde `auth/register` enlazado con `Competitors`.
+- Tests de integracion HTTP para login, registro, logout y password reset.
 
 ### En curso
 
-- Lote 3: `Category Tariffs` + `Competitors`.
+- Lote 7 y 8 pausados temporalmente mientras se cierra la base de autenticacion.
 
 ### Pendiente
 
-- Lotes funcionales restantes a partir de `Category Tariffs`.
-- Migraciones EF Core formales para sustituir `EnsureCreated` cuando se estabilice el modelo.
+- Continuar `Articles` y adapter `WordPress`.
+- Continuar `Admin Users`, `Roles`, `Dashboard` y `Memberships`.
+- Endurecer autorizacion por rol sobre endpoints administrativos una vez se implemente `Admin Users`.
+- Lotes funcionales restantes a partir de `Rankings`.
 - Integraciones externas reales (`SurfScores`, `WordPress`).
 
 ## Arquitectura objetivo por modulo
@@ -159,29 +236,26 @@ Endpoints objetivo:
 
 ### Dia 3
 
-- `Category Tariffs`
-- `Competitors` siguiente lote recomendado
-
-### Dia 3
-
-- `Competitors`
+- `Category Tariffs` completado
+- `Competitors` completado
 
 ### Dia 4
 
-- `Inscriptions`
+- `Inscriptions` completado
 
 ### Dia 5
 
-- `Payments`
-- `Beach Tokens`
+- `Payments` completado
+- `Beach Tokens` completado
 
 ### Dia 6
 
-- `Rankings`
-- adapter `SurfScores`
+- `Rankings` completado
+- adapter `SurfScores` completado
 
 ### Dia 7
 
+- `Auth` base completado antes de iniciar el lote
 - `Articles`
 - adapter `WordPress`
 

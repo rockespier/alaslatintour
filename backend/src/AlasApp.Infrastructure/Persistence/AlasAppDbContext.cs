@@ -17,6 +17,24 @@ public sealed class AlasAppDbContext(DbContextOptions<AlasAppDbContext> options)
 
     public DbSet<EventCategory> EventCategories => Set<EventCategory>();
 
+    public DbSet<Competitor> Competitors => Set<Competitor>();
+
+    public DbSet<CompetitorLicenseCategory> CompetitorLicenseCategories => Set<CompetitorLicenseCategory>();
+
+    public DbSet<Inscription> Inscriptions => Set<Inscription>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<BeachToken> BeachTokens => Set<BeachToken>();
+
+    public DbSet<RankingSnapshot> RankingSnapshots => Set<RankingSnapshot>();
+
+    public DbSet<RankingSnapshotEntry> RankingSnapshotEntries => Set<RankingSnapshotEntry>();
+
+    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
+
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AlasAppDbContext).Assembly);
