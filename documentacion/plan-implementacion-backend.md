@@ -1,6 +1,6 @@
 # Plan de Implementacion Backend ALAS
 
-Ultima actualizacion: 2026-07-07 11:35:00 +02:00
+Ultima actualizacion: 2026-07-08 11:15:00 +02:00
 
 ## Objetivo
 
@@ -157,18 +157,132 @@ Endpoints objetivo:
 - Hash de contraseña con PBKDF2 y emision/validacion de JWT con invalidacion por version de token.
 - Registro de competidores desde `auth/register` enlazado con `Competitors`.
 - Tests de integracion HTTP para login, registro, logout y password reset.
+- Implementacion de endpoints de `Articles`:
+  - `GET /v1/articles`
+  - `POST /v1/articles`
+  - `GET /v1/articles/{slug}`
+  - `PUT /v1/articles/{slug}`
+  - `DELETE /v1/articles/{slug}`
+- Implementacion del adapter `WordPressService` con `HttpClient` autenticado por Basic Auth.
+- Helper de tiempo de lectura para contenido HTML de WordPress.
+- Tests HTTP del contrato de `Articles` con servicio fake e infraestructura aislada de SQL.
+- Analisis del prototipo `docs/noticias.html` y del contrato WordPress de galerias en `documentacion/gallery.md`.
 
 ### En curso
 
-- Lote 7 y 8 pausados temporalmente mientras se cierra la base de autenticacion.
+- Validacion del adapter real de WordPress en un ambiente con conectividad externa.
+- Extension del lote 7 para galerias de WordPress segun `docs/noticias.html`:
+  - consumo del custom post type `GET /wp-json/wp/v2/gallery`
+  - mapeo de `acf.gallery_days`
+  - mapeo de `acf.press_download_link`
+  - mapeo de `acf.event_date`
+  - definicion de endpoints BFF para exponer galerias al frontend
+- Preparacion del lote 8 (`Admin Users`, `Roles`, `Dashboard`, `Memberships`).
+- Referencias aplicadas para `Articles`:
+
+#### En el appsettings.json
+
+{
+  "WordPressConfig": {
+    "BaseUrl": "https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?_embed=1",
+    "Username": "dotnet-bff-service",
+    "AppPassword": "^xPE4#77tv6hHR)I^yh7(X%T"
+  }
+}
+
+
+#### Registro DI considerado
+
+var wpConfig = builder.Configuration.GetSection("WordPressConfig");
+var encodedAuth = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{wpConfig["Username"]}:{wpConfig["AppPassword"]}"));
+
+builder.Services.AddHttpClient<IWordPressService, WordPressService>(client =>
+{
+    client.BaseAddress = new Uri(wpConfig["BaseUrl"]);
+    // Agregamos la cabecera de Authorization nativa
+    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", encodedAuth);
+    // User Agent profesional
+    client.DefaultRequestHeaders.Add("User-Agent", "AlasBFF-DotNet9");
+});
+
+#### Helper para calcular el tiempo de lectura
+
+
+    private static partial Regex HtmlTagsRegex();
+
+    public static int CalculateReadTime(string htmlContent)
+    {
+        if (string.IsNullOrWhiteSpace(htmlContent)) return 1;
+
+        // Limpiamos los tags HTML de forma ultra-rápida
+        var textOnly = HtmlTagsRegex().Replace(htmlContent, string.Empty);
+        
+        // Contamos las palabras
+        var wordCount = textOnly.Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        
+        // 200 palabras por minuto es el estándar de lectura
+        var minutes = (int)Math.Ceiling(wordCount / 200.0);
+        
+        return minutes == 0 ? 1 : minutes;
+    }
+}
+
+#### Contrato (DTO) para Angular
+
+
+public sealed record WpMeta(
+    [property: JsonPropertyName("author_role")] string AuthorRole,
+    // C# serializa automáticamente el true/false de la API REST
+    [property: JsonPropertyName("show_ranking")] bool ShowRanking 
+);
+
+[//]: # Y en el DTO final para Angular:
+public record NewsArticleDto(
+    int Id,
+    string Title,
+    string Content,
+    string AuthorName,
+    string AuthorRole,     
+    DateTime PublishedDate,
+    int ReadTimeMinutes,
+    bool ShowRankingWidget // <-- Angular leerá esto con un *ngIf="article.showRankingWidget"
+);
+
+[//]: # El Mapeo en tu Servicio 
+
+public async Task<List<NewsArticleDto>> GetNewsForAngularAsync(CancellationToken ct = default)
+{
+    [//]: # 1. Obtenemos la data cruda de WP (asumiendo que ya tienes el método GetNewsAsync)
+    var rawPosts = await _wordPressService.GetNewsAsync(ct);
+
+    [//]: # 2. Mapeamos y calculamos
+    var cleanNews = rawPosts.Select(wp => new NewsArticleDto(
+        Id: wp.Id,
+        Title: wp.Title.Rendered,
+        Content: wp.Content.Rendered,
+        AuthorName: wp.Embedded?.Author?.FirstOrDefault()?.Name ?? "Equipo ALAS",
+        AuthorRole: wp.Meta?.AuthorRole ?? "Redactor",
+        PublishedDate: wp.Date,
+        ReadTimeMinutes: ContentMetricsHelper.CalculateReadTime(wp.Content.Rendered)
+    )).ToList();
+
+    return cleanNews;
+}
+
 
 ### Pendiente
 
-- Continuar `Articles` y adapter `WordPress`.
 - Continuar `Admin Users`, `Roles`, `Dashboard` y `Memberships`.
 - Endurecer autorizacion por rol sobre endpoints administrativos una vez se implemente `Admin Users`.
 - Lotes funcionales restantes a partir de `Rankings`.
-- Integraciones externas reales (`SurfScores`, `WordPress`).
+- Validacion funcional del adapter real contra WordPress.
+- Integraciones externas reales restantes (`SurfScores`, `WordPress`).
+- Implementar en el lote 7 el slice de galerias para cubrir la seccion `Galería` del prototipo:
+  - endpoint listado de galerias publicado por WordPress
+  - endpoint detalle por `slug`
+  - DTOs para dias, fotos y links de descarga
+  - criterios para distinguir assets de foto y video en la respuesta del BFF
+  - tests HTTP con servicio fake para contrato de galerias
 
 ## Arquitectura objetivo por modulo
 
@@ -258,6 +372,7 @@ Endpoints objetivo:
 - `Auth` base completado antes de iniciar el lote
 - `Articles`
 - adapter `WordPress`
+- `Gallery` sobre WordPress custom post type `gallery`
 
 ### Dia 8
 

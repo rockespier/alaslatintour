@@ -1,5 +1,10 @@
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Abstractions.Services;
+using AlasApp.Application.Articles.Commands.CreateArticle;
+using AlasApp.Application.Articles.Commands.DeleteArticle;
+using AlasApp.Application.Articles.Commands.UpdateArticle;
+using AlasApp.Application.Articles.Queries.GetArticleBySlug;
+using AlasApp.Application.Articles.Queries.ListArticles;
 using AlasApp.Application.Auth.Commands.ConfirmPasswordReset;
 using AlasApp.Application.Auth.Commands.LoginUser;
 using AlasApp.Application.Auth.Commands.LogoutUser;
@@ -63,6 +68,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IClock, SystemClock>();
         services.AddScoped<IRequestDispatcher, RequestDispatcher>();
+        services.AddScoped<IRequestHandler<ListArticlesQuery, PagedResult<Articles.Models.ArticleSummaryDto>>, ListArticlesQueryHandler>();
+        services.AddScoped<IRequestHandler<GetArticleBySlugQuery, Articles.Models.ArticleDetailDto>, GetArticleBySlugQueryHandler>();
+        services.AddScoped<IRequestHandler<CreateArticleCommand, Articles.Models.ArticleDetailDto>, CreateArticleCommandHandler>();
+        services.AddScoped<IRequestHandler<UpdateArticleCommand, Articles.Models.ArticleDetailDto>, UpdateArticleCommandHandler>();
+        services.AddScoped<IRequestHandler<DeleteArticleCommand, bool>, DeleteArticleCommandHandler>();
         services.AddScoped<IRequestHandler<RegisterUserCommand, Auth.Models.RegisterResultDto>, RegisterUserCommandHandler>();
         services.AddScoped<IRequestHandler<LoginUserCommand, Auth.Models.LoginResultDto>, LoginUserCommandHandler>();
         services.AddScoped<IRequestHandler<RequestPasswordResetCommand, bool>, RequestPasswordResetCommandHandler>();

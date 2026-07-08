@@ -12,8 +12,8 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="flex items-center justify-between h-16">
 
           <!-- Logo -->
-          <a routerLink="/" class="flex items-center gap-3">
-            <img src="/assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-8 w-auto" />
+          <a routerLink="/" class="flex items-center gap-3">            
+            <img src="assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto" />
           </a>
 
           <!-- Nav desktop -->

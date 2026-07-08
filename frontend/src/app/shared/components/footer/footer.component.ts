@@ -12,14 +12,11 @@ import { RouterLink } from '@angular/router';
 
           <!-- Brand -->
           <div class="md:col-span-2">
-            <img src="/assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-10 w-auto mb-4" />
+            <img src="assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto mb-4" />
             <p class="text-sm text-[#AAAAAA] max-w-xs leading-relaxed">
-              Asociación Latinoamericana de Surfistas Profesionales. El circuito de surf profesional de Latinoamérica.
+              Circuito Continental de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.
             </p>
-            <p class="text-xs text-[#AAAAAA] mt-4">
-              Results by <a href="https://surfscores.com" target="_blank" rel="noopener"
-                class="text-[#0081C6] hover:underline">SurfScores.com</a>
-            </p>
+            
           </div>
 
           <!-- Links -->
@@ -45,7 +42,7 @@ import { RouterLink } from '@angular/router';
         </div>
 
         <div class="border-t border-white/10 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p class="text-xs text-[#AAAAAA]">© {{ year }} ALAS Latin Tour. Todos los derechos reservados.</p>
+          <p class="text-xs text-[#AAAAAA]">© {{ year }} Circuito Continental de Surfistas Profesionales. Todos los derechos reservados.</p>
           <p class="text-xs text-[#AAAAAA]">
             Results by <a href="https://surfscores.com" target="_blank" rel="noopener"
               class="text-[#0081C6] hover:underline">SurfScores.com</a>

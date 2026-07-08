@@ -1,3 +1,6 @@
+using AlasApp.Application.Articles.Commands.CreateArticle;
+using AlasApp.Application.Articles.Commands.UpdateArticle;
+using AlasApp.Application.Articles.Models;
 using AlasApp.Application.Circuits.Commands.CreateCircuit;
 using AlasApp.Application.Circuits.Commands.UpdateCircuit;
 using AlasApp.Application.Circuits.Models;
@@ -65,6 +68,61 @@ public static class ApiContractMapper
             dto.LicenseStatus.HasValue ? ToGeneratedLicenseStatus(dto.LicenseStatus.Value) : null,
             dto.Message,
             ToGeneratedUserType(dto.Tipo));
+    }
+
+    public static Generated.ArticleListResponse ToContract(PagedResult<ArticleSummaryDto> result)
+    {
+        return new Generated.ArticleListResponse(
+            result.Items.Select(ToContract).ToList(),
+            new Generated.PaginationMeta(result.CurrentPage, result.ItemsPerPage, result.TotalItems, result.TotalPages));
+    }
+
+    public static Generated.ArticleResponse ToContract(ArticleSummaryDto dto)
+    {
+        var contract = new Generated.ArticleResponse(
+            dto.Autor,
+            dto.AutorTitulo,
+            ToGeneratedArticleCategory(dto.Categoria),
+            dto.Featured,
+            dto.FechaPublicacion,
+            dto.ImagenUrl,
+            dto.RelatedEventId,
+            dto.Resumen,
+            dto.Slug,
+            dto.Tags.ToList(),
+            dto.TiempoLecturaMin,
+            dto.Titulo);
+
+        contract.AdditionalProperties["id"] = dto.Id;
+        return contract;
+    }
+
+    public static Generated.ArticleResponse ToContract(ArticleDetailDto dto)
+    {
+        var contract = new Generated.ArticleResponse(
+            dto.Author.Name,
+            dto.Author.Role,
+            ToGeneratedArticleCategory(dto.Categoria),
+            dto.Featured,
+            dto.FechaPublicacion,
+            dto.ImagenUrl,
+            dto.RelatedEventId,
+            dto.Resumen,
+            dto.Slug,
+            dto.Tags.ToList(),
+            dto.TiempoLecturaMin,
+            dto.Titulo);
+
+        contract.AdditionalProperties["id"] = dto.Id;
+        contract.AdditionalProperties["content"] = dto.ContentHtml;
+        contract.AdditionalProperties["showRankingWidget"] = dto.ShowRankingWidget;
+        contract.AdditionalProperties["author"] = new
+        {
+            name = dto.Author.Name,
+            role = dto.Author.Role
+        };
+
+        return contract;
     }
 
     public static Generated.CircuitResponse ToContract(CircuitDto dto)
@@ -497,6 +555,39 @@ public static class ApiContractMapper
         return new LoginUserCommand(request.Email, request.Password, request.RememberMe);
     }
 
+    public static CreateArticleCommand ToCommand(Generated.ArticleRequest request)
+    {
+        return new CreateArticleCommand(
+            request.Titulo,
+            request.Resumen,
+            ReadAdditionalString(request.AdditionalProperties, "content") ?? request.Resumen,
+            ToDomainArticleCategory(request.Categoria),
+            request.Autor,
+            request.AutorTitulo,
+            request.ImagenUrl,
+            request.Tags,
+            request.Featured,
+            ReadAdditionalBool(request.AdditionalProperties, "showRankingWidget"),
+            request.RelatedEventId);
+    }
+
+    public static UpdateArticleCommand ToCommand(string slug, Generated.ArticleRequest request)
+    {
+        return new UpdateArticleCommand(
+            slug,
+            request.Titulo,
+            request.Resumen,
+            ReadAdditionalString(request.AdditionalProperties, "content") ?? request.Resumen,
+            ToDomainArticleCategory(request.Categoria),
+            request.Autor,
+            request.AutorTitulo,
+            request.ImagenUrl,
+            request.Tags,
+            request.Featured,
+            ReadAdditionalBool(request.AdditionalProperties, "showRankingWidget"),
+            request.RelatedEventId);
+    }
+
     public static UpdateCircuitCommand ToCommand(Guid circuitId, Generated.CircuitRequest request)
     {
         return new UpdateCircuitCommand(
@@ -767,6 +858,21 @@ public static class ApiContractMapper
             };
     }
 
+    public static ArticleCategory? ParseArticleCategory(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : NormalizeEnumText(value) switch
+            {
+                "resultados" => ArticleCategory.Resultados,
+                "circuito" => ArticleCategory.Circuito,
+                "entrevista" => ArticleCategory.Entrevista,
+                "reglamento" => ArticleCategory.Reglamento,
+                "tecnologia" => ArticleCategory.Tecnologia,
+                _ => throw new ValidationException("Categoría de artículo inválida.", [new ValidationError("category", "Categoría de artículo inválida.")])
+            };
+    }
+
     public static EventStatusPublic? ParseEventStatusPublic(string? value)
     {
         return string.IsNullOrWhiteSpace(value)
@@ -998,6 +1104,19 @@ public static class ApiContractMapper
             Generated.PreferredLanguage.Português => PreferredLanguage.Portugues,
             Generated.PreferredLanguage.English => PreferredLanguage.English,
             _ => throw new ValidationException("Idioma preferido inválido.", [new ValidationError("idiomaPreferido", "Idioma preferido inválido.")])
+        };
+    }
+
+    public static ArticleCategory ToDomainArticleCategory(Generated.ArticleCategory value)
+    {
+        return value switch
+        {
+            Generated.ArticleCategory.Resultados => ArticleCategory.Resultados,
+            Generated.ArticleCategory.Circuito => ArticleCategory.Circuito,
+            Generated.ArticleCategory.Entrevista => ArticleCategory.Entrevista,
+            Generated.ArticleCategory.Reglamento => ArticleCategory.Reglamento,
+            Generated.ArticleCategory.Tecnología => ArticleCategory.Tecnologia,
+            _ => throw new ValidationException("Categoría de artículo inválida.", [new ValidationError("categoria", "Categoría de artículo inválida.")])
         };
     }
 
@@ -1236,6 +1355,19 @@ public static class ApiContractMapper
         };
     }
 
+    private static Generated.ArticleCategory ToGeneratedArticleCategory(ArticleCategory value)
+    {
+        return value switch
+        {
+            ArticleCategory.Resultados => Generated.ArticleCategory.Resultados,
+            ArticleCategory.Circuito => Generated.ArticleCategory.Circuito,
+            ArticleCategory.Entrevista => Generated.ArticleCategory.Entrevista,
+            ArticleCategory.Reglamento => Generated.ArticleCategory.Reglamento,
+            ArticleCategory.Tecnologia => Generated.ArticleCategory.Tecnología,
+            _ => Generated.ArticleCategory.Circuito
+        };
+    }
+
     private static Generated.AdminRole ToGeneratedAdminRole(AdminRole value)
     {
         return value switch
@@ -1284,6 +1416,29 @@ public static class ApiContractMapper
     private static string? NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static string? ReadAdditionalString(IDictionary<string, object> additionalProperties, string key)
+    {
+        return additionalProperties.TryGetValue(key, out var rawValue)
+            ? rawValue?.ToString()
+            : null;
+    }
+
+    private static bool ReadAdditionalBool(IDictionary<string, object> additionalProperties, string key)
+    {
+        if (!additionalProperties.TryGetValue(key, out var rawValue) || rawValue is null)
+        {
+            return false;
+        }
+
+        return rawValue switch
+        {
+            bool value => value,
+            Newtonsoft.Json.Linq.JValue value when value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean => value.ToObject<bool>(),
+            _ when bool.TryParse(rawValue.ToString(), out var parsed) => parsed,
+            _ => false
+        };
     }
 
     private static string NormalizeEnumText(string value)

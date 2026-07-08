@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source "./app";
+@source "./app/**/*.ts";
+@source "./app/**/*.html";
 
 @theme {
   /* ── Colores ── */

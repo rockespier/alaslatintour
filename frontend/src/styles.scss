@@ -132,8 +132,82 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-track { background: #002359; }
 ::-webkit-scrollbar-thumb { background: #0081C6; border-radius: 3px; }
 
+/* ── Skeleton shimmer ── */
+.skeleton {
+  background: linear-gradient(90deg, #004F8E 0%, #243f63 50%, #004F8E 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Masonry gallery ── */
+.masonry { column-count: 2; column-gap: 12px; }
+@media (min-width: 640px) { .masonry { column-count: 3; } }
+@media (min-width: 1024px) { .masonry { column-count: 4; } }
+.masonry > * { break-inside: avoid; margin-bottom: 12px; display: block; }
+
+.photo-tile { position: relative; overflow: hidden; border-radius: 12px; }
+.photo-tile .overlay {
+  position: absolute; inset: 0; padding: 14px;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,35,89,0.92));
+  color: #EEEEEE; opacity: 0; transition: opacity .25s ease;
+  display: flex; align-items: flex-end;
+}
+.photo-tile:hover .overlay { opacity: 1; }
+
+/* ── Article prose ── */
+.prose-article p { color: #C9DDE8; line-height: 1.85; font-size: 1.0625rem; }
+.prose-article p + p { margin-top: 1.25rem; }
+.prose-article figure { margin: 2rem 0; }
+
+.pull-quote {
+  position: relative; padding: 8px 0 8px 52px; margin: 40px 0;
+  font-family: 'Oswald', sans-serif; font-style: italic;
+  font-size: 1.4rem; color: #EEEEEE; line-height: 1.4;
+}
+.pull-quote::before {
+  content: "\201C"; position: absolute; top: -0.3rem; left: 0;
+  font-family: Georgia, serif; font-style: normal;
+  font-size: 3.5rem; line-height: 1; color: #0081C6; opacity: 0.5;
+}
+
+/* ── Results table ── */
+.results-table th { background: #004F8E; color: #AAAAAA; }
+.results-table td, .results-table th { padding: 10px 14px; }
+.results-table tbody tr:not(:last-child) { border-bottom: 1px solid #004F8E; }
+
+/* ── Step indicator (inscripción) ── */
+.step-circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-weight: 600;
+  transition: all .3s ease;
+  border: 2px solid #004F8E; background: #003873; color: #AAAAAA;
+}
+.step-circle.active { background: #0081C6; color: #002359; border-color: #0081C6; box-shadow: 0 0 0 6px rgba(0,129,198,0.15); }
+.step-circle.done { background: #22C55E; color: #fff; border-color: #22C55E; }
+.step-line { flex: 1; height: 2px; background: #004F8E; margin: 0 8px; transition: all .3s ease; max-width: 200px; }
+.step-line.done { background: #22C55E; }
+
+/* ── Category / Payment selector cards ── */
+.category-card { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
+.category-card:hover { border-color: rgba(0,129,198,0.5); }
+.category-card.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.12), rgba(0,129,198,0.02)); box-shadow: 0 0 0 4px rgba(0,129,198,0.1); }
+.payment-card { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
+.payment-card:hover { border-color: rgba(0,129,198,0.5); }
+.payment-card.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.1), rgba(0,129,198,0.02)); }
+
+/* ── Tabs underline ── */
+.tab-btn { position: relative; padding-bottom: 12px; }
+.tab-btn.active { color: #0081C6; }
+.tab-btn.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 3px; background: #0081C6; border-radius: 2px;
+}
+
 /* ── Reduce motion ── */
 @media (prefers-reduced-motion: reduce) {
   .live-dot { animation: none; }
   .card-event:hover { transform: none; }
+  .skeleton { animation: none; background: #003873; }
 }

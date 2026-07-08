@@ -24,7 +24,7 @@ interface TeamMember {
           Quiénes<br><span class="text-cyan-brand">Somos</span>
         </h1>
         <p class="text-lg md:text-xl text-text-muted max-w-3xl mx-auto leading-relaxed">
-          La Asociación Latinoamericana de Surfistas Profesionales, impulsando el surf de alto rendimiento
+          Una organización deportiva de Surfistas Profesionales, impulsando el surf de alto rendimiento
           en el continente desde hace más de dos décadas.
         </p>
       </div>

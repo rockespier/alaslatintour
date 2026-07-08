@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AlasApp.Api.Tests;
 
-public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private const string TestDatabaseName = "AlasAppTests";
     private const string DefaultAdminConnectionString = "Server=.\\SQLEXPRESS;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True;Max Pool Size=200;";
@@ -20,14 +20,19 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         var host = base.CreateHost(builder);
 
-        using var scope = host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
-        EnsureTestDatabaseExists(dbContext);
-        dbContext.Database.Migrate();
-        ResetDatabase(dbContext);
+        if (UseRelationalDatabaseInitialization)
+        {
+            using var scope = host.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+            EnsureTestDatabaseExists(dbContext);
+            dbContext.Database.Migrate();
+            ResetDatabase(dbContext);
+        }
 
         return host;
     }
+
+    protected virtual bool UseRelationalDatabaseInitialization => true;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -54,7 +59,12 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
             services.AddDbContext<AlasAppDbContext>(options => options.UseSqlServer(connectionString));
+            ConfigureTestServices(services);
         });
+    }
+
+    protected virtual void ConfigureTestServices(IServiceCollection services)
+    {
     }
 
     private static string BuildTestDatabaseConnectionString(IConfiguration configuration)

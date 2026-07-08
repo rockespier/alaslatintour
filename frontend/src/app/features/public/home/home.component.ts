@@ -51,7 +51,13 @@ const COUNTRY_FLAGS: Record<string, string> = {
     <!-- ═══ HERO ═══ -->
     <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden">
       <div class="absolute inset-0 opacity-30 pointer-events-none"
-           style="background-image: radial-gradient(rgba(0,129,198,0.15) 1px, transparent 1px); background-size: 32px 32px;"></div>
+           style="background-image: radial-gradient(rgba(0,129,198,0.15) 1px, transparent 1px); background-size: 32px 32px;">
+           <video autoplay muted loop class="bg-video" poster="https://www.alaslatintour.com/content/dist/images/fallback.jpg" preload="auto" playsinline>
+            <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
+            <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
+            Tu navegador no soporta video HTML5.
+        </video>	
+      </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
         <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm md:text-base mb-4">
@@ -78,7 +84,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
              class="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider rounded-md transition">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                d="M9 5V3h6v2m-7 0h8v3a4 4 0 01-8 0V5zm-2 0h2v1a6 6 0 01-6 6V9a4 4 0 014-4zm12 0h2a4 4 0 014 4v3a6 6 0 01-6-6V5zM12 12v6m-3 3h6"/>
             </svg>
             Ranking Actual
           </a>
