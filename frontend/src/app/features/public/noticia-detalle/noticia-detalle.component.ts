@@ -1,31 +1,10 @@
 import { Component, inject, signal, input, OnInit, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Meta, Title } from '@angular/platform-browser';
+import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
+import { ArticleDetail, ArticleSummary, mapArticleDetail, mapArticleSummary } from '../../../core/models/article';
 
-interface ArticleDetail {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  category: string;
-  imageUrl?: string;
-  publishedAt: string;
-  featured?: boolean;
-  readingTime?: number;
-  author?: { name: string; role: string };
-  tags?: string[];
-}
-
-interface RelatedArticle {
-  id: string;
-  slug: string;
-  title: string;
-  category: string;
-  imageUrl?: string;
-  publishedAt: string;
-}
+type RelatedArticle = ArticleSummary;
 
 @Component({
   selector: 'app-noticia-detalle',
@@ -103,7 +82,7 @@ interface RelatedArticle {
         @if (article()!.imageUrl) {
           <figure class="mb-10 rounded-2xl overflow-hidden border border-navy-mid">
             <div class="h-64 sm:h-80 md:h-[420px] relative">
-              <img [src]="article()!.imageUrl" [alt]="article()!.title" class="object-cover w-full h-full">
+              <img [src]="article()!.imageUrl" [alt]="article()!.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
               <span class="absolute bottom-4 right-4 px-3 py-1.5 bg-navy-deepest/80 text-xs text-text-muted rounded backdrop-blur">
                 Foto: ALAS Media
               </span>
@@ -141,7 +120,7 @@ interface RelatedArticle {
                    class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
                   <div class="h-40 bg-gradient-to-br from-cyan-brand/20 via-navy-mid to-orange-brand/20 overflow-hidden">
                     @if (rel.imageUrl) {
-                      <img [src]="rel.imageUrl" [alt]="rel.title" class="object-cover w-full h-full">
+                      <img [src]="rel.imageUrl" [alt]="rel.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
                     }
                   </div>
                   <div class="p-5">
@@ -166,6 +145,7 @@ export class NoticiaDetalleComponent implements OnInit {
   private api = inject(ApiService);
   private titleSvc = inject(Title);
   private meta = inject(Meta);
+  private sanitizer = inject(DomSanitizer);
 
   loading = signal(true);
   notFound = signal(false);
@@ -189,8 +169,9 @@ export class NoticiaDetalleComponent implements OnInit {
     this.notFound.set(false);
     try {
       const res = await this.api.get<any>(`/articles/${slug}`);
-      const data: ArticleDetail = res?.data ?? res;
-      if (!data?.id) { this.notFound.set(true); return; }
+      const raw = res?.data ?? res;
+      if (!raw?.id) { this.notFound.set(true); return; }
+      const data = mapArticleDetail(raw);
       this.article.set(data);
       this.setMeta(data);
       this.loadRelated(data.category, data.id);
@@ -204,7 +185,10 @@ export class NoticiaDetalleComponent implements OnInit {
   private async loadRelated(category: string, excludeId: string): Promise<void> {
     try {
       const res = await this.api.get<any>(`/articles?category=${encodeURIComponent(category)}&limit=4`);
-      const items: RelatedArticle[] = (res?.data ?? []).filter((a: any) => a.id !== excludeId).slice(0, 3);
+      const items: RelatedArticle[] = (res?.data ?? [])
+        .map(mapArticleSummary)
+        .filter((a: RelatedArticle) => a.id !== excludeId)
+        .slice(0, 3);
       this.related.set(items);
     } catch {
       this.related.set([]);
@@ -220,11 +204,17 @@ export class NoticiaDetalleComponent implements OnInit {
     if (a.imageUrl) this.meta.updateTag({ property: 'og:image', content: a.imageUrl });
   }
 
-  safeContent(): string {
+  safeContent(): SafeHtml {
     const content = this.article()?.content ?? '';
-    if (!content) return `<p>${this.article()?.excerpt ?? ''}</p>`;
-    if (content.startsWith('<')) return content;
-    return content.split('\n\n').map((p: string) => `<p>${p}</p>`).join('');
+    const html = !content
+      ? `<p>${this.article()?.excerpt ?? ''}</p>`
+      : content.startsWith('<')
+        ? content
+        : content.split('\n\n').map((p: string) => `<p>${p}</p>`).join('');
+    // WordPress-hosted images reject requests carrying a cross-origin Referer
+    // header (hotlink protection), so strip it for embedded content images too.
+    const withReferrerPolicy = html.replace(/<img /gi, '<img referrerpolicy="no-referrer" ');
+    return this.sanitizer.bypassSecurityTrustHtml(withReferrerPolicy);
   }
 
   categoryClass(cat: string): string {

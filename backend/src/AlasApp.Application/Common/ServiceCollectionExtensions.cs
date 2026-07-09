@@ -35,6 +35,7 @@ using AlasApp.Application.Circuits.Queries.GetCircuitById;
 using AlasApp.Application.Circuits.Queries.ListCircuits;
 using AlasApp.Application.EventCategories.Commands.UpdateEventCategories;
 using AlasApp.Application.EventCategories.Queries.GetEventCategories;
+using AlasApp.Application.Galleries.Queries.ListGalleries;
 using AlasApp.Application.Events.Commands.CreateEvent;
 using AlasApp.Application.Events.Commands.DeleteEvent;
 using AlasApp.Application.Events.Commands.UpdateEvent;
@@ -73,6 +74,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateArticleCommand, Articles.Models.ArticleDetailDto>, CreateArticleCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateArticleCommand, Articles.Models.ArticleDetailDto>, UpdateArticleCommandHandler>();
         services.AddScoped<IRequestHandler<DeleteArticleCommand, bool>, DeleteArticleCommandHandler>();
+        services.AddScoped<IRequestHandler<ListGalleriesQuery, IReadOnlyCollection<Galleries.Models.GalleryDto>>, ListGalleriesQueryHandler>();
         services.AddScoped<IRequestHandler<RegisterUserCommand, Auth.Models.RegisterResultDto>, RegisterUserCommandHandler>();
         services.AddScoped<IRequestHandler<LoginUserCommand, Auth.Models.LoginResultDto>, LoginUserCommandHandler>();
         services.AddScoped<IRequestHandler<RequestPasswordResetCommand, bool>, RequestPasswordResetCommandHandler>();

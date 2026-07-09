@@ -2,20 +2,21 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
+import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
+import { Gallery } from '../../../core/models/gallery';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 type Tab = 'todas' | 'noticias' | 'resultados' | 'fotos' | 'videos';
 type GalleryTab = 'fotos' | 'videos';
 
-interface Article {
+type Article = ArticleSummary;
+
+interface GalleryPhotoTile {
   id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  imageUrl?: string;
-  publishedAt: string;
-  featured?: boolean;
-  readingTime?: number;
+  url: string;
+  caption: string;
+  height: number;
+  downloadLink: string | null;
 }
 
 const CATEGORY_MAP: Record<string, string> = {
@@ -25,17 +26,6 @@ const CATEGORY_MAP: Record<string, string> = {
   'Reglamento': 'bg-warning-brand/15 text-warning-brand',
   'Tecnología': 'bg-navy-mid/50 text-text-muted',
 };
-
-const MOCK_GALLERY_PHOTOS = [
-  { caption: 'Gabriel Villani — Roca Bruja, Perú', height: 260, gradient: 'from-cyan-brand/30 to-navy-mid' },
-  { caption: 'Camila Restrepo — Matanzas, Chile', height: 180, gradient: 'from-navy-mid to-navy-dark' },
-  { caption: 'Ana Souza — Punta Hermosa, Perú', height: 220, gradient: 'from-navy-mid to-cyan-brand/20' },
-  { caption: 'Sebastián Mora — Pichilemu, Chile', height: 280, gradient: 'from-navy-dark to-navy-mid' },
-  { caption: 'Final masculina Open — Lobitos', height: 200, gradient: 'from-cyan-brand/20 to-navy-dark' },
-  { caption: 'Rodrigo Alas — Las Palmas, Costa Rica', height: 240, gradient: 'from-navy-mid to-navy-deepest' },
-  { caption: 'Mateo Díaz — Sayulita, México', height: 190, gradient: 'from-navy-dark to-cyan-brand/15' },
-  { caption: 'Ambiente final — Sayulita Masters', height: 260, gradient: 'from-navy-mid to-orange-brand/15' },
-];
 
 const MOCK_VIDEOS = [
   { title: 'Final Open Hombres — Roca Bruja Classic', location: 'Lobitos, Perú', date: '14 jun 2026', duration: '18:42' },
@@ -47,7 +37,7 @@ const MOCK_VIDEOS = [
 @Component({
   selector: 'app-noticias',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LoadingSpinnerComponent],
   template: `
     <!-- PAGE HEADER -->
     <section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
@@ -87,7 +77,7 @@ const MOCK_VIDEOS = [
           <div class="h-64 lg:h-auto bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/40 relative">
             <span class="absolute top-4 left-4 px-3 py-1 bg-orange-brand text-white font-accent uppercase text-xs tracking-wider rounded z-10">Destacado</span>
             @if (featured()!.imageUrl) {
-              <img [src]="featured()!.imageUrl" [alt]="featured()!.title" class="object-cover w-full h-full">
+              <img [src]="featured()!.imageUrl" [alt]="featured()!.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
             }
           </div>
           <div class="p-8 lg:p-10 flex flex-col justify-center">
@@ -127,7 +117,7 @@ const MOCK_VIDEOS = [
             <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
               <div class="h-44 bg-gradient-to-br from-navy-mid via-cyan-brand/10 to-navy-dark overflow-hidden">
                 @if (article.imageUrl) {
-                  <img [src]="article.imageUrl" [alt]="article.title" class="object-cover w-full h-full">
+                  <img [src]="article.imageUrl" [alt]="article.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
                 }
               </div>
               <div class="p-5">
@@ -190,28 +180,32 @@ const MOCK_VIDEOS = [
 
         @if (galleryTab() === 'fotos') {
           <p class="text-xs text-text-muted mb-5">
-            Fotografía oficial del circuito. Haz clic en <strong class="text-text-light">Descargar</strong> para elegir el formato.
+            Fotografía oficial del circuito. Haz clic en <strong class="text-text-light">Descargar</strong> para acceder al set completo en alta resolución.
           </p>
-          <div class="masonry">
-            @for (photo of galleryPhotos; track photo.caption) {
-              <div class="photo-tile group" [style.height.px]="photo.height">
-                <div class="w-full h-full bg-gradient-to-br" [class]="photo.gradient"></div>
-                <div class="overlay">
-                  <div>
-                    <p class="text-xs font-accent uppercase tracking-wider mb-2">{{ photo.caption }}</p>
-                    <div class="flex gap-2">
-                      <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition">
-                        Baja
-                      </a>
-                      <a href="#" class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand hover:text-navy-deepest transition">
-                        Alta
-                      </a>
+          @if (loadingGalleries()) {
+            <app-loading-spinner label="Cargando galería..." />
+          } @else if (photoTiles().length === 0) {
+            <p class="text-text-muted text-sm py-8 text-center">No hay fotografías disponibles.</p>
+          } @else {
+            <div class="masonry">
+              @for (photo of photoTiles(); track photo.id) {
+                <div class="photo-tile group" [style.height.px]="photo.height">
+                  <img [src]="photo.url" [alt]="photo.caption" referrerpolicy="no-referrer" class="w-full h-full object-cover">
+                  <div class="overlay">
+                    <div>
+                      <p class="text-xs font-accent uppercase tracking-wider mb-2">{{ photo.caption }}</p>
+                      @if (photo.downloadLink) {
+                        <a [href]="photo.downloadLink" target="_blank" rel="noreferrer"
+                           class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition">
+                          Descargar
+                        </a>
+                      }
                     </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         }
 
         @if (galleryTab() === 'videos') {
@@ -263,8 +257,22 @@ export class NoticiasComponent implements OnInit {
   hasMore = signal(false);
   skeletons = [1, 2, 3, 4, 5, 6];
 
-  galleryPhotos = MOCK_GALLERY_PHOTOS;
+  loadingGalleries = signal(true);
+  galleries = signal<Gallery[]>([]);
   mockVideos = MOCK_VIDEOS;
+
+  photoTiles = computed<GalleryPhotoTile[]>(() => {
+    const BASE_WIDTH = 320;
+    return this.galleries().flatMap(gallery =>
+      gallery.photos.map(photo => ({
+        id: photo.id,
+        url: photo.url,
+        caption: gallery.title,
+        height: photo.width > 0 ? Math.round(BASE_WIDTH * (photo.height / photo.width)) : 220,
+        downloadLink: gallery.pressDownloadLink,
+      })),
+    );
+  });
 
   tabs: { key: Tab; label: string }[] = [
     { key: 'todas', label: 'Todas' },
@@ -293,6 +301,19 @@ export class NoticiasComponent implements OnInit {
     this.meta.updateTag({ name: 'description', content: 'Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano de surf profesional ALAS Latin Tour.' });
     this.meta.updateTag({ property: 'og:title', content: 'Noticias — ALAS Latin Tour' });
     this.loadArticles();
+    this.loadGalleries();
+  }
+
+  private async loadGalleries(): Promise<void> {
+    this.loadingGalleries.set(true);
+    try {
+      const res = await this.api.get<any>('/galleries');
+      this.galleries.set(res?.data ?? []);
+    } catch {
+      this.galleries.set([]);
+    } finally {
+      this.loadingGalleries.set(false);
+    }
   }
 
   private async loadArticles(append = false): Promise<void> {
@@ -303,9 +324,9 @@ export class NoticiasComponent implements OnInit {
         this.api.get<any>(`/articles?page=${this.page()}&limit=6`),
       ]);
       if (!append) {
-        this.featured.set(featuredRes?.data?.[0] ?? null);
+        this.featured.set(featuredRes?.data?.[0] ? mapArticleSummary(featuredRes.data[0]) : null);
       }
-      const newItems: Article[] = listRes?.data ?? [];
+      const newItems: Article[] = (listRes?.data ?? []).map(mapArticleSummary);
       this.articles.update(prev => append ? [...prev, ...newItems] : newItems);
       const pagination = listRes?.pagination;
       this.hasMore.set(pagination ? this.page() < pagination.totalPages : false);

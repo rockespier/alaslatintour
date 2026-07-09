@@ -1,39 +1,35 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private platformId = inject(PLATFORM_ID);
+  private http = inject(HttpClient);
   private auth = inject(AuthService);
   private baseUrl = `${environment.apiUrl}/v1`;
 
-  private buildHeaders(): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  private buildHeaders(): HttpHeaders {
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const token = this.auth.getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
     return headers;
   }
 
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
-    const res = await fetch(url, {
-      method,
-      headers: this.buildHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    if (res.status === 401) {
-      this.auth.logout();
-      throw new Error('No autenticado');
+    try {
+      return await firstValueFrom(
+        this.http.request<T>(method, url, { headers: this.buildHeaders(), body }),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401) this.auth.logout();
+        throw Object.assign(new Error(err.error?.message ?? err.statusText), { status: err.status, body: err.error });
+      }
+      throw err;
     }
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw Object.assign(new Error(err.message ?? res.statusText), { status: res.status, body: err });
-    }
-    if (res.status === 204) return undefined as T;
-    return res.json();
   }
 
   get<T>(path: string): Promise<T> { return this.request('GET', path); }

@@ -18,6 +18,7 @@ using AlasApp.Application.Competitors.Commands.UpdateCompetitor;
 using AlasApp.Application.Competitors.Models;
 using AlasApp.Application.EventCategories.Commands.UpdateEventCategories;
 using AlasApp.Application.EventCategories.Models;
+using AlasApp.Application.Galleries.Models;
 using AlasApp.Application.Events.Commands.CreateEvent;
 using AlasApp.Application.Events.Commands.UpdateEvent;
 using AlasApp.Application.Events.Models;
@@ -123,6 +124,22 @@ public static class ApiContractMapper
         };
 
         return contract;
+    }
+
+    public static GalleryListResponse ToContract(IReadOnlyCollection<GalleryDto> galleries)
+    {
+        return new GalleryListResponse(galleries.Select(ToContract).ToList());
+    }
+
+    public static GalleryResponse ToContract(GalleryDto dto)
+    {
+        return new GalleryResponse(
+            dto.Id,
+            dto.Slug,
+            dto.Title,
+            dto.EventDate,
+            dto.PressDownloadLink,
+            dto.Photos.Select(p => new GalleryPhotoResponse(p.Id, p.Url, p.Width, p.Height)).ToList());
     }
 
     public static Generated.CircuitResponse ToContract(CircuitDto dto)

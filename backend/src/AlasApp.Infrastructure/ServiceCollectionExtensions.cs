@@ -42,19 +42,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
         services.AddHttpClient<IWordPressService, WordPressService>(client =>
         {
-            if (!string.IsNullOrWhiteSpace(wordPressConfig.BaseUrl))
-            {
-                client.BaseAddress = new Uri(NormalizeWordPressBaseUrl(wordPressConfig.BaseUrl));
-            }
-
-            if (!string.IsNullOrWhiteSpace(wordPressConfig.Username) &&
-                !string.IsNullOrWhiteSpace(wordPressConfig.AppPassword))
-            {
-                var encodedAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{wordPressConfig.Username}:{wordPressConfig.AppPassword}"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", encodedAuth);
-            }
-
-            client.DefaultRequestHeaders.Add("User-Agent", "AlasBFF-DotNet9");
+            ConfigureWordPressClient(client, wordPressConfig, "posts");
+        });
+        services.AddHttpClient<IGalleryService, GalleryService>(client =>
+        {
+            ConfigureWordPressClient(client, wordPressConfig, "gallery");
         });
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IResetTokenService, ResetTokenService>();
@@ -63,20 +55,34 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static string NormalizeWordPressBaseUrl(string baseUrl)
+    private static void ConfigureWordPressClient(HttpClient client, WordPressConfig wordPressConfig, string resource)
     {
-        var uri = new Uri(baseUrl, UriKind.Absolute);
-        var path = uri.AbsolutePath;
-        var normalizedPath = path.EndsWith("/posts", StringComparison.OrdinalIgnoreCase)
-            ? path
-            : path.Split('?', StringSplitOptions.RemoveEmptyEntries)[0];
-
-        if (!normalizedPath.EndsWith("/posts", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(wordPressConfig.BaseUrl))
         {
-            normalizedPath = normalizedPath.TrimEnd('/');
+            client.BaseAddress = new Uri(NormalizeWordPressResourceUrl(wordPressConfig.BaseUrl, resource));
         }
 
-        var builder = new UriBuilder(uri.Scheme, uri.Host, uri.Port, normalizedPath);
+        if (!string.IsNullOrWhiteSpace(wordPressConfig.Username) &&
+            !string.IsNullOrWhiteSpace(wordPressConfig.AppPassword))
+        {
+            var encodedAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{wordPressConfig.Username}:{wordPressConfig.AppPassword}"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", encodedAuth);
+        }
+
+        client.DefaultRequestHeaders.Add("User-Agent", "AlasBFF-DotNet9");
+    }
+
+    // wordPressConfig.BaseUrl points at the "posts" WP REST resource (e.g. .../wp-json/wp/v2/posts);
+    // this swaps in whichever sibling resource (posts, gallery, ...) the caller needs.
+    private static string NormalizeWordPressResourceUrl(string baseUrl, string resource)
+    {
+        var uri = new Uri(baseUrl, UriKind.Absolute);
+        var path = uri.AbsolutePath.Split('?', StringSplitOptions.RemoveEmptyEntries)[0].TrimEnd('/');
+        var apiRoot = path.EndsWith("/posts", StringComparison.OrdinalIgnoreCase)
+            ? path[..^"/posts".Length]
+            : path;
+
+        var builder = new UriBuilder(uri.Scheme, uri.Host, uri.Port, $"{apiRoot}/{resource}");
         return builder.Uri.ToString().TrimEnd('/') + "/";
     }
 }

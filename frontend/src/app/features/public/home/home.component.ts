@@ -3,6 +3,7 @@ import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
+import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -18,15 +19,7 @@ interface EventCard {
   fechaFin: string;
 }
 
-interface ArticleCard {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  imageUrl: string;
-  publishedAt: string;
-}
+type ArticleCard = ArticleSummary;
 
 interface RankingRow {
   position: number;
@@ -237,7 +230,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
               <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
                 <div class="h-48 bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/30 relative overflow-hidden">
                   @if (article.imageUrl) {
-                    <img [src]="article.imageUrl" [alt]="article.title" class="object-cover w-full h-full">
+                    <img [src]="article.imageUrl" [alt]="article.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
                   }
                   <span class="absolute top-3 left-3 px-3 py-1 font-accent uppercase text-xs tracking-wider rounded"
                         [class]="categoryBadgeClass(article.category)">
@@ -300,8 +293,8 @@ export class HomeComponent implements OnInit {
 
   private async loadArticles(): Promise<void> {
     try {
-      const res = await this.api.get<any>('/articles?limit=3&featured=true');
-      this.articles.set(res?.data ?? []);
+      const res = await this.api.get<any>('/articles?limit=3');
+      this.articles.set((res?.data ?? []).map(mapArticleSummary));
     } catch {
       this.articles.set([]);
     } finally {
