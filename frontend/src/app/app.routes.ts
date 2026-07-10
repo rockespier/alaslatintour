@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+// mi-panel route moved inside public-layout to avoid double navbar
 
 export const routes: Routes = [
   // ── Portal Público ───────────────────────────────────────────
@@ -28,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/public/noticia-detalle/noticia-detalle.component').then(m => m.NoticiaDetalleComponent),
       },
       {
+        path: 'galerias/:slug',
+        loadComponent: () => import('./features/public/galeria-detalle/galeria-detalle.component').then(m => m.GaleriaDetalleComponent),
+        title: 'Galería — ALAS Latin Tour',
+      },
+      {
         path: 'ranking',
         loadComponent: () => import('./features/public/ranking/ranking.component').then(m => m.RankingComponent),
         title: 'Ranking — ALAS Latin Tour',
@@ -49,6 +55,35 @@ export const routes: Routes = [
         loadComponent: () => import('./features/competitor/pago-playa/pago-playa.component').then(m => m.PagoPlayaComponent),
         title: 'Pago en Playa — ALAS Latin Tour',
       },
+      // ── Panel Competidor (nested inside public-layout for shared navbar) ──
+      {
+        path: 'mi-panel',
+        canActivate: [authGuard],
+        loadComponent: () => import('./layouts/mi-panel-layout/mi-panel-layout.component').then(m => m.MiPanelLayoutComponent),
+        children: [
+          { path: '', redirectTo: 'inscripciones', pathMatch: 'full' },
+          {
+            path: 'inscripciones',
+            loadComponent: () => import('./features/competitor/mi-panel/mis-inscripciones/mis-inscripciones.component').then(m => m.MisInscripcionesComponent),
+            title: 'Mis Inscripciones — ALAS Latin Tour',
+          },
+          {
+            path: 'historial',
+            loadComponent: () => import('./features/competitor/mi-panel/historial-puntos/historial-puntos.component').then(m => m.HistorialPuntosComponent),
+            title: 'Historial de Puntos — ALAS Latin Tour',
+          },
+          {
+            path: 'calendario',
+            loadComponent: () => import('./features/competitor/mi-panel/mi-calendario/mi-calendario.component').then(m => m.MiCalendarioComponent),
+            title: 'Mi Calendario — ALAS Latin Tour',
+          },
+          {
+            path: 'datos',
+            loadComponent: () => import('./features/competitor/mi-panel/datos-personales/datos-personales.component').then(m => m.DatosPersonalesComponent),
+            title: 'Datos Personales — ALAS Latin Tour',
+          },
+        ],
+      },
     ],
   },
 
@@ -67,36 +102,6 @@ export const routes: Routes = [
     path: 'recuperar-password',
     loadComponent: () => import('./features/auth/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent),
     title: 'Recuperar Contraseña — ALAS Latin Tour',
-  },
-
-  // ── Panel Competidor ───────────────────────────────────────
-  {
-    path: 'mi-panel',
-    canActivate: [authGuard],
-    loadComponent: () => import('./layouts/public-layout/public-layout.component').then(m => m.PublicLayoutComponent),
-    children: [
-      { path: '', redirectTo: 'inscripciones', pathMatch: 'full' },
-      {
-        path: 'inscripciones',
-        loadComponent: () => import('./features/competitor/mi-panel/mis-inscripciones/mis-inscripciones.component').then(m => m.MisInscripcionesComponent),
-        title: 'Mis Inscripciones — ALAS Latin Tour',
-      },
-      {
-        path: 'historial',
-        loadComponent: () => import('./features/competitor/mi-panel/historial-puntos/historial-puntos.component').then(m => m.HistorialPuntosComponent),
-        title: 'Historial de Puntos — ALAS Latin Tour',
-      },
-      {
-        path: 'calendario',
-        loadComponent: () => import('./features/competitor/mi-panel/mi-calendario/mi-calendario.component').then(m => m.MiCalendarioComponent),
-        title: 'Mi Calendario — ALAS Latin Tour',
-      },
-      {
-        path: 'datos',
-        loadComponent: () => import('./features/competitor/mi-panel/datos-personales/datos-personales.component').then(m => m.DatosPersonalesComponent),
-        title: 'Datos Personales — ALAS Latin Tour',
-      },
-    ],
   },
 
   // ── Admin ──────────────────────────────────────────────────

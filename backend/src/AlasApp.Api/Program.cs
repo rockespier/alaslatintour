@@ -1,8 +1,12 @@
 using AlasApp.Api.Authentication;
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Middleware;
 using AlasApp.Application.Common;
+using AlasApp.Domain.Enums;
 using AlasApp.Infrastructure;
+using AlasApp.Infrastructure.Authentication;
 using AlasApp.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -36,6 +40,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.AddSingleton<AlasApp.Application.Abstractions.Services.IJwtTokenService, JwtTokenService>();
+builder.Services.AddSingleton<IAuthorizationHandler, AdminPermissionAuthorizationHandler>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -78,15 +83,38 @@ builder.Services
             }
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AdminPolicies.DashboardRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Dashboard, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.UsersRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Usuarios, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.UsersWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Usuarios, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.ConfigurationRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Configuracion, PermissionLevel.ReadOnly)));
+});
 
 var app = builder.Build();
 
-if (!app.Environment.IsEnvironment("Testing"))
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
-    await dbContext.Database.MigrateAsync();
+
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+
+    var bootstrapAdminInitializer = scope.ServiceProvider.GetRequiredService<BootstrapAdminInitializer>();
+    await bootstrapAdminInitializer.InitializeAsync(CancellationToken.None);
 }
 
 if (app.Environment.IsDevelopment())

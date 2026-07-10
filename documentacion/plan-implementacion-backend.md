@@ -1,6 +1,6 @@
 # Plan de Implementacion Backend ALAS
 
-Ultima actualizacion: 2026-07-08 11:15:00 +02:00
+Ultima actualizacion: 2026-07-09 13:10:00 +02:00
 
 ## Objetivo
 
@@ -167,6 +167,35 @@ Endpoints objetivo:
 - Helper de tiempo de lectura para contenido HTML de WordPress.
 - Tests HTTP del contrato de `Articles` con servicio fake e infraestructura aislada de SQL.
 - Analisis del prototipo `docs/noticias.html` y del contrato WordPress de galerias en `documentacion/gallery.md`.
+- Implementacion inicial del lote 8 para administracion:
+  - `GET /v1/admin/users`
+  - `POST /v1/admin/users`
+  - `GET /v1/admin/users/{userId}`
+  - `PUT /v1/admin/users/{userId}`
+  - `DELETE /v1/admin/users/{userId}`
+  - `GET /v1/admin/roles`
+  - `GET /v1/admin/dashboard`
+- Modelado de `Admin Users`, matriz de `Roles` y query agregada de `Dashboard` sobre datos locales.
+- Tests HTTP iniciales para `Admin Users`, `Roles` y `Dashboard` usando factory aislada del resto del lote.
+- Implementacion de endpoints de `Memberships`:
+  - `GET /v1/memberships`
+  - `POST /v1/memberships`
+  - `GET /v1/memberships/{membershipId}`
+  - `PUT /v1/memberships/{membershipId}`
+  - `DELETE /v1/memberships/{membershipId}`
+- Modelado code-first de `Memberships` con conteo de competidores afiliados por pais y club/federacion.
+- Tests HTTP de `Memberships` con factory aislada en `InMemory`.
+- Endurecimiento de autorizacion por rol sobre endpoints administrativos:
+  - `GET /v1/admin/dashboard`
+  - `GET /v1/admin/users`
+  - `GET /v1/admin/users/{userId}`
+  - `POST /v1/admin/users`
+  - `PUT /v1/admin/users/{userId}`
+  - `DELETE /v1/admin/users/{userId}`
+  - `GET /v1/admin/roles`
+- Matriz centralizada de permisos por `AdminRole` y `AdminModule`, reutilizada por API y por el endpoint de roles.
+- Policies ASP.NET Core para lectura/escritura administrativa con tests HTTP de `401`, `403` y `200`.
+- Ajustes de compatibilidad EF Core en repositorios de `Inscriptions` y `Payments` para evitar proyecciones no traducibles en providers de testing.
 
 ### En curso
 
@@ -177,7 +206,16 @@ Endpoints objetivo:
   - mapeo de `acf.press_download_link`
   - mapeo de `acf.event_date`
   - definicion de endpoints BFF para exponer galerias al frontend
-- Preparacion del lote 8 (`Admin Users`, `Roles`, `Dashboard`, `Memberships`).
+- Replanteo del slice `Gallery` para frontend:
+  - `GET /v1/galleries` devuelve cards de galerias con una sola foto de portada
+  - `GET /v1/galleries/{slug}` devuelve el detalle completo de la galeria
+  - separacion de DTOs de resumen y detalle para no enviar todas las fotos en el listado
+  - tests HTTP del flujo listado -> detalle con servicio fake
+  - preservacion de `acf.gallery_days` en el detalle del BFF con assets tipados
+- Endurecimiento del adapter WordPress en backend:
+  - configuracion separada para `PostsBaseUrl` y `GalleriesBaseUrl`
+  - compatibilidad hacia atras manteniendo `BaseUrl` como fallback
+  - tests del adapter con `HttpMessageHandler` fake para mapping de `Articles` y `Galleries`
 - Referencias aplicadas para `Articles`:
 
 #### En el appsettings.json
@@ -272,17 +310,11 @@ public async Task<List<NewsArticleDto>> GetNewsForAngularAsync(CancellationToken
 
 ### Pendiente
 
-- Continuar `Admin Users`, `Roles`, `Dashboard` y `Memberships`.
-- Endurecer autorizacion por rol sobre endpoints administrativos una vez se implemente `Admin Users`.
 - Lotes funcionales restantes a partir de `Rankings`.
 - Validacion funcional del adapter real contra WordPress.
 - Integraciones externas reales restantes (`SurfScores`, `WordPress`).
 - Implementar en el lote 7 el slice de galerias para cubrir la seccion `Galería` del prototipo:
-  - endpoint listado de galerias publicado por WordPress
-  - endpoint detalle por `slug`
-  - DTOs para dias, fotos y links de descarga
-  - criterios para distinguir assets de foto y video en la respuesta del BFF
-  - tests HTTP con servicio fake para contrato de galerias
+  - validacion funcional del adapter real contra el endpoint WordPress de galerias
 
 ## Arquitectura objetivo por modulo
 

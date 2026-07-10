@@ -47,17 +47,26 @@ public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepo
 
     public async Task<IReadOnlyCollection<RankingCategoryAvailabilityDto>> ListAvailableCategoriesAsync(CancellationToken cancellationToken)
     {
-        var snapshots = await dbContext.RankingSnapshots
+        var snapshotRows = await dbContext.RankingSnapshots
             .AsNoTracking()
+            .Select(x => new
+            {
+                x.CategoryId,
+                x.CategoryName,
+                x.Year
+            })
+            .Distinct()
+            .OrderBy(x => x.CategoryName)
+            .ToListAsync(cancellationToken);
+
+        return snapshotRows
             .GroupBy(x => new { x.CategoryId, x.CategoryName })
             .Select(group => new RankingCategoryAvailabilityDto(
                 group.Key.CategoryId,
                 group.Key.CategoryName,
                 group.Select(x => x.Year).Distinct().OrderByDescending(x => x).ToList()))
             .OrderBy(x => x.CategoryName)
-            .ToListAsync(cancellationToken);
-
-        return snapshots;
+            .ToList();
     }
 
     public async Task ReplaceCircuitSnapshotsAsync(

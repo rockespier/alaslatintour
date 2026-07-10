@@ -525,6 +525,53 @@ namespace AlasApp.Infrastructure.Migrations
                     b.ToTable("Inscriptions", (string)null);
                 });
 
+            modelBuilder.Entity("AlasApp.Domain.Entities.Membership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClubFederacion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("EmailContacto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("InicioVigencia")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Pais")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("Vencimiento")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Vencimiento");
+
+                    b.HasIndex("Pais", "ClubFederacion");
+
+                    b.ToTable("Memberships", (string)null);
+                });
+
             modelBuilder.Entity("AlasApp.Domain.Entities.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")

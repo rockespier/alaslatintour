@@ -201,12 +201,13 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
             new ArticleAuthorDto(authorName, authorRole),
             imageUrl,
             tags,
-            post.Sticky,
+            post.Meta?.Featured ?? post.Sticky,
             post.Meta?.ShowRanking ?? false,
             relatedEventId,
             post.Slug,
             post.Date,
-            ContentMetricsHelper.CalculateReadTime(post.Content?.Rendered ?? post.Excerpt?.Rendered ?? string.Empty));
+            post.Meta?.ReadTimeMinutes
+                ?? ContentMetricsHelper.CalculateReadTime(post.Content?.Rendered ?? post.Excerpt?.Rendered ?? string.Empty));
     }
 
     private async Task<WordPressPostDto?> GetRawBySlugAsync(string slug, CancellationToken cancellationToken)
@@ -233,7 +234,9 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
             article.Featured,
             new WordPressMutableMetaDto(
                 article.AutorTitulo,
+                ContentMetricsHelper.CalculateReadTime(article.ContentHtml),
                 article.ShowRankingWidget,
+                article.Featured,
                 ToCategoryText(article.Categoria),
                 article.RelatedEventId,
                 article.ImagenUrl,

@@ -5,7 +5,10 @@ import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 
-type CircuitFilter = 'all' | 'open' | 'junior' | 'masters';
+interface Circuit {
+  id: string;
+  nombre: string;
+}
 
 interface EventCategory {
   id: string;
@@ -25,6 +28,7 @@ interface EventItem {
   fechaInicio: string;
   fechaFin: string;
   circuito?: string;
+  circuitoId?: string;
   capacidadTotal?: number;
   inscritosTotal?: number;
   premioUSD?: number;
@@ -43,6 +47,12 @@ interface MyInscription {
   fechaInicio: string;
   fechaFin: string;
   statusPago: 'confirmado' | 'pendiente' | 'rechazado';
+}
+
+interface CompetitorStats {
+  rankingActual?: number;
+  puntosActual?: number;
+  rankingAnterior?: number;
 }
 
 const FLAG: Record<string, string> = {
@@ -76,6 +86,20 @@ const STATUS_CLASS: Record<string, string> = {
                 <p class="text-sm text-text-muted mt-1">Listo para tu próxima parada en el circuito.</p>
               </div>
             </div>
+            @if (competitorStats()) {
+              <div class="flex gap-8 text-center">
+                <div>
+                  <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Ranking {{ currentYear }}</p>
+                  <p class="font-heading text-3xl text-cyan-brand">
+                    {{ competitorStats()!.rankingActual ? '#' + competitorStats()!.rankingActual : '—' }}
+                  </p>
+                </div>
+                <div>
+                  <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Puntos</p>
+                  <p class="font-heading text-3xl">{{ competitorStats()!.puntosActual ?? '—' }}</p>
+                </div>
+              </div>
+            }
           </div>
         </div>
       </section>
@@ -95,11 +119,16 @@ const STATUS_CLASS: Record<string, string> = {
         </div>
 
         <div class="flex flex-wrap gap-1 border-b border-navy-mid mb-8">
-          @for (tab of circuitTabs; track tab.key) {
-            <button (click)="circuitFilter.set(tab.key)"
+          <button (click)="circuitFilter.set('all')"
+                  class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
+                  [class]="circuitFilter() === 'all' ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
+            Todos los Circuitos
+          </button>
+          @for (circuit of circuits(); track circuit.id) {
+            <button (click)="circuitFilter.set(circuit.id)"
                     class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
-                    [class]="circuitFilter() === tab.key ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
-              {{ tab.label }}
+                    [class]="circuitFilter() === circuit.id ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
+              {{ circuit.nombre }}
             </button>
           }
         </div>
@@ -157,10 +186,17 @@ const STATUS_CLASS: Record<string, string> = {
                             {{ event.nombre }}
                           </h3>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider border whitespace-nowrap"
-                              [class]="statusClass(event.statusPublic)">
-                          {{ event.statusPublic }}
-                        </span>
+                        <div class="flex flex-col items-end gap-2">
+                          <span class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider border whitespace-nowrap"
+                                [class]="statusClass(event.statusPublic)">
+                            {{ event.statusPublic }}
+                          </span>
+                          @if (isFull(event)) {
+                            <span class="px-3 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-error-brand/15 text-error-brand border border-error-brand/30">
+                              Cupo lleno
+                            </span>
+                          }
+                        </div>
                       </div>
 
                       <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4">
@@ -215,10 +251,17 @@ const STATUS_CLASS: Record<string, string> = {
 
                       <div class="flex flex-wrap items-center gap-3">
                         @if (event.statusPublic === 'Inscripciones Abiertas') {
-                          <a [routerLink]="['/inscripcion', event.id]"
-                             class="px-5 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
-                            Inscribirse
-                          </a>
+                          @if (isFull(event)) {
+                            <button disabled
+                                    class="px-5 py-2.5 rounded-md bg-navy-mid/60 text-text-muted font-accent uppercase tracking-wider text-sm cursor-not-allowed">
+                              Cupo lleno
+                            </button>
+                          } @else {
+                            <a [routerLink]="['/inscripcion', event.id]"
+                               class="px-5 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
+                              Inscribirse
+                            </a>
+                          }
                         } @else if (event.statusPublic === 'Completado') {
                           <a routerLink="/ranking" class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
                             Ver resultados
@@ -255,8 +298,13 @@ const STATUS_CLASS: Record<string, string> = {
                               </thead>
                               <tbody class="divide-y divide-navy-mid/60">
                                 @for (cat of event.categorias!; track cat.id) {
-                                  <tr>
-                                    <td class="py-2.5 pr-4">{{ cat.nombre }}</td>
+                                  <tr [class.opacity-50]="cat.inscritos >= cat.capacidad">
+                                    <td class="py-2.5 pr-4">
+                                      {{ cat.nombre }}
+                                      @if (cat.inscritos >= cat.capacidad) {
+                                        <span class="ml-2 text-[10px] font-accent uppercase text-error-brand">Llena</span>
+                                      }
+                                    </td>
                                     <td class="px-2 text-text-muted">{{ cat.inscritos }} / {{ cat.capacidad }}</td>
                                     <td class="py-2.5 pl-2 text-right text-cyan-brand">{{ formatUSD(cat.tarifa) }}</td>
                                   </tr>
@@ -273,7 +321,7 @@ const STATUS_CLASS: Record<string, string> = {
                   </div>
                 </article>
               }
-              @if (filteredEvents().length === 0) {
+              @if (filteredEvents().length === 0 && !loading()) {
                 <p class="text-text-muted text-center py-12">No hay eventos para este circuito.</p>
               }
             }
@@ -355,27 +403,23 @@ export class EventosComponent implements OnInit {
   private title = inject(Title);
   private meta = inject(Meta);
 
+  readonly currentYear = new Date().getFullYear();
+
   loading = signal(true);
   loadingInscriptions = signal(false);
   events = signal<EventItem[]>([]);
+  circuits = signal<Circuit[]>([]);
   myInscriptions = signal<MyInscription[]>([]);
-  circuitFilter = signal<CircuitFilter>('all');
+  competitorStats = signal<CompetitorStats | null>(null);
+  circuitFilter = signal<string>('all');
   expanded = signal<Set<string>>(new Set());
   readonly skeletons = [1, 2, 3];
-
-  circuitTabs = [
-    { key: 'all' as CircuitFilter, label: 'Todos los Circuitos' },
-    { key: 'open' as CircuitFilter, label: 'ALAS Open' },
-    { key: 'junior' as CircuitFilter, label: 'ALAS Junior' },
-    { key: 'masters' as CircuitFilter, label: 'ALAS Masters' },
-  ];
 
   filteredEvents = computed(() => {
     const filter = this.circuitFilter();
     const evts = this.events();
     if (filter === 'all') return evts;
-    const labels: Record<string, string> = { open: 'ALAS Open', junior: 'ALAS Junior', masters: 'ALAS Masters' };
-    return evts.filter(e => e.circuito === labels[filter]);
+    return evts.filter(e => e.circuitoId === filter || e.circuito === this.circuits().find(c => c.id === filter)?.nombre);
   });
 
   userInitial = computed(() => (this.auth.currentUser()?.fullName ?? '?')[0].toUpperCase());
@@ -385,7 +429,9 @@ export class EventosComponent implements OnInit {
     this.title.setTitle('Eventos y Calendario 2026 — ALAS Latin Tour');
     this.meta.updateTag({ name: 'description', content: 'Calendario completo del ALAS Latin Tour 2026. Inscríbete en eventos, revisa categorías y consulta tus inscripciones.' });
     this.loadEvents();
+    this.loadCircuits();
     if (this.auth.isAuthenticated()) this.loadMyInscriptions();
+    if (this.auth.isCompetitor()) this.loadCompetitorStats();
   }
 
   private async loadEvents(): Promise<void> {
@@ -399,6 +445,15 @@ export class EventosComponent implements OnInit {
     }
   }
 
+  private async loadCircuits(): Promise<void> {
+    try {
+      const res = await this.api.get<any>(`/circuits?status=Activo&year=${this.currentYear}&limit=20`);
+      this.circuits.set(res?.data ?? []);
+    } catch {
+      this.circuits.set([]);
+    }
+  }
+
   private async loadMyInscriptions(): Promise<void> {
     this.loadingInscriptions.set(true);
     try {
@@ -409,6 +464,28 @@ export class EventosComponent implements OnInit {
     } finally {
       this.loadingInscriptions.set(false);
     }
+  }
+
+  private async loadCompetitorStats(): Promise<void> {
+    const userId = this.auth.currentUser()?.id;
+    if (!userId) return;
+    try {
+      const res = await this.api.get<any>(`/competitors/${userId}`);
+      const data = res?.data ?? res;
+      this.competitorStats.set({
+        rankingActual: data?.rankingActual ?? data?.ranking,
+        puntosActual: data?.puntosActual ?? data?.puntos,
+        rankingAnterior: data?.rankingAnterior,
+      });
+    } catch {
+      // Stats are optional — not critical
+    }
+  }
+
+  isFull(event: EventItem): boolean {
+    return event.inscritosTotal !== undefined
+      && event.capacidadTotal !== undefined
+      && event.inscritosTotal >= event.capacidadTotal;
   }
 
   toggleExpand(id: string): void {
@@ -430,7 +507,7 @@ export class EventosComponent implements OnInit {
     return 'bg-cyan-brand';
   }
 
-  capacityPct(used: number, total: number): number { return Math.round((used / total) * 100); }
+  capacityPct(used: number, total: number): number { return Math.min(100, Math.round((used / total) * 100)); }
   formatUSD(n: number): string { return '$' + n.toLocaleString('en-US'); }
   dayOf(d: string): string { return d ? String(new Date(d).getDate()).padStart(2, '0') : ''; }
 

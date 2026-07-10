@@ -1,9 +1,11 @@
 namespace AlasApp.Application.Galleries.Models;
 
-public sealed record GalleryDto(
+public sealed record GalleryDetailDto(
     string Id,
     string Slug,
     string Title,
     DateTimeOffset? EventDate,
     string? PressDownloadLink,
-    IReadOnlyCollection<GalleryPhotoDto> Photos);
+    string? CoverImageUrl,
+    int PhotoCount,
+    IReadOnlyCollection<GalleryDayDto> GalleryDays);

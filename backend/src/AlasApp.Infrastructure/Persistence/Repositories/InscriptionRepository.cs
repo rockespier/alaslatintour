@@ -63,8 +63,26 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
 
     public async Task<InscriptionDto?> GetByIdAsync(Guid inscriptionId, CancellationToken cancellationToken)
     {
-        var item = await BuildInscriptionDetailsQuery()
-            .FirstOrDefaultAsync(x => x.Inscription.Id == inscriptionId, cancellationToken);
+        var item = await dbContext.Inscriptions
+            .AsNoTracking()
+            .Where(x => x.Id == inscriptionId)
+            .Join(dbContext.Competitors,
+                inscription => inscription.CompetitorId,
+                competitor => competitor.Id,
+                (inscription, competitor) => new { inscription, competitor })
+            .Join(dbContext.Events,
+                left => left.inscription.EventId,
+                @event => @event.Id,
+                (left, @event) => new { left.inscription, left.competitor, @event })
+            .Join(dbContext.Categories,
+                left => left.inscription.CategoryId,
+                category => category.Id,
+                (left, category) => new { left.inscription, left.competitor, left.@event, category })
+            .Join(dbContext.Circuits,
+                left => left.@event.CircuitId,
+                circuit => circuit.Id,
+                (left, circuit) => new InscriptionDetails(left.inscription, left.competitor, left.@event, left.category, circuit))
+            .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : MapToDto(item);
     }

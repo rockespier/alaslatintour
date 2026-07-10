@@ -1,8 +1,10 @@
 import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
+import { RankingService, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
@@ -21,15 +23,6 @@ interface EventCard {
 
 type ArticleCard = ArticleSummary;
 
-interface RankingRow {
-  position: number;
-  name: string;
-  country: string;
-  flag: string;
-  points: number;
-  change: number;
-}
-
 const COUNTRY_FLAGS: Record<string, string> = {
   PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
   CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
@@ -39,7 +32,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, DecimalPipe, ReactiveFormsModule, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent],
   template: `
     <!-- ═══ HERO ═══ -->
     <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden">
@@ -155,10 +148,12 @@ const COUNTRY_FLAGS: Record<string, string> = {
             <div>
               <div class="flex items-center gap-3 mb-2">
                 <span class="live-dot"></span>
-                <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">Actualizado</span>
+                <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">
+                  @if (rankingCachedAgo()) { {{ rankingCachedAgo() }} } @else { Actualizado }
+                </span>
               </div>
-              <h2 class="font-heading text-3xl md:text-4xl">Ranking 2026</h2>
-              <p class="text-sm text-text-muted mt-1">Categoría Open Hombres</p>
+              <h2 class="font-heading text-3xl md:text-4xl">Ranking {{ currentYear }}</h2>
+              <p class="text-sm text-text-muted mt-1">{{ rankingCategoryName() }}</p>
             </div>
           </header>
 
@@ -256,20 +251,137 @@ const COUNTRY_FLAGS: Record<string, string> = {
         }
       </div>
     </section>
+
+    <!-- ═══ CONTACTO ═══ -->
+    <section id="contacto" class="py-20 px-4 sm:px-6 lg:px-8 bg-navy-dark border-t border-navy-mid">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="text-center mb-10">
+          <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">Comunícate con nosotros</p>
+          <h2 class="font-heading text-4xl md:text-5xl">Contacto</h2>
+          <p class="text-text-muted mt-3 text-sm max-w-md mx-auto">
+            ¿Tienes preguntas sobre inscripciones, eventos o el circuito? Escríbenos y te responderemos a la brevedad.
+          </p>
+        </div>
+
+        @if (contactSuccess()) {
+          <div class="bg-success-brand/10 border border-success-brand/30 rounded-2xl p-10 text-center">
+            <div class="w-14 h-14 rounded-full bg-success-brand/20 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-success-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <h3 class="font-heading text-2xl mb-2">¡Mensaje enviado!</h3>
+            <p class="text-text-muted text-sm">Te responderemos al correo indicado en los próximos días hábiles.</p>
+            <button (click)="contactSuccess.set(false)"
+              class="mt-6 text-sm text-cyan-brand hover:text-cyan-dark">
+              Enviar otro mensaje
+            </button>
+          </div>
+        } @else {
+          @if (contactError()) {
+            <div class="mb-6 px-4 py-3 rounded-lg bg-error-brand/10 border border-error-brand/30 text-error-brand text-sm">
+              {{ contactError() }}
+            </div>
+          }
+
+          <form [formGroup]="contactForm" (ngSubmit)="submitContact()" novalidate
+                class="bg-navy-deepest border border-navy-mid rounded-2xl p-6 md:p-8 space-y-5 shadow-2xl shadow-black/30">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre</label>
+                <input formControlName="nombre" type="text" placeholder="Tu nombre"
+                  class="input-field"
+                  [class.field-error]="contactForm.controls.nombre.invalid && contactForm.controls.nombre.touched" />
+                @if (contactForm.controls.nombre.invalid && contactForm.controls.nombre.touched) {
+                  <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                }
+              </div>
+              <div>
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico</label>
+                <input formControlName="email" type="email" placeholder="tu@correo.com"
+                  class="input-field"
+                  [class.field-error]="contactForm.controls.email.invalid && contactForm.controls.email.touched" />
+                @if (contactForm.controls.email.invalid && contactForm.controls.email.touched) {
+                  <p class="mt-1 text-xs text-error-brand">
+                    @if (contactForm.controls.email.errors?.['required']) { Requerido }
+                    @else { Correo inválido }
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Asunto</label>
+              <input formControlName="asunto" type="text" placeholder="¿En qué podemos ayudarte?"
+                class="input-field"
+                [class.field-error]="contactForm.controls.asunto.invalid && contactForm.controls.asunto.touched" />
+              @if (contactForm.controls.asunto.invalid && contactForm.controls.asunto.touched) {
+                <p class="mt-1 text-xs text-error-brand">Requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Mensaje</label>
+              <textarea formControlName="mensaje" rows="5" placeholder="Escribe tu mensaje aquí..."
+                class="input-field resize-none"
+                [class.field-error]="contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched">
+              </textarea>
+              @if (contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched) {
+                <p class="mt-1 text-xs text-error-brand">Mínimo 10 caracteres</p>
+              }
+            </div>
+
+            <button type="submit" [disabled]="contactLoading()"
+              class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
+              @if (contactLoading()) {
+                <span class="inline-flex items-center justify-center gap-2">
+                  <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Enviando...
+                </span>
+              } @else {
+                Enviar mensaje
+              }
+            </button>
+
+          </form>
+        }
+      </div>
+    </section>
   `,
 })
 export class HomeComponent implements OnInit {
   private api = inject(ApiService);
+  private rankingService = inject(RankingService);
+  private fb = inject(FormBuilder);
   private title = inject(Title);
   private meta = inject(Meta);
   private platformId = inject(PLATFORM_ID);
 
+  readonly currentYear = new Date().getFullYear();
+
   events = signal<EventCard[]>([]);
   articles = signal<ArticleCard[]>([]);
-  ranking = signal<RankingRow[]>(this.mockRanking());
+  ranking = signal<RankingRow[]>([]);
   loadingEvents = signal(true);
   loadingArticles = signal(true);
-  loadingRanking = signal(false);
+  loadingRanking = signal(true);
+  rankingCategoryName = signal('Open Hombres');
+  rankingCachedAgo = signal('');
+
+  contactForm = this.fb.group({
+    nombre:  ['', Validators.required],
+    email:   ['', [Validators.required, Validators.email]],
+    asunto:  ['', Validators.required],
+    mensaje: ['', [Validators.required, Validators.minLength(10)]],
+  });
+  contactLoading = signal(false);
+  contactSuccess = signal(false);
+  contactError = signal('');
 
   ngOnInit(): void {
     this.title.setTitle('ALAS Latin Tour 2026 — Circuito Continental de Surf Profesional');
@@ -278,6 +390,7 @@ export class HomeComponent implements OnInit {
     this.meta.updateTag({ property: 'og:description', content: 'El circuito continental de surf de alto rendimiento.' });
     this.loadEvents();
     this.loadArticles();
+    this.loadRanking();
   }
 
   private async loadEvents(): Promise<void> {
@@ -299,6 +412,26 @@ export class HomeComponent implements OnInit {
       this.articles.set([]);
     } finally {
       this.loadingArticles.set(false);
+    }
+  }
+
+  private async loadRanking(): Promise<void> {
+    try {
+      const cats = await this.rankingService.getCategories();
+      const defaultCat = cats[0];
+      if (!defaultCat) {
+        this.ranking.set([]);
+        return;
+      }
+      const year = defaultCat.availableYears?.at(-1);
+      const result = await this.rankingService.getRanking(defaultCat.id, year, 1, 8);
+      this.ranking.set(result.rows);
+      this.rankingCategoryName.set(result.categoryName || defaultCat.nombre);
+      this.rankingCachedAgo.set(this.rankingService.cachedAgo(result.cachedAt));
+    } catch {
+      this.ranking.set([]);
+    } finally {
+      this.loadingRanking.set(false);
     }
   }
 
@@ -340,16 +473,19 @@ export class HomeComponent implements OnInit {
     return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
   }
 
-  private mockRanking(): RankingRow[] {
-    return [
-      { position: 1, name: 'Gabriel Villani',  country: 'Brasil',     flag: '🇧🇷', points: 12840, change: 2 },
-      { position: 2, name: 'Mateo Díaz',        country: 'Perú',       flag: '🇵🇪', points: 11925, change: -1 },
-      { position: 3, name: 'Sebastián Mora',    country: 'Chile',      flag: '🇨🇱', points: 10460, change: 1 },
-      { position: 4, name: 'Tomás Herrera',     country: 'Argentina',  flag: '🇦🇷', points: 9815,  change: 0 },
-      { position: 5, name: 'Lucas Vieira',      country: 'Brasil',     flag: '🇧🇷', points: 9210,  change: 3 },
-      { position: 6, name: 'Diego Núñez',       country: 'México',     flag: '🇲🇽', points: 8770,  change: -2 },
-      { position: 7, name: 'Rodrigo Alas',      country: 'Costa Rica', flag: '🇨🇷', points: 8205,  change: 1 },
-      { position: 8, name: 'Pablo Medina',      country: 'Ecuador',    flag: '🇪🇨', points: 7890,  change: 0 },
-    ];
+  async submitContact(): Promise<void> {
+    if (this.contactForm.invalid) { this.contactForm.markAllAsTouched(); return; }
+    this.contactLoading.set(true);
+    this.contactError.set('');
+    try {
+      await this.api.post('/contact', this.contactForm.value);
+      this.contactSuccess.set(true);
+      this.contactForm.reset();
+    } catch (err: any) {
+      this.contactError.set(err.body?.message ?? 'No se pudo enviar el mensaje. Intenta de nuevo.');
+    } finally {
+      this.contactLoading.set(false);
+    }
   }
+
 }

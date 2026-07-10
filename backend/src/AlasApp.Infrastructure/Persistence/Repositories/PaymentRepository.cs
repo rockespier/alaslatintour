@@ -50,8 +50,26 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
 
     public async Task<PaymentDto?> GetByIdAsync(Guid paymentId, CancellationToken cancellationToken)
     {
-        var item = await BuildPaymentDetailsQuery()
-            .FirstOrDefaultAsync(x => x.Payment.Id == paymentId, cancellationToken);
+        var item = await dbContext.Payments
+            .AsNoTracking()
+            .Where(x => x.Id == paymentId)
+            .Join(dbContext.Inscriptions,
+                payment => payment.InscriptionId,
+                inscription => inscription.Id,
+                (payment, inscription) => new { payment, inscription })
+            .Join(dbContext.Competitors,
+                left => left.inscription.CompetitorId,
+                competitor => competitor.Id,
+                (left, competitor) => new { left.payment, left.inscription, competitor })
+            .Join(dbContext.Events,
+                left => left.inscription.EventId,
+                @event => @event.Id,
+                (left, @event) => new { left.payment, left.inscription, left.competitor, @event })
+            .Join(dbContext.Categories,
+                left => left.inscription.CategoryId,
+                category => category.Id,
+                (left, category) => new PaymentDetails(left.payment, left.inscription, left.competitor, left.@event, category))
+            .FirstOrDefaultAsync(cancellationToken);
 
         return item is null ? null : MapToDto(item);
     }

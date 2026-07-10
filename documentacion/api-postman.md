@@ -9,7 +9,7 @@
 
 URL completa de ejemplo: `http://localhost:5132/v1/circuits`
 
-> **Autenticación:** `login`, `register`, `password-reset/request` y `password-reset/confirm` son públicos. `logout` requiere header `Authorization: Bearer {{access_token}}`. El resto de endpoints sigue sin enforcement por rol en esta fase.
+> **Autenticación:** `login`, `register`, `password-reset/request` y `password-reset/confirm` son públicos. `logout` requiere `Authorization: Bearer {{access_token}}`. Los endpoints de `/v1/admin/*` sí tienen enforcement de autenticación y permisos (`401` / `403`).
 
 ---
 
@@ -19,6 +19,50 @@ URL completa de ejemplo: `http://localhost:5132/v1/circuits`
 - **Fechas:** Solo fecha, formato `yyyy-MM-dd` — `"2025-07-01"` (sin hora)
 - **Enums:** Strings en español con tildes — `"Latinoamérica"`, `"Próximamente"`, etc.
 - **Paginación:** Todos los listados devuelven `{ "data": [...], "pagination": { "currentPage", "itemsPerPage", "totalItems", "totalPages" } }`
+
+---
+
+## Entrega para frontend Angular
+
+Los endpoints nuevos o modificados que el equipo frontend debe considerar en esta fase son:
+
+| Módulo | Método | Ruta | Estado |
+|--------|--------|------|--------|
+| Auth | `POST` | `/v1/auth/login` | nuevo |
+| Auth | `POST` | `/v1/auth/register` | nuevo |
+| Auth | `POST` | `/v1/auth/password-reset/request` | nuevo |
+| Auth | `POST` | `/v1/auth/password-reset/confirm` | nuevo |
+| Auth | `POST` | `/v1/auth/logout` | nuevo |
+| Articles | `GET` | `/v1/articles` | nuevo |
+| Articles | `GET` | `/v1/articles/{slug}` | nuevo |
+| Articles | `POST` | `/v1/articles` | nuevo |
+| Articles | `PUT` | `/v1/articles/{slug}` | nuevo |
+| Articles | `DELETE` | `/v1/articles/{slug}` | nuevo |
+| Galleries | `GET` | `/v1/galleries` | nuevo |
+| Galleries | `GET` | `/v1/galleries/{slug}` | modificado |
+| Rankings | `GET` | `/v1/rankings` | nuevo |
+| Rankings | `GET` | `/v1/rankings/categories` | nuevo |
+| SurfScores | `POST` | `/v1/surfscores/sync/{circuitId}` | nuevo |
+| Memberships | `GET` | `/v1/memberships` | nuevo |
+| Memberships | `GET` | `/v1/memberships/{membershipId}` | nuevo |
+| Memberships | `POST` | `/v1/memberships` | nuevo |
+| Memberships | `PUT` | `/v1/memberships/{membershipId}` | nuevo |
+| Memberships | `DELETE` | `/v1/memberships/{membershipId}` | nuevo |
+| Admin | `GET` | `/v1/admin/users` | nuevo |
+| Admin | `GET` | `/v1/admin/users/{userId}` | nuevo |
+| Admin | `POST` | `/v1/admin/users` | nuevo |
+| Admin | `PUT` | `/v1/admin/users/{userId}` | nuevo |
+| Admin | `DELETE` | `/v1/admin/users/{userId}` | nuevo |
+| Admin | `GET` | `/v1/admin/roles` | nuevo |
+| Admin | `GET` | `/v1/admin/dashboard` | nuevo |
+
+### Cambios importantes de contrato
+
+- `GET /v1/articles/{slug}` devuelve campos adicionales para frontend: `id`, `content`, `showRankingWidget` y `author`.
+- `GET /v1/articles` ya resuelve `imagenUrl` y `tags`.
+- `GET /v1/galleries` devuelve una card liviana con una sola portada por galería.
+- `GET /v1/galleries/{slug}` ya no devuelve `photos` plano. Ahora devuelve `galleryDays[]` con `assets[]` tipados.
+- `/v1/admin/*` requiere JWT y aplica permisos por rol. Angular debe manejar `401 Unauthorized` y `403 Forbidden`.
 
 ---
 
@@ -549,6 +593,474 @@ POST {{base_url}}/v1/surfscores/sync/{{circuit_id}}
 ```
 
 **Responses:** `200 OK` · `404 Not Found`
+
+---
+
+## 13. Articles — `/v1/articles`
+
+### GET /v1/articles — Listar noticias
+
+```http
+GET {{base_url}}/v1/articles?page=1&limit=10&category=Resultados&featured=true&search=alas
+```
+
+**Query params (opcionales):**
+
+| Param | Valores posibles |
+|-------|-----------------|
+| `page` | número (default: 1) |
+| `limit` | número (default: 20) |
+| `category` | `Resultados` · `Circuito` · `Entrevista` · `Reglamento` · `Tecnología` |
+| `featured` | `true` · `false` |
+| `search` | texto libre |
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "autor": "Equipo ALAS",
+      "autorTitulo": "Periodista ALAS",
+      "categoria": "Resultados",
+      "featured": true,
+      "fechaPublicacion": "2026-07-08T00:00:00Z",
+      "id": "article-1",
+      "imagenUrl": "https://cdn.test/nota.jpg",
+      "relatedEventId": null,
+      "resumen": "Resumen destacado",
+      "slug": "nota-destacada",
+      "tags": ["tour", "ranking"],
+      "tiempoLecturaMin": 3,
+      "titulo": "Nota destacada"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "itemsPerPage": 10,
+    "totalItems": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### GET /v1/articles/{slug} — Detalle de noticia
+
+```http
+GET {{base_url}}/v1/articles/nota-destacada
+```
+
+**Ejemplo de response:**
+```json
+{
+  "autor": "Equipo ALAS",
+  "autorTitulo": "Periodista ALAS",
+  "author": {
+    "name": "Equipo ALAS",
+    "role": "Periodista ALAS"
+  },
+  "categoria": "Resultados",
+  "content": "<p>Contenido destacado</p>",
+  "featured": true,
+  "fechaPublicacion": "2026-07-08T00:00:00Z",
+  "id": "article-1",
+  "imagenUrl": "https://cdn.test/nota.jpg",
+  "relatedEventId": null,
+  "resumen": "Resumen destacado",
+  "showRankingWidget": true,
+  "slug": "nota-destacada",
+  "tags": ["tour", "ranking"],
+  "tiempoLecturaMin": 3,
+  "titulo": "Nota destacada"
+}
+```
+
+> `content` contiene HTML renderizado desde WordPress.
+
+---
+
+### POST /v1/articles — Crear noticia
+
+```http
+POST {{base_url}}/v1/articles
+Content-Type: application/json
+```
+
+```json
+{
+  "titulo": "Nueva nota",
+  "resumen": "Resumen de la nota",
+  "categoria": "Circuito",
+  "autor": "Equipo ALAS",
+  "autorTitulo": "Redacción",
+  "imagenUrl": "https://cdn.test/image.jpg",
+  "tags": ["tour", "olas"],
+  "featured": false,
+  "relatedEventId": null,
+  "content": "<p>Contenido HTML</p>",
+  "showRankingWidget": false
+}
+```
+
+**Response:** `201 Created`
+
+---
+
+### PUT /v1/articles/{slug} — Actualizar noticia
+
+Usa el mismo body que `POST /v1/articles`.
+
+**Response:** `200 OK`
+
+---
+
+### DELETE /v1/articles/{slug} — Eliminar noticia
+
+```http
+DELETE {{base_url}}/v1/articles/nota-destacada
+```
+
+**Response:** `204 No Content`
+
+---
+
+## 14. Galleries — `/v1/galleries`
+
+### GET /v1/galleries — Cards de galerías
+
+```http
+GET {{base_url}}/v1/galleries
+```
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "id": "gallery-1",
+      "slug": "roca-bruja-classic",
+      "title": "Roca Bruja Classic",
+      "eventDate": "2026-07-08T00:00:00Z",
+      "coverImageUrl": "https://cdn.test/gallery-1-cover.jpg",
+      "photoCount": 3
+    }
+  ]
+}
+```
+
+> Este listado es liviano: una sola imagen de portada por galería.
+
+---
+
+### GET /v1/galleries/{slug} — Detalle de galería
+
+```http
+GET {{base_url}}/v1/galleries/roca-bruja-classic
+```
+
+**Ejemplo de response:**
+```json
+{
+  "id": "gallery-1",
+  "slug": "roca-bruja-classic",
+  "title": "Roca Bruja Classic",
+  "eventDate": "2026-07-08T00:00:00Z",
+  "pressDownloadLink": "https://drive.test/roca-bruja",
+  "coverImageUrl": "https://cdn.test/gallery-1-cover.jpg",
+  "photoCount": 3,
+  "galleryDays": [
+    {
+      "dayName": "Day 1",
+      "assets": [
+        {
+          "id": "photo-1",
+          "type": "photo",
+          "url": "https://cdn.test/gallery-1-cover.jpg",
+          "width": 700,
+          "height": 467
+        }
+      ]
+    },
+    {
+      "dayName": "Day 2",
+      "assets": [
+        {
+          "id": "photo-3",
+          "type": "photo",
+          "url": "https://cdn.test/gallery-1-3.jpg",
+          "width": 700,
+          "height": 467
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Cambio relevante para Angular:**
+- El detalle usa `galleryDays[].assets[]`.
+- El campo `type` puede ser `photo` o `video`.
+- El contrato anterior con `photos` plano ya no debe usarse.
+
+---
+
+## 15. Memberships — `/v1/memberships`
+
+### GET /v1/memberships — Listar membresías
+
+```http
+GET {{base_url}}/v1/memberships?page=1&limit=20&status=Activo
+```
+
+**Query params (opcionales):**
+
+| Param | Valores posibles |
+|-------|-----------------|
+| `page` | número (default: 1) |
+| `limit` | número (default: 20) |
+| `status` | `Activo` · `Vence pronto` |
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "clubFederacion": "Federacion Peruana de Surf",
+      "pais": "Perú",
+      "plan": "Mensual",
+      "estado": "Activo",
+      "inicioVigencia": "2026-07-01",
+      "vencimiento": "2026-10-15",
+      "emailContacto": "membresias@alas.test",
+      "competidoresAfiliados": 2,
+      "createdAt": "2026-07-09T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "itemsPerPage": 20,
+    "totalItems": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### GET /v1/memberships/{membershipId}
+
+```http
+GET {{base_url}}/v1/memberships/{{membership_id}}
+```
+
+**Responses:** `200 OK` · `404 Not Found`
+
+---
+
+### POST /v1/memberships
+
+```http
+POST {{base_url}}/v1/memberships
+Content-Type: application/json
+```
+
+```json
+{
+  "clubFederacion": "Federacion Peruana de Surf",
+  "pais": "Perú",
+  "plan": "Mensual",
+  "inicioVigencia": "2026-07-01",
+  "vencimiento": "2026-10-15",
+  "emailContacto": "membresias@alas.test"
+}
+```
+
+**Planes válidos:** `Mensual` · `Por evento`
+
+---
+
+### PUT /v1/memberships/{membershipId}
+
+Usa el mismo body que `POST /v1/memberships`.
+
+**Response:** `200 OK`
+
+---
+
+### DELETE /v1/memberships/{membershipId}
+
+```http
+DELETE {{base_url}}/v1/memberships/{{membership_id}}
+```
+
+**Response:** `204 No Content`
+
+---
+
+## 16. Admin — `/v1/admin`
+
+### Requisitos de acceso
+
+- Todos los endpoints requieren `Authorization: Bearer {{access_token}}`.
+- `GET /v1/admin/dashboard` requiere permiso de lectura sobre `Dashboard`.
+- `GET /v1/admin/users` y `GET /v1/admin/users/{userId}` requieren permiso `UsersRead`.
+- `POST`, `PUT` y `DELETE` sobre `/v1/admin/users` requieren permiso `UsersWrite`.
+- `GET /v1/admin/roles` requiere permiso `ConfigurationRead`.
+
+### GET /v1/admin/users
+
+```http
+GET {{base_url}}/v1/admin/users
+Authorization: Bearer {{access_token}}
+```
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "email": "admin@test.com",
+      "fullName": "Gabriel Villani",
+      "initials": "GV",
+      "role": "Admin",
+      "status": "Activo",
+      "createdAt": "2026-07-09T00:00:00Z",
+      "lastSession": null
+    }
+  ]
+}
+```
+
+---
+
+### GET /v1/admin/users/{userId}
+
+```http
+GET {{base_url}}/v1/admin/users/{{user_id}}
+Authorization: Bearer {{access_token}}
+```
+
+---
+
+### POST /v1/admin/users
+
+```http
+POST {{base_url}}/v1/admin/users
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+```
+
+```json
+{
+  "nombre": "Gabriel",
+  "apellido": "Villani",
+  "email": "admin@test.com",
+  "rol": "Admin",
+  "sendInvitationEmail": true
+}
+```
+
+**Roles válidos:** `Super Admin` · `Admin` · `Árbitro` · `Revisor`
+
+---
+
+### PUT /v1/admin/users/{userId}
+
+```http
+PUT {{base_url}}/v1/admin/users/{{user_id}}
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+```
+
+```json
+{
+  "rol": "Revisor",
+  "status": "Inactivo"
+}
+```
+
+**Status válidos:** `Activo` · `Inactivo`
+
+---
+
+### DELETE /v1/admin/users/{userId}
+
+```http
+DELETE {{base_url}}/v1/admin/users/{{user_id}}
+Authorization: Bearer {{access_token}}
+```
+
+**Responses:** `204 No Content` · `404 Not Found` · `409 Conflict`
+
+> `409 Conflict` si el usuario intenta eliminarse a sí mismo.
+
+---
+
+### GET /v1/admin/roles
+
+```http
+GET {{base_url}}/v1/admin/roles
+Authorization: Bearer {{access_token}}
+```
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "name": "Super Admin",
+      "permissions": [
+        {
+          "module": "Dashboard",
+          "level": "Full"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### GET /v1/admin/dashboard
+
+```http
+GET {{base_url}}/v1/admin/dashboard
+Authorization: Bearer {{access_token}}
+```
+
+**Ejemplo de response:**
+```json
+{
+  "kpis": {
+    "totalCompetidores": 2,
+    "totalEventosActivos": 1,
+    "totalInscripciones": 2,
+    "recaudacionMesUsd": 95.0,
+    "tokensPendientes": 1
+  },
+  "activeEvents": [
+    {
+      "id": "guid-event",
+      "nombre": "Evento Dashboard",
+      "estado": "Activo",
+      "fechaInicio": "2026-10-02T00:00:00Z",
+      "inscritosCount": 2
+    }
+  ],
+  "recentInscriptions": [
+    {
+      "competitorName": "Laura Mendez",
+      "evento": "Evento Dashboard",
+      "categoria": "Open",
+      "inscripcionAt": "2026-07-09T00:00:00Z"
+    }
+  ]
+}
+```
 
 ---
 
@@ -1151,56 +1663,76 @@ Content-Type: application/json
 
 ---
 
-## 10. Endpoints pendientes de implementación
+## 17. Pendientes funcionales
 
-Los siguientes endpoints siguen definidos en el contrato OpenAPI pero aún no forman parte de los lotes implementados.
+No hay endpoints nuevos pendientes de documentar para Angular en los lotes cerrados.
 
-### Rankings
+Pendiente técnico fuera del contrato HTTP:
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/v1/rankings` | Ranking (`?categoryId` REQUERIDO, `?year&page&limit`) |
-| `GET` | `/v1/rankings/categories` | Categorías con ranking disponible |
+- validación funcional del adapter real contra WordPress
+- validación funcional del adapter real contra SurfScores
 
 ---
 
-### Artículos (noticias)
+## 18. Bootstrap Super Admin
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/v1/articles` | Listar artículos (`?page&limit&category&featured&search`) |
-| `POST` | `/v1/articles` | Crear artículo |
-| `GET` | `/v1/articles/{slug}` | Obtener por slug |
-| `PUT` | `/v1/articles/{slug}` | Actualizar artículo |
-| `DELETE` | `/v1/articles/{slug}` | Eliminar artículo |
+El primer usuario `Super Admin` no se crea desde un endpoint público.
 
-Categorías: `Resultados` · `Circuito` · `Entrevista` · `Reglamento` · `Tecnología`
+La API ahora soporta bootstrap automático al arranque usando configuración.
 
----
+### Configuración en `appsettings`
 
-### Admin
+En `backend/src/AlasApp.Api/appsettings.json` o `appsettings.Development.json`:
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/v1/admin/users` | Listar usuarios admin (`?role&status`) |
-| `POST` | `/v1/admin/users` | Crear usuario admin |
-| `GET` | `/v1/admin/users/{id}` | Obtener usuario admin |
-| `PUT` | `/v1/admin/users/{id}` | Actualizar usuario admin |
-| `DELETE` | `/v1/admin/users/{id}` | Eliminar usuario admin |
-| `GET` | `/v1/admin/roles` | Listar roles disponibles |
-| `GET` | `/v1/admin/dashboard` | Dashboard con métricas |
-
-Roles: `Super Admin` · `Admin` · `Árbitro` · `Revisor`
-
----
-
-### SurfScores Sync
-
-```
-POST {{base_url}}/v1/surfscores/sync/{circuitId}
+```json
+"BootstrapAdmin": {
+  "Enabled": true,
+  "Email": "superadmin@alas.local",
+  "Password": "Password1!",
+  "Nombre": "Super",
+  "Apellido": "Admin"
+}
 ```
 
-Dispara la sincronización manual de rankings desde la API externa de SurfScores para el circuito indicado.
+### Configuración por variables de entorno
+
+```powershell
+$env:BootstrapAdmin__Enabled="true"
+$env:BootstrapAdmin__Email="superadmin@alas.local"
+$env:BootstrapAdmin__Password="Password1!"
+$env:BootstrapAdmin__Nombre="Super"
+$env:BootstrapAdmin__Apellido="Admin"
+```
+
+### Comportamiento
+
+- Si `Enabled = false`, no hace nada.
+- Si ya existe un usuario con rol `Super Admin`, no crea otro.
+- Si la configuración está incompleta, no crea nada.
+- Si el email configurado ya existe pero no tiene rol `Super Admin`, no eleva esa cuenta automáticamente.
+
+### Flujo recomendado
+
+1. Configurar `BootstrapAdmin` con `Enabled = true`.
+2. Levantar la API.
+3. Hacer `POST /v1/auth/login` con ese email y password.
+4. Verificar acceso a `/v1/admin/dashboard` o `/v1/admin/users`.
+5. Volver a dejar `Enabled = false` para evitar depender del bootstrap en arranques posteriores.
+
+### Ejemplo de login del bootstrap admin
+
+```http
+POST {{base_url}}/v1/auth/login
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "superadmin@alas.local",
+  "password": "Password1!",
+  "rememberMe": false
+}
+```
 
 ---
 

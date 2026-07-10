@@ -383,8 +383,17 @@ export class InscripcionComponent implements OnInit {
   private async loadCategories(): Promise<void> {
     this.loadingCategories.set(true);
     try {
-      const res = await this.api.get<any>(`/event-categories?eventId=${this.eventId()}&limit=20`);
-      this.categories.set(res?.data ?? []);
+      const res = await this.api.get<any>(`/events/${this.eventId()}/categories`);
+      const raw: any[] = res?.data ?? [];
+      this.categories.set(raw.map(c => ({
+        id: c.categoryId,
+        nombre: c.categoryName,
+        tipo: c.tipo ?? '',
+        tarifa: c.effectiveTariffUsd ?? c.customTariffUsd ?? 0,
+        inscritos: c.enrolledCount ?? 0,
+        capacidad: c.capacidad ?? 0,
+        descripcion: c.descripcion,
+      })));
     } catch {
       this.categories.set([]);
     } finally {
@@ -414,19 +423,25 @@ export class InscripcionComponent implements OnInit {
     this.submitting.set(true);
     this.errorMessage.set('');
     try {
-      const body = {
+      const inscRes = await this.api.post<any>('/inscriptions', {
+        competitorId: this.auth.currentUser()?.id,
         eventId: this.eventId(),
         categoryId: this.selectedCategoryId(),
-        paymentMethod: this.paymentMethod(),
-        shirtNumber: this.shirtNumber,
-      };
-      const res = await this.api.post<any>('/inscriptions', body);
-      const inscriptionId: string = res?.data?.id ?? res?.id;
+        paymentMethod: this.paymentMethod() === 'beach' ? 'beach' : 'Paypal',
+        shirtNumber: this.shirtNumber != null ? String(this.shirtNumber) : undefined,
+        reglamento: true,
+      });
+      const inscriptionId: string = inscRes?.data?.id ?? inscRes?.id;
 
       if (this.paymentMethod() === 'beach') {
         this.router.navigate(['/pago-playa', inscriptionId]);
       } else {
-        const paypalUrl: string | undefined = res?.data?.paypalUrl ?? res?.paypalUrl;
+        // PayPal: call /payments to create payment session and get checkout URL
+        const payRes = await this.api.post<any>('/payments', {
+          inscriptionId,
+          method: 'paypal',
+        });
+        const paypalUrl: string | undefined = payRes?.data?.paypalUrl ?? payRes?.paypalUrl ?? payRes?.checkoutUrl;
         if (paypalUrl) {
           window.location.href = paypalUrl;
         } else {
@@ -434,7 +449,7 @@ export class InscripcionComponent implements OnInit {
         }
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.message ?? 'Error al procesar la inscripción. Inténtalo de nuevo.');
+      this.errorMessage.set(err?.body?.message ?? err?.message ?? 'Error al procesar la inscripción. Inténtalo de nuevo.');
     } finally {
       this.submitting.set(false);
     }

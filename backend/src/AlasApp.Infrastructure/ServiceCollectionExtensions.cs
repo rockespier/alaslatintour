@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
 
         var wordPressConfig = configuration.GetSection(WordPressConfig.SectionName).Get<WordPressConfig>() ?? new WordPressConfig();
         services.Configure<WordPressConfig>(configuration.GetSection(WordPressConfig.SectionName));
+        services.Configure<BootstrapAdminOptions>(configuration.GetSection(BootstrapAdminOptions.SectionName));
 
         services.AddScoped<ICircuitRepository, CircuitRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
@@ -38,28 +39,31 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBeachTokenRepository, BeachTokenRepository>();
         services.AddScoped<IRankingRepository, RankingRepository>();
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+        services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
+        services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
         services.AddHttpClient<IWordPressService, WordPressService>(client =>
         {
-            ConfigureWordPressClient(client, wordPressConfig, "posts");
+            ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.PostsBaseUrl, "posts"));
         });
         services.AddHttpClient<IGalleryService, GalleryService>(client =>
         {
-            ConfigureWordPressClient(client, wordPressConfig, "gallery");
+            ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.GalleriesBaseUrl, "gallery"));
         });
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IResetTokenService, ResetTokenService>();
+        services.AddScoped<BootstrapAdminInitializer>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AlasAppDbContext>());
 
         return services;
     }
 
-    private static void ConfigureWordPressClient(HttpClient client, WordPressConfig wordPressConfig, string resource)
+    private static void ConfigureWordPressClient(HttpClient client, WordPressConfig wordPressConfig, string? baseUrl)
     {
-        if (!string.IsNullOrWhiteSpace(wordPressConfig.BaseUrl))
+        if (!string.IsNullOrWhiteSpace(baseUrl))
         {
-            client.BaseAddress = new Uri(NormalizeWordPressResourceUrl(wordPressConfig.BaseUrl, resource));
+            client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
         }
 
         if (!string.IsNullOrWhiteSpace(wordPressConfig.Username) &&
@@ -72,8 +76,22 @@ public static class ServiceCollectionExtensions
         client.DefaultRequestHeaders.Add("User-Agent", "AlasBFF-DotNet9");
     }
 
-    // wordPressConfig.BaseUrl points at the "posts" WP REST resource (e.g. .../wp-json/wp/v2/posts);
-    // this swaps in whichever sibling resource (posts, gallery, ...) the caller needs.
+    private static string ResolveWordPressBaseUrl(WordPressConfig config, string? explicitBaseUrl, string resource)
+    {
+        if (!string.IsNullOrWhiteSpace(explicitBaseUrl))
+        {
+            return explicitBaseUrl;
+        }
+
+        if (!string.IsNullOrWhiteSpace(config.BaseUrl))
+        {
+            return NormalizeWordPressResourceUrl(config.BaseUrl, resource);
+        }
+
+        return string.Empty;
+    }
+
+    // BaseUrl remains as backward-compatible fallback when specific resource URLs are not configured.
     private static string NormalizeWordPressResourceUrl(string baseUrl, string resource)
     {
         var uri = new Uri(baseUrl, UriKind.Absolute);
@@ -83,6 +101,6 @@ public static class ServiceCollectionExtensions
             : path;
 
         var builder = new UriBuilder(uri.Scheme, uri.Host, uri.Port, $"{apiRoot}/{resource}");
-        return builder.Uri.ToString().TrimEnd('/') + "/";
+        return builder.Uri.ToString().TrimEnd('/');
     }
 }

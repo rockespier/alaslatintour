@@ -119,6 +119,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             DELETE FROM [UserAccounts];
             DELETE FROM [RankingSnapshotEntries];
             DELETE FROM [RankingSnapshots];
+            DELETE FROM [Memberships];
             DELETE FROM [EventCategories];
             DELETE FROM [BeachTokens];
             DELETE FROM [Payments];

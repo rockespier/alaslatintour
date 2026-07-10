@@ -1,6 +1,9 @@
 using AlasApp.Application.Articles.Commands.CreateArticle;
 using AlasApp.Application.Articles.Commands.UpdateArticle;
 using AlasApp.Application.Articles.Models;
+using AlasApp.Application.AdminUsers.Commands.CreateAdminUser;
+using AlasApp.Application.AdminUsers.Commands.UpdateAdminUser;
+using AlasApp.Application.AdminUsers.Models;
 using AlasApp.Application.Circuits.Commands.CreateCircuit;
 using AlasApp.Application.Circuits.Commands.UpdateCircuit;
 using AlasApp.Application.Circuits.Models;
@@ -16,6 +19,7 @@ using AlasApp.Application.Auth.Models;
 using AlasApp.Application.Competitors.Commands.CreateCompetitor;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitor;
 using AlasApp.Application.Competitors.Models;
+using AlasApp.Application.Dashboard.Models;
 using AlasApp.Application.EventCategories.Commands.UpdateEventCategories;
 using AlasApp.Application.EventCategories.Models;
 using AlasApp.Application.Galleries.Models;
@@ -25,6 +29,9 @@ using AlasApp.Application.Events.Models;
 using AlasApp.Application.Inscriptions.Commands.CreateInscription;
 using AlasApp.Application.Inscriptions.Commands.UpdateInscription;
 using AlasApp.Application.Inscriptions.Models;
+using AlasApp.Application.Memberships.Commands.CreateMembership;
+using AlasApp.Application.Memberships.Commands.UpdateMembership;
+using AlasApp.Application.Memberships.Models;
 using AlasApp.Application.Payments.Commands.CreatePayment;
 using AlasApp.Application.Payments.Commands.RequestBeachToken;
 using AlasApp.Application.Payments.Commands.RedeemBeachToken;
@@ -69,6 +76,75 @@ public static class ApiContractMapper
             dto.LicenseStatus.HasValue ? ToGeneratedLicenseStatus(dto.LicenseStatus.Value) : null,
             dto.Message,
             ToGeneratedUserType(dto.Tipo));
+    }
+
+    public static Generated.AdminUserListResponse ToContract(IReadOnlyCollection<AdminUserDto> users)
+    {
+        return new Generated.AdminUserListResponse(users.Select(ToContract).ToList());
+    }
+
+    public static Generated.AdminUserResponse ToContract(AdminUserDto dto)
+    {
+        return new Generated.AdminUserResponse(
+            dto.CreatedAt,
+            dto.Email,
+            dto.FullName,
+            dto.Id.ToString(),
+            dto.Initials,
+            dto.LastSession,
+            ToGeneratedAdminRole(dto.Role),
+            ToGeneratedAdminUserStatus(dto.Status));
+    }
+
+    public static Generated.RoleListResponse ToContract(IReadOnlyCollection<RoleDto> roles)
+    {
+        return new Generated.RoleListResponse(roles.Select(ToContract).ToList());
+    }
+
+    public static Generated.RoleResponse ToContract(RoleDto dto)
+    {
+        return new Generated.RoleResponse(
+            ToGeneratedAdminRole(dto.Name),
+            dto.Permissions.Select(ToContract).ToList());
+    }
+
+    public static Generated.RolePermission ToContract(RolePermissionDto dto)
+    {
+        return new Generated.RolePermission(
+            ToGeneratedPermissionLevel(dto.Level),
+            ToGeneratedAdminModule(dto.Module));
+    }
+
+    public static Generated.DashboardResponse ToContract(DashboardDto dto)
+    {
+        return new Generated.DashboardResponse(
+            dto.ActiveEvents.Select(ToContract).ToList(),
+            new Generated.Kpis(
+                (float)dto.Kpis.RecaudacionMesUsd,
+                dto.Kpis.TokensPendientes,
+                dto.Kpis.TotalCompetidores,
+                dto.Kpis.TotalEventosActivos,
+                dto.Kpis.TotalInscripciones),
+            dto.RecentInscriptions.Select(ToContract).ToList());
+    }
+
+    public static Generated.ActiveEvents ToContract(DashboardActiveEventDto dto)
+    {
+        return new Generated.ActiveEvents(
+            ToGeneratedEventStatusAdmin(dto.Estado),
+            dto.FechaInicio.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+            dto.Id.ToString(),
+            dto.InscritosCount,
+            dto.Nombre);
+    }
+
+    public static Generated.RecentInscriptions ToContract(DashboardRecentInscriptionDto dto)
+    {
+        return new Generated.RecentInscriptions(
+            dto.Categoria,
+            dto.CompetitorName,
+            dto.Evento,
+            dto.InscripcionAt);
     }
 
     public static Generated.ArticleListResponse ToContract(PagedResult<ArticleSummaryDto> result)
@@ -126,20 +202,55 @@ public static class ApiContractMapper
         return contract;
     }
 
-    public static GalleryListResponse ToContract(IReadOnlyCollection<GalleryDto> galleries)
+    public static GalleryListResponse ToContract(IReadOnlyCollection<GallerySummaryDto> galleries)
     {
         return new GalleryListResponse(galleries.Select(ToContract).ToList());
     }
 
-    public static GalleryResponse ToContract(GalleryDto dto)
+    public static GallerySummaryResponse ToContract(GallerySummaryDto dto)
     {
-        return new GalleryResponse(
+        return new GallerySummaryResponse(
+            dto.Id,
+            dto.Slug,
+            dto.Title,
+            dto.EventDate,
+            dto.CoverImageUrl,
+            dto.PhotoCount);
+    }
+
+    public static GalleryDetailResponse ToContract(GalleryDetailDto dto)
+    {
+        return new GalleryDetailResponse(
             dto.Id,
             dto.Slug,
             dto.Title,
             dto.EventDate,
             dto.PressDownloadLink,
-            dto.Photos.Select(p => new GalleryPhotoResponse(p.Id, p.Url, p.Width, p.Height)).ToList());
+            dto.CoverImageUrl,
+            dto.PhotoCount,
+            dto.GalleryDays.Select(ToContract).ToList());
+    }
+
+    public static GalleryDayResponse ToContract(GalleryDayDto dto)
+    {
+        return new GalleryDayResponse(
+            dto.DayName,
+            dto.Assets.Select(ToContract).ToList());
+    }
+
+    public static GalleryAssetResponse ToContract(GalleryAssetDto dto)
+    {
+        return new GalleryAssetResponse(
+            dto.Id,
+            dto.Type switch
+            {
+                GalleryAssetType.Photo => "photo",
+                GalleryAssetType.Video => "video",
+                _ => "photo"
+            },
+            dto.Url,
+            dto.Width,
+            dto.Height);
     }
 
     public static Generated.CircuitResponse ToContract(CircuitDto dto)
@@ -251,6 +362,28 @@ public static class ApiContractMapper
         return new Generated.CompetitorListResponse(
             result.Items.Select(ToContract).ToList(),
             new Generated.PaginationMeta(result.CurrentPage, result.ItemsPerPage, result.TotalItems, result.TotalPages));
+    }
+
+    public static Generated.MembershipListResponse ToContract(PagedResult<MembershipDto> result)
+    {
+        return new Generated.MembershipListResponse(
+            result.Items.Select(ToContract).ToList(),
+            new Generated.PaginationMeta(result.CurrentPage, result.ItemsPerPage, result.TotalItems, result.TotalPages));
+    }
+
+    public static Generated.MembershipResponse ToContract(MembershipDto dto)
+    {
+        return new Generated.MembershipResponse(
+            dto.ClubFederacion,
+            dto.CompetidoresAfiliados,
+            dto.CreatedAt,
+            dto.EmailContacto,
+            ToGeneratedMembershipStatus(dto.Estado),
+            dto.Id.ToString(),
+            dto.InicioVigencia,
+            dto.Pais,
+            ToGeneratedMembershipPlan(dto.Plan),
+            dto.Vencimiento);
     }
 
     public static Generated.CompetitorResponse ToContract(CompetitorDto dto)
@@ -588,6 +721,24 @@ public static class ApiContractMapper
             request.RelatedEventId);
     }
 
+    public static CreateAdminUserCommand ToCommand(Generated.AdminUserRequest request)
+    {
+        return new CreateAdminUserCommand(
+            request.Nombre,
+            request.Apellido,
+            request.Email,
+            ToDomainAdminRole(request.Rol),
+            request.SendInvitationEmail);
+    }
+
+    public static UpdateAdminUserCommand ToCommand(Guid userId, Generated.AdminUserUpdateRequest request)
+    {
+        return new UpdateAdminUserCommand(
+            userId,
+            ToDomainAdminRole(request.Rol),
+            ToDomainAdminUserStatus(request.Status));
+    }
+
     public static UpdateArticleCommand ToCommand(string slug, Generated.ArticleRequest request)
     {
         return new UpdateArticleCommand(
@@ -698,6 +849,29 @@ public static class ApiContractMapper
             request.NumeroCamiseta,
             request.Patrocinadores,
             request.Federacion);
+    }
+
+    public static CreateMembershipCommand ToCommand(Generated.MembershipRequest request)
+    {
+        return new CreateMembershipCommand(
+            request.ClubFederacion,
+            request.Pais,
+            ToDomainMembershipPlan(request.Plan),
+            request.InicioVigencia,
+            request.Vencimiento,
+            request.EmailContacto);
+    }
+
+    public static UpdateMembershipCommand ToCommand(Guid membershipId, Generated.MembershipRequest request)
+    {
+        return new UpdateMembershipCommand(
+            membershipId,
+            request.ClubFederacion,
+            request.Pais,
+            ToDomainMembershipPlan(request.Plan),
+            request.InicioVigencia,
+            request.Vencimiento,
+            request.EmailContacto);
     }
 
     public static CreateInscriptionCommand ToCommand(Generated.InscriptionRequest request)
@@ -962,6 +1136,18 @@ public static class ApiContractMapper
             };
     }
 
+    public static MembershipStatus? ParseMembershipStatus(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : NormalizeEnumText(value) switch
+            {
+                "activo" => MembershipStatus.Activo,
+                "vencepronto" => MembershipStatus.VencePronto,
+                _ => throw new ValidationException("Estado de membresia invalido.", [new ValidationError("status", "Estado de membresia invalido.")])
+            };
+    }
+
     public static TokenHistoryStatus? ParseTokenHistoryStatus(string? value)
     {
         return string.IsNullOrWhiteSpace(value)
@@ -1134,6 +1320,38 @@ public static class ApiContractMapper
             Generated.ArticleCategory.Reglamento => ArticleCategory.Reglamento,
             Generated.ArticleCategory.Tecnología => ArticleCategory.Tecnologia,
             _ => throw new ValidationException("Categoría de artículo inválida.", [new ValidationError("categoria", "Categoría de artículo inválida.")])
+        };
+    }
+
+    public static AdminRole ToDomainAdminRole(Generated.AdminRole value)
+    {
+        return value switch
+        {
+            Generated.AdminRole.Super_Admin => AdminRole.SuperAdmin,
+            Generated.AdminRole.Admin => AdminRole.Admin,
+            Generated.AdminRole.Árbitro => AdminRole.Arbitro,
+            Generated.AdminRole.Revisor => AdminRole.Revisor,
+            _ => throw new ValidationException("Rol administrativo inválido.", [new ValidationError("rol", "Rol administrativo inválido.")])
+        };
+    }
+
+    public static AdminUserStatus ToDomainAdminUserStatus(Generated.AdminUserStatus value)
+    {
+        return value switch
+        {
+            Generated.AdminUserStatus.Activo => AdminUserStatus.Activo,
+            Generated.AdminUserStatus.Inactivo => AdminUserStatus.Inactivo,
+            _ => throw new ValidationException("Estado de usuario administrativo inválido.", [new ValidationError("status", "Estado de usuario administrativo inválido.")])
+        };
+    }
+
+    public static MembershipPlan ToDomainMembershipPlan(Generated.MembershipPlan value)
+    {
+        return value switch
+        {
+            Generated.MembershipPlan.Mensual => MembershipPlan.Mensual,
+            Generated.MembershipPlan.Por_evento => MembershipPlan.PorEvento,
+            _ => throw new ValidationException("Plan de membresia invalido.", [new ValidationError("plan", "Plan de membresia invalido.")])
         };
     }
 
@@ -1341,6 +1559,26 @@ public static class ApiContractMapper
         };
     }
 
+    private static Generated.MembershipPlan ToGeneratedMembershipPlan(MembershipPlan value)
+    {
+        return value switch
+        {
+            MembershipPlan.Mensual => Generated.MembershipPlan.Mensual,
+            MembershipPlan.PorEvento => Generated.MembershipPlan.Por_evento,
+            _ => Generated.MembershipPlan.Mensual
+        };
+    }
+
+    private static Generated.MembershipStatus ToGeneratedMembershipStatus(MembershipStatus value)
+    {
+        return value switch
+        {
+            MembershipStatus.Activo => Generated.MembershipStatus.Activo,
+            MembershipStatus.VencePronto => Generated.MembershipStatus.Vence_pronto,
+            _ => Generated.MembershipStatus.Activo
+        };
+    }
+
     private static Generated.InscriptionStatusAdmin ToGeneratedInscriptionStatusAdmin(InscriptionStatusAdmin value)
     {
         return value switch
@@ -1394,6 +1632,44 @@ public static class ApiContractMapper
             AdminRole.Arbitro => Generated.AdminRole.Árbitro,
             AdminRole.Revisor => Generated.AdminRole.Revisor,
             _ => Generated.AdminRole.Admin
+        };
+    }
+
+    private static Generated.AdminUserStatus ToGeneratedAdminUserStatus(AdminUserStatus value)
+    {
+        return value switch
+        {
+            AdminUserStatus.Activo => Generated.AdminUserStatus.Activo,
+            AdminUserStatus.Inactivo => Generated.AdminUserStatus.Inactivo,
+            _ => Generated.AdminUserStatus.Activo
+        };
+    }
+
+    private static Generated.PermissionLevel ToGeneratedPermissionLevel(PermissionLevel value)
+    {
+        return value switch
+        {
+            PermissionLevel.Full => Generated.PermissionLevel.Full,
+            PermissionLevel.ReadOnly => Generated.PermissionLevel.ReadOnly,
+            PermissionLevel.None => Generated.PermissionLevel.None,
+            _ => Generated.PermissionLevel.None
+        };
+    }
+
+    private static Generated.AdminModule ToGeneratedAdminModule(AdminModule value)
+    {
+        return value switch
+        {
+            AdminModule.Dashboard => Generated.AdminModule.Dashboard,
+            AdminModule.Usuarios => Generated.AdminModule.Usuarios,
+            AdminModule.Circuitos => Generated.AdminModule.Circuitos,
+            AdminModule.Eventos => Generated.AdminModule.Eventos,
+            AdminModule.Categorias => Generated.AdminModule.Categorías,
+            AdminModule.Inscritos => Generated.AdminModule.Inscritos,
+            AdminModule.Pagos => Generated.AdminModule.Pagos,
+            AdminModule.Tokens => Generated.AdminModule.Tokens,
+            AdminModule.Configuracion => Generated.AdminModule.Configuración,
+            _ => Generated.AdminModule.Dashboard
         };
     }
 

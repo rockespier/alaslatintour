@@ -4,16 +4,30 @@ using Newtonsoft.Json.Serialization;
 namespace AlasApp.Api.Models;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public sealed record GalleryPhotoResponse(string Id, string Url, int Width, int Height);
+public sealed record GalleryAssetResponse(string Id, string Type, string Url, int Width, int Height);
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public sealed record GalleryResponse(
+public sealed record GalleryDayResponse(string DayName, IReadOnlyCollection<GalleryAssetResponse> Assets);
+
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+public sealed record GallerySummaryResponse(
+    string Id,
+    string Slug,
+    string Title,
+    DateTimeOffset? EventDate,
+    string? CoverImageUrl,
+    int PhotoCount);
+
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+public sealed record GalleryDetailResponse(
     string Id,
     string Slug,
     string Title,
     DateTimeOffset? EventDate,
     string? PressDownloadLink,
-    IReadOnlyCollection<GalleryPhotoResponse> Photos);
+    string? CoverImageUrl,
+    int PhotoCount,
+    IReadOnlyCollection<GalleryDayResponse> GalleryDays);
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public sealed record GalleryListResponse(IReadOnlyCollection<GalleryResponse> Data);
+public sealed record GalleryListResponse(IReadOnlyCollection<GallerySummaryResponse> Data);

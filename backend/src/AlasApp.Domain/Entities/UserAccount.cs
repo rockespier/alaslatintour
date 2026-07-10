@@ -140,6 +140,17 @@ public sealed class UserAccount : AuditableEntity
         TokenVersion++;
     }
 
+    public void Activate()
+    {
+        IsActive = true;
+        TokenVersion++;
+    }
+
+    public void AssignAdminRole(AdminRole role)
+    {
+        AdminRole = role;
+    }
+
     public void EnsureActive()
     {
         if (!IsActive)

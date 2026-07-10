@@ -33,7 +33,9 @@ internal sealed record WordPressEmbeddedDto(
 
 internal sealed record WordPressMetaDto(
     [property: JsonPropertyName("author_role")] string? AuthorRole,
+    [property: JsonPropertyName("read_time_minutes")] int? ReadTimeMinutes,
     [property: JsonPropertyName("show_ranking")] bool ShowRanking,
+    [property: JsonPropertyName("featured")] bool? Featured,
     [property: JsonPropertyName("article_category")] string? ArticleCategory,
     [property: JsonPropertyName("related_event_id")] string? RelatedEventId,
     [property: JsonPropertyName("image_url")] string? ImageUrl,
@@ -63,7 +65,9 @@ internal sealed record WordPressCreateUpdateRequest(
 
 internal sealed record WordPressMutableMetaDto(
     [property: JsonPropertyName("author_role")] string AuthorRole,
+    [property: JsonPropertyName("read_time_minutes")] int ReadTimeMinutes,
     [property: JsonPropertyName("show_ranking")] bool ShowRanking,
+    [property: JsonPropertyName("featured")] bool Featured,
     [property: JsonPropertyName("article_category")] string ArticleCategory,
     [property: JsonPropertyName("related_event_id")] string? RelatedEventId,
     [property: JsonPropertyName("image_url")] string ImageUrl,

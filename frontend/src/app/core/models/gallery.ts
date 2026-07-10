@@ -1,17 +1,32 @@
-// Backend already serializes /v1/galleries with camelCase field names
-// matching this shape 1:1 — no mapping layer needed (see gallery.md).
-export interface GalleryPhoto {
+export interface GalleryCard {
   id: string;
+  slug: string;
+  title: string;
+  eventDate: string | null;
+  coverImageUrl: string;
+  photoCount: number;
+}
+
+export interface GalleryAsset {
+  id: string;
+  type: 'photo' | 'video';
   url: string;
   width: number;
   height: number;
 }
 
-export interface Gallery {
+export interface GalleryDay {
+  dayName: string;
+  assets: GalleryAsset[];
+}
+
+export interface GalleryDetail {
   id: string;
   slug: string;
   title: string;
   eventDate: string | null;
   pressDownloadLink: string | null;
-  photos: GalleryPhoto[];
+  coverImageUrl: string;
+  photoCount: number;
+  galleryDays: GalleryDay[];
 }

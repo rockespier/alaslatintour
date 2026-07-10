@@ -35,6 +35,8 @@ public sealed class AlasAppDbContext(DbContextOptions<AlasAppDbContext> options)
 
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
+    public DbSet<Membership> Memberships => Set<Membership>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AlasAppDbContext).Assembly);

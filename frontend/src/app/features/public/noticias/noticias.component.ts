@@ -1,23 +1,15 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, afterNextRender } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
-import { Gallery } from '../../../core/models/gallery';
+import { GalleryCard } from '../../../core/models/gallery';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 type Tab = 'todas' | 'noticias' | 'resultados' | 'fotos' | 'videos';
 type GalleryTab = 'fotos' | 'videos';
 
 type Article = ArticleSummary;
-
-interface GalleryPhotoTile {
-  id: string;
-  url: string;
-  caption: string;
-  height: number;
-  downloadLink: string | null;
-}
 
 const CATEGORY_MAP: Record<string, string> = {
   'Resultados': 'bg-success-brand/15 text-success-brand',
@@ -184,25 +176,33 @@ const MOCK_VIDEOS = [
           </p>
           @if (loadingGalleries()) {
             <app-loading-spinner label="Cargando galería..." />
-          } @else if (photoTiles().length === 0) {
+          } @else if (galleries().length === 0) {
             <p class="text-text-muted text-sm py-8 text-center">No hay fotografías disponibles.</p>
           } @else {
-            <div class="masonry">
-              @for (photo of photoTiles(); track photo.id) {
-                <div class="photo-tile group" [style.height.px]="photo.height">
-                  <img [src]="photo.url" [alt]="photo.caption" referrerpolicy="no-referrer" class="w-full h-full object-cover">
-                  <div class="overlay">
-                    <div>
-                      <p class="text-xs font-accent uppercase tracking-wider mb-2">{{ photo.caption }}</p>
-                      @if (photo.downloadLink) {
-                        <a [href]="photo.downloadLink" target="_blank" rel="noreferrer"
-                           class="px-2 py-1 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest transition">
-                          Descargar
-                        </a>
-                      }
+            <div class="columns-2 sm:columns-3 lg:columns-4 gap-3">
+              @for (g of galleries(); track g.id; let i = $index) {
+                <a [routerLink]="['/galerias', g.slug]"
+                   class="group relative overflow-hidden rounded-xl bg-navy-mid block break-inside-avoid mb-3">
+                  <div class="relative overflow-hidden" [style.height]="galleryTileHeight(i)">
+                    @if (g.coverImageUrl) {
+                      <img [src]="g.coverImageUrl" [alt]="g.title" referrerpolicy="no-referrer"
+                           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    } @else {
+                      <div class="w-full h-full bg-gradient-to-br from-navy-mid to-navy-deepest"></div>
+                    }
+                    <div class="absolute inset-0 p-3 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity"
+                         style="background:linear-gradient(180deg,transparent 40%,rgba(0,35,89,0.92))">
+                      <p class="text-xs font-accent uppercase tracking-wider text-text-light mb-2 line-clamp-2">{{ g.title }}</p>
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-text-muted">{{ g.photoCount }} fotos</span>
+                        <span class="px-2 py-0.5 rounded bg-cyan-brand text-navy-deepest text-[10px] font-accent uppercase tracking-wider">Ver →</span>
+                      </div>
                     </div>
+                    <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-navy-deepest/70 text-[10px] font-accent uppercase tracking-wider text-text-muted">
+                      {{ g.photoCount }} fotos
+                    </span>
                   </div>
-                </div>
+                </a>
               }
             </div>
           }
@@ -248,6 +248,10 @@ export class NoticiasComponent implements OnInit {
   private title = inject(Title);
   private meta = inject(Meta);
 
+  constructor() {
+    afterNextRender(() => { this.loadGalleries(); });
+  }
+
   activeTab = signal<Tab>('todas');
   galleryTab = signal<GalleryTab>('fotos');
   loading = signal(true);
@@ -257,22 +261,9 @@ export class NoticiasComponent implements OnInit {
   hasMore = signal(false);
   skeletons = [1, 2, 3, 4, 5, 6];
 
-  loadingGalleries = signal(true);
-  galleries = signal<Gallery[]>([]);
+  loadingGalleries = signal(false);
+  galleries = signal<GalleryCard[]>([]);
   mockVideos = MOCK_VIDEOS;
-
-  photoTiles = computed<GalleryPhotoTile[]>(() => {
-    const BASE_WIDTH = 320;
-    return this.galleries().flatMap(gallery =>
-      gallery.photos.map(photo => ({
-        id: photo.id,
-        url: photo.url,
-        caption: gallery.title,
-        height: photo.width > 0 ? Math.round(BASE_WIDTH * (photo.height / photo.width)) : 220,
-        downloadLink: gallery.pressDownloadLink,
-      })),
-    );
-  });
 
   tabs: { key: Tab; label: string }[] = [
     { key: 'todas', label: 'Todas' },
@@ -301,14 +292,16 @@ export class NoticiasComponent implements OnInit {
     this.meta.updateTag({ name: 'description', content: 'Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano de surf profesional ALAS Latin Tour.' });
     this.meta.updateTag({ property: 'og:title', content: 'Noticias — ALAS Latin Tour' });
     this.loadArticles();
-    this.loadGalleries();
   }
 
   private async loadGalleries(): Promise<void> {
     this.loadingGalleries.set(true);
     try {
-      const res = await this.api.get<any>('/galleries');
-      this.galleries.set(res?.data ?? []);
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 6000),
+      );
+      const res = await Promise.race([this.api.get<any>('/galleries'), timeout]);
+      this.galleries.set((res as any)?.data ?? []);
     } catch {
       this.galleries.set([]);
     } finally {
@@ -319,16 +312,24 @@ export class NoticiasComponent implements OnInit {
   private async loadArticles(append = false): Promise<void> {
     if (!append) this.loading.set(true);
     try {
-      const [featuredRes, listRes] = await Promise.all([
-        this.api.get<any>('/articles?featured=true&limit=1'),
-        this.api.get<any>(`/articles?page=${this.page()}&limit=6`),
-      ]);
+      const res = await this.api.get<any>(`/articles?page=${this.page()}&limit=7`);
+      const raw: any[] = res?.data ?? [];
+      const all = raw.map(mapArticleSummary);
+
       if (!append) {
-        this.featured.set(featuredRes?.data?.[0] ? mapArticleSummary(featuredRes.data[0]) : null);
+        const featuredIndex = all.findIndex(a => a.featured);
+        if (featuredIndex !== -1) {
+          this.featured.set(all[featuredIndex]);
+          this.articles.set(all.filter((_, i) => i !== featuredIndex));
+        } else {
+          this.featured.set(null);
+          this.articles.set(all);
+        }
+      } else {
+        this.articles.update(prev => [...prev, ...all]);
       }
-      const newItems: Article[] = (listRes?.data ?? []).map(mapArticleSummary);
-      this.articles.update(prev => append ? [...prev, ...newItems] : newItems);
-      const pagination = listRes?.pagination;
+
+      const pagination = res?.pagination;
       this.hasMore.set(pagination ? this.page() < pagination.totalPages : false);
     } catch {
       this.articles.set([]);
@@ -340,6 +341,11 @@ export class NoticiasComponent implements OnInit {
   async loadMore(): Promise<void> {
     this.page.update(p => p + 1);
     await this.loadArticles(true);
+  }
+
+  private readonly TILE_HEIGHTS = ['180px', '240px', '200px', '260px', '190px', '220px'];
+  galleryTileHeight(i: number): string {
+    return this.TILE_HEIGHTS[i % this.TILE_HEIGHTS.length];
   }
 
   categoryClass(cat: string): string {
