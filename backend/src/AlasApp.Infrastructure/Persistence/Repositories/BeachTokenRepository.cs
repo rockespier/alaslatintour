@@ -54,9 +54,18 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
         page = page <= 0 ? 1 : page;
         limit = limit <= 0 ? 20 : limit;
 
-        var baseQuery = BuildBeachTokenDetailsQuery();
-        var pendingQuery = baseQuery.Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Pendiente);
-        var historyQuery = baseQuery.Where(x => ResolveStatus(x.Token, utcNow) != TokenHistoryStatus.Pendiente);
+        var allItems = (await BuildBeachTokenDetailsQuery()
+            .ToListAsync(cancellationToken))
+            .OrderByDescending(x => x.Token.CreatedAtUtc)
+            .ToList();
+
+        var pendingItems = allItems
+            .Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Pendiente)
+            .ToList();
+
+        var historyItems = allItems
+            .Where(x => ResolveStatus(x.Token, utcNow) != TokenHistoryStatus.Pendiente)
+            .ToList();
 
         IReadOnlyCollection<BeachTokenAdminDto> pending;
         IReadOnlyCollection<BeachTokenAdminDto> history;
@@ -65,53 +74,52 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
 
         if (status == TokenHistoryStatus.Pendiente)
         {
-            totalItems = await pendingQuery.CountAsync(cancellationToken);
+            totalItems = pendingItems.Count;
             totalPages = (int)Math.Ceiling(totalItems / (double)limit);
-            pending = (await pendingQuery
-                .OrderByDescending(x => x.Token.CreatedAtUtc)
+            pending = pendingItems
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToListAsync(cancellationToken))
                 .Select(x => MapToDto(x, utcNow))
                 .ToList();
             history = [];
         }
         else if (status.HasValue)
         {
-            historyQuery = historyQuery.Where(x => ResolveStatus(x.Token, utcNow) == status.Value);
-            totalItems = await historyQuery.CountAsync(cancellationToken);
+            var filteredHistory = status.Value switch
+            {
+                TokenHistoryStatus.Expirado => historyItems.Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Expirado).ToList(),
+                TokenHistoryStatus.Rechazado => historyItems.Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Rechazado).ToList(),
+                TokenHistoryStatus.Usado => historyItems.Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Usado).ToList(),
+                TokenHistoryStatus.Pendiente => pendingItems,
+                _ => historyItems
+            };
+            totalItems = filteredHistory.Count;
             totalPages = (int)Math.Ceiling(totalItems / (double)limit);
-            history = (await historyQuery
+            history = filteredHistory
                 .OrderByDescending(x => x.Token.UpdatedAtUtc)
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToListAsync(cancellationToken))
                 .Select(x => MapToDto(x, utcNow))
                 .ToList();
             pending = [];
         }
         else
         {
-            totalItems = await historyQuery.CountAsync(cancellationToken);
+            totalItems = historyItems.Count;
             totalPages = (int)Math.Ceiling(totalItems / (double)limit);
-            pending = (await pendingQuery
-                .OrderByDescending(x => x.Token.CreatedAtUtc)
-                .ToListAsync(cancellationToken))
+            pending = pendingItems
                 .Select(x => MapToDto(x, utcNow))
                 .ToList();
-            history = (await historyQuery
+            history = historyItems
                 .OrderByDescending(x => x.Token.UpdatedAtUtc)
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .ToListAsync(cancellationToken))
                 .Select(x => MapToDto(x, utcNow))
                 .ToList();
         }
 
         var todayStart = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, 0, 0, 0, TimeSpan.Zero);
         var tomorrowStart = todayStart.AddDays(1);
-
-        var allItems = await baseQuery.ToListAsync(cancellationToken);
         var pendingCount = allItems.Count(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Pendiente);
         var approvedToday = allItems.Count(x => x.Token.GeneratedAt.HasValue && x.Token.GeneratedAt.Value >= todayStart && x.Token.GeneratedAt.Value < tomorrowStart);
         var rejectedToday = allItems.Count(x => x.Token.Status == TokenHistoryStatus.Rechazado && x.Token.UpdatedAtUtc >= todayStart && x.Token.UpdatedAtUtc < tomorrowStart);

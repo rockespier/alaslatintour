@@ -24,6 +24,7 @@ public sealed class Event : AuditableEntity
         int stars,
         int capacidadMaxima,
         decimal prizeAmountUsd,
+        string? imagenUrl,
         string? surfScoresCode,
         EventAccessType accessType,
         EventStatusAdmin estado,
@@ -40,6 +41,7 @@ public sealed class Event : AuditableEntity
         Stars = stars;
         CapacidadMaxima = capacidadMaxima;
         PrizeAmountUsd = prizeAmountUsd;
+        ImagenUrl = imagenUrl;
         SurfScoresCode = surfScoresCode;
         AccessType = accessType;
         Estado = estado;
@@ -68,6 +70,8 @@ public sealed class Event : AuditableEntity
 
     public decimal PrizeAmountUsd { get; private set; }
 
+    public string? ImagenUrl { get; private set; }
+
     public string? SurfScoresCode { get; private set; }
 
     public EventAccessType AccessType { get; private set; }
@@ -89,11 +93,12 @@ public sealed class Event : AuditableEntity
         int stars,
         int capacidadMaxima,
         decimal prizeAmountUsd,
+        string? imagenUrl,
         string? surfScoresCode,
         EventAccessType accessType,
         EventStatusAdmin estado)
     {
-        Validate(circuitId, nombre, fechaInicio, fechaFin, pais, ciudad, playa, stars, capacidadMaxima, prizeAmountUsd, surfScoresCode);
+        Validate(circuitId, nombre, fechaInicio, fechaFin, pais, ciudad, playa, stars, capacidadMaxima, prizeAmountUsd, imagenUrl, surfScoresCode);
 
         return new Event(
             Guid.NewGuid(),
@@ -107,6 +112,7 @@ public sealed class Event : AuditableEntity
             stars,
             capacidadMaxima,
             prizeAmountUsd,
+            NormalizeOptional(imagenUrl),
             NormalizeOptional(surfScoresCode),
             accessType,
             estado,
@@ -124,11 +130,12 @@ public sealed class Event : AuditableEntity
         int stars,
         int capacidadMaxima,
         decimal prizeAmountUsd,
+        string? imagenUrl,
         string? surfScoresCode,
         EventAccessType accessType,
         EventStatusAdmin estado)
     {
-        Validate(circuitId, nombre, fechaInicio, fechaFin, pais, ciudad, playa, stars, capacidadMaxima, prizeAmountUsd, surfScoresCode);
+        Validate(circuitId, nombre, fechaInicio, fechaFin, pais, ciudad, playa, stars, capacidadMaxima, prizeAmountUsd, imagenUrl, surfScoresCode);
 
         CircuitId = circuitId;
         Nombre = nombre.Trim();
@@ -140,6 +147,7 @@ public sealed class Event : AuditableEntity
         Stars = stars;
         CapacidadMaxima = capacidadMaxima;
         PrizeAmountUsd = prizeAmountUsd;
+        ImagenUrl = NormalizeOptional(imagenUrl);
         SurfScoresCode = NormalizeOptional(surfScoresCode);
         AccessType = accessType;
         Estado = estado;
@@ -181,6 +189,7 @@ public sealed class Event : AuditableEntity
         int stars,
         int capacidadMaxima,
         decimal prizeAmountUsd,
+        string? imagenUrl,
         string? surfScoresCode)
     {
         if (circuitId == Guid.Empty)
@@ -211,6 +220,11 @@ public sealed class Event : AuditableEntity
         if (prizeAmountUsd < 0)
         {
             throw new DomainRuleException("El premio del evento no puede ser negativo.");
+        }
+
+        if (imagenUrl is not null && imagenUrl.Length > 1000)
+        {
+            throw new DomainRuleException("La imagen del evento no puede exceder 1000 caracteres.");
         }
 
         if (NormalizeDate(fechaFin) < NormalizeDate(fechaInicio))

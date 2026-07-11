@@ -10,6 +10,8 @@ public sealed class WordPressConfig
 
     public string GalleriesBaseUrl { get; init; } = string.Empty;
 
+    public string MediaBaseUrl { get; init; } = string.Empty;
+
     public string Username { get; init; } = string.Empty;
 
     public string AppPassword { get; init; } = string.Empty;

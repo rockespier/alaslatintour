@@ -98,6 +98,7 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
             circuitId,
             fechaInicio = "2026-07-12",
             fechaFin = "2026-07-15",
+            imagenUrl = "https://cdn.test/events/roca-bruja-poster.jpg",
             pais = "Perú",
             ciudad = "Chicama",
             playa = "Roca Bruja",
@@ -114,6 +115,12 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         var createdEvent = await ReadJsonAsync(createEventResponse);
         var eventId = createdEvent.RootElement.GetProperty("id").GetString();
         Assert.Equal("Roca Bruja Classic", createdEvent.RootElement.GetProperty("nombre").GetString());
+        Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", createdEvent.RootElement.GetProperty("imagenUrl").GetString());
+
+        var getEventResponse = await _client.GetAsync($"/v1/events/{eventId}");
+        Assert.Equal(HttpStatusCode.OK, getEventResponse.StatusCode);
+        using var getEventJson = await ReadJsonAsync(getEventResponse);
+        Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", getEventJson.RootElement.GetProperty("imagenUrl").GetString());
 
         var listEventsResponse = await _client.GetAsync($"/v1/events?circuitId={circuitId}&status=Inscripciones%20Abiertas");
         var listEventsBody = await listEventsResponse.Content.ReadAsStringAsync();
@@ -123,6 +130,8 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
                 $"Expected 200 OK but received {(int)listEventsResponse.StatusCode} {listEventsResponse.StatusCode}. Body: {listEventsBody}");
         }
         Assert.Equal(HttpStatusCode.OK, listEventsResponse.StatusCode);
+        using var listEventsJson = JsonDocument.Parse(listEventsBody);
+        Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", listEventsJson.RootElement.GetProperty("data")[0].GetProperty("imagenUrl").GetString());
 
         var updateEventResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}", new
         {
@@ -130,6 +139,7 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
             circuitId,
             fechaInicio = "2026-07-12",
             fechaFin = "2026-07-16",
+            imagenUrl = "https://cdn.test/events/roca-bruja-updated.jpg",
             pais = "Perú",
             ciudad = "Chicama",
             playa = "Roca Bruja",
@@ -149,6 +159,8 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         }
 
         Assert.Equal(HttpStatusCode.OK, updateEventResponse.StatusCode);
+        using var updatedEvent = JsonDocument.Parse(updateEventBody);
+        Assert.Equal("https://cdn.test/events/roca-bruja-updated.jpg", updatedEvent.RootElement.GetProperty("imagenUrl").GetString());
 
         var deleteCircuitResponse = await _client.DeleteAsync($"/v1/circuits/{circuitId}");
         Assert.Equal(HttpStatusCode.Conflict, deleteCircuitResponse.StatusCode);

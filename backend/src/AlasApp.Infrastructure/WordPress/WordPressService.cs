@@ -1,6 +1,7 @@
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Articles.Models;
 using AlasApp.Application.Common;
+using AlasApp.Application.Uploads.Models;
 using AlasApp.Domain.Enums;
 using AlasApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace AlasApp.Infrastructure.WordPress;
 
-public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbContext dbContext) : IWordPressService
+public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbContext dbContext, WordPressMediaService mediaService) : IWordPressService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -104,6 +105,15 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
 
         await EnsureSuccessAsync(response, cancellationToken);
         return true;
+    }
+
+    public Task<UploadedMediaDto> UploadMediaAsync(
+        Stream content,
+        string fileName,
+        string contentType,
+        CancellationToken cancellationToken)
+    {
+        return mediaService.UploadAsync(content, fileName, contentType, cancellationToken);
     }
 
     private async Task<List<ArticleSummaryDto>> MapAndFilterAsync(

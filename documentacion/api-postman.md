@@ -40,6 +40,7 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Articles | `DELETE` | `/v1/articles/{slug}` | nuevo |
 | Galleries | `GET` | `/v1/galleries` | nuevo |
 | Galleries | `GET` | `/v1/galleries/{slug}` | modificado |
+| Uploads | `POST` | `/v1/uploads/event-poster` | nuevo |
 | Rankings | `GET` | `/v1/rankings` | nuevo |
 | Rankings | `GET` | `/v1/rankings/categories` | nuevo |
 | SurfScores | `POST` | `/v1/surfscores/sync/{circuitId}` | nuevo |
@@ -62,6 +63,8 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - `GET /v1/articles` ya resuelve `imagenUrl` y `tags`.
 - `GET /v1/galleries` devuelve una card liviana con una sola portada por galería.
 - `GET /v1/galleries/{slug}` ya no devuelve `photos` plano. Ahora devuelve `galleryDays[]` con `assets[]` tipados.
+- `POST /v1/uploads/event-poster` sube la imagen a WordPress y devuelve la URL final que luego debe enviarse en `POST/PUT /v1/events`.
+- `POST /v1/events` y `PUT /v1/events/{id}` aceptan `imagenUrl` para el afiche del evento.
 - `/v1/admin/*` requiere JWT y aplica permisos por rol. Angular debe manejar `401 Unauthorized` y `403 Forbidden`.
 
 ---
@@ -435,6 +438,7 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025.png",
   "stars": 3,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
@@ -461,6 +465,7 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025.png",
   "stars": 3,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
@@ -490,6 +495,7 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025-v2.png",
   "stars": 3,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
@@ -726,6 +732,45 @@ DELETE {{base_url}}/v1/articles/nota-destacada
 ---
 
 ## 14. Galleries — `/v1/galleries`
+
+## Uploads — `/v1/uploads`
+
+### POST /v1/uploads/event-poster — Subir afiche de evento a WordPress
+
+```http
+POST {{base_url}}/v1/uploads/event-poster
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `file` | archivo | sí | Imagen JPG, PNG o WEBP |
+
+**Response:** `201 Created`
+
+**Ejemplo de response:**
+```json
+{
+  "mediaId": "501",
+  "url": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025.png",
+  "fileName": "mancora-pro-2025.png",
+  "contentType": "image/png",
+  "sizeBytes": 248193
+}
+```
+
+**Errores comunes:**
+- `400 Bad Request` si no se adjunta archivo.
+- `400 Bad Request` si el `contentType` no es `image/jpeg`, `image/png` o `image/webp`.
+
+**Flujo esperado para Angular:**
+1. Subir el archivo al endpoint `/v1/uploads/event-poster`.
+2. Tomar `response.url`.
+3. Enviar esa URL en `imagenUrl` al crear o editar el evento con `/v1/events`.
+
+> El backend actúa como proxy hacia WordPress. El frontend no debe llamar directamente la API de media de WordPress.
 
 ### GET /v1/galleries — Cards de galerías
 

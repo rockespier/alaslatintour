@@ -119,6 +119,7 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
             @event.Stars,
             @event.CapacidadMaxima,
             @event.PrizeAmountUsd,
+            @event.ImagenUrl,
             @event.SurfScoresCode,
             @event.AccessType,
             @event.Estado,

@@ -62,9 +62,13 @@ public sealed class WordPressAdaptersTests
         {
             BaseAddress = new Uri("https://example.test/wp-json/wp/v2/posts/")
         };
+        using var mediaClient = new HttpClient(new StubHttpMessageHandler(_ => CreateJsonResponse("{}")))
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/media/")
+        };
         await using var dbContext = CreateDbContext();
 
-        var service = new WordPressService(client, dbContext);
+        var service = new WordPressService(client, dbContext, new WordPressMediaService(mediaClient));
 
         var result = await service.ListArticlesAsync(new ArticleListFilter(1, 10, null, null, "highlights"), CancellationToken.None);
 

@@ -39,6 +39,7 @@ using AlasApp.Application.Payments.Commands.RejectBeachToken;
 using AlasApp.Application.Payments.Commands.UpdatePayment;
 using AlasApp.Application.Payments.Models;
 using AlasApp.Application.Rankings.Models;
+using AlasApp.Application.Uploads.Models;
 using AlasApp.Domain.Enums;
 using Generated = AlasApp.AlasApi.Api.Controllers;
 
@@ -253,6 +254,16 @@ public static class ApiContractMapper
             dto.Height);
     }
 
+    public static UploadedMediaResponse ToContract(UploadedMediaDto dto)
+    {
+        return new UploadedMediaResponse(
+            dto.MediaId,
+            dto.Url,
+            dto.FileName,
+            dto.ContentType,
+            dto.SizeBytes);
+    }
+
     public static Generated.CircuitResponse ToContract(CircuitDto dto)
     {
         return new Generated.CircuitResponse(
@@ -291,6 +302,7 @@ public static class ApiContractMapper
             ToGeneratedEventStatusAdmin(dto.Estado),
             dto.FechaFin,
             dto.FechaInicio,
+            dto.ImagenUrl,
             dto.Id.ToString(),
             dto.Lugar,
             dto.Nombre,
@@ -782,6 +794,7 @@ public static class ApiContractMapper
             request.Stars,
             request.CapacidadMaxima,
             (decimal)request.PrizeAmountUsd,
+            NormalizeOptional(request.ImagenUrl),
             NormalizeOptional(request.SurfScoresCode),
             ToDomainEventAccessType(request.AccessType),
             ToDomainEventStatusAdmin(request.Estado));
@@ -942,6 +955,7 @@ public static class ApiContractMapper
             request.Stars,
             request.CapacidadMaxima,
             (decimal)request.PrizeAmountUsd,
+            NormalizeOptional(request.ImagenUrl),
             NormalizeOptional(request.SurfScoresCode),
             ToDomainEventAccessType(request.AccessType),
             ToDomainEventStatusAdmin(request.Estado));

@@ -14,6 +14,7 @@ public sealed record EventDto(
     int Stars,
     int CapacidadMaxima,
     decimal PrizeAmountUsd,
+    string? ImagenUrl,
     string? SurfScoresCode,
     EventAccessType AccessType,
     EventStatusAdmin Estado,

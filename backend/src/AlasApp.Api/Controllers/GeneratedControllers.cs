@@ -1423,12 +1423,13 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventRequest(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, string @surfScoresCode)
+        public EventRequest(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string? @imagenUrl, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, string @surfScoresCode)
         {
             this.Nombre = @nombre;
             this.CircuitId = @circuitId;
             this.FechaInicio = @fechaInicio;
             this.FechaFin = @fechaFin;
+            this.ImagenUrl = @imagenUrl;
             this.Pais = @pais;
             this.Ciudad = @ciudad;
             this.Playa = @playa;
@@ -1457,6 +1458,9 @@ namespace AlasApp.AlasApi.Api.Controllers
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(DateFormatConverter))]
         public System.DateTimeOffset FechaFin { get; }
+
+        [Newtonsoft.Json.JsonProperty("imagenUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ImagenUrl { get; }
 
         [Newtonsoft.Json.JsonProperty("pais", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -1506,8 +1510,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventResponse : EventRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventResponse(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string @id, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
-            : base(accessType, capacidadMaxima, circuitId, ciudad, estado, fechaFin, fechaInicio, nombre, pais, playa, prizeAmountUsd, stars, surfScoresCode)
+        public EventResponse(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string? @imagenUrl, string @id, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
+            : base(accessType, capacidadMaxima, circuitId, ciudad, estado, fechaFin, fechaInicio, imagenUrl, nombre, pais, playa, prizeAmountUsd, stars, surfScoresCode)
         {
             this.Id = @id;
             this.EnrolledCount = @enrolledCount;

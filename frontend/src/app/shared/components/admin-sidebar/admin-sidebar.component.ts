@@ -29,8 +29,8 @@ interface NavItem {
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-        <img src="/assets/logos/logo-pro-tour-white-2x.png" alt="ALAS Admin" class="h-7 w-auto" />
-        <span class="text-xs font-semibold text-[#AAAAAA] uppercase tracking-widest">Admin</span>
+        <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Admin" class="h-12 w-auto" />
+        
       </div>
 
       <!-- Nav links -->

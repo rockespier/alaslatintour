@@ -39,6 +39,7 @@ public sealed class UpdateEventCommandHandler(
                 request.Stars,
                 request.CapacidadMaxima,
                 request.PrizeAmountUsd,
+                request.ImagenUrl,
                 request.SurfScoresCode,
                 request.AccessType,
                 request.Estado);

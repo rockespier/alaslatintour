@@ -16,6 +16,7 @@ public sealed record UpdateEventCommand(
     int Stars,
     int CapacidadMaxima,
     decimal PrizeAmountUsd,
+    string? ImagenUrl,
     string? SurfScoresCode,
     EventAccessType AccessType,
     EventStatusAdmin Estado) : IRequest<EventDto>;

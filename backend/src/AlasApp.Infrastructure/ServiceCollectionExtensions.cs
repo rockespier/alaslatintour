@@ -47,6 +47,10 @@ public static class ServiceCollectionExtensions
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.PostsBaseUrl, "posts"));
         });
+        services.AddHttpClient<WordPressMediaService>(client =>
+        {
+            ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.MediaBaseUrl, "media"));
+        });
         services.AddHttpClient<IGalleryService, GalleryService>(client =>
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.GalleriesBaseUrl, "gallery"));

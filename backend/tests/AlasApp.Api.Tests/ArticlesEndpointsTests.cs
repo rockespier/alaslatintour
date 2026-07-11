@@ -1,6 +1,7 @@
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Articles.Models;
 using AlasApp.Application.Common;
+using AlasApp.Application.Uploads.Models;
 using AlasApp.Domain.Enums;
 using AlasApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -257,6 +258,11 @@ internal sealed class FakeWordPressService : IWordPressService
     public Task<bool> DeleteAsync(string slug, CancellationToken cancellationToken)
     {
         return Task.FromResult(_articles.RemoveAll(x => x.Slug == slug) > 0);
+    }
+
+    public Task<UploadedMediaDto> UploadMediaAsync(Stream content, string fileName, string contentType, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
     }
 
     private static ArticleSummaryDto ToSummary(ArticleDetailDto article)

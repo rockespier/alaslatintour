@@ -2319,6 +2319,10 @@ components:
           type: number
           format: float
           example: 5000
+        imagenUrl:
+          type: string
+          nullable: true
+          example: https://cdn.alas.app/events/roca-bruja-2026-poster.jpg
         surfScoresCode:
           type: string
           example: RBC-2026-PER
