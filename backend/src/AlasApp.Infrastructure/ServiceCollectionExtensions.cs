@@ -2,6 +2,7 @@ using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Infrastructure.Authentication;
 using AlasApp.Infrastructure.Email;
+using AlasApp.Infrastructure.PayPal;
 using AlasApp.Infrastructure.Persistence;
 using AlasApp.Infrastructure.Persistence.Repositories;
 using AlasApp.Infrastructure.SurfScores;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.Configure<WordPressConfig>(configuration.GetSection(WordPressConfig.SectionName));
         services.Configure<SmtpEmailOptions>(configuration.GetSection(SmtpEmailOptions.SectionName));
         services.Configure<BootstrapAdminOptions>(configuration.GetSection(BootstrapAdminOptions.SectionName));
+        services.Configure<PayPalOptions>(configuration.GetSection(PayPalOptions.SectionName));
 
         services.AddScoped<ICircuitRepository, CircuitRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
@@ -61,6 +63,15 @@ public static class ServiceCollectionExtensions
         });
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton<PayPalTokenCache>();
+        var payPalOpts = configuration.GetSection(PayPalOptions.SectionName).Get<PayPalOptions>() ?? new PayPalOptions();
+        services.AddHttpClient<IPayPalGateway, PayPalGateway>(client =>
+        {
+            if (!string.IsNullOrWhiteSpace(payPalOpts.BaseUrl))
+            {
+                client.BaseAddress = new Uri(payPalOpts.BaseUrl.TrimEnd('/') + "/");
+            }
+        });
         services.AddSingleton<IResetTokenService, ResetTokenService>();
         services.AddScoped<BootstrapAdminInitializer>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AlasAppDbContext>());

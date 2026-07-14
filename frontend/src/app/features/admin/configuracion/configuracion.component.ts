@@ -275,6 +275,11 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <label [class]="LABEL_INPUT">Usuario API</label>
                   <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresUsername">
                 </div>
+                <div>
+                  <label [class]="LABEL_INPUT">ID de Organización</label>
+                  <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresOrgId" placeholder="ej: 142">
+                  <p class="text-[11px] text-text-muted mt-1">Identificador numérico de la org. en SurfScores. Se usa en las consultas de ranking y circuitos.</p>
+                </div>
               </div>
 
               <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-navy-deepest border border-navy-mid">
@@ -757,6 +762,7 @@ export class ConfiguracionComponent implements OnInit {
   // ─── Tab: Integraciones ──────────────────────────────────────
   surfScoresEndpoint = '';
   surfScoresUsername = '';
+  surfScoresOrgId = '';
   surfScoresTermsAccepted = true;
   surfScoresCacheMinutes = 5;
   wordPressEndpoint = '';
@@ -852,6 +858,7 @@ export class ConfiguracionComponent implements OnInit {
     const i = s.integrations ?? {};
     this.surfScoresEndpoint = i.surfScores?.endpoint ?? '';
     this.surfScoresUsername = i.surfScores?.username ?? '';
+    this.surfScoresOrgId = i.surfScores?.organizacionId ?? '';
     this.surfScoresTermsAccepted = i.surfScores?.termsAccepted ?? false;
     this.surfScoresCacheMinutes = i.surfScores?.cacheMinutes ?? 5;
     this.wordPressEndpoint = i.wordPress?.endpoint ?? '';
@@ -910,6 +917,7 @@ export class ConfiguracionComponent implements OnInit {
         surfScores: {
           endpoint: this.surfScoresEndpoint,
           username: this.surfScoresUsername,
+          organizacionId: this.surfScoresOrgId,
           termsAccepted: this.surfScoresTermsAccepted,
           cacheMinutes: this.surfScoresCacheMinutes,
         },

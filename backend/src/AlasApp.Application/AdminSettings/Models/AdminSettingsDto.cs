@@ -58,6 +58,7 @@ public sealed record IntegrationSettingsDto(
 public sealed record SurfScoresSettingsDto(
     string Endpoint,
     string Username,
+    string OrganizacionId,
     bool TermsAccepted,
     int CacheMinutes);
 

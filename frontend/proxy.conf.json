@@ -1,6 +1,6 @@
 {
   "/v1": {
-    "target": "http://localhost:5132",
+    "target": "https://localhost:7039",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "info"

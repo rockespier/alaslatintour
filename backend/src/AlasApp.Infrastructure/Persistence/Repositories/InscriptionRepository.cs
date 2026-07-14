@@ -15,47 +15,41 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         var page = filter.Page <= 0 ? 1 : filter.Page;
         var limit = filter.Limit <= 0 ? 20 : filter.Limit;
 
-        var query = BuildInscriptionDetailsQuery();
+        var query = BuildInscriptionBaseQuery();
 
         if (filter.EventId.HasValue)
-        {
-            query = query.Where(x => x.Event.Id == filter.EventId.Value);
-        }
+            query = query.Where(x => x.EventId == filter.EventId.Value);
 
         if (filter.CategoryId.HasValue)
-        {
-            query = query.Where(x => x.Category.Id == filter.CategoryId.Value);
-        }
+            query = query.Where(x => x.CategoryId == filter.CategoryId.Value);
 
         if (filter.Status.HasValue)
-        {
-            query = query.Where(x => x.Inscription.EstadoAdmin == filter.Status.Value);
-        }
+            query = query.Where(x => x.EstadoAdmin == filter.Status.Value);
 
         var totalItems = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderBy(x => x.Inscription.InscripcionAt)
+            .OrderBy(x => x.InscripcionAt)
             .Skip((page - 1) * limit)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
         var mapped = items
             .Select((x, index) => new AdminInscriptionRowDto(
-                x.Inscription.Id,
+                x.Id,
                 ((page - 1) * limit + index + 1).ToString("000"),
-                $"{x.Competitor.Nombre} {x.Competitor.Apellido}",
+                $"{x.Competitor!.Nombre} {x.Competitor.Apellido}",
                 x.Competitor.Pais,
                 null,
                 null,
-                x.Category.Nombre,
-                x.Inscription.InscripcionAt,
-                x.Inscription.PaymentMethod,
-                x.Inscription.MontoUsd,
-                x.Inscription.EstadoAdmin,
+                x.Category!.Nombre,
+                x.InscripcionAt,
+                x.PaymentMethod,
+                x.MontoUsd,
+                x.EstadoAdmin,
                 x.Competitor.Federacion,
                 x.Competitor.LicenseNumber,
-                x.Inscription.TransaccionId,
-                x.Inscription.Notes))
+                x.TransaccionId,
+                x.Notes))
             .ToList();
 
         return new PagedResult<AdminInscriptionRowDto>(mapped, page, limit, totalItems);
@@ -63,26 +57,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
 
     public async Task<InscriptionDto?> GetByIdAsync(Guid inscriptionId, CancellationToken cancellationToken)
     {
-        var item = await dbContext.Inscriptions
-            .AsNoTracking()
-            .Where(x => x.Id == inscriptionId)
-            .Join(dbContext.Competitors,
-                inscription => inscription.CompetitorId,
-                competitor => competitor.Id,
-                (inscription, competitor) => new { inscription, competitor })
-            .Join(dbContext.Events,
-                left => left.inscription.EventId,
-                @event => @event.Id,
-                (left, @event) => new { left.inscription, left.competitor, @event })
-            .Join(dbContext.Categories,
-                left => left.inscription.CategoryId,
-                category => category.Id,
-                (left, category) => new { left.inscription, left.competitor, left.@event, category })
-            .Join(dbContext.Circuits,
-                left => left.@event.CircuitId,
-                circuit => circuit.Id,
-                (left, circuit) => new InscriptionDetails(left.inscription, left.competitor, left.@event, left.category, circuit))
-            .FirstOrDefaultAsync(cancellationToken);
+        var item = await BuildInscriptionBaseQuery()
+            .FirstOrDefaultAsync(x => x.Id == inscriptionId, cancellationToken);
 
         return item is null ? null : MapToDto(item);
     }
@@ -107,62 +83,62 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         string? status,
         CancellationToken cancellationToken)
     {
-        var query = BuildInscriptionDetailsQuery()
-            .Where(x => x.Competitor.Id == competitorId);
+        var query = BuildInscriptionBaseQuery()
+            .Where(x => x.CompetitorId == competitorId);
 
         if (!string.IsNullOrWhiteSpace(status))
         {
             var normalized = status.Trim().ToLowerInvariant();
             query = normalized switch
             {
-                "confirmado" => query.Where(x => x.Inscription.EstadoCompetidor == InscriptionStatusCompetitor.Confirmado),
-                "pendiente" => query.Where(x => x.Inscription.EstadoCompetidor == InscriptionStatusCompetitor.Pendiente),
-                "completado" => query.Where(x => x.Inscription.EstadoCompetidor == InscriptionStatusCompetitor.Completado),
+                "confirmado" => query.Where(x => x.EstadoCompetidor == InscriptionStatusCompetitor.Confirmado),
+                "pendiente" => query.Where(x => x.EstadoCompetidor == InscriptionStatusCompetitor.Pendiente),
+                "completado" => query.Where(x => x.EstadoCompetidor == InscriptionStatusCompetitor.Completado),
                 _ => query
             };
         }
 
         var items = await query
-            .OrderByDescending(x => x.Inscription.InscripcionAt)
+            .OrderByDescending(x => x.InscripcionAt)
             .ToListAsync(cancellationToken);
 
         var mapped = items.Select(x => new CompetitorInscriptionDto(
-            x.Inscription.Id,
-            x.Competitor.Id.ToString(),
-            x.Event.Id.ToString(),
+            x.Id,
+            x.Competitor!.Id.ToString(),
+            x.Event!.Id.ToString(),
             x.Event.Nombre,
             x.Event.GetLugar(),
-            x.Category.Id.ToString(),
+            x.Category!.Id.ToString(),
             x.Category.Nombre,
-            x.Circuit.Id.ToString(),
-            x.Circuit.Nombre,
-            x.Inscription.ShirtNumber,
-            x.Inscription.PaymentMethod,
-            x.Inscription.MontoUsd,
-            x.Inscription.EstadoAdmin,
-            x.Inscription.EstadoCompetidor,
-            x.Inscription.Resultado,
-            x.Inscription.TransaccionId,
-            x.Inscription.InscripcionAt)).ToList();
+            x.Event.Circuit!.Id.ToString(),
+            x.Event.Circuit.Nombre,
+            x.ShirtNumber,
+            x.PaymentMethod,
+            x.MontoUsd,
+            x.EstadoAdmin,
+            x.EstadoCompetidor,
+            x.Resultado,
+            x.TransaccionId,
+            x.InscripcionAt)).ToList();
 
         return new PagedResult<CompetitorInscriptionDto>(mapped, 1, 20, mapped.Count);
     }
 
     public async Task<IReadOnlyCollection<CompetitorCalendarEventDto>> ListCalendarByCompetitorAsync(Guid competitorId, CancellationToken cancellationToken)
     {
-        var items = await BuildInscriptionDetailsQuery()
-            .Where(x => x.Competitor.Id == competitorId)
-            .OrderBy(x => x.Event.FechaInicio)
+        var items = await BuildInscriptionBaseQuery()
+            .Where(x => x.CompetitorId == competitorId)
+            .OrderBy(x => x.Event!.FechaInicio)
             .ToListAsync(cancellationToken);
 
         return items.Select(x => new CompetitorCalendarEventDto(
-            x.Event.Id.ToString(),
+            x.Event!.Id.ToString(),
             x.Event.Nombre,
             x.Event.GetLugar(),
             x.Event.FechaInicio,
             x.Event.FechaFin,
-            x.Category.Nombre,
-            x.Inscription.EstadoCompetidor switch
+            x.Category!.Nombre,
+            x.EstadoCompetidor switch
             {
                 InscriptionStatusCompetitor.Confirmado => "confirmado",
                 InscriptionStatusCompetitor.Completado => "completado",
@@ -230,51 +206,31 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         dbContext.Inscriptions.Remove(inscription);
     }
 
-    private IQueryable<InscriptionDetails> BuildInscriptionDetailsQuery()
+    private IQueryable<Inscription> BuildInscriptionBaseQuery()
     {
         return dbContext.Inscriptions
             .AsNoTracking()
-            .Join(dbContext.Competitors,
-                inscription => inscription.CompetitorId,
-                competitor => competitor.Id,
-                (inscription, competitor) => new { inscription, competitor })
-            .Join(dbContext.Events,
-                left => left.inscription.EventId,
-                @event => @event.Id,
-                (left, @event) => new { left.inscription, left.competitor, @event })
-            .Join(dbContext.Categories,
-                left => left.inscription.CategoryId,
-                category => category.Id,
-                (left, category) => new { left.inscription, left.competitor, left.@event, category })
-            .Join(dbContext.Circuits,
-                left => left.@event.CircuitId,
-                circuit => circuit.Id,
-                (left, circuit) => new InscriptionDetails(left.inscription, left.competitor, left.@event, left.category, circuit));
+            .Include(x => x.Competitor)
+            .Include(x => x.Event).ThenInclude(e => e!.Circuit)
+            .Include(x => x.Category);
     }
 
-    private static InscriptionDto MapToDto(InscriptionDetails item)
+    private static InscriptionDto MapToDto(Inscription x)
     {
         return new InscriptionDto(
-            item.Inscription.Id,
-            new InscriptionCompetitorDto(item.Competitor.Id, $"{item.Competitor.Nombre} {item.Competitor.Apellido}", item.Competitor.Pais),
-            new InscriptionEventDto(item.Event.Id, item.Event.Nombre, item.Event.GetLugar()),
-            new InscriptionCategoryDto(item.Category.Id, item.Category.Nombre),
-            new InscriptionCircuitDto(item.Circuit.Id, item.Circuit.Nombre),
-            item.Inscription.ShirtNumber,
-            item.Inscription.PaymentMethod,
-            item.Inscription.MontoUsd,
-            item.Inscription.EstadoAdmin,
-            item.Inscription.EstadoCompetidor,
-            item.Inscription.Resultado,
-            item.Inscription.TransaccionId,
-            item.Inscription.InscripcionAt,
-            item.Inscription.Notes);
+            x.Id,
+            new InscriptionCompetitorDto(x.Competitor!.Id, $"{x.Competitor.Nombre} {x.Competitor.Apellido}", x.Competitor.Pais),
+            new InscriptionEventDto(x.Event!.Id, x.Event.Nombre, x.Event.GetLugar()),
+            new InscriptionCategoryDto(x.Category!.Id, x.Category.Nombre),
+            new InscriptionCircuitDto(x.Event.Circuit!.Id, x.Event.Circuit.Nombre),
+            x.ShirtNumber,
+            x.PaymentMethod,
+            x.MontoUsd,
+            x.EstadoAdmin,
+            x.EstadoCompetidor,
+            x.Resultado,
+            x.TransaccionId,
+            x.InscripcionAt,
+            x.Notes);
     }
-
-    private sealed record InscriptionDetails(
-        Inscription Inscription,
-        Competitor Competitor,
-        Event Event,
-        Category Category,
-        Circuit Circuit);
 }

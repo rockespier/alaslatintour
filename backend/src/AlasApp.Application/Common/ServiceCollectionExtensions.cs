@@ -66,7 +66,9 @@ using AlasApp.Application.Memberships.Commands.UpdateMembership;
 using AlasApp.Application.Memberships.Queries.GetMembershipById;
 using AlasApp.Application.Memberships.Queries.ListMemberships;
 using AlasApp.Application.Payments.Commands.ApproveBeachToken;
+using AlasApp.Application.Payments.Commands.CapturePayPalOrder;
 using AlasApp.Application.Payments.Commands.CreatePayment;
+using AlasApp.Application.Payments.Commands.InitiatePayPalOrder;
 using AlasApp.Application.Payments.Commands.RejectBeachToken;
 using AlasApp.Application.Payments.Commands.RequestBeachToken;
 using AlasApp.Application.Payments.Commands.RedeemBeachToken;
@@ -161,6 +163,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<GetPaymentByIdQuery, Payments.Models.PaymentDto>, GetPaymentByIdQueryHandler>();
         services.AddScoped<IRequestHandler<CreatePaymentCommand, Payments.Models.PaymentDto>, CreatePaymentCommandHandler>();
         services.AddScoped<IRequestHandler<UpdatePaymentCommand, Payments.Models.PaymentDto>, UpdatePaymentCommandHandler>();
+        services.AddScoped<IRequestHandler<InitiatePayPalOrderCommand, Payments.Models.PayPalOrderDto>, InitiatePayPalOrderCommandHandler>();
+        services.AddScoped<IRequestHandler<CapturePayPalOrderCommand, Payments.Models.PaymentDto>, CapturePayPalOrderCommandHandler>();
         services.AddScoped<IRequestHandler<GetPaymentKpisQuery, Payments.Models.PaymentKpiDto>, GetPaymentKpisQueryHandler>();
         services.AddScoped<IRequestHandler<RequestBeachTokenCommand, Payments.Models.BeachTokenPendingDto>, RequestBeachTokenCommandHandler>();
         services.AddScoped<IRequestHandler<ApproveBeachTokenCommand, Payments.Models.BeachTokenAdminDto>, ApproveBeachTokenCommandHandler>();

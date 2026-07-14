@@ -14,33 +14,29 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
         var page = filter.Page <= 0 ? 1 : filter.Page;
         var limit = filter.Limit <= 0 ? 20 : filter.Limit;
 
-        var query = BuildPaymentDetailsQuery();
+        var query = BuildPaymentBaseQuery();
 
         if (filter.Method.HasValue)
-        {
-            query = query.Where(x => x.Payment.Method == filter.Method.Value);
-        }
+            query = query.Where(x => x.Method == filter.Method.Value);
 
         if (filter.Status.HasValue)
-        {
-            query = query.Where(x => x.Payment.Status == filter.Status.Value);
-        }
+            query = query.Where(x => x.Status == filter.Status.Value);
 
         if (filter.FromDate.HasValue)
         {
             var from = new DateTimeOffset(filter.FromDate.Value.Year, filter.FromDate.Value.Month, filter.FromDate.Value.Day, 0, 0, 0, TimeSpan.Zero);
-            query = query.Where(x => x.Payment.Fecha >= from);
+            query = query.Where(x => x.Fecha >= from);
         }
 
         if (filter.ToDate.HasValue)
         {
             var toExclusive = new DateTimeOffset(filter.ToDate.Value.Year, filter.ToDate.Value.Month, filter.ToDate.Value.Day, 0, 0, 0, TimeSpan.Zero).AddDays(1);
-            query = query.Where(x => x.Payment.Fecha < toExclusive);
+            query = query.Where(x => x.Fecha < toExclusive);
         }
 
         var totalItems = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderByDescending(x => x.Payment.CreatedAtUtc)
+            .OrderByDescending(x => x.CreatedAtUtc)
             .Skip((page - 1) * limit)
             .Take(limit)
             .ToListAsync(cancellationToken);
@@ -50,26 +46,8 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
 
     public async Task<PaymentDto?> GetByIdAsync(Guid paymentId, CancellationToken cancellationToken)
     {
-        var item = await dbContext.Payments
-            .AsNoTracking()
-            .Where(x => x.Id == paymentId)
-            .Join(dbContext.Inscriptions,
-                payment => payment.InscriptionId,
-                inscription => inscription.Id,
-                (payment, inscription) => new { payment, inscription })
-            .Join(dbContext.Competitors,
-                left => left.inscription.CompetitorId,
-                competitor => competitor.Id,
-                (left, competitor) => new { left.payment, left.inscription, competitor })
-            .Join(dbContext.Events,
-                left => left.inscription.EventId,
-                @event => @event.Id,
-                (left, @event) => new { left.payment, left.inscription, left.competitor, @event })
-            .Join(dbContext.Categories,
-                left => left.inscription.CategoryId,
-                category => category.Id,
-                (left, category) => new PaymentDetails(left.payment, left.inscription, left.competitor, left.@event, category))
-            .FirstOrDefaultAsync(cancellationToken);
+        var item = await BuildPaymentBaseQuery()
+            .FirstOrDefaultAsync(x => x.Id == paymentId, cancellationToken);
 
         return item is null ? null : MapToDto(item);
     }
@@ -136,47 +114,27 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
             new PaymentKpiBucketDto(0m, 0));
     }
 
-    private IQueryable<PaymentDetails> BuildPaymentDetailsQuery()
+    private IQueryable<Payment> BuildPaymentBaseQuery()
     {
         return dbContext.Payments
             .AsNoTracking()
-            .Join(dbContext.Inscriptions,
-                payment => payment.InscriptionId,
-                inscription => inscription.Id,
-                (payment, inscription) => new { payment, inscription })
-            .Join(dbContext.Competitors,
-                left => left.inscription.CompetitorId,
-                competitor => competitor.Id,
-                (left, competitor) => new { left.payment, left.inscription, competitor })
-            .Join(dbContext.Events,
-                left => left.inscription.EventId,
-                @event => @event.Id,
-                (left, @event) => new { left.payment, left.inscription, left.competitor, @event })
-            .Join(dbContext.Categories,
-                left => left.inscription.CategoryId,
-                category => category.Id,
-                (left, category) => new PaymentDetails(left.payment, left.inscription, left.competitor, left.@event, category));
+            .Include(x => x.Inscription).ThenInclude(i => i!.Competitor)
+            .Include(x => x.Inscription).ThenInclude(i => i!.Event)
+            .Include(x => x.Inscription).ThenInclude(i => i!.Category);
     }
 
-    private static PaymentDto MapToDto(PaymentDetails item)
+    private static PaymentDto MapToDto(Payment x)
     {
         return new PaymentDto(
-            item.Payment.Id,
-            item.Payment.Fecha,
-            $"{item.Competitor.Nombre} {item.Competitor.Apellido}",
-            item.Event.Nombre,
-            item.Category.Nombre,
-            item.Payment.AmountUsd,
-            item.Payment.Method,
-            item.Payment.TransactionId,
-            item.Payment.Status,
-            item.Payment.CreatedAtUtc);
+            x.Id,
+            x.Fecha,
+            $"{x.Inscription!.Competitor!.Nombre} {x.Inscription.Competitor.Apellido}",
+            x.Inscription.Event!.Nombre,
+            x.Inscription.Category!.Nombre,
+            x.AmountUsd,
+            x.Method,
+            x.TransactionId,
+            x.Status,
+            x.CreatedAtUtc);
     }
-
-    private sealed record PaymentDetails(
-        Payment Payment,
-        Inscription Inscription,
-        Competitor Competitor,
-        Event Event,
-        Category Category);
 }
