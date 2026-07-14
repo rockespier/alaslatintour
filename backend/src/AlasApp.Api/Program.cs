@@ -100,6 +100,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AdminPolicies.ConfigurationRead, policy =>
         policy.RequireAuthenticatedUser()
             .AddRequirements(new AdminPermissionRequirement(AdminModule.Configuracion, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.ConfigurationWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Configuracion, PermissionLevel.Full)));
 });
 
 var app = builder.Build();

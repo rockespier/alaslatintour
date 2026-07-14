@@ -116,9 +116,9 @@ export class MiCalendarioComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   private async load(): Promise<void> {
-    const userId = this.auth.currentUser()?.id;
+    const competitorId = this.auth.currentUser()?.competitorId;
     try {
-      const res = await this.api.get<any>(`/competitors/${userId}/calendar`);
+      const res = await this.api.get<any>(`/competitors/${competitorId}/calendar`);
       this.events.set(res?.data ?? []);
     } catch {
       this.events.set([]);
@@ -131,8 +131,8 @@ export class MiCalendarioComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) return;
     this.exporting.set(true);
     try {
-      const userId = this.auth.currentUser()?.id;
-      const res = await this.api.get<any>(`/competitors/${userId}/calendar/export`);
+      const competitorId = this.auth.currentUser()?.competitorId;
+      const res = await this.api.get<any>(`/competitors/${competitorId}/calendar/export`);
       const icsContent: string = res?.data ?? res;
       const blob = new Blob([icsContent], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);

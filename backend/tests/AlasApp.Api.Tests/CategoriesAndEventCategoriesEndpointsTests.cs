@@ -221,6 +221,143 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         Assert.Equal(HttpStatusCode.NoContent, deleteCategoryBResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task EventCategoriesFlow_PerCategoryStars_ResolvesEffectiveTariffIndependentlyOfEventStars()
+    {
+        var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito Estrellas",
+            temporada = 2026,
+            descripcion = "Circuito para estrellas por categoria",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = "STARS-2026"
+        });
+
+        var circuit = await ReadJsonAsync(circuitResponse);
+        var circuitId = circuit.RootElement.GetProperty("id").GetString();
+
+        // El evento tiene 3 estrellas, pero cada categoria habilitada tendra su propio nivel.
+        var eventResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Evento Estrellas por Categoria",
+            circuitId,
+            fechaInicio = "2026-09-10",
+            fechaFin = "2026-09-12",
+            pais = "Perú",
+            ciudad = "Lobitos",
+            playa = "Lobitos",
+            stars = 3,
+            capacidadMaxima = 120,
+            prizeAmountUsd = 10000,
+            surfScoresCode = "EV-STARS-2026",
+            accessType = "Abierto",
+            estado = "Activo"
+        });
+
+        var createdEvent = await ReadJsonAsync(eventResponse);
+        var eventId = createdEvent.RootElement.GetProperty("id").GetString();
+
+        var categoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Longboard",
+            descripcion = "Categoria longboard",
+            gender = "Ambos",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo"
+        });
+
+        var category = await ReadJsonAsync(categoryResponse);
+        var categoryId = category.RootElement.GetProperty("id").GetString();
+
+        // Tarifa de la categoria para 3 estrellas (nivel del evento) y para 5 estrellas (override).
+        var tariff3Response = await _client.PutAsJsonAsync($"/v1/categories/{categoryId}/tariffs/3", new
+        {
+            usd = 75,
+            cop = 308000,
+            active = true
+        });
+        Assert.Equal(HttpStatusCode.OK, tariff3Response.StatusCode);
+
+        var tariff5Response = await _client.PutAsJsonAsync($"/v1/categories/{categoryId}/tariffs/5", new
+        {
+            usd = 120,
+            cop = 492000,
+            active = true
+        });
+        Assert.Equal(HttpStatusCode.OK, tariff5Response.StatusCode);
+
+        // useCircuitTariffs=true, con la categoria fijada a 5 estrellas (distinto de las 3 del evento).
+        var updateResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = true,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    stars = 5,
+                    customTariffUsd = (decimal?)null,
+                    customTariffCop = (decimal?)null,
+                    capacidad = (int?)null
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var getAfterUpdate = await _client.GetAsync($"/v1/events/{eventId}/categories");
+        Assert.Equal(HttpStatusCode.OK, getAfterUpdate.StatusCode);
+
+        var updated = await ReadJsonAsync(getAfterUpdate);
+        var entry = updated.RootElement.GetProperty("data")[0];
+
+        Assert.Equal(5, entry.GetProperty("stars").GetInt32());
+        // Debe resolver la tarifa de 5 estrellas (120), no la de 3 estrellas del evento (75).
+        Assert.Equal(120, entry.GetProperty("effectiveTariffUsd").GetDouble());
+        Assert.Equal(492000, entry.GetProperty("effectiveTariffCop").GetDouble());
+
+        // Sin override (stars = null), debe caer de vuelta al nivel del evento (3 estrellas -> 75).
+        var clearOverrideResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = true,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    stars = (int?)null,
+                    customTariffUsd = (decimal?)null,
+                    customTariffCop = (decimal?)null,
+                    capacidad = (int?)null
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, clearOverrideResponse.StatusCode);
+
+        var getAfterClear = await _client.GetAsync($"/v1/events/{eventId}/categories");
+        var cleared = await ReadJsonAsync(getAfterClear);
+        var clearedEntry = cleared.RootElement.GetProperty("data")[0];
+
+        Assert.Equal(JsonValueKind.Null, clearedEntry.GetProperty("stars").ValueKind);
+        Assert.Equal(75, clearedEntry.GetProperty("effectiveTariffUsd").GetDouble());
+
+        var clearAssignmentsResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = true,
+            categories = Array.Empty<object>()
+        });
+        Assert.Equal(HttpStatusCode.OK, clearAssignmentsResponse.StatusCode);
+
+        var deleteCategoryResponse = await _client.DeleteAsync($"/v1/categories/{categoryId}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteCategoryResponse.StatusCode);
+    }
+
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();

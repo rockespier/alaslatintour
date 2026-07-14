@@ -11,12 +11,14 @@ public sealed class EventCategory
     private EventCategory(
         Guid eventId,
         Guid categoryId,
+        int? stars,
         decimal? customTariffUsd,
         decimal? customTariffCop,
         int? capacidad)
     {
         EventId = eventId;
         CategoryId = categoryId;
+        Stars = stars;
         CustomTariffUsd = customTariffUsd;
         CustomTariffCop = customTariffCop;
         Capacidad = capacidad;
@@ -30,6 +32,11 @@ public sealed class EventCategory
 
     public Category? Category { get; private set; }
 
+    /// <summary>
+    /// Nivel de estrellas propio de esta categoria en el evento. Si es null, se usa el nivel de estrellas del evento (Event.Stars).
+    /// </summary>
+    public int? Stars { get; private set; }
+
     public decimal? CustomTariffUsd { get; private set; }
 
     public decimal? CustomTariffCop { get; private set; }
@@ -39,17 +46,19 @@ public sealed class EventCategory
     public static EventCategory Create(
         Guid eventId,
         Guid categoryId,
+        int? stars,
         decimal? customTariffUsd,
         decimal? customTariffCop,
         int? capacidad)
     {
-        Validate(eventId, categoryId, customTariffUsd, customTariffCop, capacidad);
-        return new EventCategory(eventId, categoryId, customTariffUsd, customTariffCop, capacidad);
+        Validate(eventId, categoryId, stars, customTariffUsd, customTariffCop, capacidad);
+        return new EventCategory(eventId, categoryId, stars, customTariffUsd, customTariffCop, capacidad);
     }
 
-    public void Update(decimal? customTariffUsd, decimal? customTariffCop, int? capacidad)
+    public void Update(int? stars, decimal? customTariffUsd, decimal? customTariffCop, int? capacidad)
     {
-        Validate(EventId, CategoryId, customTariffUsd, customTariffCop, capacidad);
+        Validate(EventId, CategoryId, stars, customTariffUsd, customTariffCop, capacidad);
+        Stars = stars;
         CustomTariffUsd = customTariffUsd;
         CustomTariffCop = customTariffCop;
         Capacidad = capacidad;
@@ -58,6 +67,7 @@ public sealed class EventCategory
     private static void Validate(
         Guid eventId,
         Guid categoryId,
+        int? stars,
         decimal? customTariffUsd,
         decimal? customTariffCop,
         int? capacidad)
@@ -65,6 +75,11 @@ public sealed class EventCategory
         if (eventId == Guid.Empty || categoryId == Guid.Empty)
         {
             throw new DomainRuleException("El evento y la categoria son obligatorios.");
+        }
+
+        if (stars.HasValue && stars.Value is < 1 or > 5)
+        {
+            throw new DomainRuleException("El nivel de estrellas de la categoria del evento debe estar entre 1 y 5.");
         }
 
         if (customTariffUsd.HasValue && customTariffUsd.Value < 0)

@@ -31,11 +31,15 @@ public sealed class AlasAppDbContext(DbContextOptions<AlasAppDbContext> options)
 
     public DbSet<RankingSnapshotEntry> RankingSnapshotEntries => Set<RankingSnapshotEntry>();
 
+    public DbSet<EventResult> EventResults => Set<EventResult>();
+
     public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
 
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     public DbSet<Membership> Memberships => Set<Membership>();
+
+    public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

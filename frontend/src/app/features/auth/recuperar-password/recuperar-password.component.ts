@@ -23,7 +23,7 @@ import { ApiService } from '../../../core/services/api.service';
             <div class="mb-6">
               <h1 class="font-heading text-3xl mb-1">Recuperar contraseña</h1>
               <p class="text-text-muted text-sm">
-                Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                Ingresa tu correo y te enviaremos un token para restablecer tu contraseña.
               </p>
             </div>
 
@@ -79,9 +79,13 @@ import { ApiService } from '../../../core/services/api.service';
               <h2 class="font-heading text-2xl mb-2">Correo enviado</h2>
               <p class="text-text-muted text-sm mb-2">
                 Si el correo <strong class="text-text-light">{{ form.value.email }}</strong> está registrado,
-                recibirás un enlace en los próximos minutos.
+                recibirás un token en los próximos minutos.
               </p>
-              <p class="text-xs text-text-muted mb-8">Revisa también tu carpeta de spam.</p>
+              <p class="text-xs text-text-muted mb-6">Revisa también tu carpeta de spam.</p>
+              <a routerLink="/restablecer-password"
+                class="inline-block w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold mb-4">
+                Ingresar token
+              </a>
               <button (click)="sent.set(false)"
                 class="text-sm text-cyan-brand hover:text-cyan-dark">
                 Intentar con otro correo
@@ -115,7 +119,7 @@ export class RecuperarPasswordComponent {
     this.loading.set(true);
     this.error.set('');
     try {
-      await this.api.post('/auth/forgot-password', { email: this.form.value.email });
+      await this.api.post('/auth/password-reset/request', { email: this.form.value.email });
       this.sent.set(true);
     } catch {
       // Always show success to avoid email enumeration

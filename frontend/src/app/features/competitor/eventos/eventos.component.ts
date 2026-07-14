@@ -467,10 +467,10 @@ export class EventosComponent implements OnInit {
   }
 
   private async loadCompetitorStats(): Promise<void> {
-    const userId = this.auth.currentUser()?.id;
-    if (!userId) return;
+    const competitorId = this.auth.currentUser()?.competitorId;
+    if (!competitorId) return;
     try {
-      const res = await this.api.get<any>(`/competitors/${userId}`);
+      const res = await this.api.get<any>(`/competitors/${competitorId}`);
       const data = res?.data ?? res;
       this.competitorStats.set({
         rankingActual: data?.rankingActual ?? data?.ranking,

@@ -151,6 +151,7 @@ export class LoginComponent {
         fullName: res.user?.fullName ?? '',
         tipo: res.user?.tipo ?? 'espectador',
         adminRole: res.user?.adminRole,
+        competitorId: res.user?.competitorId ?? undefined,
       };
       this.auth.setSession(res.accessToken, user);
 

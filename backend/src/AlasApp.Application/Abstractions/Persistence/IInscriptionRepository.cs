@@ -12,6 +12,11 @@ public interface IInscriptionRepository
 
     Task<Inscription?> GetEntityByIdAsync(Guid inscriptionId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<Inscription>> ListEntitiesByEventCategoryAsync(
+        Guid eventId,
+        Guid categoryId,
+        CancellationToken cancellationToken);
+
     Task<PagedResult<Competitors.Models.CompetitorInscriptionDto>> ListByCompetitorAsync(
         Guid competitorId,
         string? status,

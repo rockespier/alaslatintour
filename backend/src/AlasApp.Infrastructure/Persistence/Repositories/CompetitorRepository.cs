@@ -41,6 +41,7 @@ public sealed class CompetitorRepository(AlasAppDbContext dbContext) : ICompetit
             query = query.Where(x =>
                 x.Nombre.Contains(search) ||
                 x.Apellido.Contains(search) ||
+                x.Email.Contains(search) ||
                 x.LicenseNumber.Contains(search) ||
                 x.LicenseNumberLong.Contains(search));
         }

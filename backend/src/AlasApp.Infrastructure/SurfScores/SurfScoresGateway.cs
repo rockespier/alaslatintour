@@ -1,21 +1,27 @@
+using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Abstractions.Services;
+using AlasApp.Application.AdminSettings;
 using AlasApp.Application.Rankings.Models;
-using AlasApp.Domain.Enums;
 using AlasApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace AlasApp.Infrastructure.SurfScores;
 
-public sealed class SurfScoresGateway(AlasAppDbContext dbContext) : ISurfScoresGateway
+public sealed class SurfScoresGateway(
+    AlasAppDbContext dbContext,
+    IAdminSettingsRepository settingsRepository) : ISurfScoresGateway
 {
     public async Task<IReadOnlyCollection<SurfScoresRankingSnapshotDto>> BuildCircuitRankingCacheAsync(
         Guid circuitId,
         CancellationToken cancellationToken)
     {
-        var eventRows = await dbContext.Inscriptions
+        var settingsJson = await settingsRepository.GetJsonAsync(AdminSettingsDefaults.SettingsKey, cancellationToken);
+        var settings = AdminSettingsSerializer.DeserializeOrDefault(settingsJson);
+        var bestResultsCount = settings.Ranking.BestResultsCount;
+
+        var eventRows = await dbContext.EventResults
             .AsNoTracking()
-            .Where(x => x.EventId != Guid.Empty && x.Event != null && x.Event.CircuitId == circuitId)
-            .Where(x => x.EstadoAdmin == InscriptionStatusAdmin.Pagado)
+            .Where(x => x.Event != null && x.Event.CircuitId == circuitId)
             .Select(x => new
             {
                 x.CategoryId,
@@ -24,7 +30,7 @@ public sealed class SurfScoresGateway(AlasAppDbContext dbContext) : ISurfScoresG
                 EventYear = x.Event != null ? x.Event.FechaInicio.Year : 0,
                 CompetitorName = x.Competitor != null ? x.Competitor.Nombre + " " + x.Competitor.Apellido : string.Empty,
                 Country = x.Competitor != null ? x.Competitor.Pais : string.Empty,
-                Points = (x.Event != null ? x.Event.Stars : 0) * 100
+                Points = x.LigaPoints
             })
             .ToListAsync(cancellationToken);
 
@@ -39,7 +45,10 @@ public sealed class SurfScoresGateway(AlasAppDbContext dbContext) : ISurfScoresG
                     {
                         competitor.Key.CompetitorName,
                         competitor.Key.Country,
-                        Points = competitor.Sum(x => x.Points),
+                        Points = competitor
+                            .OrderByDescending(x => x.Points)
+                            .Take(bestResultsCount)
+                            .Sum(x => x.Points),
                         Events = competitor.Select(x => x.EventId).Distinct().Count()
                     })
                     .OrderByDescending(x => x.Points)

@@ -118,6 +118,7 @@ export class DatosPersonalesComponent implements OnInit {
   saving = signal(false);
   successMsg = signal('');
   errorMsg = signal('');
+  private currentCompetitor = signal<any | null>(null);
   readonly skeletons = [1, 2, 3, 4];
   readonly paises = PAISES;
   readonly tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -136,10 +137,18 @@ export class DatosPersonalesComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   private async load(): Promise<void> {
-    const userId = this.auth.currentUser()?.id;
+    this.errorMsg.set('');
     try {
-      const res = await this.api.get<any>(`/competitors/${userId}`);
+      const competitorId = await this.resolveCompetitorId();
+      if (!competitorId) {
+        this.form.patchValue({ email: this.auth.currentUser()?.email ?? '' });
+        this.errorMsg.set('No encontramos un perfil de competidor asociado a tu sesión. Cierra sesión e ingresa nuevamente.');
+        return;
+      }
+
+      const res = await this.api.get<any>(`/competitors/${competitorId}`);
       const d = res?.data ?? res;
+      this.currentCompetitor.set(d);
       this.form.patchValue({
         nombre:        d?.nombre ?? d?.firstName ?? '',
         apellido:      d?.apellido ?? d?.lastName ?? '',
@@ -152,9 +161,26 @@ export class DatosPersonalesComponent implements OnInit {
       });
     } catch {
       this.form.patchValue({ email: this.auth.currentUser()?.email ?? '' });
+      this.errorMsg.set('No se pudieron cargar tus datos personales.');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async resolveCompetitorId(): Promise<string | undefined> {
+    const user = this.auth.currentUser();
+    if (user?.competitorId) return user.competitorId;
+    if (!user?.email) return undefined;
+
+    const res = await this.api.get<any>(`/competitors?search=${encodeURIComponent(user.email)}&limit=1`);
+    const competitor = (res?.data ?? [])[0];
+    const competitorId = competitor?.id;
+    if (competitorId) {
+      const token = this.auth.getToken();
+      if (token) this.auth.setSession(token, { ...user, competitorId });
+    }
+
+    return competitorId;
   }
 
   async save(): Promise<void> {
@@ -163,13 +189,39 @@ export class DatosPersonalesComponent implements OnInit {
     this.successMsg.set('');
     this.errorMsg.set('');
     try {
-      const userId = this.auth.currentUser()?.id;
-      await this.api.put(`/competitors/${userId}`, this.form.getRawValue());
+      const competitorId = await this.resolveCompetitorId();
+      if (!competitorId) {
+        this.errorMsg.set('No encontramos un perfil de competidor asociado a tu sesión. Cierra sesión e ingresa nuevamente.');
+        return;
+      }
+
+      await this.api.put(`/competitors/${competitorId}`, this.buildUpdatePayload());
       this.successMsg.set('Datos actualizados correctamente.');
     } catch (err: any) {
       this.errorMsg.set(err?.body?.message ?? 'No se pudo guardar. Intenta de nuevo.');
     } finally {
       this.saving.set(false);
     }
+  }
+
+  private buildUpdatePayload(): Record<string, unknown> {
+    const original = this.currentCompetitor() ?? {};
+    const formValue = this.form.getRawValue();
+
+    return {
+      nombre: formValue.nombre,
+      apellido: formValue.apellido,
+      email: original.email ?? formValue.email ?? this.auth.currentUser()?.email ?? '',
+      fechaNacimiento: original.fechaNacimiento ?? original.birthDate ?? '2000-01-01',
+      genero: original.genero ?? original.gender ?? 'Masculino',
+      pais: formValue.pais || original.pais || '',
+      telefono: formValue.telefono ?? original.telefono ?? '',
+      club: formValue.club ?? original.club ?? '',
+      postura: formValue.postura || original.postura || 'Regular',
+      tallaCamiseta: formValue.tallaCamiseta || original.tallaCamiseta || 'M',
+      numeroCamiseta: original.numeroCamiseta ?? original.shirtNumber ?? '',
+      patrocinadores: original.patrocinadores ?? original.sponsors ?? '',
+      federacion: original.federacion ?? '',
+    };
   }
 }

@@ -446,6 +446,9 @@ namespace AlasApp.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("Stars")
+                        .HasColumnType("int");
+
                     b.HasKey("EventId", "CategoryId");
 
                     b.HasIndex("CategoryId");
@@ -705,6 +708,61 @@ namespace AlasApp.Infrastructure.Migrations
                     b.ToTable("RankingSnapshots", (string)null);
                 });
 
+            modelBuilder.Entity("AlasApp.Domain.Entities.EventResult", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompetitorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("HeatOla1")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<decimal?>("HeatOla2")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<int>("LigaPoints")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Place")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal?>("PrizeUsd")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CompetitorId");
+
+                    b.HasIndex("EventId", "CategoryId", "CompetitorId")
+                        .IsUnique();
+
+                    b.HasIndex("EventId", "CategoryId", "Place");
+
+                    b.ToTable("EventResults", (string)null);
+                });
+
             modelBuilder.Entity("AlasApp.Domain.Entities.RankingSnapshotEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -748,6 +806,35 @@ namespace AlasApp.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("RankingSnapshotEntries", (string)null);
+                });
+
+            modelBuilder.Entity("AlasApp.Domain.Entities.SystemSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("JsonValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("SystemSettings", (string)null);
                 });
 
             modelBuilder.Entity("AlasApp.Domain.Entities.UserAccount", b =>
@@ -906,6 +993,33 @@ namespace AlasApp.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("AlasApp.Domain.Entities.EventResult", b =>
+                {
+                    b.HasOne("AlasApp.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AlasApp.Domain.Entities.Competitor", "Competitor")
+                        .WithMany()
+                        .HasForeignKey("CompetitorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AlasApp.Domain.Entities.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Competitor");
 
                     b.Navigation("Event");
                 });

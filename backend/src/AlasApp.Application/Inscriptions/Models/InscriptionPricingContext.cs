@@ -1,3 +1,5 @@
+using AlasApp.Domain.Enums;
+
 namespace AlasApp.Application.Inscriptions.Models;
 
 public sealed record InscriptionPricingContext(
@@ -6,6 +8,7 @@ public sealed record InscriptionPricingContext(
     Guid CircuitId,
     bool UseCircuitTariffs,
     int EventStars,
+    CategoryGender CategoryGender,
     int? CategoryCapacity,
     decimal? CustomTariffUsd,
     decimal? CircuitTariffUsd);

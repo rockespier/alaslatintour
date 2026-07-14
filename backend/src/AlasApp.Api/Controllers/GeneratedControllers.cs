@@ -87,7 +87,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Circuito encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("circuits/{circuitId}")]
-        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGETGET22(string circuitId);
+        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGETGET2(string circuitId);
 
         /// <summary>
         /// Actualizar circuito
@@ -122,7 +122,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Evento encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}")]
-        public abstract System.Threading.Tasks.Task<EventResponse> EventsGETGET22(string eventId);
+        public abstract System.Threading.Tasks.Task<EventResponse> EventsGETGET2(string eventId);
 
         /// <summary>
         /// Actualizar evento
@@ -241,7 +241,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Competidor creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("competitors")]
-        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
+        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
 
         /// <summary>
         /// Obtener perfil del competidor
@@ -495,7 +495,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Usuario encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("admin/users/{userId}")]
-        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGETGET2(string userId);
+        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGETGET22(string userId);
 
         /// <summary>
         /// Actualizar rol o estado del usuario
@@ -580,7 +580,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activo = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Borrador")]
-        Borrador,
+        Borrador = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Archivado")]
         Archivado = 2,
@@ -598,7 +598,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Latinoamérica = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"América del Sur")]
-        América_del_Sur,
+        América_del_Sur = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"América Central")]
         América_Central = 2,
@@ -616,7 +616,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Shortboard = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Longboard")]
-        Longboard,
+        Longboard = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Mixed")]
         Mixed = 2,
@@ -631,7 +631,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Inscripciones_Abiertas = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Próximamente")]
-        Próximamente,
+        Próximamente = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Completado")]
         Completado = 2,
@@ -649,7 +649,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activo = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Próximamente")]
-        Próximamente,
+        Próximamente = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Completado")]
         Completado = 2,
@@ -670,7 +670,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Abierto = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Restringido")]
-        Restringido,
+        Restringido = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Solo invitación")]
         Solo_invitación = 2,
@@ -685,7 +685,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activo = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Inactivo")]
-        Inactivo,
+        Inactivo = 1,
 
     }
 
@@ -697,7 +697,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Masculino = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Femenino")]
-        Femenino,
+        Femenino = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Ambos")]
         Ambos = 2,
@@ -712,7 +712,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Pagado = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Pendiente")]
-        Pendiente,
+        Pendiente = 1,
 
     }
 
@@ -724,7 +724,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Confirmado = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"pendiente")]
-        Pendiente,
+        Pendiente = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"completado")]
         Completado = 2,
@@ -739,7 +739,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Paypal = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"beach")]
-        Beach,
+        Beach = 1,
 
     }
 
@@ -751,7 +751,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Confirmado = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Pendiente")]
-        Pendiente,
+        Pendiente = 1,
 
     }
 
@@ -763,7 +763,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activa = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Pendiente de validación")]
-        Pendiente_de_validación,
+        Pendiente_de_validación = 1,
 
     }
 
@@ -775,7 +775,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Usado = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Expirado")]
-        Expirado,
+        Expirado = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Rechazado")]
         Rechazado = 2,
@@ -793,7 +793,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Super_Admin = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Admin")]
-        Admin,
+        Admin = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Árbitro")]
         Árbitro = 2,
@@ -811,7 +811,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activo = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Inactivo")]
-        Inactivo,
+        Inactivo = 1,
 
     }
 
@@ -823,7 +823,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Mensual = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Por evento")]
-        Por_evento,
+        Por_evento = 1,
 
     }
 
@@ -835,7 +835,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Activo = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Vence pronto")]
-        Vence_pronto,
+        Vence_pronto = 1,
 
     }
 
@@ -847,7 +847,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Resultados = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Circuito")]
-        Circuito,
+        Circuito = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Entrevista")]
         Entrevista = 2,
@@ -868,7 +868,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         XS = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"S")]
-        S,
+        S = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"M")]
         M = 2,
@@ -892,7 +892,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Regular = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Goofy")]
-        Goofy,
+        Goofy = 1,
 
     }
 
@@ -904,7 +904,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Espectador = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"competidor")]
-        Competidor,
+        Competidor = 1,
 
     }
 
@@ -916,7 +916,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Español = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Português")]
-        Português,
+        Português = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"English")]
         English = 2,
@@ -931,7 +931,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Full = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"read-only")]
-        ReadOnly,
+        ReadOnly = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"none")]
         None = 2,
@@ -946,7 +946,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Dashboard = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Usuarios")]
-        Usuarios,
+        Usuarios = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Circuitos")]
         Circuitos = 2,
@@ -1046,13 +1046,14 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class AuthenticatedUser
     {
         [Newtonsoft.Json.JsonConstructor]
-        public AuthenticatedUser(AdminRole? @adminRole, string @email, string @fullName, string @id, UserType @tipo)
+        public AuthenticatedUser(AdminRole? @adminRole, string? @competitorId, string @email, string @fullName, string @id, UserType @tipo)
         {
             this.Id = @id;
             this.Email = @email;
             this.FullName = @fullName;
             this.Tipo = @tipo;
             this.AdminRole = @adminRole;
+            this.CompetitorId = @competitorId;
         }
 
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1071,6 +1072,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("adminRole", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public AdminRole? AdminRole { get; }
+
+        /// <summary>
+        /// Id del competidor vinculado a esta cuenta (solo si tipo=competidor).
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("competitorId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? CompetitorId { get; }
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
@@ -1429,7 +1436,6 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.CircuitId = @circuitId;
             this.FechaInicio = @fechaInicio;
             this.FechaFin = @fechaFin;
-            this.ImagenUrl = @imagenUrl;
             this.Pais = @pais;
             this.Ciudad = @ciudad;
             this.Playa = @playa;
@@ -1437,6 +1443,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.CapacidadMaxima = @capacidadMaxima;
             this.PrizeAmountUsd = @prizeAmountUsd;
             this.SurfScoresCode = @surfScoresCode;
+            this.ImagenUrl = @imagenUrl;
             this.AccessType = @accessType;
             this.Estado = @estado;
         }
@@ -1458,9 +1465,6 @@ namespace AlasApp.AlasApi.Api.Controllers
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [Newtonsoft.Json.JsonConverter(typeof(DateFormatConverter))]
         public System.DateTimeOffset FechaFin { get; }
-
-        [Newtonsoft.Json.JsonProperty("imagenUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ImagenUrl { get; }
 
         [Newtonsoft.Json.JsonProperty("pais", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -1487,6 +1491,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string SurfScoresCode { get; }
 
+        /// <summary>
+        /// URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("imagenUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ImagenUrl { get; }
+
         [Newtonsoft.Json.JsonProperty("accessType", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public EventAccessType AccessType { get; }
@@ -1510,7 +1520,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventResponse : EventRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventResponse(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string? @imagenUrl, string @id, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
+        public EventResponse(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string @id, string? @imagenUrl, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
             : base(accessType, capacidadMaxima, circuitId, ciudad, estado, fechaFin, fechaInicio, imagenUrl, nombre, pais, playa, prizeAmountUsd, stars, surfScoresCode)
         {
             this.Id = @id;
@@ -1573,9 +1583,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventCategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventCategoryRequest(int? @capacidad, string @categoryId, float? @customTariffCop, float? @customTariffUsd)
+        public EventCategoryRequest(int? @capacidad, string @categoryId, float? @customTariffCop, float? @customTariffUsd, int? @stars)
         {
             this.CategoryId = @categoryId;
+            this.Stars = @stars;
             this.CustomTariffUsd = @customTariffUsd;
             this.CustomTariffCop = @customTariffCop;
             this.Capacidad = @capacidad;
@@ -1584,6 +1595,13 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("categoryId", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string CategoryId { get; }
+
+        /// <summary>
+        /// Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("stars", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.ComponentModel.DataAnnotations.Range(1, 5)]
+        public int? Stars { get; }
 
         /// <summary>
         /// null hereda tarifa del circuito
@@ -1612,8 +1630,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventCategoryResponse : EventCategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventCategoryResponse(int? @capacidad, string @categoryId, string @categoryName, float? @customTariffCop, float? @customTariffUsd, float @effectiveTariffCop, float @effectiveTariffUsd, int @enrolledCount)
-            : base(capacidad, categoryId, customTariffCop, customTariffUsd)
+        public EventCategoryResponse(int? @capacidad, string @categoryId, string @categoryName, float? @customTariffCop, float? @customTariffUsd, float @effectiveTariffCop, float @effectiveTariffUsd, int @enrolledCount, int? @stars)
+            : base(capacidad, categoryId, customTariffCop, customTariffUsd, stars)
         {
             this.CategoryName = @categoryName;
             this.EffectiveTariffUsd = @effectiveTariffUsd;
@@ -3880,10 +3898,14 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class Response2
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response2(System.Collections.Generic.List<EventCategoryResponse> @data)
+        public Response2(System.Collections.Generic.List<EventCategoryResponse> @data, bool @useCircuitTariffs)
         {
+            this.UseCircuitTariffs = @useCircuitTariffs;
             this.Data = @data;
         }
+
+        [Newtonsoft.Json.JsonProperty("useCircuitTariffs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool UseCircuitTariffs { get; }
 
         [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.List<EventCategoryResponse> Data { get; }
@@ -4136,7 +4158,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Masculino = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Femenino")]
-        Femenino,
+        Femenino = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"Prefiero no indicar")]
         Prefiero_no_indicar = 2,
@@ -4379,7 +4401,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         Token_expired = 0,
 
         [System.Runtime.Serialization.EnumMember(Value = @"token_invalid")]
-        Token_invalid,
+        Token_invalid = 1,
 
         [System.Runtime.Serialization.EnumMember(Value = @"token_already_used")]
         Token_already_used = 2,

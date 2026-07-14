@@ -430,7 +430,7 @@ export class Client {
      * Obtener circuito por ID
      * @return Circuito encontrado
      */
-    circuitsGETGET22(circuitId: string): Promise<CircuitResponse> {
+    circuitsGETGET2(circuitId: string): Promise<CircuitResponse> {
         let url_ = this.baseUrl + "/circuits/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -445,11 +445,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsGETGET22(_response);
+            return this.processCircuitsGETGET2(_response);
         });
     }
 
-    protected processCircuitsGETGET22(response: Response): Promise<CircuitResponse> {
+    protected processCircuitsGETGET2(response: Response): Promise<CircuitResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -745,7 +745,7 @@ export class Client {
      * Obtener evento por ID
      * @return Evento encontrado
      */
-    eventsGETGET22(eventId: string): Promise<EventResponse> {
+    eventsGETGET2(eventId: string): Promise<EventResponse> {
         let url_ = this.baseUrl + "/events/{eventId}";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -760,11 +760,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsGETGET22(_response);
+            return this.processEventsGETGET2(_response);
         });
     }
 
-    protected processEventsGETGET22(response: Response): Promise<EventResponse> {
+    protected processEventsGETGET2(response: Response): Promise<EventResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1778,7 +1778,7 @@ export class Client {
      * Crear perfil de competidor (invocado internamente tras registro)
      * @return Competidor creado
      */
-    competitorsPOSTPOST(body: CompetitorRequest): Promise<CompetitorResponse> {
+    competitorsPOST(body: CompetitorRequest): Promise<CompetitorResponse> {
         let url_ = this.baseUrl + "/competitors";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1794,11 +1794,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsPOSTPOST(_response);
+            return this.processCompetitorsPOST(_response);
         });
     }
 
-    protected processCompetitorsPOSTPOST(response: Response): Promise<CompetitorResponse> {
+    protected processCompetitorsPOST(response: Response): Promise<CompetitorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -3873,7 +3873,7 @@ export class Client {
      * Obtener usuario administrativo
      * @return Usuario encontrado
      */
-    usersGETGET2(userId: string): Promise<AdminUserResponse> {
+    usersGETGET22(userId: string): Promise<AdminUserResponse> {
         let url_ = this.baseUrl + "/admin/users/{userId}";
         if (userId === undefined || userId === null)
             throw new globalThis.Error("The parameter 'userId' must be defined.");
@@ -3888,11 +3888,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersGETGET2(_response);
+            return this.processUsersGETGET22(_response);
         });
     }
 
-    protected processUsersGETGET2(response: Response): Promise<AdminUserResponse> {
+    protected processUsersGETGET22(response: Response): Promise<AdminUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -4779,6 +4779,8 @@ export class AuthenticatedUser implements IAuthenticatedUser {
     fullName?: string;
     tipo?: UserType;
     adminRole?: AdminRole | undefined;
+    /** Id del competidor vinculado a esta cuenta (solo si tipo=competidor). */
+    competitorId?: string | undefined;
 
     [key: string]: any;
 
@@ -4802,6 +4804,7 @@ export class AuthenticatedUser implements IAuthenticatedUser {
             this.fullName = _data["fullName"];
             this.tipo = _data["tipo"];
             this.adminRole = _data["adminRole"];
+            this.competitorId = _data["competitorId"];
         }
     }
 
@@ -4823,6 +4826,7 @@ export class AuthenticatedUser implements IAuthenticatedUser {
         data["fullName"] = this.fullName;
         data["tipo"] = this.tipo;
         data["adminRole"] = this.adminRole;
+        data["competitorId"] = this.competitorId;
         return data;
     }
 }
@@ -4833,6 +4837,8 @@ export interface IAuthenticatedUser {
     fullName?: string;
     tipo?: UserType;
     adminRole?: AdminRole | undefined;
+    /** Id del competidor vinculado a esta cuenta (solo si tipo=competidor). */
+    competitorId?: string | undefined;
 
     [key: string]: any;
 }
@@ -5348,6 +5354,8 @@ export class EventRequest implements IEventRequest {
     capacidadMaxima?: number;
     prizeAmountUsd?: number;
     surfScoresCode?: string;
+    /** URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster */
+    imagenUrl?: string | undefined;
     accessType?: EventAccessType;
     estado?: EventStatusAdmin;
 
@@ -5382,6 +5390,7 @@ export class EventRequest implements IEventRequest {
             this.capacidadMaxima = _data["capacidadMaxima"];
             this.prizeAmountUsd = _data["prizeAmountUsd"];
             this.surfScoresCode = _data["surfScoresCode"];
+            this.imagenUrl = _data["imagenUrl"];
             this.accessType = _data["accessType"];
             this.estado = _data["estado"] !== undefined ? _data["estado"] : EventStatusAdmin.Borrador;
         }
@@ -5411,6 +5420,7 @@ export class EventRequest implements IEventRequest {
         data["capacidadMaxima"] = this.capacidadMaxima;
         data["prizeAmountUsd"] = this.prizeAmountUsd;
         data["surfScoresCode"] = this.surfScoresCode;
+        data["imagenUrl"] = this.imagenUrl;
         data["accessType"] = this.accessType;
         data["estado"] = this.estado;
         return data;
@@ -5429,6 +5439,8 @@ export interface IEventRequest {
     capacidadMaxima?: number;
     prizeAmountUsd?: number;
     surfScoresCode?: string;
+    /** URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster */
+    imagenUrl?: string | undefined;
     accessType?: EventAccessType;
     estado?: EventStatusAdmin;
 
@@ -5562,6 +5574,8 @@ export interface IEventListResponse {
 
 export class EventCategoryRequest implements IEventCategoryRequest {
     categoryId!: string;
+    /** Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento. */
+    stars?: number | undefined;
     /** null hereda tarifa del circuito */
     customTariffUsd?: number | undefined;
     customTariffCop?: number | undefined;
@@ -5585,6 +5599,7 @@ export class EventCategoryRequest implements IEventCategoryRequest {
                     this[property] = _data[property];
             }
             this.categoryId = _data["categoryId"];
+            this.stars = _data["stars"];
             this.customTariffUsd = _data["customTariffUsd"];
             this.customTariffCop = _data["customTariffCop"];
             this.capacidad = _data["capacidad"];
@@ -5605,6 +5620,7 @@ export class EventCategoryRequest implements IEventCategoryRequest {
                 data[property] = this[property];
         }
         data["categoryId"] = this.categoryId;
+        data["stars"] = this.stars;
         data["customTariffUsd"] = this.customTariffUsd;
         data["customTariffCop"] = this.customTariffCop;
         data["capacidad"] = this.capacidad;
@@ -5614,6 +5630,8 @@ export class EventCategoryRequest implements IEventCategoryRequest {
 
 export interface IEventCategoryRequest {
     categoryId: string;
+    /** Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento. */
+    stars?: number | undefined;
     /** null hereda tarifa del circuito */
     customTariffUsd?: number | undefined;
     customTariffCop?: number | undefined;
@@ -9526,6 +9544,7 @@ export interface IAnonymous {
 }
 
 export class Anonymous2 implements IAnonymous2 {
+    useCircuitTariffs?: boolean;
     data?: EventCategoryResponse[];
 
     [key: string]: any;
@@ -9545,6 +9564,7 @@ export class Anonymous2 implements IAnonymous2 {
                 if (_data.hasOwnProperty(property))
                     this[property] = _data[property];
             }
+            this.useCircuitTariffs = _data["useCircuitTariffs"];
             if (Array.isArray(_data["data"])) {
                 this.data = [] as any;
                 for (let item of _data["data"])
@@ -9566,6 +9586,7 @@ export class Anonymous2 implements IAnonymous2 {
             if (this.hasOwnProperty(property))
                 data[property] = this[property];
         }
+        data["useCircuitTariffs"] = this.useCircuitTariffs;
         if (Array.isArray(this.data)) {
             data["data"] = [];
             for (let item of this.data)
@@ -9576,6 +9597,7 @@ export class Anonymous2 implements IAnonymous2 {
 }
 
 export interface IAnonymous2 {
+    useCircuitTariffs?: boolean;
     data?: EventCategoryResponse[];
 
     [key: string]: any;

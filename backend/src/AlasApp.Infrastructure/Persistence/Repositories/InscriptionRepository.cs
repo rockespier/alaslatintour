@@ -92,6 +92,16 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         return dbContext.Inscriptions.FirstOrDefaultAsync(x => x.Id == inscriptionId, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Inscription>> ListEntitiesByEventCategoryAsync(
+        Guid eventId,
+        Guid categoryId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Inscriptions
+            .Where(x => x.EventId == eventId && x.CategoryId == categoryId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<PagedResult<CompetitorInscriptionDto>> ListByCompetitorAsync(
         Guid competitorId,
         string? status,
@@ -178,6 +188,7 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         var item = await dbContext.Events
             .AsNoTracking()
             .Include(x => x.Categories)
+                .ThenInclude(x => x.Category)
             .FirstOrDefaultAsync(x => x.Id == eventId, cancellationToken);
 
         if (item is null)
@@ -203,6 +214,7 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             item.CircuitId,
             item.UseCircuitTariffs,
             item.Stars,
+            assignment.Category!.Gender,
             assignment.Capacidad,
             assignment.CustomTariffUsd,
             circuitTariff);

@@ -44,6 +44,11 @@ export const routes: Routes = [
         title: 'Eventos — ALAS Latin Tour',
       },
       {
+        path: 'calendario',
+        loadComponent: () => import('./features/public/calendario/calendario.component').then(m => m.CalendarioComponent),
+        title: 'Calendario de Eventos — ALAS Latin Tour',
+      },
+      {
         path: 'inscripcion/:eventId',
         canActivate: [authGuard],
         loadComponent: () => import('./features/competitor/inscripcion/inscripcion.component').then(m => m.InscripcionComponent),
@@ -102,6 +107,11 @@ export const routes: Routes = [
     path: 'recuperar-password',
     loadComponent: () => import('./features/auth/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent),
     title: 'Recuperar Contraseña — ALAS Latin Tour',
+  },
+  {
+    path: 'restablecer-password',
+    loadComponent: () => import('./features/auth/restablecer-password/restablecer-password.component').then(m => m.RestablecerPasswordComponent),
+    title: 'Restablecer Contraseña — ALAS Latin Tour',
   },
 
   // ── Admin ──────────────────────────────────────────────────

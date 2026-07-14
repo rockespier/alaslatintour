@@ -135,6 +135,23 @@ public sealed class Inscription : AuditableEntity
             : InscriptionStatusCompetitor.Pendiente;
     }
 
+    public void ApplyResult(string result, DateTimeOffset timestamp)
+    {
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            throw new DomainRuleException("El resultado de la inscripcion es obligatorio.");
+        }
+
+        if (result.Trim().Length > 250)
+        {
+            throw new DomainRuleException("El resultado de la inscripcion no puede exceder 250 caracteres.");
+        }
+
+        Resultado = result.Trim();
+        EstadoCompetidor = InscriptionStatusCompetitor.Completado;
+        SetUpdated(timestamp);
+    }
+
     private static void Validate(
         Guid competitorId,
         Guid eventId,

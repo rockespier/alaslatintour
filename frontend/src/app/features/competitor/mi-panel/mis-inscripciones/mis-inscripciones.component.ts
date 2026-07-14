@@ -147,9 +147,9 @@ export class MisInscripcionesComponent implements OnInit {
   }
 
   private async load(): Promise<void> {
-    const userId = this.auth.currentUser()?.id;
+    const competitorId = this.auth.currentUser()?.competitorId;
     try {
-      const res = await this.api.get<any>(`/competitors/${userId}/inscriptions?limit=50`);
+      const res = await this.api.get<any>(`/competitors/${competitorId}/inscriptions?limit=50`);
       this.inscriptions.set(res?.data ?? []);
     } catch {
       this.inscriptions.set([]);

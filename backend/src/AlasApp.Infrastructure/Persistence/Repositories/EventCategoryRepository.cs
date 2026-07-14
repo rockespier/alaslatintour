@@ -26,7 +26,8 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
             .OrderBy(x => x.Category!.Nombre)
             .Select(x =>
             {
-                var tariff = x.Category!.Tariffs.FirstOrDefault(t => t.StarLevel == @event.Stars && t.Active);
+                var effectiveStars = x.Stars ?? @event.Stars;
+                var tariff = x.Category!.Tariffs.FirstOrDefault(t => t.StarLevel == effectiveStars && t.Active);
                 var effectiveTariffUsd = @event.UseCircuitTariffs
                     ? tariff?.Usd ?? 0m
                     : x.CustomTariffUsd ?? tariff?.Usd ?? 0m;
@@ -37,6 +38,8 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
                 return new EventCategoryDto(
                     x.CategoryId,
                     x.Category.Nombre,
+                    x.Category.Gender,
+                    x.Stars,
                     x.CustomTariffUsd,
                     x.CustomTariffCop,
                     x.Capacidad,
@@ -71,6 +74,7 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
             .Select(x => EventCategory.Create(
                 eventId,
                 x.CategoryId,
+                x.Stars,
                 x.CustomTariffUsd,
                 x.CustomTariffCop,
                 x.Capacidad))

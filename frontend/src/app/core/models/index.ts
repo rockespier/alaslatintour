@@ -4,6 +4,7 @@ export interface UserInfo {
   fullName: string;
   tipo: 'espectador' | 'competidor';
   adminRole?: 'Super Admin' | 'Admin' | 'Árbitro' | 'Revisor';
+  competitorId?: string;
 }
 
 export interface PaginationMeta {

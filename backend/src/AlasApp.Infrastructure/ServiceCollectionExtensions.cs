@@ -1,6 +1,7 @@
 using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Infrastructure.Authentication;
+using AlasApp.Infrastructure.Email;
 using AlasApp.Infrastructure.Persistence;
 using AlasApp.Infrastructure.Persistence.Repositories;
 using AlasApp.Infrastructure.SurfScores;
@@ -27,12 +28,14 @@ public static class ServiceCollectionExtensions
 
         var wordPressConfig = configuration.GetSection(WordPressConfig.SectionName).Get<WordPressConfig>() ?? new WordPressConfig();
         services.Configure<WordPressConfig>(configuration.GetSection(WordPressConfig.SectionName));
+        services.Configure<SmtpEmailOptions>(configuration.GetSection(SmtpEmailOptions.SectionName));
         services.Configure<BootstrapAdminOptions>(configuration.GetSection(BootstrapAdminOptions.SectionName));
 
         services.AddScoped<ICircuitRepository, CircuitRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
+        services.AddScoped<IEventResultRepository, EventResultRepository>();
         services.AddScoped<ICompetitorRepository, CompetitorRepository>();
         services.AddScoped<IInscriptionRepository, InscriptionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
@@ -42,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
         services.AddHttpClient<IWordPressService, WordPressService>(client =>
         {
@@ -55,6 +59,7 @@ public static class ServiceCollectionExtensions
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.GalleriesBaseUrl, "gallery"));
         });
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IResetTokenService, ResetTokenService>();
         services.AddScoped<BootstrapAdminInitializer>();

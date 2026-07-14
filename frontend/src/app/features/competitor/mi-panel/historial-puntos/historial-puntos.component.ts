@@ -131,10 +131,10 @@ export class HistorialPuntosComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   private async load(): Promise<void> {
-    const userId = this.auth.currentUser()?.id;
+    const competitorId = this.auth.currentUser()?.competitorId;
     this.loading.set(true);
     try {
-      const res = await this.api.get<any>(`/competitors/${userId}/points-history?year=${this.selectedYear()}&limit=50`);
+      const res = await this.api.get<any>(`/competitors/${competitorId}/points-history?year=${this.selectedYear()}&limit=50`);
       this.history.set(res?.data ?? []);
     } catch {
       this.history.set([]);

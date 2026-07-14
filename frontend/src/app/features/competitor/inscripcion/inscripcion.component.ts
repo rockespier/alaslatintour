@@ -20,9 +20,10 @@ interface EventCategory {
   id: string;
   nombre: string;
   tipo: string;
+  gender: 'Masculino' | 'Femenino' | 'Ambos' | '';
   tarifa: number;
   inscritos: number;
-  capacidad: number;
+  capacidad: number | null;
   descripcion?: string;
 }
 
@@ -161,7 +162,7 @@ const FLAGS: Record<string, string> = {
                 @for (cat of categories(); track cat.id) {
                   <div class="category-card rounded-xl p-5"
                        [class.selected]="selectedCategoryId() === cat.id"
-                       [class.opacity-50]="cat.inscritos >= cat.capacidad"
+                       [class.opacity-50]="isFull(cat)"
                        (click)="selectCategory(cat)">
                     <div class="flex items-start justify-between gap-3">
                       <div class="flex items-center gap-3">
@@ -183,7 +184,7 @@ const FLAGS: Record<string, string> = {
                     @if (cat.descripcion) {
                       <p class="text-xs text-text-muted mt-3 leading-relaxed">{{ cat.descripcion }}</p>
                     }
-                    @if (cat.inscritos >= cat.capacidad) {
+                    @if (isFull(cat)) {
                       <p class="text-xs text-error-brand mt-2 font-accent uppercase tracking-wider">Categoría llena</p>
                     }
                   </div>
@@ -334,6 +335,7 @@ export class InscripcionComponent implements OnInit {
   step = signal(1);
   event = signal<EventDetail | null>(null);
   categories = signal<EventCategory[]>([]);
+  competitorGender = signal<'Masculino' | 'Femenino' | 'PrefieroNoIndicar' | null>(null);
   loadingEvent = signal(true);
   loadingCategories = signal(false);
   submitting = signal(false);
@@ -383,17 +385,21 @@ export class InscripcionComponent implements OnInit {
   private async loadCategories(): Promise<void> {
     this.loadingCategories.set(true);
     try {
+      await this.loadCompetitorGender();
       const res = await this.api.get<any>(`/events/${this.eventId()}/categories`);
       const raw: any[] = res?.data ?? [];
-      this.categories.set(raw.map(c => ({
+      const mapped = raw.map(c => ({
         id: c.categoryId,
         nombre: c.categoryName,
         tipo: c.tipo ?? '',
+        gender: this.normalizeCategoryGender(c.gender),
         tarifa: c.effectiveTariffUsd ?? c.customTariffUsd ?? 0,
         inscritos: c.enrolledCount ?? 0,
-        capacidad: c.capacidad ?? 0,
+        capacidad: c.capacidad ?? null,
         descripcion: c.descripcion,
-      })));
+      }));
+
+      this.categories.set(mapped.filter(c => this.isCategoryGenderCompatible(c)));
     } catch {
       this.categories.set([]);
     } finally {
@@ -401,10 +407,58 @@ export class InscripcionComponent implements OnInit {
     }
   }
 
+  private async loadCompetitorGender(): Promise<void> {
+    if (this.competitorGender()) return;
+
+    const competitorId = this.auth.currentUser()?.competitorId;
+    if (!competitorId) return;
+
+    try {
+      const res = await this.api.get<any>(`/competitors/${competitorId}`);
+      const data = res?.data ?? res;
+      this.competitorGender.set(this.normalizeCompetitorGender(data?.genero ?? data?.gender));
+    } catch {
+      this.competitorGender.set(null);
+    }
+  }
+
+  private isCategoryGenderCompatible(cat: EventCategory): boolean {
+    const gender = this.competitorGender();
+    if (!gender || !cat.gender || cat.gender === 'Ambos') {
+      return true;
+    }
+
+    if (gender === 'PrefieroNoIndicar') {
+      return false;
+    }
+
+    return cat.gender === gender;
+  }
+
+  private normalizeCategoryGender(value: unknown): EventCategory['gender'] {
+    const text = String(value ?? '').toLowerCase();
+    if (text.includes('masculino')) return 'Masculino';
+    if (text.includes('femenino')) return 'Femenino';
+    if (text.includes('ambos')) return 'Ambos';
+    return '';
+  }
+
+  private normalizeCompetitorGender(value: unknown): 'Masculino' | 'Femenino' | 'PrefieroNoIndicar' | null {
+    const text = String(value ?? '').toLowerCase();
+    if (text.includes('masculino')) return 'Masculino';
+    if (text.includes('femenino')) return 'Femenino';
+    if (text.includes('prefiero')) return 'PrefieroNoIndicar';
+    return null;
+  }
+
   selectCategory(cat: EventCategory): void {
-    if (cat.inscritos < cat.capacidad) {
+    if (!this.isFull(cat)) {
       this.selectedCategoryId.set(cat.id);
     }
+  }
+
+  isFull(cat: EventCategory): boolean {
+    return cat.capacidad !== null && cat.inscritos >= cat.capacidad;
   }
 
   goToStep2(): void {
@@ -424,7 +478,7 @@ export class InscripcionComponent implements OnInit {
     this.errorMessage.set('');
     try {
       const inscRes = await this.api.post<any>('/inscriptions', {
-        competitorId: this.auth.currentUser()?.id,
+        competitorId: this.auth.currentUser()?.competitorId,
         eventId: this.eventId(),
         categoryId: this.selectedCategoryId(),
         paymentMethod: this.paymentMethod() === 'beach' ? 'beach' : 'Paypal',

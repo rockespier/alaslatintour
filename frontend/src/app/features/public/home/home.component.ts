@@ -19,6 +19,7 @@ interface EventCard {
   statusPublic: string;
   fechaInicio: string;
   fechaFin: string;
+  imagenUrl?: string | null;
 }
 
 type ArticleCard = ArticleSummary;
@@ -111,27 +112,39 @@ const COUNTRY_FLAGS: Record<string, string> = {
         } @else {
           <div class="flex gap-5 overflow-x-auto pb-4 scroll-snap-x lg:grid lg:grid-cols-4 lg:overflow-visible">
             @for (event of events(); track event.id) {
-              <article class="card-event rounded-xl p-6 min-w-[280px] lg:min-w-0 flex flex-col">
-                <div class="flex items-center justify-between mb-4">
-                  <span class="text-3xl">{{ flagOf(event.pais) }}</span>
+              <article class="card-event rounded-xl overflow-hidden min-w-[280px] lg:min-w-0 flex flex-col">
+                <div class="relative aspect-[16/10] bg-navy-mid/40">
+                  @if (event.imagenUrl) {
+                    <img [src]="event.imagenUrl" [alt]="event.nombre" referrerpolicy="no-referrer"
+                         class="w-full h-full object-cover">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-navy-mid/60 to-navy-deepest text-5xl">
+                      {{ flagOf(event.pais) }}
+                    </div>
+                  }
                   <span [class]="statusClass(event.statusPublic)"
-                        class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider">
+                        class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider">
                     {{ event.statusPublic }}
                   </span>
+                  @if (event.imagenUrl) {
+                    <span class="absolute top-3 left-3 text-2xl drop-shadow">{{ flagOf(event.pais) }}</span>
+                  }
                 </div>
-                <h3 class="font-heading text-2xl leading-tight mb-2">{{ event.nombre }}</h3>
-                <p class="text-sm text-text-muted mb-4">{{ event.ciudad }}, {{ event.pais }}</p>
-                <app-star-rating [value]="event.stars" class="mb-4" />
-                <div class="mt-auto pt-4 border-t border-navy-mid">
-                  <p class="font-accent uppercase text-xs text-text-muted tracking-wider">
-                    {{ formatDateRange(event.fechaInicio, event.fechaFin) }}
-                  </p>
-                </div>
-                <div class="mt-3">
-                  <a [routerLink]="['/inscripcion', event.id]"
-                     class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
-                    Ver evento
-                  </a>
+                <div class="p-6 flex flex-col flex-1">
+                  <h3 class="font-heading text-2xl leading-tight mb-2">{{ event.nombre }}</h3>
+                  <p class="text-sm text-text-muted mb-4">{{ event.ciudad }}, {{ event.pais }}</p>
+                  <app-star-rating [value]="event.stars" class="mb-4" />
+                  <div class="mt-auto pt-4 border-t border-navy-mid">
+                    <p class="font-accent uppercase text-xs text-text-muted tracking-wider">
+                      {{ formatDateRange(event.fechaInicio, event.fechaFin) }}
+                    </p>
+                  </div>
+                  <div class="mt-3">
+                    <a [routerLink]="['/inscripcion', event.id]"
+                       class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
+                      Ver evento
+                    </a>
+                  </div>
                 </div>
               </article>
             }

@@ -26,6 +26,7 @@ using AlasApp.Application.Galleries.Models;
 using AlasApp.Application.Events.Commands.CreateEvent;
 using AlasApp.Application.Events.Commands.UpdateEvent;
 using AlasApp.Application.Events.Models;
+using AlasApp.Application.EventResults.Models;
 using AlasApp.Application.Inscriptions.Commands.CreateInscription;
 using AlasApp.Application.Inscriptions.Commands.UpdateInscription;
 using AlasApp.Application.Inscriptions.Models;
@@ -63,6 +64,7 @@ public static class ApiContractMapper
     {
         return new Generated.AuthenticatedUser(
             dto.AdminRole.HasValue ? ToGeneratedAdminRole(dto.AdminRole.Value) : null,
+            dto.CompetitorId?.ToString(),
             dto.Email,
             dto.FullName,
             dto.Id.ToString(),
@@ -264,6 +266,37 @@ public static class ApiContractMapper
             dto.SizeBytes);
     }
 
+    public static Generated.EventResultResponse ToContract(EventResultDto dto)
+    {
+        return new Generated.EventResultResponse(
+            dto.CompetitorId.ToString(),
+            dto.CompetitorName,
+            dto.Country,
+            dto.HeatOla1.HasValue ? (float)dto.HeatOla1.Value : null,
+            dto.HeatOla2.HasValue ? (float)dto.HeatOla2.Value : null,
+            dto.HeatScoreTotal.HasValue ? (float)dto.HeatScoreTotal.Value : null,
+            dto.Id.ToString(),
+            dto.LigaPoints,
+            dto.Place,
+            dto.PrizeUsd.HasValue ? (float)dto.PrizeUsd.Value : null);
+    }
+
+    public static Generated.PrizeDistributionRow ToContract(PrizeDistributionRowDto dto)
+    {
+        return new Generated.PrizeDistributionRow(dto.PlaceLabel, (float)dto.PrizeUsd);
+    }
+
+    public static EventResultUpsertItem ToEventResultUpsertItem(Generated.EventResultRequest request)
+    {
+        return new EventResultUpsertItem(
+            ParseGuid(request.CompetitorId, "competitorId"),
+            request.Place,
+            request.LigaPoints,
+            request.PrizeUsd.HasValue ? (decimal)request.PrizeUsd.Value : null,
+            request.HeatOla1.HasValue ? (decimal)request.HeatOla1.Value : null,
+            request.HeatOla2.HasValue ? (decimal)request.HeatOla2.Value : null);
+    }
+
     public static Generated.CircuitResponse ToContract(CircuitDto dto)
     {
         return new Generated.CircuitResponse(
@@ -302,8 +335,8 @@ public static class ApiContractMapper
             ToGeneratedEventStatusAdmin(dto.Estado),
             dto.FechaFin,
             dto.FechaInicio,
-            dto.ImagenUrl,
             dto.Id.ToString(),
+            dto.ImagenUrl,
             dto.Lugar,
             dto.Nombre,
             dto.Pais,
@@ -353,12 +386,12 @@ public static class ApiContractMapper
 
     public static Generated.Response2 ToUpdatedEventCategoriesContract(EventCategoryListDto dto)
     {
-        return new Generated.Response2(dto.Data.Select(ToContract).ToList());
+        return new Generated.Response2(dto.Data.Select(ToContract).ToList(), dto.UseCircuitTariffs);
     }
 
     public static Generated.EventCategoryResponse ToContract(EventCategoryDto dto)
     {
-        return new Generated.EventCategoryResponse(
+        var response = new Generated.EventCategoryResponse(
             dto.Capacidad,
             dto.CategoryId.ToString(),
             dto.CategoryName,
@@ -366,7 +399,11 @@ public static class ApiContractMapper
             dto.CustomTariffUsd.HasValue ? (float)dto.CustomTariffUsd.Value : null,
             (float)dto.EffectiveTariffCop,
             (float)dto.EffectiveTariffUsd,
-            dto.EnrolledCount);
+            dto.EnrolledCount,
+            dto.Stars);
+
+        response.Gender = ToGeneratedCategoryGender(dto.Gender);
+        return response;
     }
 
     public static Generated.CompetitorListResponse ToContract(PagedResult<CompetitorDto> result)
@@ -968,6 +1005,7 @@ public static class ApiContractMapper
             body.UseCircuitTariffs,
             body.Categories.Select(x => new EventCategoryUpsertItem(
                 ParseGuid(x.CategoryId, "categoryId"),
+                x.Stars,
                 x.CustomTariffUsd.HasValue ? (decimal)x.CustomTariffUsd.Value : null,
                 x.CustomTariffCop.HasValue ? (decimal)x.CustomTariffCop.Value : null,
                 x.Capacidad))

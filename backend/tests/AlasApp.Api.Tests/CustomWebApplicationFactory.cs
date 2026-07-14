@@ -116,7 +116,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         dbContext.Database.ExecuteSqlRaw(
             """
             DELETE FROM [PasswordResetTokens];
+            DELETE FROM [SystemSettings];
             DELETE FROM [UserAccounts];
+            DELETE FROM [EventResults];
             DELETE FROM [RankingSnapshotEntries];
             DELETE FROM [RankingSnapshots];
             DELETE FROM [Memberships];

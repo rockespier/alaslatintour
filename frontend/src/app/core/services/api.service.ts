@@ -10,8 +10,8 @@ export class ApiService {
   private auth = inject(AuthService);
   private baseUrl = `${environment.apiUrl}/v1`;
 
-  private buildHeaders(): HttpHeaders {
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  private buildHeaders(contentType: string | null = 'application/json'): HttpHeaders {
+    let headers = contentType ? new HttpHeaders({ 'Content-Type': contentType }) : new HttpHeaders();
     const token = this.auth.getToken();
     if (token) headers = headers.set('Authorization', `Bearer ${token}`);
     return headers;
@@ -36,4 +36,19 @@ export class ApiService {
   post<T>(path: string, body: unknown): Promise<T> { return this.request('POST', path, body); }
   put<T>(path: string, body: unknown): Promise<T> { return this.request('PUT', path, body); }
   delete<T>(path: string): Promise<T> { return this.request('DELETE', path); }
+
+  async upload<T>(path: string, formData: FormData): Promise<T> {
+    const url = `${this.baseUrl}${path}`;
+    try {
+      return await firstValueFrom(
+        this.http.post<T>(url, formData, { headers: this.buildHeaders(null) }),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401) this.auth.logout();
+        throw Object.assign(new Error(err.error?.message ?? err.statusText), { status: err.status, body: err.error });
+      }
+      throw err;
+    }
+  }
 }

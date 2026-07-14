@@ -19,11 +19,18 @@ public sealed class CreateInscriptionCommandHandler(
     {
         Validate(request);
 
-        _ = await competitorRepository.GetByIdAsync(request.CompetitorId, cancellationToken)
+        var competitor = await competitorRepository.GetByIdAsync(request.CompetitorId, cancellationToken)
             ?? throw new NotFoundException("Competidor no encontrado.");
 
         var pricingContext = await inscriptionRepository.GetPricingContextAsync(request.EventId, request.CategoryId, cancellationToken)
             ?? throw new NotFoundException("Evento o categoria no encontrados para la inscripcion.");
+
+        if (!IsGenderCompatible(competitor.Genero, pricingContext.CategoryGender))
+        {
+            throw new ValidationException(
+                "La categoria seleccionada no corresponde al genero del competidor.",
+                [new ValidationError("categoryId", "La categoria seleccionada no corresponde al genero del competidor.")]);
+        }
 
         if (await inscriptionRepository.ExistsDuplicateAsync(request.CompetitorId, request.EventId, request.CategoryId, cancellationToken))
         {
@@ -92,5 +99,12 @@ public sealed class CreateInscriptionCommandHandler(
         {
             throw new ValidationException("La solicitud contiene errores de validacion.", errors);
         }
+    }
+
+    private static bool IsGenderCompatible(Domain.Enums.CompetitorGender competitorGender, Domain.Enums.CategoryGender categoryGender)
+    {
+        return categoryGender == Domain.Enums.CategoryGender.Ambos
+            || (categoryGender == Domain.Enums.CategoryGender.Masculino && competitorGender == Domain.Enums.CompetitorGender.Masculino)
+            || (categoryGender == Domain.Enums.CategoryGender.Femenino && competitorGender == Domain.Enums.CompetitorGender.Femenino);
     }
 }
