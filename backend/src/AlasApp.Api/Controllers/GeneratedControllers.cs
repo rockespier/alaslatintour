@@ -73,7 +73,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Lista de circuitos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("circuits")]
-        public abstract System.Threading.Tasks.Task<CircuitListResponse> CircuitsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitStatus? status, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitModalidad? modalidad);
+        public abstract System.Threading.Tasks.Task<CircuitListResponse> CircuitsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitStatus? status, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitModalidad? modalidad);
 
         /// <summary>
         /// Crear circuito
@@ -87,7 +87,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Circuito encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("circuits/{circuitId}")]
-        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGETGET2(string circuitId);
+        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGETGET(string circuitId);
 
         /// <summary>
         /// Actualizar circuito
@@ -122,7 +122,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Evento encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}")]
-        public abstract System.Threading.Tasks.Task<EventResponse> EventsGETGET2(string eventId);
+        public abstract System.Threading.Tasks.Task<EventResponse> EventsGETGET22(string eventId);
 
         /// <summary>
         /// Actualizar evento
@@ -241,7 +241,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Competidor creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("competitors")]
-        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
+        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
 
         /// <summary>
         /// Obtener perfil del competidor
@@ -318,7 +318,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Lista de inscripciones</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("inscriptions")]
-        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGETGET3([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? eventId, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status);
+        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? eventId, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status);
 
         /// <summary>
         /// Crear inscripción (paso 3 del wizard de inscripción)
@@ -332,7 +332,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Inscripción encontrada</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("inscriptions/{inscriptionId}")]
-        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsGETGET4(string inscriptionId);
+        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsGETGET3(string inscriptionId);
 
         /// <summary>
         /// Actualizar inscripción (número de camiseta, estado, notas)
@@ -374,7 +374,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Pago encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("payments/{paymentId}")]
-        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsGETGET2(string paymentId);
+        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsGETGET22(string paymentId);
 
         /// <summary>
         /// Actualizar estado de pago (p.ej. validar pago en playa)
@@ -495,7 +495,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Usuario encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("admin/users/{userId}")]
-        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGETGET22(string userId);
+        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGETGET2(string userId);
 
         /// <summary>
         /// Actualizar rol o estado del usuario
@@ -1657,7 +1657,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryRequest(bool @ageRestriction, string @descripcion, CategoryGender @gender, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId)
+        public CategoryRequest(bool @ageRestriction, string @descripcion, CategoryGender @gender, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId, string? @surfScoresCode)
         {
             this.Nombre = @nombre;
             this.Descripcion = @descripcion;
@@ -1667,6 +1667,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.MaxAge = @maxAge;
             this.SuccessorCategoryId = @successorCategoryId;
             this.Status = @status;
+            this.SurfScoresCode = @surfScoresCode;
         }
 
         [Newtonsoft.Json.JsonProperty("nombre", Required = Newtonsoft.Json.Required.Always)]
@@ -1700,6 +1701,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public CategoryStatus Status { get; }
 
+        /// <summary>
+        /// Código de la categoría en SurfScores para la integración de resultados.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? SurfScoresCode { get; }
+
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
         [Newtonsoft.Json.JsonExtensionData]
@@ -1715,8 +1722,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryResponse : CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryResponse(bool @ageRestriction, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId)
-            : base(ageRestriction, descripcion, gender, maxAge, minAge, nombre, status, successorCategoryId)
+        public CategoryResponse(bool @ageRestriction, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId, string? @surfScoresCode)
+            : base(ageRestriction, descripcion, gender, maxAge, minAge, nombre, status, successorCategoryId, surfScoresCode)
         {
             this.Id = @id;
             this.SuccessorCategory = @successorCategory;
@@ -1785,7 +1792,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CompetitorRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CompetitorRequest(string @apellido, string @club, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, ShirtSize @tallaCamiseta, string @telefono)
+        public CompetitorRequest(string @apellido, string @club, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string? @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
         {
             this.Nombre = @nombre;
             this.Apellido = @apellido;
@@ -1800,6 +1807,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.NumeroCamiseta = @numeroCamiseta;
             this.Patrocinadores = @patrocinadores;
             this.Federacion = @federacion;
+            this.SurfScoresCode = @surfScoresCode;
         }
 
         [Newtonsoft.Json.JsonProperty("nombre", Required = Newtonsoft.Json.Required.Always)]
@@ -1850,6 +1858,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("federacion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Federacion { get; }
 
+        /// <summary>
+        /// Código del competidor en SurfScores para la integración de resultados.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? SurfScoresCode { get; }
+
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
         [Newtonsoft.Json.JsonExtensionData]
@@ -1865,23 +1879,16 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CompetitorResponse : CompetitorRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CompetitorResponse(string @apellido, string @club, System.DateTimeOffset @createdAt, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @id, LicenseInfo @license, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
-            : base(apellido, club, email, fechaNacimiento, federacion, genero, nombre, numeroCamiseta, pais, patrocinadores, postura, tallaCamiseta, telefono)
+        public CompetitorResponse(string @apellido, string @club, System.DateTimeOffset @createdAt, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @id, LicenseInfo @license, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string? @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
+            : base(apellido, club, email, fechaNacimiento, federacion, genero, nombre, numeroCamiseta, pais, patrocinadores, postura, surfScoresCode, tallaCamiseta, telefono)
         {
             this.Id = @id;
-            this.SurfScoresCode = @surfScoresCode;
             this.License = @license;
             this.CreatedAt = @createdAt;
         }
 
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Id { get; }
-
-        /// <summary>
-        /// Asignado por el sistema; no editable por el usuario
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string SurfScoresCode { get; }
 
         [Newtonsoft.Json.JsonProperty("license", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public LicenseInfo License { get; }
