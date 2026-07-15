@@ -13,6 +13,7 @@ interface EventItem {
   pais: string;
   ciudad: string;
   playa?: string;
+  auspiciador?: string | null;
   stars: number;
   capacidadMaxima: number;
   prizeAmountUsd?: number;
@@ -21,6 +22,7 @@ interface EventItem {
   lugar?: string;
   estado?: string;
   accessType?: string;
+  eventType?: string;
   surfScoresCode?: string;
   imagenUrl?: string;
 }
@@ -48,7 +50,8 @@ interface EventCategoryEntry {
 
 const ESTADOS_EVENTO = ['Borrador', 'Próximamente', 'Activo', 'Completado', 'Cancelado'];
 const ACCESS_TYPES = ['Abierto', 'Restringido', 'Solo invitación'];
-const STARS = [1, 2, 3, 4, 5];
+const EVENT_TYPES = ['Regular', 'Prime', 'SuperPrime'];
+const STARS = [1, 2, 3, 4, 5, 6, 7];
 const PAGE_SIZE = 20;
 
 @Component({
@@ -155,6 +158,11 @@ const PAGE_SIZE = 20;
                   <tr class="hover:bg-navy-mid/20 transition">
                     <td class="px-6 py-4">
                       <p class="font-medium text-text-light">{{ ev.nombre }}</p>
+                      @if (ev.eventType || ev.auspiciador) {
+                        <p class="text-[10px] text-text-muted mt-0.5">
+                          {{ (ev.eventType ?? 'Regular') + (ev.auspiciador ? ' · ' + ev.auspiciador : '') }}
+                        </p>
+                      }
                       @if (ev.surfScoresCode) {
                         <p class="text-[10px] text-text-muted mt-0.5 font-accent tracking-wider">{{ ev.surfScoresCode }}</p>
                       }
@@ -334,7 +342,13 @@ const PAGE_SIZE = 20;
                   }
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Auspiciador</label>
+                  <input formControlName="auspiciador" type="text" placeholder="Ej: Monster Energy"
+                         class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Estrellas *</label>
                     <select formControlName="stars"
@@ -354,6 +368,13 @@ const PAGE_SIZE = 20;
                     <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Prize (USD)</label>
                     <input formControlName="prizeAmountUsd" type="number" min="0" step="500" placeholder="5000"
                            class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Tipo de evento *</label>
+                    <select formControlName="eventType"
+                            class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
+                      @for (type of eventTypes; track type) { <option [value]="type">{{ type }}</option> }
+                    </select>
                   </div>
                 </div>
 
@@ -622,6 +643,7 @@ export class AdminEventosComponent implements OnInit {
   starsOptions = STARS;
   accessTypes = ACCESS_TYPES;
   estadosEvento = ESTADOS_EVENTO;
+  eventTypes = EVENT_TYPES;
 
   form = this.fb.group({
     nombre: ['', Validators.required],
@@ -631,9 +653,11 @@ export class AdminEventosComponent implements OnInit {
     pais: ['', Validators.required],
     ciudad: ['', Validators.required],
     playa: ['', Validators.required],
+    auspiciador: [''],
     stars: [3, Validators.required],
     capacidadMaxima: [120, Validators.required],
     prizeAmountUsd: [null as number | null],
+    eventType: ['Regular', Validators.required],
     accessType: ['Abierto', Validators.required],
     estado: ['Borrador', Validators.required],
     surfScoresCode: [''],
@@ -855,8 +879,8 @@ export class AdminEventosComponent implements OnInit {
     this.useCircuitTariffs.set(true);
     this.form.reset({
       nombre: '', circuitId: '', fechaInicio: '', fechaFin: '',
-      pais: '', ciudad: '', playa: '', stars: 3, capacidadMaxima: 120,
-      prizeAmountUsd: null, accessType: 'Abierto', estado: 'Borrador',
+      pais: '', ciudad: '', playa: '', auspiciador: '', stars: 3, capacidadMaxima: 120,
+      prizeAmountUsd: null, eventType: 'Regular', accessType: 'Abierto', estado: 'Borrador',
       surfScoresCode: '', imagenUrl: '',
     });
     this.modalOpen.set(true);
@@ -878,9 +902,11 @@ export class AdminEventosComponent implements OnInit {
       pais: ev.pais,
       ciudad: ev.ciudad,
       playa: ev.playa ?? '',
+      auspiciador: ev.auspiciador ?? '',
       stars: ev.stars,
       capacidadMaxima: ev.capacidadMaxima,
       prizeAmountUsd: ev.prizeAmountUsd ?? null,
+      eventType: ev.eventType ?? 'Regular',
       accessType: ev.accessType ?? 'Abierto',
       estado: ev.estado ?? 'Borrador',
       surfScoresCode: ev.surfScoresCode ?? '',
@@ -914,9 +940,11 @@ export class AdminEventosComponent implements OnInit {
         pais: (v.pais ?? '').toUpperCase(),
         ciudad: v.ciudad,
         playa: v.playa || '',
+        auspiciador: v.auspiciador || null,
         stars: Number(v.stars),
         capacidadMaxima: Number(v.capacidadMaxima),
         prizeAmountUsd: v.prizeAmountUsd ? Number(v.prizeAmountUsd) : 0,
+        eventType: v.eventType,
         accessType: v.accessType,
         estado: v.estado,
         imagenUrl: v.imagenUrl || null,

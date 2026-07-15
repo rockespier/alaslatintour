@@ -62,13 +62,19 @@ public static class ApiContractMapper
 
     public static Generated.AuthenticatedUser ToContract(AuthenticatedUserDto dto)
     {
-        return new Generated.AuthenticatedUser(
+        var contract = new Generated.AuthenticatedUser(
             dto.AdminRole.HasValue ? ToGeneratedAdminRole(dto.AdminRole.Value) : null,
-            dto.CompetitorId?.ToString(),
             dto.Email,
             dto.FullName,
             dto.Id.ToString(),
             ToGeneratedUserType(dto.Tipo));
+
+        if (dto.CompetitorId.HasValue)
+        {
+            contract.AdditionalProperties["competitorId"] = dto.CompetitorId.Value.ToString();
+        }
+
+        return contract;
     }
 
     public static Generated.RegisterResponse ToContract(RegisterResultDto dto)
@@ -327,12 +333,14 @@ public static class ApiContractMapper
     {
         return new Generated.EventResponse(
             ToGeneratedEventAccessType(dto.AccessType),
+            dto.Auspiciador,
             dto.CapacidadMaxima,
             dto.CircuitId.ToString(),
             dto.Ciudad,
             dto.CreatedAtUtc,
             dto.EnrolledCount,
             ToGeneratedEventStatusAdmin(dto.Estado),
+            ToGeneratedEventType(dto.EventType),
             dto.FechaFin,
             dto.FechaInicio,
             dto.Id.ToString(),
@@ -348,9 +356,9 @@ public static class ApiContractMapper
             dto.UpdatedAtUtc);
     }
 
-    public static Generated.Response6 ToContract(IReadOnlyCollection<CategoryDto> categories)
+    public static Generated.Response4 ToContract(IReadOnlyCollection<CategoryDto> categories)
     {
-        return new Generated.Response6(categories.Select(ToContract).ToList());
+        return new Generated.Response4(categories.Select(ToContract).ToList());
     }
 
     public static Generated.CategoryResponse ToContract(CategoryDto dto)
@@ -369,14 +377,14 @@ public static class ApiContractMapper
             dto.SuccessorCategoryId?.ToString());
     }
 
-    public static Generated.Response ToContract(EventCategoryListDto dto)
+    public static Generated.EventCategoryListResponse ToContract(EventCategoryListDto dto)
     {
-        return new Generated.Response(dto.Data.Select(ToContract).ToList(), dto.UseCircuitTariffs);
+        return new Generated.EventCategoryListResponse(dto.Data.Select(ToContract).ToList(), dto.UseCircuitTariffs);
     }
 
-    public static Generated.Response7 ToContract(IReadOnlyCollection<CategoryTariffDto> tariffs)
+    public static Generated.Response5 ToContract(IReadOnlyCollection<CategoryTariffDto> tariffs)
     {
-        return new Generated.Response7(tariffs.Select(ToContract).ToList());
+        return new Generated.Response5(tariffs.Select(ToContract).ToList());
     }
 
     public static Generated.TariffResponse ToContract(CategoryTariffDto dto)
@@ -384,26 +392,22 @@ public static class ApiContractMapper
         return new Generated.TariffResponse(dto.Active, (float)dto.Cop, dto.StarLevel, (float)dto.Usd);
     }
 
-    public static Generated.Response2 ToUpdatedEventCategoriesContract(EventCategoryListDto dto)
+    public static Generated.EventCategoryListResponse ToUpdatedEventCategoriesContract(EventCategoryListDto dto)
     {
-        return new Generated.Response2(dto.Data.Select(ToContract).ToList(), dto.UseCircuitTariffs);
+        return new Generated.EventCategoryListResponse(dto.Data.Select(ToContract).ToList(), dto.UseCircuitTariffs);
     }
 
     public static Generated.EventCategoryResponse ToContract(EventCategoryDto dto)
     {
-        var response = new Generated.EventCategoryResponse(
+        return new Generated.EventCategoryResponse(
             dto.Capacidad,
             dto.CategoryId.ToString(),
             dto.CategoryName,
-            dto.CustomTariffCop.HasValue ? (float)dto.CustomTariffCop.Value : null,
             dto.CustomTariffUsd.HasValue ? (float)dto.CustomTariffUsd.Value : null,
-            (float)dto.EffectiveTariffCop,
             (float)dto.EffectiveTariffUsd,
             dto.EnrolledCount,
+            ToGeneratedCategoryGender(dto.Gender),
             dto.Stars);
-
-        response.Gender = ToGeneratedCategoryGender(dto.Gender);
-        return response;
     }
 
     public static Generated.CompetitorListResponse ToContract(PagedResult<CompetitorDto> result)
@@ -584,9 +588,9 @@ public static class ApiContractMapper
             dto.TotalEventos);
     }
 
-    public static Generated.Response8 ToContract(IReadOnlyCollection<CompetitorCalendarEventDto> data)
+    public static Generated.Response6 ToContract(IReadOnlyCollection<CompetitorCalendarEventDto> data)
     {
-        return new Generated.Response8(data.Select(ToContract).ToList());
+        return new Generated.Response6(data.Select(ToContract).ToList());
     }
 
     public static Generated.CalendarEventResponse ToContract(CompetitorCalendarEventDto dto)
@@ -703,15 +707,15 @@ public static class ApiContractMapper
         return new Generated.RankingEntry(dto.Country, dto.Events, dto.Name, dto.Points, dto.Pos, dto.Variation);
     }
 
-    public static Generated.Response9 ToContract(IReadOnlyCollection<RankingCategoryAvailabilityDto> categories)
+    public static Generated.Response7 ToContract(IReadOnlyCollection<RankingCategoryAvailabilityDto> categories)
     {
-        return new Generated.Response9(
+        return new Generated.Response7(
             categories.Select(x => new Generated.Data(x.AvailableYears.ToList(), x.CategoryId.ToString(), x.CategoryName)).ToList());
     }
 
-    public static Generated.Response10 ToContract(SurfScoresSyncResultDto dto)
+    public static Generated.Response8 ToContract(SurfScoresSyncResultDto dto)
     {
-        return new Generated.Response10(dto.CircuitCode, dto.RecordsUpdated, dto.SyncedAtUtc);
+        return new Generated.Response8(dto.CircuitCode, dto.RecordsUpdated, dto.SyncedAtUtc);
     }
 
     public static CreateCircuitCommand ToCommand(Generated.CircuitRequest request)
@@ -828,11 +832,13 @@ public static class ApiContractMapper
             request.Pais,
             request.Ciudad,
             request.Playa,
+            NormalizeOptional(request.Auspiciador),
             request.Stars,
             request.CapacidadMaxima,
             (decimal)request.PrizeAmountUsd,
             NormalizeOptional(request.ImagenUrl),
             NormalizeOptional(request.SurfScoresCode),
+            ToDomainEventType(request.EventType),
             ToDomainEventAccessType(request.AccessType),
             ToDomainEventStatusAdmin(request.Estado));
     }
@@ -989,11 +995,13 @@ public static class ApiContractMapper
             request.Pais,
             request.Ciudad,
             request.Playa,
+            NormalizeOptional(request.Auspiciador),
             request.Stars,
             request.CapacidadMaxima,
             (decimal)request.PrizeAmountUsd,
             NormalizeOptional(request.ImagenUrl),
             NormalizeOptional(request.SurfScoresCode),
+            ToDomainEventType(request.EventType),
             ToDomainEventAccessType(request.AccessType),
             ToDomainEventStatusAdmin(request.Estado));
     }
@@ -1007,7 +1015,6 @@ public static class ApiContractMapper
                 ParseGuid(x.CategoryId, "categoryId"),
                 x.Stars,
                 x.CustomTariffUsd.HasValue ? (decimal)x.CustomTariffUsd.Value : null,
-                x.CustomTariffCop.HasValue ? (decimal)x.CustomTariffCop.Value : null,
                 x.Capacidad))
             .ToList());
     }
@@ -1252,6 +1259,17 @@ public static class ApiContractMapper
             Generated.EventAccessType.Restringido => EventAccessType.Restringido,
             Generated.EventAccessType.Solo_invitación => EventAccessType.SoloInvitacion,
             _ => throw new ValidationException("Tipo de acceso invalido.", [new ValidationError("accessType", "Tipo de acceso invalido.")])
+        };
+    }
+
+    public static EventType ToDomainEventType(Generated.EventType value)
+    {
+        return value switch
+        {
+            Generated.EventType.Regular => EventType.Regular,
+            Generated.EventType.Prime => EventType.Prime,
+            Generated.EventType.SuperPrime => EventType.SuperPrime,
+            _ => EventType.Regular
         };
     }
 
@@ -1510,6 +1528,17 @@ public static class ApiContractMapper
             EventAccessType.Restringido => Generated.EventAccessType.Restringido,
             EventAccessType.SoloInvitacion => Generated.EventAccessType.Solo_invitación,
             _ => Generated.EventAccessType.Abierto
+        };
+    }
+
+    private static Generated.EventType ToGeneratedEventType(EventType value)
+    {
+        return value switch
+        {
+            EventType.Regular => Generated.EventType.Regular,
+            EventType.Prime => Generated.EventType.Prime,
+            EventType.SuperPrime => Generated.EventType.SuperPrime,
+            _ => Generated.EventType.Regular
         };
     }
 

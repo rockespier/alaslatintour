@@ -39,9 +39,9 @@ public sealed class UpsertCategoryTariffCommandHandler(
             errors.Add(new ValidationError("categoryId", "El identificador de la categoria es invalido."));
         }
 
-        if (request.StarLevel is < 1 or > 5)
+        if (request.StarLevel is < 1 or > 7)
         {
-            errors.Add(new ValidationError("starLevel", "El nivel de estrellas debe estar entre 1 y 5."));
+            errors.Add(new ValidationError("starLevel", "El nivel de estrellas debe estar entre 1 y 7."));
         }
 
         if (errors.Count > 0)

@@ -50,9 +50,9 @@ public sealed class CategoryTariff
             throw new DomainRuleException("La categoria de la tarifa es obligatoria.");
         }
 
-        if (starLevel is < 1 or > 5)
+        if (starLevel is < 1 or > 7)
         {
-            throw new DomainRuleException("El nivel de estrellas de la tarifa debe estar entre 1 y 5.");
+            throw new DomainRuleException("El nivel de estrellas de la tarifa debe estar entre 1 y 7.");
         }
 
         if (usd < 0 || cop < 0)

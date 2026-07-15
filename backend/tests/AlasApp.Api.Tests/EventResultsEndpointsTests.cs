@@ -27,7 +27,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
     public async Task ResultsEndpoints_ShouldPersistAndReturnEventCategoryResults()
     {
         var circuitId = await CreateCircuitAsync();
-        var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 10000);
+        var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 10000, stars: 6);
         var categoryId = await CreateCategoryAsync();
         await AssignCategoryAsync(eventId, categoryId);
         var competitorOneId = await CreateCompetitorAsync("Gabriel", "Villani", $"result-one-{Guid.NewGuid():N}@test.com");
@@ -45,6 +45,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
                     competitorId = competitorOneId,
                     place = "1°",
                     ligaPoints = 0,
+                    prizeUsd = (decimal?)null,
                     heatOla1 = 8.50m,
                     heatOla2 = 9.00m
                 },
@@ -53,7 +54,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
                     competitorId = competitorTwoId,
                     place = "2°",
                     ligaPoints = 760,
-                    prizeUsd = 2500m,
+                    prizeUsd = (decimal?)2500m,
                     heatOla1 = 7.50m,
                     heatOla2 = 8.00m
                 }
@@ -65,7 +66,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
 
         var created = JObject.Parse(postBody);
         Assert.Equal(2, created["data"]?.Count());
-        Assert.Equal(1000, created["data"]?[0]?["ligaPoints"]?.Value<int>());
+        Assert.Equal(6000, created["data"]?[0]?["ligaPoints"]?.Value<int>());
         Assert.Equal(4500m, created["data"]?[0]?["prizeUsd"]?.Value<decimal>());
         Assert.Equal(17.5m, created["data"]?[0]?["heatScoreTotal"]?.Value<decimal>());
 
@@ -81,13 +82,13 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
     public async Task PrizeDistribution_ShouldUseEventPrizeAndConfiguredStars()
     {
         var circuitId = await CreateCircuitAsync();
-        var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 20000);
+        var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 20000, stars: 7);
 
         var response = await _client.GetAsync($"/v1/events/{eventId}/prize-distribution");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JObject.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal(3, json["stars"]?.Value<int>());
+        Assert.Equal(7, json["stars"]?.Value<int>());
         Assert.Equal("1°", json["data"]?[0]?["placeLabel"]?.Value<string>());
         Assert.Equal(9000m, json["data"]?[0]?["prizeUsd"]?.Value<decimal>());
     }
@@ -135,7 +136,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
         return body["id"]!.Value<string>()!;
     }
 
-    private async Task<string> CreateEventAsync(string circuitId, decimal prizeAmountUsd)
+    private async Task<string> CreateEventAsync(string circuitId, decimal prizeAmountUsd, int stars = 3)
     {
         var response = await _client.PostAsJsonAsync("/v1/events", new
         {
@@ -146,7 +147,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
             pais = "Peru",
             ciudad = "Lima",
             playa = "Punta Rocas",
-            stars = 3,
+            stars,
             capacidadMaxima = 150,
             prizeAmountUsd,
             surfScoresCode = $"EV-{Guid.NewGuid():N}".Substring(0, 12),
@@ -187,7 +188,6 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
                 {
                     categoryId,
                     customTariffUsd = 95,
-                    customTariffCop = 380000,
                     capacidad = 20
                 }
             }

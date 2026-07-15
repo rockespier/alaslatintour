@@ -451,21 +451,68 @@ END:VCALENDAR
 }
 ```
 
+### DELETE `/v1/inscriptions/{id}`
+El competidor autenticado puede eliminar solo sus propias inscripciones incompletas.
+
+Condiciones:
+- `estadoAdmin = Pendiente`
+- `estadoCompetidor = Pendiente`
+- sin pago registrado
+- sin `transaccionId`
+- sin resultado final
+
+```json
+// Response 204
+// Sin body
+
+// Response 409
+{ "message": "Solo se pueden eliminar inscripciones incompletas y pendientes." }
+```
+
 ---
 
-## 9. Payments
+## 9. PayPal
 
-### POST `/v1/payments`
-Crea la sesión de pago PayPal para una inscripción ya creada.
+### POST `/v1/paypal/orders`
+Inicia el checkout PayPal para una inscripción ya creada con `paymentMethod = "paypal"`.
 
 ```json
 // Request
-{ "inscriptionId": "string", "method": "paypal" }
+{
+  "inscriptionId": "string",
+  "returnUrl": "https://app.alas.com/paypal/retorno?inscriptionId=...",
+  "cancelUrl": "https://app.alas.com/paypal/cancelado?inscriptionId=..."
+}
 
 // Response 200
-{ "data": { "paypalUrl": "https://www.paypal.com/checkoutnow?token=..." } }
-// También se acepta: "checkoutUrl" como alias del campo.
+{
+  "orderId": "5O190127TN364715T",
+  "approvalUrl": "https://www.sandbox.paypal.com/checkoutnow?token=5O190127TN364715T",
+  "amountUsd": 95.0
+}
 ```
+
+### POST `/v1/paypal/orders/{orderId}/capture`
+Se invoca cuando PayPal redirige al frontend a `returnUrl` con el query param `token={orderId}`.
+
+```json
+// Request
+{ "inscriptionId": "string" }
+
+// Response 200
+{
+  "data": {
+    "id": "string",
+    "inscriptionId": "string",
+    "method": "paypal",
+    "amountUsd": 95.0,
+    "transactionId": "string",
+    "status": "confirmado"
+  }
+}
+```
+
+## 10. Payments
 
 ### POST `/v1/payments/beach/request`
 Solicita al administrador que genere un token de pago en playa.
@@ -508,7 +555,7 @@ El competidor ingresa el token recibido por correo.
 
 ---
 
-## 10. Contact
+## 11. Contact
 
 ### POST `/v1/contact`
 ```json

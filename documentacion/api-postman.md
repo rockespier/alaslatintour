@@ -65,6 +65,14 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - `GET /v1/galleries/{slug}` ya no devuelve `photos` plano. Ahora devuelve `galleryDays[]` con `assets[]` tipados.
 - `POST /v1/uploads/event-poster` sube la imagen a WordPress y devuelve la URL final que luego debe enviarse en `POST/PUT /v1/events`.
 - `POST /v1/events` y `PUT /v1/events/{id}` aceptan `imagenUrl` para el afiche del evento.
+- `POST /v1/events` y `PUT /v1/events/{id}` aceptan además `auspiciador` y `eventType`.
+- `GET /v1/events` y `GET /v1/events/{id}` ahora devuelven `auspiciador` y `eventType`.
+- `POST /v1/events` y `PUT /v1/events/{id}` permiten `stars` de `1` a `7`.
+- `GET/PUT /v1/events/{eventId}/categories` devuelve `gender` y `stars` por categoría habilitada.
+- `GET/PUT /v1/events/{eventId}/categories` ya no maneja tarifa COP; el override por evento quedó solo en USD.
+- `GET /v1/categories/{categoryId}/tariffs` y `PUT /v1/categories/{categoryId}/tariffs/{starLevel}` soportan `starLevel` de `1` a `7`.
+- En ranking, los eventos `Prime` aplican bono `+10%` y `SuperPrime` `+50%` sobre `ligaPoints` al construir la caché.
+- La matriz de puntos y la distribución de premios ya contemplan eventos de 6 y 7 estrellas.
 - `/v1/admin/*` requiere JWT y aplica permisos por rol. Angular debe manejar `401 Unauthorized` y `403 Forbidden`.
 
 ---
@@ -403,7 +411,7 @@ GET {{base_url}}/v1/events
 | `status` | `Inscripciones Abiertas` · `Proximamente` · `Completado` · `Cerrado` |
 | `country` | código de país, ej: `PE` |
 | `year` | año, ej: `2025` |
-| `stars` | `1` · `2` · `3` · `4` · `5` |
+| `stars` | `1` · `2` · `3` · `4` · `5` · `6` · `7` |
 
 **Ejemplo:**
 ```
@@ -438,17 +446,20 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "auspiciador": "Monster Energy",
   "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025.png",
-  "stars": 3,
+  "stars": 6,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
   "surfScoresCode": "MAN2025",
+  "eventType": "Prime",
   "accessType": "Abierto",
   "estado": "Borrador"
 }
 ```
 
 **Enums válidos:**
+- `eventType`: `Regular` · `Prime` · `SuperPrime`
 - `accessType`: `Abierto` · `Restringido` · `Solo invitación`
 - `estado`: `Activo` · `Próximamente` · `Completado` · `Cancelado` · `Borrador`
 
@@ -465,11 +476,13 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "auspiciador": "Monster Energy",
   "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025.png",
-  "stars": 3,
+  "stars": 6,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
   "enrolledCount": 0,
+  "eventType": "Prime",
   "statusPublic": "Próximamente",
   "lugar": "Máncora, PE",
   "createdAt": "2025-07-01T00:00:00Z",
@@ -495,16 +508,23 @@ Content-Type: application/json
   "pais": "PE",
   "ciudad": "Máncora",
   "playa": "Playa de Máncora",
+  "auspiciador": "Monster Energy",
   "imagenUrl": "https://alasglobaltour.rtres.net/wp-content/uploads/2026/07/mancora-pro-2025-v2.png",
-  "stars": 3,
+  "stars": 7,
   "capacidadMaxima": 120,
   "prizeAmountUsd": 5000.0,
+  "eventType": "SuperPrime",
   "accessType": "Abierto",
   "estado": "Activo"
 }
 ```
 
 **Response:** `200 OK`
+
+**Notas de frontend:**
+- `auspiciador` es opcional y puede enviarse `null`.
+- `eventType` es obligatorio y debe enviarse siempre; si no hay selección explícita usar `Regular`.
+- La UI de ranking no recibe el multiplicador por separado; el valor final ya llega aplicado en `points`.
 
 ---
 
@@ -1244,10 +1264,10 @@ GET {{base_url}}/v1/events/3fa85f64-5717-4562-b3fc-2c963f66afa6/categories
     {
       "categoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       "categoryName": "Sub-16 Masculino",
+      "gender": "Masculino",
+      "stars": 6,
       "customTariffUsd": null,
-      "customTariffCop": null,
       "effectiveTariffUsd": 150.0,
-      "effectiveTariffCop": 600000.0,
       "capacidad": 30,
       "enrolledCount": 12
     }
@@ -1257,6 +1277,8 @@ GET {{base_url}}/v1/events/3fa85f64-5717-4562-b3fc-2c963f66afa6/categories
 ```
 
 > Si `customTariffUsd` es `null`, la tarifa efectiva se hereda del circuito según el nivel de estrellas del evento.
+> `stars` permite sobrescribir el nivel competitivo por categoría; si llega `null`, la categoría usa las estrellas del evento.
+> En este endpoint ya no existe `customTariffCop` ni `effectiveTariffCop`.
 
 ---
 
@@ -1273,14 +1295,14 @@ Content-Type: application/json
   "categories": [
     {
       "categoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "stars": null,
       "customTariffUsd": null,
-      "customTariffCop": null,
       "capacidad": 30
     },
     {
       "categoryId": "another-guid-here",
+      "stars": 7,
       "customTariffUsd": 200.0,
-      "customTariffCop": 800000.0,
       "capacidad": 20
     }
   ]
@@ -1288,6 +1310,8 @@ Content-Type: application/json
 ```
 
 > Enviar `customTariffUsd: null` hace que ese evento herede la tarifa del circuito para esa categoría.
+> `stars` acepta `null` o un valor entre `1` y `7`.
+> La personalización de tarifa por evento quedó únicamente en USD.
 
 **Response:** `200 OK`
 
@@ -1314,7 +1338,7 @@ GET {{base_url}}/v1/categories/3fa85f64-5717-4562-b3fc-2c963f66afa6/tariffs
       "active": true
     },
     {
-      "starLevel": 2,
+      "starLevel": 7,
       "usd": 95.0,
       "cop": 380000.0,
       "active": true
@@ -1323,12 +1347,14 @@ GET {{base_url}}/v1/categories/3fa85f64-5717-4562-b3fc-2c963f66afa6/tariffs
 }
 ```
 
+> La API devuelve 7 filas, una por cada `starLevel` entre `1` y `7`.
+
 ---
 
 ### PUT /v1/categories/{categoryId}/tariffs/{starLevel} — Actualizar tarifa
 
 ```
-PUT {{base_url}}/v1/categories/3fa85f64-5717-4562-b3fc-2c963f66afa6/tariffs/3
+PUT {{base_url}}/v1/categories/3fa85f64-5717-4562-b3fc-2c963f66afa6/tariffs/7
 Content-Type: application/json
 ```
 
@@ -1341,6 +1367,8 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
+> `starLevel` válido: `1` a `7`.
 
 ---
 
@@ -1561,6 +1589,8 @@ Content-Type: application/json
 DELETE {{base_url}}/v1/inscriptions/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
+**Regla:** solo el competidor autenticado dueño de la inscripción puede eliminarla, y únicamente si sigue incompleta (`Pendiente`, sin pago confirmado ni transacción).
+
 ---
 
 ### GET /v1/events/{eventId}/inscriptions — Inscritos del evento
@@ -1609,6 +1639,56 @@ Content-Type: application/json
 ```
 
 **Response:** `201 Created`
+
+---
+
+## 8.1 PayPal Checkout — `/v1/paypal`
+
+### POST /v1/paypal/orders — Iniciar checkout
+
+```http
+POST {{base_url}}/v1/paypal/orders
+Content-Type: application/json
+```
+
+```json
+{
+  "inscriptionId": "guid",
+  "returnUrl": "http://localhost:4200/paypal/retorno?inscriptionId=guid",
+  "cancelUrl": "http://localhost:4200/paypal/cancelado?inscriptionId=guid"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "orderId": "5O190127TN364715T",
+  "approvalUrl": "https://www.sandbox.paypal.com/checkoutnow?token=5O190127TN364715T",
+  "amountUsd": 95.0
+}
+```
+
+### POST /v1/paypal/orders/{orderId}/capture — Confirmar pago
+
+```http
+POST {{base_url}}/v1/paypal/orders/5O190127TN364715T/capture
+Content-Type: application/json
+```
+
+```json
+{
+  "inscriptionId": "guid"
+}
+```
+
+**Uso frontend:**
+
+1. Crear la inscripción con `paymentMethod = "Paypal"`.
+2. Llamar `POST /v1/paypal/orders`.
+3. Redirigir el navegador a `approvalUrl`.
+4. PayPal volverá a `returnUrl` con `?token={orderId}`.
+5. El frontend debe llamar `POST /v1/paypal/orders/{orderId}/capture`.
 
 ---
 

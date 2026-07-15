@@ -179,14 +179,12 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                 {
                     categoryId = categoryAId,
                     customTariffUsd = 85,
-                    customTariffCop = 340000,
                     capacidad = 32
                 },
                 new
                 {
                     categoryId = categoryBId,
                     customTariffUsd = 90,
-                    customTariffCop = 360000,
                     capacidad = 40
                 }
             }
@@ -302,7 +300,6 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                     categoryId,
                     stars = 5,
                     customTariffUsd = (decimal?)null,
-                    customTariffCop = (decimal?)null,
                     capacidad = (int?)null
                 }
             }
@@ -319,7 +316,6 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         Assert.Equal(5, entry.GetProperty("stars").GetInt32());
         // Debe resolver la tarifa de 5 estrellas (120), no la de 3 estrellas del evento (75).
         Assert.Equal(120, entry.GetProperty("effectiveTariffUsd").GetDouble());
-        Assert.Equal(492000, entry.GetProperty("effectiveTariffCop").GetDouble());
 
         // Sin override (stars = null), debe caer de vuelta al nivel del evento (3 estrellas -> 75).
         var clearOverrideResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
@@ -332,7 +328,6 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                     categoryId,
                     stars = (int?)null,
                     customTariffUsd = (decimal?)null,
-                    customTariffCop = (decimal?)null,
                     capacidad = (int?)null
                 }
             }
@@ -344,7 +339,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         var cleared = await ReadJsonAsync(getAfterClear);
         var clearedEntry = cleared.RootElement.GetProperty("data")[0];
 
-        Assert.Equal(JsonValueKind.Null, clearedEntry.GetProperty("stars").ValueKind);
+        Assert.False(clearedEntry.TryGetProperty("stars", out var starsProperty));
+        Assert.Equal(JsonValueKind.Undefined, starsProperty.ValueKind);
         Assert.Equal(75, clearedEntry.GetProperty("effectiveTariffUsd").GetDouble());
 
         var clearAssignmentsResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new

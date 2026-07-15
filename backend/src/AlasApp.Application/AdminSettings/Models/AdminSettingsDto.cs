@@ -41,7 +41,9 @@ public sealed record RankingPointsRowDto(
     int Star2,
     int Star3,
     int Star4,
-    int Star5);
+    int Star5,
+    int Star6,
+    int Star7);
 
 public sealed record PrizeDistributionSettingsDto(
     string PlaceLabel,
@@ -49,7 +51,9 @@ public sealed record PrizeDistributionSettingsDto(
     decimal Star2Percent,
     decimal Star3Percent,
     decimal Star4Percent,
-    decimal Star5Percent);
+    decimal Star5Percent,
+    decimal Star6Percent,
+    decimal Star7Percent);
 
 public sealed record IntegrationSettingsDto(
     SurfScoresSettingsDto SurfScores,

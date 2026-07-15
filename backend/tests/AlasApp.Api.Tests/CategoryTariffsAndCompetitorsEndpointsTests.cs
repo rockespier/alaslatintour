@@ -38,7 +38,7 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
         Assert.Equal(HttpStatusCode.OK, initialTariffsResponse.StatusCode);
 
         var initialTariffs = await ReadJsonAsync(initialTariffsResponse);
-        Assert.Equal(5, initialTariffs.RootElement.GetProperty("data").GetArrayLength());
+        Assert.Equal(7, initialTariffs.RootElement.GetProperty("data").GetArrayLength());
 
         var updateTariffResponse = await _client.PutAsJsonAsync($"/v1/categories/{categoryId}/tariffs/4", new
         {

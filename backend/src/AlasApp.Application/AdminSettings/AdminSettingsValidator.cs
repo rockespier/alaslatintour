@@ -54,7 +54,7 @@ public static class AdminSettingsValidator
                 errors.Add(new ValidationError("ranking.pointsMatrix.position", "Cada fila debe definir el puesto."));
             }
 
-            if (row.Star1 < 0 || row.Star2 < 0 || row.Star3 < 0 || row.Star4 < 0 || row.Star5 < 0)
+            if (row.Star1 < 0 || row.Star2 < 0 || row.Star3 < 0 || row.Star4 < 0 || row.Star5 < 0 || row.Star6 < 0 || row.Star7 < 0)
             {
                 errors.Add(new ValidationError($"ranking.pointsMatrix.{row.Position}", "Los puntos de ranking no pueden ser negativos."));
             }
@@ -121,6 +121,8 @@ public static class AdminSettingsValidator
         decimal star3 = 0;
         decimal star4 = 0;
         decimal star5 = 0;
+        decimal star6 = 0;
+        decimal star7 = 0;
         var seenPlaces = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
@@ -134,7 +136,7 @@ public static class AdminSettingsValidator
                 errors.Add(new ValidationError("ranking.prizeDistribution.placeLabel", $"Puesto duplicado: {row.PlaceLabel}."));
             }
 
-            if (row.Star1Percent < 0 || row.Star2Percent < 0 || row.Star3Percent < 0 || row.Star4Percent < 0 || row.Star5Percent < 0)
+            if (row.Star1Percent < 0 || row.Star2Percent < 0 || row.Star3Percent < 0 || row.Star4Percent < 0 || row.Star5Percent < 0 || row.Star6Percent < 0 || row.Star7Percent < 0)
             {
                 errors.Add(new ValidationError($"ranking.prizeDistribution.{row.PlaceLabel}", "Los porcentajes de premios no pueden ser negativos."));
             }
@@ -144,9 +146,11 @@ public static class AdminSettingsValidator
             star3 += row.Star3Percent;
             star4 += row.Star4Percent;
             star5 += row.Star5Percent;
+            star6 += row.Star6Percent;
+            star7 += row.Star7Percent;
         }
 
-        if (star1 > 100 || star2 > 100 || star3 > 100 || star4 > 100 || star5 > 100)
+        if (star1 > 100 || star2 > 100 || star3 > 100 || star4 > 100 || star5 > 100 || star6 > 100 || star7 > 100)
         {
             errors.Add(new ValidationError("ranking.prizeDistribution", "La suma de porcentajes por nivel de estrellas no puede exceder 100%."));
         }

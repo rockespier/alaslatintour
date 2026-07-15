@@ -30,17 +30,17 @@ public sealed class RankingsController(IRequestDispatcher dispatcher) : Controll
     }
 
     [HttpGet("rankings/categories")]
-    [ProducesResponseType(typeof(Generated.Response9), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Generated.Response9>> GetCategories(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(Generated.Response7), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Generated.Response7>> GetCategories(CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new ListRankingCategoriesQuery(), cancellationToken);
         return Ok(ApiContractMapper.ToContract(result));
     }
 
     [HttpPost("surfscores/sync/{circuitId}")]
-    [ProducesResponseType(typeof(Generated.Response10), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Generated.Response8), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Generated.Response10>> SyncCircuit(string circuitId, CancellationToken cancellationToken)
+    public async Task<ActionResult<Generated.Response8>> SyncCircuit(string circuitId, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
             new SyncSurfScoresCircuitCommand(ApiContractMapper.ParseGuid(circuitId, "circuitId")),

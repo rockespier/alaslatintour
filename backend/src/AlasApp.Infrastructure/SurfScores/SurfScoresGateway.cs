@@ -30,7 +30,7 @@ public sealed class SurfScoresGateway(
                 EventYear = x.Event != null ? x.Event.FechaInicio.Year : 0,
                 CompetitorName = x.Competitor != null ? x.Competitor.Nombre + " " + x.Competitor.Apellido : string.Empty,
                 Country = x.Competitor != null ? x.Competitor.Pais : string.Empty,
-                Points = x.LigaPoints
+                Points = x.Event != null ? x.Event.ApplyRankingBonus(x.LigaPoints) : x.LigaPoints
             })
             .ToListAsync(cancellationToken);
 

@@ -34,11 +34,13 @@ public sealed class CreateEventCommandHandler(
                 request.Pais,
                 request.Ciudad,
                 request.Playa,
+                request.Auspiciador,
                 request.Stars,
                 request.CapacidadMaxima,
                 request.PrizeAmountUsd,
                 request.ImagenUrl,
                 request.SurfScoresCode,
+                request.EventType,
                 request.AccessType,
                 request.Estado);
 
@@ -85,9 +87,9 @@ public sealed class CreateEventCommandHandler(
             errors.Add(new ValidationError("playa", "La playa es obligatoria."));
         }
 
-        if (request.Stars is < 1 or > 5)
+        if (request.Stars is < 1 or > 7)
         {
-            errors.Add(new ValidationError("stars", "Las estrellas deben estar entre 1 y 5."));
+            errors.Add(new ValidationError("stars", "Las estrellas deben estar entre 1 y 7."));
         }
 
         if (errors.Count > 0)

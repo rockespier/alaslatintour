@@ -236,6 +236,22 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         Assert.Equal(HttpStatusCode.OK, dashboardAllowedResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task GetCurrentAdminProfile_WithMeAlias_ShouldReturnAuthenticatedUser()
+    {
+        var email = $"revisor-profile-{Guid.NewGuid():N}@test.com";
+        await AuthenticateAsAsync(AdminRole.Revisor, email);
+
+        var response = await _client.GetAsync("/v1/admin/users/me");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(email, payload["email"]?.Value<string>());
+        Assert.Equal("Revisor", payload["role"]?.Value<string>());
+        Assert.Equal("Activo", payload["status"]?.Value<string>());
+    }
+
     private async Task AuthenticateAsAsync(AdminRole role, string email, string password = "Password1")
     {
         await SeedAdminUserAsync(email, password, role);
@@ -292,7 +308,6 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
                 {
                     categoryId,
                     customTariffUsd = 95,
-                    customTariffCop = 380000,
                     capacidad = 20
                 }
             }

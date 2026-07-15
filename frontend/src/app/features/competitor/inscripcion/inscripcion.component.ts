@@ -490,12 +490,17 @@ export class InscripcionComponent implements OnInit {
       if (this.paymentMethod() === 'beach') {
         this.router.navigate(['/pago-playa', inscriptionId]);
       } else {
-        // PayPal: call /payments to create payment session and get checkout URL
-        const payRes = await this.api.post<any>('/payments', {
+        const baseUrl = globalThis.location?.origin ?? '';
+        const returnUrl = `${baseUrl}/paypal/retorno?inscriptionId=${encodeURIComponent(inscriptionId)}`;
+        const cancelUrl = `${baseUrl}/paypal/cancelado?inscriptionId=${encodeURIComponent(inscriptionId)}`;
+
+        const payRes = await this.api.post<any>('/paypal/orders', {
           inscriptionId,
-          method: 'paypal',
+          returnUrl,
+          cancelUrl,
         });
-        const paypalUrl: string | undefined = payRes?.data?.paypalUrl ?? payRes?.paypalUrl ?? payRes?.checkoutUrl;
+
+        const paypalUrl: string | undefined = payRes?.approvalUrl ?? payRes?.data?.approvalUrl;
         if (paypalUrl) {
           window.location.href = paypalUrl;
         } else {

@@ -16,8 +16,11 @@ interface Inscription {
   categoria: string;
   status: InscriptionStatus;
   statusPago: PaymentStatus;
+  statusPagoLabel: string;
   monto: number;
   metodoPago?: string;
+  tokenIngresado: boolean;
+  canDelete: boolean;
 }
 
 const PAGO_CLASS: Record<PaymentStatus, string> = {
@@ -91,16 +94,31 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
                 <td class="px-4 py-4 text-center">
                   <span class="px-2 py-1 rounded-full text-[10px] font-accent uppercase tracking-wider border whitespace-nowrap"
                         [class]="pagoClass(ins.statusPago)">
-                    {{ ins.statusPago === 'confirmado' ? 'Confirmado' : ins.statusPago === 'pendiente' ? 'Pendiente' : 'Rechazado' }}
+                    {{ ins.statusPagoLabel }}
                   </span>
                 </td>
                 <td class="px-4 py-4 text-right text-cyan-brand hidden sm:table-cell">{{ '$' + ins.monto }}</td>
                 <td class="px-4 py-4 text-right">
-                  @if (ins.statusPago === 'pendiente') {
-                    <a [routerLink]="['/pago-playa', ins.id]"
-                       class="text-xs font-accent uppercase tracking-wider text-orange-brand hover:text-orange-light">
-                      Ver token →
-                    </a>
+                  @if (ins.statusPago === 'pendiente' && !ins.tokenIngresado) {
+                    <div class="flex items-center justify-end gap-3">
+                      @if (ins.metodoPago === 'beach') {
+                        <a [routerLink]="['/pago-playa', ins.id]"
+                           class="text-xs font-accent uppercase tracking-wider text-orange-brand hover:text-orange-light">
+                          Ingresar token →
+                        </a>
+                      }
+                      @if (ins.canDelete) {
+                        <button type="button"
+                                (click)="deleteInscription(ins)"
+                                class="text-xs font-accent uppercase tracking-wider text-error-brand hover:text-red-300">
+                          Eliminar
+                        </button>
+                      }
+                    </div>
+                  } @else if (ins.statusPago === 'pendiente' && ins.tokenIngresado) {
+                    <span class="text-xs font-accent uppercase tracking-wider text-cyan-brand">
+                      Pend. Pago
+                    </span>
                   } @else {
                     <span class="text-xs text-text-muted">—</span>
                   }
@@ -147,10 +165,16 @@ export class MisInscripcionesComponent implements OnInit {
   }
 
   private async load(): Promise<void> {
-    const competitorId = this.auth.currentUser()?.competitorId;
     try {
+      const competitorId = await this.resolveCompetitorId();
+      if (!competitorId) {
+        this.inscriptions.set([]);
+        return;
+      }
+
       const res = await this.api.get<any>(`/competitors/${competitorId}/inscriptions?limit=50`);
-      this.inscriptions.set(res?.data ?? []);
+      const mapped = (res?.data ?? []).map((item: any) => this.mapInscription(item));
+      this.inscriptions.set(mapped);
     } catch {
       this.inscriptions.set([]);
     } finally {
@@ -158,10 +182,122 @@ export class MisInscripcionesComponent implements OnInit {
     }
   }
 
+  private async resolveCompetitorId(): Promise<string | undefined> {
+    const user = this.auth.currentUser();
+    if (user?.competitorId) {
+      return user.competitorId;
+    }
+
+    if (!user?.email) {
+      return undefined;
+    }
+
+    const res = await this.api.get<any>(`/competitors?search=${encodeURIComponent(user.email)}&limit=1`);
+    const competitorId = (res?.data ?? [])[0]?.id as string | undefined;
+
+    if (competitorId) {
+      const token = this.auth.getToken();
+      if (token) {
+        this.auth.setSession(token, { ...user, competitorId });
+      }
+    }
+
+    return competitorId;
+  }
+
+  private mapInscription(item: any): Inscription {
+    const metodoPago = (item?.paymentMethod ?? '').toString().toLowerCase();
+    const estadoCompetidor = (item?.estadoCompetidor ?? '').toString().toLowerCase();
+    const estadoAdmin = (item?.estadoAdmin ?? '').toString().toLowerCase();
+    const tokenIngresado = !!item?.transaccionId && metodoPago === 'beach';
+
+    const status: InscriptionStatus =
+      estadoCompetidor === 'completado'
+        ? 'completada'
+        : 'activa';
+
+    const statusPago: PaymentStatus =
+      estadoAdmin === 'pagado'
+        ? 'confirmado'
+        : estadoAdmin === 'pendiente'
+          ? 'pendiente'
+          : 'rechazado';
+
+    const statusPagoLabel =
+      statusPago === 'confirmado'
+        ? 'Confirmado'
+        : statusPago === 'rechazado'
+          ? 'Rechazado'
+          : tokenIngresado
+            ? 'Pend. Pago'
+            : metodoPago === 'paypal'
+              ? 'Pend. pago'
+              : 'Pend. token';
+
+    const canDelete =
+      status === 'activa'
+      && statusPago === 'pendiente'
+      && !tokenIngresado;
+
+    return {
+      id: item?.id ?? '',
+      eventoNombre: item?.event?.nombre ?? '',
+      eventoPais: this.extractCountryFlag(item?.event?.lugar ?? ''),
+      eventoFechaInicio: '',
+      eventoFechaFin: '',
+      categoria: item?.category?.nombre ?? '',
+      status,
+      statusPago,
+      statusPagoLabel,
+      monto: Number(item?.montoUsd ?? 0),
+      metodoPago,
+      tokenIngresado,
+      canDelete,
+    };
+  }
+
+  async deleteInscription(inscription: Inscription): Promise<void> {
+    if (!inscription.canDelete) {
+      return;
+    }
+
+    const confirmed = globalThis.confirm(
+      `Se eliminará la inscripción pendiente para ${inscription.eventoNombre}. Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await this.api.delete(`/inscriptions/${inscription.id}`);
+      this.inscriptions.update(items => items.filter(item => item.id !== inscription.id));
+    } catch (err: any) {
+      globalThis.alert(err?.body?.message ?? err?.message ?? 'No se pudo eliminar la inscripción.');
+    }
+  }
+
+  private extractCountryFlag(lugar: string): string {
+    if (!lugar) {
+      return '🌍';
+    }
+
+    const country = lugar.split(',').pop()?.trim().toUpperCase() ?? '';
+    return this.countryCodeToFlag(country);
+  }
+
+  private countryCodeToFlag(countryCode: string): string {
+    if (!/^[A-Z]{2}$/.test(countryCode)) {
+      return '🌍';
+    }
+
+    return String.fromCodePoint(...countryCode.split('').map(char => 127397 + char.charCodeAt(0)));
+  }
+
   pagoClass(status: PaymentStatus): string { return PAGO_CLASS[status] ?? ''; }
 
   dateRange(start: string, end: string): string {
-    if (!start) return '';
+    if (!start || !end) return 'Por confirmar';
     const s = new Date(start), e = new Date(end);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return `${s.getDate()} - ${e.getDate()} ${months[s.getMonth()]} ${s.getFullYear()}`;

@@ -13,14 +13,12 @@ public sealed class EventCategory
         Guid categoryId,
         int? stars,
         decimal? customTariffUsd,
-        decimal? customTariffCop,
         int? capacidad)
     {
         EventId = eventId;
         CategoryId = categoryId;
         Stars = stars;
         CustomTariffUsd = customTariffUsd;
-        CustomTariffCop = customTariffCop;
         Capacidad = capacidad;
     }
 
@@ -39,8 +37,6 @@ public sealed class EventCategory
 
     public decimal? CustomTariffUsd { get; private set; }
 
-    public decimal? CustomTariffCop { get; private set; }
-
     public int? Capacidad { get; private set; }
 
     public static EventCategory Create(
@@ -48,19 +44,17 @@ public sealed class EventCategory
         Guid categoryId,
         int? stars,
         decimal? customTariffUsd,
-        decimal? customTariffCop,
         int? capacidad)
     {
-        Validate(eventId, categoryId, stars, customTariffUsd, customTariffCop, capacidad);
-        return new EventCategory(eventId, categoryId, stars, customTariffUsd, customTariffCop, capacidad);
+        Validate(eventId, categoryId, stars, customTariffUsd, capacidad);
+        return new EventCategory(eventId, categoryId, stars, customTariffUsd, capacidad);
     }
 
-    public void Update(int? stars, decimal? customTariffUsd, decimal? customTariffCop, int? capacidad)
+    public void Update(int? stars, decimal? customTariffUsd, int? capacidad)
     {
-        Validate(EventId, CategoryId, stars, customTariffUsd, customTariffCop, capacidad);
+        Validate(EventId, CategoryId, stars, customTariffUsd, capacidad);
         Stars = stars;
         CustomTariffUsd = customTariffUsd;
-        CustomTariffCop = customTariffCop;
         Capacidad = capacidad;
     }
 
@@ -69,7 +63,6 @@ public sealed class EventCategory
         Guid categoryId,
         int? stars,
         decimal? customTariffUsd,
-        decimal? customTariffCop,
         int? capacidad)
     {
         if (eventId == Guid.Empty || categoryId == Guid.Empty)
@@ -77,19 +70,14 @@ public sealed class EventCategory
             throw new DomainRuleException("El evento y la categoria son obligatorios.");
         }
 
-        if (stars.HasValue && stars.Value is < 1 or > 5)
+        if (stars.HasValue && stars.Value is < 1 or > 7)
         {
-            throw new DomainRuleException("El nivel de estrellas de la categoria del evento debe estar entre 1 y 5.");
+            throw new DomainRuleException("El nivel de estrellas de la categoria del evento debe estar entre 1 y 7.");
         }
 
         if (customTariffUsd.HasValue && customTariffUsd.Value < 0)
         {
             throw new DomainRuleException("La tarifa personalizada en USD no puede ser negativa.");
-        }
-
-        if (customTariffCop.HasValue && customTariffCop.Value < 0)
-        {
-            throw new DomainRuleException("La tarifa personalizada en COP no puede ser negativa.");
         }
 
         if (capacidad.HasValue && capacidad.Value < 0)

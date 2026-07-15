@@ -13,7 +13,6 @@ public sealed class EventCategoryConfiguration : IEntityTypeConfiguration<EventC
         builder.HasKey(x => new { x.EventId, x.CategoryId });
 
         builder.Property(x => x.CustomTariffUsd).HasPrecision(18, 2);
-        builder.Property(x => x.CustomTariffCop).HasPrecision(18, 2);
 
         builder.HasOne(x => x.Event)
             .WithMany(x => x.Categories)

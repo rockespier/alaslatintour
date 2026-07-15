@@ -320,7 +320,7 @@ paths:
           schema:
             type: integer
             minimum: 1
-            maximum: 5
+            maximum: 7
       responses:
         '200':
           description: Lista de eventos
@@ -422,14 +422,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  useCircuitTariffs:
-                    type: boolean
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EventCategoryResponse'
+                $ref: '#/components/schemas/EventCategoryListResponse'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -459,12 +452,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/EventCategoryResponse'
+                $ref: '#/components/schemas/EventCategoryListResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -730,7 +718,7 @@ paths:
         schema:
           type: integer
           minimum: 1
-          maximum: 5
+          maximum: 7
     put:
       tags: [Categories]
       summary: Actualizar tarifa para un nivel de estrellas específico
@@ -1883,7 +1871,6 @@ components:
       schema:
         type: integer
         minimum: 1
-        default: 1
     LimitParam:
       name: limit
       in: query
@@ -1891,7 +1878,6 @@ components:
         type: integer
         minimum: 1
         maximum: 100
-        default: 20
     CircuitId:
       name: circuitId
       in: path
@@ -2002,8 +1988,12 @@ components:
       enum: [Activo, Próximamente, Completado, Cancelado, Borrador]
 
     EventAccessType:
-      type: string
-      enum: [Abierto, Restringido, Solo invitación]
+        type: string
+        enum: [Abierto, Restringido, Solo invitación]
+
+    EventType:
+        type: string
+        enum: [Regular, Prime, SuperPrime]
 
     CategoryStatus:
       type: string
@@ -2307,10 +2297,14 @@ components:
         playa:
           type: string
           example: Roca Bruja
+        auspiciador:
+          type: string
+          nullable: true
+          example: Monster Energy
         stars:
           type: integer
           minimum: 1
-          maximum: 5
+          maximum: 7
           example: 3
         capacidadMaxima:
           type: integer
@@ -2326,6 +2320,9 @@ components:
         surfScoresCode:
           type: string
           example: RBC-2026-PER
+        eventType:
+          $ref: '#/components/schemas/EventType'
+          default: Regular
         accessType:
           $ref: '#/components/schemas/EventAccessType'
         estado:
@@ -2370,15 +2367,17 @@ components:
       properties:
         categoryId:
           type: string
+        stars:
+          type: integer
+          minimum: 1
+          maximum: 7
+          nullable: true
+          description: null hereda el nivel de estrellas del evento
         customTariffUsd:
           type: number
           format: float
           nullable: true
           description: null hereda tarifa del circuito
-        customTariffCop:
-          type: number
-          format: float
-          nullable: true
         capacidad:
           type: integer
           nullable: true
@@ -2390,14 +2389,23 @@ components:
           properties:
             categoryName:
               type: string
+            gender:
+              $ref: '#/components/schemas/CategoryGender'
             effectiveTariffUsd:
-              type: number
-              format: float
-            effectiveTariffCop:
               type: number
               format: float
             enrolledCount:
               type: integer
+
+    EventCategoryListResponse:
+      type: object
+      properties:
+        useCircuitTariffs:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventCategoryResponse'
 
     # ── CATEGORIES ────────────────────────────────────────────────
 
@@ -2473,7 +2481,7 @@ components:
             starLevel:
               type: integer
               minimum: 1
-              maximum: 5
+              maximum: 7
 
     # ── COMPETITORS ───────────────────────────────────────────────
 

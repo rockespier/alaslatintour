@@ -5,7 +5,9 @@ using AlasApp.Application.Inscriptions.Queries.GetInscriptionById;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
 using AlasApp.Application.Inscriptions.Models;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AlasApp.Api.Controllers;
 
@@ -73,10 +75,30 @@ public sealed class InscriptionsController(IRequestDispatcher dispatcher) : Cont
     }
 
     [HttpDelete("{inscriptionId}")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(string inscriptionId, CancellationToken cancellationToken)
     {
-        await dispatcher.Send(new DeleteInscriptionCommand(ApiContractMapper.ParseGuid(inscriptionId, "inscriptionId")), cancellationToken);
+        await dispatcher.Send(
+            new DeleteInscriptionCommand(
+                ApiContractMapper.ParseGuid(inscriptionId, "inscriptionId"),
+                ResolveCurrentCompetitorId(User)),
+            cancellationToken);
+
         return NoContent();
+    }
+
+    private static Guid ResolveCurrentCompetitorId(ClaimsPrincipal principal)
+    {
+        var value = principal.FindFirstValue("competitor_id");
+        if (!Guid.TryParse(value, out var competitorId))
+        {
+            throw new UnauthorizedAccessException("No se pudo identificar el competidor autenticado.");
+        }
+
+        return competitorId;
     }
 }

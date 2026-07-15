@@ -28,11 +28,19 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasMaxLength(150)
             .IsRequired();
 
+        builder.Property(x => x.Auspiciador)
+            .HasMaxLength(200);
+
         builder.Property(x => x.ImagenUrl)
             .HasMaxLength(1000);
 
         builder.Property(x => x.SurfScoresCode)
             .HasMaxLength(100);
+
+        builder.Property(x => x.EventType)
+            .HasConversion<string>()
+            .HasMaxLength(30)
+            .IsRequired();
 
         builder.Property(x => x.AccessType)
             .HasConversion<string>()

@@ -103,7 +103,7 @@ public sealed class ApproveBeachTokenCommandHandler(
                 new EmailDetail("Monto", $"USD {token.AmountUsd:0.##}"),
                 new EmailDetail("Valido hasta", expiration)
             ],
-            "Presenta este codigo en el kiosco oficial del evento para completar tu pago en efectivo. El token es personal y vence a las 24 horas.",
+            "Usa este codigo en la web, sección 'Mis Inscripciones' para completar tu inscripción con pago en efectivo. El token es personal y vence a las 24 horas.",
             "Este mensaje fue enviado automaticamente por ALAS Latin Tour.");
     }
 }

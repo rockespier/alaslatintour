@@ -26,8 +26,9 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
 
     public async Task<BeachTokenAdminDto?> GetAdminByIdAsync(Guid tokenId, DateTimeOffset utcNow, CancellationToken cancellationToken)
     {
-        var item = await BuildBeachTokenDetailsQuery()
-            .FirstOrDefaultAsync(x => x.Token.Id == tokenId, cancellationToken);
+        var item = (await BuildBeachTokenDetailsQuery()
+            .ToListAsync(cancellationToken))
+            .FirstOrDefault(x => x.Token.Id == tokenId);
 
         return item is null ? null : MapToDto(item, utcNow);
     }
@@ -44,9 +45,21 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
         return dbContext.BeachTokens.FirstOrDefaultAsync(x => x.TokenCode == tokenCode, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<BeachToken>> ListByInscriptionIdAsync(Guid inscriptionId, CancellationToken cancellationToken)
+    {
+        return await dbContext.BeachTokens
+            .Where(x => x.InscriptionId == inscriptionId)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task AddAsync(BeachToken beachToken, CancellationToken cancellationToken)
     {
         return dbContext.BeachTokens.AddAsync(beachToken, cancellationToken).AsTask();
+    }
+
+    public void RemoveRange(IEnumerable<BeachToken> tokens)
+    {
+        dbContext.BeachTokens.RemoveRange(tokens);
     }
 
     public async Task<BeachTokenAdminListDto> ListAdminAsync(int page, int limit, TokenHistoryStatus? status, DateTimeOffset utcNow, CancellationToken cancellationToken)

@@ -31,7 +31,7 @@ public sealed class AdminUsersController(IRequestDispatcher dispatcher) : Contro
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.AdminUserResponse>> GetById(string userId, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(new GetAdminUserByIdQuery(ApiContractMapper.ParseGuid(userId, "userId")), cancellationToken);
+        var result = await dispatcher.Send(new GetAdminUserByIdQuery(ResolveRequestedUserId(userId, User)), cancellationToken);
         return Ok(ApiContractMapper.ToContract(result));
     }
 
@@ -50,7 +50,7 @@ public sealed class AdminUsersController(IRequestDispatcher dispatcher) : Contro
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.AdminUserResponse>> Update(string userId, [FromBody] Generated.AdminUserUpdateRequest body, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(ApiContractMapper.ToCommand(ApiContractMapper.ParseGuid(userId, "userId"), body), cancellationToken);
+        var result = await dispatcher.Send(ApiContractMapper.ToCommand(ResolveRequestedUserId(userId, User), body), cancellationToken);
         return Ok(ApiContractMapper.ToContract(result));
     }
 
@@ -62,8 +62,19 @@ public sealed class AdminUsersController(IRequestDispatcher dispatcher) : Contro
     public async Task<IActionResult> Delete(string userId, CancellationToken cancellationToken)
     {
         var currentUserId = TryParseCurrentUserId(User);
-        await dispatcher.Send(new DeleteAdminUserCommand(ApiContractMapper.ParseGuid(userId, "userId"), currentUserId), cancellationToken);
+        await dispatcher.Send(new DeleteAdminUserCommand(ResolveRequestedUserId(userId, User), currentUserId), cancellationToken);
         return NoContent();
+    }
+
+    private static Guid ResolveRequestedUserId(string userId, ClaimsPrincipal principal)
+    {
+        if (string.Equals(userId, "me", StringComparison.OrdinalIgnoreCase))
+        {
+            return TryParseCurrentUserId(principal)
+                ?? throw new UnauthorizedAccessException("No se pudo identificar el usuario autenticado.");
+        }
+
+        return ApiContractMapper.ParseGuid(userId, "userId");
     }
 
     private static Guid? TryParseCurrentUserId(ClaimsPrincipal principal)

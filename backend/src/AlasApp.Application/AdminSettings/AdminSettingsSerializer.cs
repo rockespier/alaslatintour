@@ -50,12 +50,32 @@ public static class AdminSettingsSerializer
                 Ranking = settings.Ranking with { PointsMatrix = defaults.Ranking.PointsMatrix }
             };
         }
+        else
+        {
+            settings = settings with
+            {
+                Ranking = settings.Ranking with
+                {
+                    PointsMatrix = MergePointsMatrix(settings.Ranking.PointsMatrix, defaults.Ranking.PointsMatrix)
+                }
+            };
+        }
 
         if (settings.Ranking.PrizeDistribution is null || settings.Ranking.PrizeDistribution.Count == 0)
         {
             settings = settings with
             {
                 Ranking = settings.Ranking with { PrizeDistribution = defaults.Ranking.PrizeDistribution }
+            };
+        }
+        else
+        {
+            settings = settings with
+            {
+                Ranking = settings.Ranking with
+                {
+                    PrizeDistribution = MergePrizeDistribution(settings.Ranking.PrizeDistribution, defaults.Ranking.PrizeDistribution)
+                }
             };
         }
 
@@ -68,5 +88,51 @@ public static class AdminSettingsSerializer
         }
 
         return settings;
+    }
+
+    private static List<RankingPointsRowDto> MergePointsMatrix(
+        List<RankingPointsRowDto> current,
+        List<RankingPointsRowDto> defaults)
+    {
+        var defaultsByPosition = defaults.ToDictionary(x => x.Position, StringComparer.OrdinalIgnoreCase);
+
+        return current
+            .Select(row =>
+            {
+                if (!defaultsByPosition.TryGetValue(row.Position, out var fallback))
+                {
+                    return row;
+                }
+
+                return row with
+                {
+                    Star6 = row.Star6 == 0 ? fallback.Star6 : row.Star6,
+                    Star7 = row.Star7 == 0 ? fallback.Star7 : row.Star7
+                };
+            })
+            .ToList();
+    }
+
+    private static List<PrizeDistributionSettingsDto> MergePrizeDistribution(
+        List<PrizeDistributionSettingsDto> current,
+        List<PrizeDistributionSettingsDto> defaults)
+    {
+        var defaultsByPlace = defaults.ToDictionary(x => x.PlaceLabel, StringComparer.OrdinalIgnoreCase);
+
+        return current
+            .Select(row =>
+            {
+                if (!defaultsByPlace.TryGetValue(row.PlaceLabel, out var fallback))
+                {
+                    return row;
+                }
+
+                return row with
+                {
+                    Star6Percent = row.Star6Percent == 0 ? fallback.Star6Percent : row.Star6Percent,
+                    Star7Percent = row.Star7Percent == 0 ? fallback.Star7Percent : row.Star7Percent
+                };
+            })
+            .ToList();
     }
 }

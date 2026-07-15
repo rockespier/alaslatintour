@@ -15,9 +15,9 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher) : Cont
     private const string SurfScoresAttribution = "Results by SurfScores.com";
 
     [HttpGet("results")]
-    [ProducesResponseType(typeof(Generated.Response3), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Generated.Response), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Generated.Response3>> GetResults(
+    public async Task<ActionResult<Generated.Response>> GetResults(
         string eventId,
         [FromQuery] string? categoryId,
         CancellationToken cancellationToken)
@@ -28,16 +28,16 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher) : Cont
                 ApiContractMapper.ParseOptionalGuid(categoryId, "categoryId")),
             cancellationToken);
 
-        return Ok(new Generated.Response3(
+        return Ok(new Generated.Response(
             SurfScoresAttribution,
             results.Select(ApiContractMapper.ToContract).ToList()));
     }
 
     [HttpPost("results")]
-    [ProducesResponseType(typeof(Generated.Response4), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Generated.Response2), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Generated.Response4>> UpsertResults(
+    public async Task<ActionResult<Generated.Response2>> UpsertResults(
         string eventId,
         [FromBody] Generated.Body2 body,
         CancellationToken cancellationToken)
@@ -56,13 +56,13 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher) : Cont
 
         return StatusCode(
             StatusCodes.Status201Created,
-            new Generated.Response4(results.Select(ApiContractMapper.ToContract).ToList()));
+            new Generated.Response2(results.Select(ApiContractMapper.ToContract).ToList()));
     }
 
     [HttpGet("prize-distribution")]
-    [ProducesResponseType(typeof(Generated.Response5), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Generated.Response3), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Generated.Response5>> GetPrizeDistribution(
+    public async Task<ActionResult<Generated.Response3>> GetPrizeDistribution(
         string eventId,
         CancellationToken cancellationToken)
     {
@@ -70,7 +70,7 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher) : Cont
             new GetPrizeDistributionQuery(ApiContractMapper.ParseGuid(eventId, "eventId")),
             cancellationToken);
 
-        return Ok(new Generated.Response5(
+        return Ok(new Generated.Response3(
             distribution.Rows.Select(ApiContractMapper.ToContract).ToList(),
             distribution.Stars));
     }

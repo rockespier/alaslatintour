@@ -36,7 +36,7 @@ import { AuthService } from '../../../core/services/auth.service';
               @if (auth.isAdmin()) {
                 <a routerLink="/admin" class="text-sm text-[#AAAAAA] hover:text-white">Admin</a>
               }
-              <a routerLink="/mi-panel" class="text-sm text-[#EEEEEE] hover:text-[#0081C6]">
+              <a [routerLink]="profileRoute()" class="text-sm text-[#EEEEEE] hover:text-[#0081C6]">
                 {{ auth.currentUser()?.fullName }}
               </a>
               <button (click)="auth.logout()"
@@ -96,4 +96,6 @@ import { AuthService } from '../../../core/services/auth.service';
 export class NavbarComponent {
   auth = inject(AuthService);
   menuOpen = signal(false);
+
+  profileRoute = () => this.auth.isAdmin() ? '/admin' : '/mi-panel';
 }

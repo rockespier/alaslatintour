@@ -73,168 +73,168 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Lista de circuitos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("circuits")]
-        public abstract System.Threading.Tasks.Task<CircuitListResponse> CircuitsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitStatus? status, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitModalidad? modalidad);
+        public abstract System.Threading.Tasks.Task<CircuitListResponse> CircuitsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitStatus? status, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] CircuitModalidad? modalidad);
 
         /// <summary>
         /// Crear circuito
         /// </summary>
         /// <returns>Circuito creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("circuits")]
-        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] CircuitRequest body);
+        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsPOST([Microsoft.AspNetCore.Mvc.FromBody] CircuitRequest body);
 
         /// <summary>
         /// Obtener circuito por ID
         /// </summary>
         /// <returns>Circuito encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("circuits/{circuitId}")]
-        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGETGET2(string circuitId);
+        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsGET2(string circuitId);
 
         /// <summary>
         /// Actualizar circuito
         /// </summary>
         /// <returns>Circuito actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("circuits/{circuitId}")]
-        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] CircuitRequest body, string circuitId);
+        public abstract System.Threading.Tasks.Task<CircuitResponse> CircuitsPUT([Microsoft.AspNetCore.Mvc.FromBody] CircuitRequest body, string circuitId);
 
         /// <summary>
         /// Eliminar circuito
         /// </summary>
         /// <returns>Circuito eliminado</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("circuits/{circuitId}")]
-        public abstract System.Threading.Tasks.Task CircuitsDELETEDELETE(string circuitId);
+        public abstract System.Threading.Tasks.Task CircuitsDELETE(string circuitId);
 
         /// <summary>
         /// Listar eventos (público y admin)
         /// </summary>
         /// <returns>Lista de eventos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events")]
-        public abstract System.Threading.Tasks.Task<EventListResponse> EventsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? circuitId, [Microsoft.AspNetCore.Mvc.FromQuery] EventStatusPublic? status, [Microsoft.AspNetCore.Mvc.FromQuery] string? country, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] int? stars);
+        public abstract System.Threading.Tasks.Task<EventListResponse> EventsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? circuitId, [Microsoft.AspNetCore.Mvc.FromQuery] EventStatusPublic? status, [Microsoft.AspNetCore.Mvc.FromQuery] string? country, [Microsoft.AspNetCore.Mvc.FromQuery] int? year, [Microsoft.AspNetCore.Mvc.FromQuery] int? stars);
 
         /// <summary>
         /// Crear evento
         /// </summary>
         /// <returns>Evento creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("events")]
-        public abstract System.Threading.Tasks.Task<EventResponse> EventsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] EventRequest body);
+        public abstract System.Threading.Tasks.Task<EventResponse> EventsPOST([Microsoft.AspNetCore.Mvc.FromBody] EventRequest body);
 
         /// <summary>
         /// Obtener evento por ID
         /// </summary>
         /// <returns>Evento encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}")]
-        public abstract System.Threading.Tasks.Task<EventResponse> EventsGETGET2(string eventId);
+        public abstract System.Threading.Tasks.Task<EventResponse> EventsGET2(string eventId);
 
         /// <summary>
         /// Actualizar evento
         /// </summary>
         /// <returns>Evento actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("events/{eventId}")]
-        public abstract System.Threading.Tasks.Task<EventResponse> EventsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] EventRequest body, string eventId);
+        public abstract System.Threading.Tasks.Task<EventResponse> EventsPUT([Microsoft.AspNetCore.Mvc.FromBody] EventRequest body, string eventId);
 
         /// <summary>
         /// Eliminar evento
         /// </summary>
         /// <returns>Evento eliminado</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("events/{eventId}")]
-        public abstract System.Threading.Tasks.Task EventsDELETEDELETE(string eventId);
+        public abstract System.Threading.Tasks.Task EventsDELETE(string eventId);
 
         /// <summary>
         /// Categorías habilitadas para el evento (con cupo y tarifas efectivas)
         /// </summary>
         /// <returns>Categorías del evento</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/categories")]
-        public abstract System.Threading.Tasks.Task<Response> CategoriesGETGET(string eventId);
+        public abstract System.Threading.Tasks.Task<EventCategoryListResponse> CategoriesGET(string eventId);
 
         /// <summary>
         /// Actualizar categorías y tarifas habilitadas para el evento
         /// </summary>
         /// <returns>Categorías actualizadas</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/categories")]
-        public abstract System.Threading.Tasks.Task<Response2> CategoriesPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] Body body, string eventId);
+        public abstract System.Threading.Tasks.Task<EventCategoryListResponse> CategoriesPUT([Microsoft.AspNetCore.Mvc.FromBody] Body body, string eventId);
 
         /// <summary>
         /// Inscritos de un evento con ranking previo y actual (vista admin)
         /// </summary>
         /// <returns>Lista de inscritos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/inscriptions")]
-        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status, string eventId);
+        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status, string eventId);
 
         /// <summary>
         /// Resultados del evento por categoría
         /// </summary>
         /// <returns>Resultados con atribución obligatoria de SurfScores</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/results")]
-        public abstract System.Threading.Tasks.Task<Response3> ResultsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, string eventId);
+        public abstract System.Threading.Tasks.Task<Response> ResultsGET([Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, string eventId);
 
         /// <summary>
         /// Registrar resultados de un evento
         /// </summary>
         /// <returns>Resultados registrados</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/results")]
-        public abstract System.Threading.Tasks.Task<Response4> ResultsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] Body2 body, string eventId);
+        public abstract System.Threading.Tasks.Task<Response2> ResultsPOST([Microsoft.AspNetCore.Mvc.FromBody] Body2 body, string eventId);
 
         /// <summary>
         /// Distribución de premios según el nivel de estrellas del evento
         /// </summary>
         /// <returns>Tabla de premios</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("events/{eventId}/prize-distribution")]
-        public abstract System.Threading.Tasks.Task<Response5> PrizeDistribution(string eventId);
+        public abstract System.Threading.Tasks.Task<Response3> PrizeDistribution(string eventId);
 
         /// <summary>
         /// Listar categorías de surf
         /// </summary>
         /// <returns>Lista de categorías</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("categories")]
-        public abstract System.Threading.Tasks.Task<Response6> CategoriesGETGET2([Microsoft.AspNetCore.Mvc.FromQuery] CategoryStatus? status);
+        public abstract System.Threading.Tasks.Task<Response4> CategoriesGET2([Microsoft.AspNetCore.Mvc.FromQuery] CategoryStatus? status);
 
         /// <summary>
         /// Crear categoría
         /// </summary>
         /// <returns>Categoría creada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("categories")]
-        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] CategoryRequest body);
+        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesPOST([Microsoft.AspNetCore.Mvc.FromBody] CategoryRequest body);
 
         /// <summary>
         /// Obtener categoría por ID
         /// </summary>
         /// <returns>Categoría encontrada</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("categories/{categoryId}")]
-        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesGETGET3(string categoryId);
+        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesGET3(string categoryId);
 
         /// <summary>
         /// Actualizar categoría (incluye categoría sucesiva por límite de edad)
         /// </summary>
         /// <returns>Categoría actualizada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("categories/{categoryId}")]
-        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesPUTPUT2([Microsoft.AspNetCore.Mvc.FromBody] CategoryRequest body, string categoryId);
+        public abstract System.Threading.Tasks.Task<CategoryResponse> CategoriesPUT2([Microsoft.AspNetCore.Mvc.FromBody] CategoryRequest body, string categoryId);
 
         /// <summary>
         /// Eliminar categoría
         /// </summary>
         /// <returns>Categoría eliminada</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("categories/{categoryId}")]
-        public abstract System.Threading.Tasks.Task CategoriesDELETEDELETE(string categoryId);
+        public abstract System.Threading.Tasks.Task CategoriesDELETE(string categoryId);
 
         /// <summary>
         /// Matriz de tarifas de la categoría (5 filas, una por nivel de estrellas)
         /// </summary>
         /// <returns>Tarifas de la categoría</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("categories/{categoryId}/tariffs")]
-        public abstract System.Threading.Tasks.Task<Response7> TariffsGETGET(string categoryId);
+        public abstract System.Threading.Tasks.Task<Response5> TariffsGET(string categoryId);
 
         /// <summary>
         /// Actualizar tarifa para un nivel de estrellas específico
         /// </summary>
         /// <returns>Tarifa actualizada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("categories/{categoryId}/tariffs/{starLevel}")]
-        public abstract System.Threading.Tasks.Task<TariffResponse> TariffsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] TariffRequest body, string categoryId, int starLevel);
+        public abstract System.Threading.Tasks.Task<TariffResponse> TariffsPUT([Microsoft.AspNetCore.Mvc.FromBody] TariffRequest body, string categoryId, int starLevel);
 
         /// <summary>
         /// Listar competidores
         /// </summary>
         /// <returns>Lista de competidores</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("competitors")]
-        public abstract System.Threading.Tasks.Task<CompetitorListResponse> CompetitorsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? country, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] LicenseStatus? licenseStatus, [Microsoft.AspNetCore.Mvc.FromQuery] string? search);
+        public abstract System.Threading.Tasks.Task<CompetitorListResponse> CompetitorsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? country, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] LicenseStatus? licenseStatus, [Microsoft.AspNetCore.Mvc.FromQuery] string? search);
 
         /// <summary>
         /// Crear perfil de competidor (invocado internamente tras registro)
@@ -248,21 +248,21 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Perfil del competidor</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}")]
-        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsGETGET2(string competitorId);
+        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsGET2(string competitorId);
 
         /// <summary>
         /// Actualizar perfil del competidor (datos personales y deportivos)
         /// </summary>
         /// <returns>Perfil actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}")]
-        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body, string competitorId);
+        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPUT([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body, string competitorId);
 
         /// <summary>
         /// Eliminar cuenta del competidor
         /// </summary>
         /// <returns>Cuenta eliminada</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}")]
-        public abstract System.Threading.Tasks.Task CompetitorsDELETEDELETE(string competitorId);
+        public abstract System.Threading.Tasks.Task CompetitorsDELETE(string competitorId);
 
         /// <summary>
         /// Actualizar estado de licencia ALAS (sólo admin)
@@ -276,21 +276,21 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Preferencias actuales</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}/notifications")]
-        public abstract System.Threading.Tasks.Task<NotificationPreferencesResponse> NotificationsGETGET(string competitorId);
+        public abstract System.Threading.Tasks.Task<NotificationPreferencesResponse> NotificationsGET(string competitorId);
 
         /// <summary>
         /// Actualizar preferencias de notificaciones
         /// </summary>
         /// <returns>Preferencias actualizadas</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}/notifications")]
-        public abstract System.Threading.Tasks.Task<NotificationPreferencesResponse> NotificationsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] NotificationPreferencesRequest body, string competitorId);
+        public abstract System.Threading.Tasks.Task<NotificationPreferencesResponse> NotificationsPUT([Microsoft.AspNetCore.Mvc.FromBody] NotificationPreferencesRequest body, string competitorId);
 
         /// <summary>
         /// Inscripciones del competidor (Mi perfil → Mis inscripciones)
         /// </summary>
         /// <returns>Inscripciones del competidor</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}/inscriptions")]
-        public abstract System.Threading.Tasks.Task<InscriptionListResponse> InscriptionsGETGET2([Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusCompetitor? status, string competitorId);
+        public abstract System.Threading.Tasks.Task<InscriptionListResponse> InscriptionsGET2([Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusCompetitor? status, string competitorId);
 
         /// <summary>
         /// Historial de puntos (Mi perfil → Historial de puntos)
@@ -304,7 +304,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Calendario de eventos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("competitors/{competitorId}/calendar")]
-        public abstract System.Threading.Tasks.Task<Response8> Calendar(string competitorId);
+        public abstract System.Threading.Tasks.Task<Response6> Calendar(string competitorId);
 
         /// <summary>
         /// Exportar calendario en formato iCal (.ics)
@@ -318,49 +318,49 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Lista de inscripciones</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("inscriptions")]
-        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGETGET3([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? eventId, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status);
+        public abstract System.Threading.Tasks.Task<AdminInscriptionListResponse> InscriptionsGET3([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] string? eventId, [Microsoft.AspNetCore.Mvc.FromQuery] string? categoryId, [Microsoft.AspNetCore.Mvc.FromQuery] InscriptionStatusAdmin? status);
 
         /// <summary>
         /// Crear inscripción (paso 3 del wizard de inscripción)
         /// </summary>
         /// <returns>Inscripción creada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("inscriptions")]
-        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] InscriptionRequest body);
+        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsPOST([Microsoft.AspNetCore.Mvc.FromBody] InscriptionRequest body);
 
         /// <summary>
         /// Obtener inscripción por ID
         /// </summary>
         /// <returns>Inscripción encontrada</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("inscriptions/{inscriptionId}")]
-        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsGETGET4(string inscriptionId);
+        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsGET4(string inscriptionId);
 
         /// <summary>
         /// Actualizar inscripción (número de camiseta, estado, notas)
         /// </summary>
         /// <returns>Inscripción actualizada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("inscriptions/{inscriptionId}")]
-        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] InscriptionUpdateRequest body, string inscriptionId);
+        public abstract System.Threading.Tasks.Task<InscriptionResponse> InscriptionsPUT([Microsoft.AspNetCore.Mvc.FromBody] InscriptionUpdateRequest body, string inscriptionId);
 
         /// <summary>
         /// Cancelar inscripción
         /// </summary>
         /// <returns>Inscripción cancelada</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("inscriptions/{inscriptionId}")]
-        public abstract System.Threading.Tasks.Task InscriptionsDELETEDELETE(string inscriptionId);
+        public abstract System.Threading.Tasks.Task InscriptionsDELETE(string inscriptionId);
 
         /// <summary>
         /// Listar transacciones de pago (admin)
         /// </summary>
         /// <returns>Lista de pagos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("payments")]
-        public abstract System.Threading.Tasks.Task<PaymentListResponse> PaymentsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] PaymentMethodEnum? method, [Microsoft.AspNetCore.Mvc.FromQuery] PaymentStatusAdmin? status, [Microsoft.AspNetCore.Mvc.FromQuery] System.DateTimeOffset? fromDate, [Microsoft.AspNetCore.Mvc.FromQuery] System.DateTimeOffset? toDate);
+        public abstract System.Threading.Tasks.Task<PaymentListResponse> PaymentsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] PaymentMethodEnum? method, [Microsoft.AspNetCore.Mvc.FromQuery] PaymentStatusAdmin? status, [Microsoft.AspNetCore.Mvc.FromQuery] System.DateTimeOffset? fromDate, [Microsoft.AspNetCore.Mvc.FromQuery] System.DateTimeOffset? toDate);
 
         /// <summary>
         /// Registrar pago (callback de PayPal o confirmación de pago en playa)
         /// </summary>
         /// <returns>Pago registrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("payments")]
-        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] PaymentRequest body);
+        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsPOST([Microsoft.AspNetCore.Mvc.FromBody] PaymentRequest body);
 
         /// <summary>
         /// KPIs financieros del mes actual (dashboard de pagos)
@@ -374,14 +374,14 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Pago encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("payments/{paymentId}")]
-        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsGETGET2(string paymentId);
+        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsGET2(string paymentId);
 
         /// <summary>
         /// Actualizar estado de pago (p.ej. validar pago en playa)
         /// </summary>
         /// <returns>Pago actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("payments/{paymentId}")]
-        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] PaymentUpdateRequest body, string paymentId);
+        public abstract System.Threading.Tasks.Task<PaymentResponse> PaymentsPUT([Microsoft.AspNetCore.Mvc.FromBody] PaymentUpdateRequest body, string paymentId);
 
         /// <summary>
         /// Competidor solicita token de pago en playa
@@ -391,7 +391,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </remarks>
         /// <returns>Solicitud enviada, pendiente de aprobación</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("payments/beach/request")]
-        public abstract System.Threading.Tasks.Task<BeachTokenPendingResponse> Request22([Microsoft.AspNetCore.Mvc.FromBody] BeachTokenRequest body);
+        public abstract System.Threading.Tasks.Task<BeachTokenPendingResponse> Request2([Microsoft.AspNetCore.Mvc.FromBody] BeachTokenRequest body);
 
         /// <summary>
         /// Competidor canjea un token para activar su inscripción
@@ -439,77 +439,77 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Categorías disponibles</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("rankings/categories")]
-        public abstract System.Threading.Tasks.Task<Response9> CategoriesGETGET4();
+        public abstract System.Threading.Tasks.Task<Response7> CategoriesGET4();
 
         /// <summary>
         /// Listar artículos y noticias (datos limpios desde WordPress headless CMS)
         /// </summary>
         /// <returns>Lista de artículos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("articles")]
-        public abstract System.Threading.Tasks.Task<ArticleListResponse> ArticlesGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] ArticleCategory? category, [Microsoft.AspNetCore.Mvc.FromQuery] bool? featured, [Microsoft.AspNetCore.Mvc.FromQuery] string? search);
+        public abstract System.Threading.Tasks.Task<ArticleListResponse> ArticlesGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] ArticleCategory? category, [Microsoft.AspNetCore.Mvc.FromQuery] bool? featured, [Microsoft.AspNetCore.Mvc.FromQuery] string? search);
 
         /// <summary>
         /// Crear artículo (proxy hacia WordPress REST API)
         /// </summary>
         /// <returns>Artículo creado en WordPress</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("articles")]
-        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] ArticleRequest body);
+        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesPOST([Microsoft.AspNetCore.Mvc.FromBody] ArticleRequest body);
 
         /// <summary>
         /// Obtener artículo por slug
         /// </summary>
         /// <returns>Artículo encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("articles/{slug}")]
-        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesGETGET2(string slug);
+        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesGET2(string slug);
 
         /// <summary>
         /// Actualizar artículo
         /// </summary>
         /// <returns>Artículo actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("articles/{slug}")]
-        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] ArticleRequest body, string slug);
+        public abstract System.Threading.Tasks.Task<ArticleResponse> ArticlesPUT([Microsoft.AspNetCore.Mvc.FromBody] ArticleRequest body, string slug);
 
         /// <summary>
         /// Eliminar artículo
         /// </summary>
         /// <returns>Artículo eliminado</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("articles/{slug}")]
-        public abstract System.Threading.Tasks.Task ArticlesDELETEDELETE(string slug);
+        public abstract System.Threading.Tasks.Task ArticlesDELETE(string slug);
 
         /// <summary>
         /// Listar usuarios administrativos
         /// </summary>
         /// <returns>Lista de usuarios administrativos</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("admin/users")]
-        public abstract System.Threading.Tasks.Task<AdminUserListResponse> UsersGETGET([Microsoft.AspNetCore.Mvc.FromQuery] AdminRole? role, [Microsoft.AspNetCore.Mvc.FromQuery] AdminUserStatus? status);
+        public abstract System.Threading.Tasks.Task<AdminUserListResponse> UsersGET([Microsoft.AspNetCore.Mvc.FromQuery] AdminRole? role, [Microsoft.AspNetCore.Mvc.FromQuery] AdminUserStatus? status);
 
         /// <summary>
         /// Crear usuario administrativo con contraseña temporal y correo de invitación
         /// </summary>
         /// <returns>Usuario creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("admin/users")]
-        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] AdminUserRequest body);
+        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersPOST([Microsoft.AspNetCore.Mvc.FromBody] AdminUserRequest body);
 
         /// <summary>
         /// Obtener usuario administrativo
         /// </summary>
         /// <returns>Usuario encontrado</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("admin/users/{userId}")]
-        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGETGET22(string userId);
+        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersGET2(string userId);
 
         /// <summary>
         /// Actualizar rol o estado del usuario
         /// </summary>
         /// <returns>Usuario actualizado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("admin/users/{userId}")]
-        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] AdminUserUpdateRequest body, string userId);
+        public abstract System.Threading.Tasks.Task<AdminUserResponse> UsersPUT([Microsoft.AspNetCore.Mvc.FromBody] AdminUserUpdateRequest body, string userId);
 
         /// <summary>
         /// Eliminar usuario administrativo
         /// </summary>
         /// <returns>Usuario eliminado</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("admin/users/{userId}")]
-        public abstract System.Threading.Tasks.Task UsersDELETEDELETE(string userId);
+        public abstract System.Threading.Tasks.Task UsersDELETE(string userId);
 
         /// <summary>
         /// Listar roles con su matriz de permisos por módulo
@@ -523,35 +523,35 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Lista de membresías</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("memberships")]
-        public abstract System.Threading.Tasks.Task<MembershipListResponse> MembershipsGETGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] MembershipStatus? status);
+        public abstract System.Threading.Tasks.Task<MembershipListResponse> MembershipsGET([Microsoft.AspNetCore.Mvc.FromQuery] int? page, [Microsoft.AspNetCore.Mvc.FromQuery] int? limit, [Microsoft.AspNetCore.Mvc.FromQuery] MembershipStatus? status);
 
         /// <summary>
         /// Crear membresía
         /// </summary>
         /// <returns>Membresía creada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("memberships")]
-        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] MembershipRequest body);
+        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsPOST([Microsoft.AspNetCore.Mvc.FromBody] MembershipRequest body);
 
         /// <summary>
         /// Obtener membresía
         /// </summary>
         /// <returns>Membresía encontrada</returns>
         [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Mvc.Route("memberships/{membershipId}")]
-        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsGETGET2(string membershipId);
+        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsGET2(string membershipId);
 
         /// <summary>
         /// Actualizar membresía
         /// </summary>
         /// <returns>Membresía actualizada</returns>
         [Microsoft.AspNetCore.Mvc.HttpPut, Microsoft.AspNetCore.Mvc.Route("memberships/{membershipId}")]
-        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsPUTPUT([Microsoft.AspNetCore.Mvc.FromBody] MembershipRequest body, string membershipId);
+        public abstract System.Threading.Tasks.Task<MembershipResponse> MembershipsPUT([Microsoft.AspNetCore.Mvc.FromBody] MembershipRequest body, string membershipId);
 
         /// <summary>
         /// Cancelar membresía
         /// </summary>
         /// <returns>Membresía cancelada</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("memberships/{membershipId}")]
-        public abstract System.Threading.Tasks.Task MembershipsDELETEDELETE(string membershipId);
+        public abstract System.Threading.Tasks.Task MembershipsDELETE(string membershipId);
 
         /// <summary>
         /// KPIs y actividad reciente del panel administrativo
@@ -568,7 +568,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </remarks>
         /// <returns>Sincronización exitosa</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("surfscores/sync/{circuitId}")]
-        public abstract System.Threading.Tasks.Task<Response10> Sync(string circuitId);
+        public abstract System.Threading.Tasks.Task<Response8> Sync(string circuitId);
 
     }
 
@@ -674,6 +674,21 @@ namespace AlasApp.AlasApi.Api.Controllers
 
         [System.Runtime.Serialization.EnumMember(Value = @"Solo invitación")]
         Solo_invitación = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum EventType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Regular")]
+        Regular = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Prime")]
+        Prime = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SuperPrime")]
+        SuperPrime = 2,
 
     }
 
@@ -1046,14 +1061,13 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class AuthenticatedUser
     {
         [Newtonsoft.Json.JsonConstructor]
-        public AuthenticatedUser(AdminRole? @adminRole, string? @competitorId, string @email, string @fullName, string @id, UserType @tipo)
+        public AuthenticatedUser(AdminRole? @adminRole, string @email, string @fullName, string @id, UserType @tipo)
         {
             this.Id = @id;
             this.Email = @email;
             this.FullName = @fullName;
             this.Tipo = @tipo;
             this.AdminRole = @adminRole;
-            this.CompetitorId = @competitorId;
         }
 
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1072,12 +1086,6 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("adminRole", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public AdminRole? AdminRole { get; }
-
-        /// <summary>
-        /// Id del competidor vinculado a esta cuenta (solo si tipo=competidor).
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("competitorId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? CompetitorId { get; }
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
@@ -1430,7 +1438,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventRequest(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string? @imagenUrl, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, string @surfScoresCode)
+        public EventRequest(EventAccessType @accessType, string? @auspiciador, int @capacidadMaxima, string @circuitId, string @ciudad, EventStatusAdmin @estado, EventType @eventType, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string? @imagenUrl, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, string @surfScoresCode)
         {
             this.Nombre = @nombre;
             this.CircuitId = @circuitId;
@@ -1439,11 +1447,13 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.Pais = @pais;
             this.Ciudad = @ciudad;
             this.Playa = @playa;
+            this.Auspiciador = @auspiciador;
             this.Stars = @stars;
             this.CapacidadMaxima = @capacidadMaxima;
             this.PrizeAmountUsd = @prizeAmountUsd;
-            this.SurfScoresCode = @surfScoresCode;
             this.ImagenUrl = @imagenUrl;
+            this.SurfScoresCode = @surfScoresCode;
+            this.EventType = @eventType;
             this.AccessType = @accessType;
             this.Estado = @estado;
         }
@@ -1478,8 +1488,11 @@ namespace AlasApp.AlasApi.Api.Controllers
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Playa { get; }
 
+        [Newtonsoft.Json.JsonProperty("auspiciador", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? Auspiciador { get; }
+
         [Newtonsoft.Json.JsonProperty("stars", Required = Newtonsoft.Json.Required.Always)]
-        [System.ComponentModel.DataAnnotations.Range(1, 5)]
+        [System.ComponentModel.DataAnnotations.Range(1, 7)]
         public int Stars { get; }
 
         [Newtonsoft.Json.JsonProperty("capacidadMaxima", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1488,14 +1501,15 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("prizeAmountUsd", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public float PrizeAmountUsd { get; }
 
+        [Newtonsoft.Json.JsonProperty("imagenUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? ImagenUrl { get; }
+
         [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string SurfScoresCode { get; }
 
-        /// <summary>
-        /// URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("imagenUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string? ImagenUrl { get; }
+        [Newtonsoft.Json.JsonProperty("eventType", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public EventType EventType { get; }
 
         [Newtonsoft.Json.JsonProperty("accessType", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
@@ -1520,8 +1534,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventResponse : EventRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventResponse(EventAccessType @accessType, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string @id, string? @imagenUrl, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
-            : base(accessType, capacidadMaxima, circuitId, ciudad, estado, fechaFin, fechaInicio, imagenUrl, nombre, pais, playa, prizeAmountUsd, stars, surfScoresCode)
+        public EventResponse(EventAccessType @accessType, string? @auspiciador, int @capacidadMaxima, string @circuitId, string @ciudad, System.DateTimeOffset @createdAt, int @enrolledCount, EventStatusAdmin @estado, EventType @eventType, System.DateTimeOffset @fechaFin, System.DateTimeOffset @fechaInicio, string @id, string? @imagenUrl, string @lugar, string @nombre, string @pais, string @playa, float @prizeAmountUsd, int @stars, EventStatusPublic @statusPublic, string @surfScoresCode, System.DateTimeOffset @updatedAt)
+            : base(accessType, auspiciador, capacidadMaxima, circuitId, ciudad, estado, eventType, fechaFin, fechaInicio, imagenUrl, nombre, pais, playa, prizeAmountUsd, stars, surfScoresCode)
         {
             this.Id = @id;
             this.EnrolledCount = @enrolledCount;
@@ -1583,12 +1597,11 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventCategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventCategoryRequest(int? @capacidad, string @categoryId, float? @customTariffCop, float? @customTariffUsd, int? @stars)
+        public EventCategoryRequest(int? @capacidad, string @categoryId, float? @customTariffUsd, int? @stars)
         {
             this.CategoryId = @categoryId;
             this.Stars = @stars;
             this.CustomTariffUsd = @customTariffUsd;
-            this.CustomTariffCop = @customTariffCop;
             this.Capacidad = @capacidad;
         }
 
@@ -1597,10 +1610,10 @@ namespace AlasApp.AlasApi.Api.Controllers
         public string CategoryId { get; }
 
         /// <summary>
-        /// Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento.
+        /// null hereda el nivel de estrellas del evento
         /// </summary>
         [Newtonsoft.Json.JsonProperty("stars", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.ComponentModel.DataAnnotations.Range(1, 5)]
+        [System.ComponentModel.DataAnnotations.Range(1, 7)]
         public int? Stars { get; }
 
         /// <summary>
@@ -1608,9 +1621,6 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         [Newtonsoft.Json.JsonProperty("customTariffUsd", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public float? CustomTariffUsd { get; }
-
-        [Newtonsoft.Json.JsonProperty("customTariffCop", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public float? CustomTariffCop { get; }
 
         [Newtonsoft.Json.JsonProperty("capacidad", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public int? Capacidad { get; }
@@ -1630,26 +1640,54 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class EventCategoryResponse : EventCategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public EventCategoryResponse(int? @capacidad, string @categoryId, string @categoryName, float? @customTariffCop, float? @customTariffUsd, float @effectiveTariffCop, float @effectiveTariffUsd, int @enrolledCount, int? @stars)
-            : base(capacidad, categoryId, customTariffCop, customTariffUsd, stars)
+        public EventCategoryResponse(int? @capacidad, string @categoryId, string @categoryName, float? @customTariffUsd, float @effectiveTariffUsd, int @enrolledCount, CategoryGender @gender, int? @stars)
+            : base(capacidad, categoryId, customTariffUsd, stars)
         {
             this.CategoryName = @categoryName;
+            this.Gender = @gender;
             this.EffectiveTariffUsd = @effectiveTariffUsd;
-            this.EffectiveTariffCop = @effectiveTariffCop;
             this.EnrolledCount = @enrolledCount;
         }
 
         [Newtonsoft.Json.JsonProperty("categoryName", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string CategoryName { get; }
 
+        [Newtonsoft.Json.JsonProperty("gender", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public CategoryGender Gender { get; }
+
         [Newtonsoft.Json.JsonProperty("effectiveTariffUsd", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public float EffectiveTariffUsd { get; }
 
-        [Newtonsoft.Json.JsonProperty("effectiveTariffCop", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public float EffectiveTariffCop { get; }
-
         [Newtonsoft.Json.JsonProperty("enrolledCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public int EnrolledCount { get; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class EventCategoryListResponse
+    {
+        [Newtonsoft.Json.JsonConstructor]
+        public EventCategoryListResponse(System.Collections.Generic.List<EventCategoryResponse> @data, bool @useCircuitTariffs)
+        {
+            this.UseCircuitTariffs = @useCircuitTariffs;
+            this.Data = @data;
+        }
+
+        [Newtonsoft.Json.JsonProperty("useCircuitTariffs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool UseCircuitTariffs { get; }
+
+        [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<EventCategoryResponse> Data { get; }
+
+        private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
+
+        [Newtonsoft.Json.JsonExtensionData]
+        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
+        {
+            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
+            set { _additionalProperties = value; }
+        }
 
     }
 
@@ -1776,7 +1814,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         }
 
         [Newtonsoft.Json.JsonProperty("starLevel", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        [System.ComponentModel.DataAnnotations.Range(1, 5)]
+        [System.ComponentModel.DataAnnotations.Range(1, 7)]
         public int StarLevel { get; }
 
     }
@@ -3871,61 +3909,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class Response
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response(System.Collections.Generic.List<EventCategoryResponse> @data, bool @useCircuitTariffs)
-        {
-            this.UseCircuitTariffs = @useCircuitTariffs;
-            this.Data = @data;
-        }
-
-        [Newtonsoft.Json.JsonProperty("useCircuitTariffs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool UseCircuitTariffs { get; }
-
-        [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<EventCategoryResponse> Data { get; }
-
-        private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
-
-        [Newtonsoft.Json.JsonExtensionData]
-        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-        {
-            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-            set { _additionalProperties = value; }
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response2
-    {
-        [Newtonsoft.Json.JsonConstructor]
-        public Response2(System.Collections.Generic.List<EventCategoryResponse> @data, bool @useCircuitTariffs)
-        {
-            this.UseCircuitTariffs = @useCircuitTariffs;
-            this.Data = @data;
-        }
-
-        [Newtonsoft.Json.JsonProperty("useCircuitTariffs", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool UseCircuitTariffs { get; }
-
-        [Newtonsoft.Json.JsonProperty("data", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<EventCategoryResponse> Data { get; }
-
-        private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
-
-        [Newtonsoft.Json.JsonExtensionData]
-        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-        {
-            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-            set { _additionalProperties = value; }
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response3
-    {
-        [Newtonsoft.Json.JsonConstructor]
-        public Response3(string @attribution, System.Collections.Generic.List<EventResultResponse> @data)
+        public Response(string @attribution, System.Collections.Generic.List<EventResultResponse> @data)
         {
             this.Attribution = @attribution;
             this.Data = @data;
@@ -3949,10 +3933,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response4
+    public partial class Response2
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response4(System.Collections.Generic.List<EventResultResponse> @data)
+        public Response2(System.Collections.Generic.List<EventResultResponse> @data)
         {
             this.Data = @data;
         }
@@ -3972,10 +3956,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response5
+    public partial class Response3
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response5(System.Collections.Generic.List<PrizeDistributionRow> @data, int @stars)
+        public Response3(System.Collections.Generic.List<PrizeDistributionRow> @data, int @stars)
         {
             this.Stars = @stars;
             this.Data = @data;
@@ -3999,10 +3983,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response6
+    public partial class Response4
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response6(System.Collections.Generic.List<CategoryResponse> @data)
+        public Response4(System.Collections.Generic.List<CategoryResponse> @data)
         {
             this.Data = @data;
         }
@@ -4022,10 +4006,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response7
+    public partial class Response5
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response7(System.Collections.Generic.List<TariffResponse> @data)
+        public Response5(System.Collections.Generic.List<TariffResponse> @data)
         {
             this.Data = @data;
         }
@@ -4047,10 +4031,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response8
+    public partial class Response6
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response8(System.Collections.Generic.List<CalendarEventResponse> @data)
+        public Response6(System.Collections.Generic.List<CalendarEventResponse> @data)
         {
             this.Data = @data;
         }
@@ -4070,10 +4054,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response9
+    public partial class Response7
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response9(System.Collections.Generic.List<Data> @data)
+        public Response7(System.Collections.Generic.List<Data> @data)
         {
             this.Data = @data;
         }
@@ -4093,10 +4077,10 @@ namespace AlasApp.AlasApi.Api.Controllers
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Response10
+    public partial class Response8
     {
         [Newtonsoft.Json.JsonConstructor]
-        public Response10(string @circuitCode, int @recordsUpdated, System.DateTimeOffset @syncedAt)
+        public Response8(string @circuitCode, int @recordsUpdated, System.DateTimeOffset @syncedAt)
         {
             this.SyncedAt = @syncedAt;
             this.RecordsUpdated = @recordsUpdated;

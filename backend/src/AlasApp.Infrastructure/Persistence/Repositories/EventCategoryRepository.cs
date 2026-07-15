@@ -31,9 +31,6 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
                 var effectiveTariffUsd = @event.UseCircuitTariffs
                     ? tariff?.Usd ?? 0m
                     : x.CustomTariffUsd ?? tariff?.Usd ?? 0m;
-                var effectiveTariffCop = @event.UseCircuitTariffs
-                    ? tariff?.Cop ?? 0m
-                    : x.CustomTariffCop ?? tariff?.Cop ?? 0m;
 
                 return new EventCategoryDto(
                     x.CategoryId,
@@ -41,10 +38,8 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
                     x.Category.Gender,
                     x.Stars,
                     x.CustomTariffUsd,
-                    x.CustomTariffCop,
                     x.Capacidad,
                     effectiveTariffUsd,
-                    effectiveTariffCop,
                     0);
             })
             .ToList();
@@ -76,7 +71,6 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
                 x.CategoryId,
                 x.Stars,
                 x.CustomTariffUsd,
-                x.CustomTariffCop,
                 x.Capacidad))
             .ToList();
     }

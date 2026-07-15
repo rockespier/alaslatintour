@@ -30,7 +30,6 @@ public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomW
                 {
                     categoryId,
                     customTariffUsd = 95,
-                    customTariffCop = 380000,
                     capacidad = 5
                 }
             }

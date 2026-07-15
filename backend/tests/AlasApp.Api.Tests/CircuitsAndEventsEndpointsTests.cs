@@ -102,10 +102,12 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
             pais = "Perú",
             ciudad = "Chicama",
             playa = "Roca Bruja",
-            stars = 3,
+            auspiciador = "Monster Energy",
+            stars = 6,
             capacidadMaxima = 60,
             prizeAmountUsd = 5000,
             surfScoresCode = "RBC-2026",
+            eventType = "Prime",
             accessType = "Abierto",
             estado = "Activo"
         });
@@ -116,11 +118,16 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         var eventId = createdEvent.RootElement.GetProperty("id").GetString();
         Assert.Equal("Roca Bruja Classic", createdEvent.RootElement.GetProperty("nombre").GetString());
         Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", createdEvent.RootElement.GetProperty("imagenUrl").GetString());
+        Assert.Equal("Monster Energy", createdEvent.RootElement.GetProperty("auspiciador").GetString());
+        Assert.Equal("Prime", createdEvent.RootElement.GetProperty("eventType").GetString());
+        Assert.Equal(6, createdEvent.RootElement.GetProperty("stars").GetInt32());
 
         var getEventResponse = await _client.GetAsync($"/v1/events/{eventId}");
         Assert.Equal(HttpStatusCode.OK, getEventResponse.StatusCode);
         using var getEventJson = await ReadJsonAsync(getEventResponse);
         Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", getEventJson.RootElement.GetProperty("imagenUrl").GetString());
+        Assert.Equal("Monster Energy", getEventJson.RootElement.GetProperty("auspiciador").GetString());
+        Assert.Equal("Prime", getEventJson.RootElement.GetProperty("eventType").GetString());
 
         var listEventsResponse = await _client.GetAsync($"/v1/events?circuitId={circuitId}&status=Inscripciones%20Abiertas");
         var listEventsBody = await listEventsResponse.Content.ReadAsStringAsync();
@@ -132,6 +139,8 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         Assert.Equal(HttpStatusCode.OK, listEventsResponse.StatusCode);
         using var listEventsJson = JsonDocument.Parse(listEventsBody);
         Assert.Equal("https://cdn.test/events/roca-bruja-poster.jpg", listEventsJson.RootElement.GetProperty("data")[0].GetProperty("imagenUrl").GetString());
+        Assert.Equal("Monster Energy", listEventsJson.RootElement.GetProperty("data")[0].GetProperty("auspiciador").GetString());
+        Assert.Equal("Prime", listEventsJson.RootElement.GetProperty("data")[0].GetProperty("eventType").GetString());
 
         var updateEventResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}", new
         {
@@ -143,10 +152,12 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
             pais = "Perú",
             ciudad = "Chicama",
             playa = "Roca Bruja",
-            stars = 4,
+            auspiciador = "Red Bull",
+            stars = 7,
             capacidadMaxima = 80,
             prizeAmountUsd = 7500,
             surfScoresCode = "RBC-2026-UPD",
+            eventType = "SuperPrime",
             accessType = "Restringido",
             estado = "Borrador"
         });
@@ -161,6 +172,9 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         Assert.Equal(HttpStatusCode.OK, updateEventResponse.StatusCode);
         using var updatedEvent = JsonDocument.Parse(updateEventBody);
         Assert.Equal("https://cdn.test/events/roca-bruja-updated.jpg", updatedEvent.RootElement.GetProperty("imagenUrl").GetString());
+        Assert.Equal("Red Bull", updatedEvent.RootElement.GetProperty("auspiciador").GetString());
+        Assert.Equal("SuperPrime", updatedEvent.RootElement.GetProperty("eventType").GetString());
+        Assert.Equal(7, updatedEvent.RootElement.GetProperty("stars").GetInt32());
 
         var deleteCircuitResponse = await _client.DeleteAsync($"/v1/circuits/{circuitId}");
         Assert.Equal(HttpStatusCode.Conflict, deleteCircuitResponse.StatusCode);

@@ -188,6 +188,8 @@ public sealed class UpsertEventResultsCommandHandler(
             3 => row.Star3,
             4 => row.Star4,
             5 => row.Star5,
+            6 => row.Star6,
+            7 => row.Star7,
             _ => 0
         };
     }
@@ -209,6 +211,8 @@ public sealed class UpsertEventResultsCommandHandler(
             3 => row.Star3Percent,
             4 => row.Star4Percent,
             5 => row.Star5Percent,
+            6 => row.Star6Percent,
+            7 => row.Star7Percent,
             _ => 0
         };
     }

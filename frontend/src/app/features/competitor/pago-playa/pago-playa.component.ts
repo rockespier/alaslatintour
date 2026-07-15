@@ -75,10 +75,21 @@ const TOTAL_SECONDS = 24 * 3600;
                 </div>
               }
 
-              <button (click)="requestToken()" [disabled]="submitting()"
-                class="px-8 py-3 rounded-md bg-orange-brand hover:bg-orange-light disabled:opacity-60 text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
-                {{ submitting() ? 'Enviando solicitud...' : 'Solicitar código' }}
-              </button>
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button (click)="requestToken()" [disabled]="submitting()"
+                  class="px-8 py-3 rounded-md bg-orange-brand hover:bg-orange-light disabled:opacity-60 text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
+                  {{ submitting() ? 'Enviando solicitud...' : 'Solicitar código' }}
+                </button>
+
+                <button (click)="openTokenEntry()"
+                  class="px-8 py-3 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                  Ya tengo un token
+                </button>
+              </div>
+
+              <p class="mt-4 text-xs text-text-muted">
+                Si ya recibiste el código por correo, puedes ingresarlo directamente aquí.
+              </p>
             </div>
           }
 
@@ -264,6 +275,12 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
     } finally {
       this.submitting.set(false);
     }
+  }
+
+  openTokenEntry(): void {
+    this.errorMsg.set('');
+    this.startCountdown();
+    this.state.set('enter_token');
   }
 
   async redeemToken(): Promise<void> {

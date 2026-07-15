@@ -309,7 +309,7 @@ export class Client {
      * @param modalidad (optional) 
      * @return Lista de circuitos
      */
-    circuitsGETGET(page: number | undefined, limit: number | undefined, status: CircuitStatus | undefined, year: number | undefined, modalidad: CircuitModalidad | undefined): Promise<CircuitListResponse> {
+    circuitsGET(page: number | undefined, limit: number | undefined, status: CircuitStatus | undefined, year: number | undefined, modalidad: CircuitModalidad | undefined): Promise<CircuitListResponse> {
         let url_ = this.baseUrl + "/circuits?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -341,11 +341,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsGETGET(_response);
+            return this.processCircuitsGET(_response);
         });
     }
 
-    protected processCircuitsGETGET(response: Response): Promise<CircuitListResponse> {
+    protected processCircuitsGET(response: Response): Promise<CircuitListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -374,7 +374,7 @@ export class Client {
      * Crear circuito
      * @return Circuito creado
      */
-    circuitsPOSTPOST(body: CircuitRequest): Promise<CircuitResponse> {
+    circuitsPOST(body: CircuitRequest): Promise<CircuitResponse> {
         let url_ = this.baseUrl + "/circuits";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -390,11 +390,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsPOSTPOST(_response);
+            return this.processCircuitsPOST(_response);
         });
     }
 
-    protected processCircuitsPOSTPOST(response: Response): Promise<CircuitResponse> {
+    protected processCircuitsPOST(response: Response): Promise<CircuitResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -430,7 +430,7 @@ export class Client {
      * Obtener circuito por ID
      * @return Circuito encontrado
      */
-    circuitsGETGET2(circuitId: string): Promise<CircuitResponse> {
+    circuitsGET2(circuitId: string): Promise<CircuitResponse> {
         let url_ = this.baseUrl + "/circuits/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -445,11 +445,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsGETGET2(_response);
+            return this.processCircuitsGET2(_response);
         });
     }
 
-    protected processCircuitsGETGET2(response: Response): Promise<CircuitResponse> {
+    protected processCircuitsGET2(response: Response): Promise<CircuitResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -485,7 +485,7 @@ export class Client {
      * Actualizar circuito
      * @return Circuito actualizado
      */
-    circuitsPUTPUT(body: CircuitRequest, circuitId: string): Promise<CircuitResponse> {
+    circuitsPUT(body: CircuitRequest, circuitId: string): Promise<CircuitResponse> {
         let url_ = this.baseUrl + "/circuits/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -504,11 +504,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsPUTPUT(_response);
+            return this.processCircuitsPUT(_response);
         });
     }
 
-    protected processCircuitsPUTPUT(response: Response): Promise<CircuitResponse> {
+    protected processCircuitsPUT(response: Response): Promise<CircuitResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -551,7 +551,7 @@ export class Client {
      * Eliminar circuito
      * @return Circuito eliminado
      */
-    circuitsDELETEDELETE(circuitId: string): Promise<void> {
+    circuitsDELETE(circuitId: string): Promise<void> {
         let url_ = this.baseUrl + "/circuits/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -565,11 +565,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsDELETEDELETE(_response);
+            return this.processCircuitsDELETE(_response);
         });
     }
 
-    protected processCircuitsDELETEDELETE(response: Response): Promise<void> {
+    protected processCircuitsDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -616,7 +616,7 @@ export class Client {
      * @param stars (optional) 
      * @return Lista de eventos
      */
-    eventsGETGET(page: number | undefined, limit: number | undefined, circuitId: string | undefined, status: EventStatusPublic | undefined, country: string | undefined, year: number | undefined, stars: number | undefined): Promise<EventListResponse> {
+    eventsGET(page: number | undefined, limit: number | undefined, circuitId: string | undefined, status: EventStatusPublic | undefined, country: string | undefined, year: number | undefined, stars: number | undefined): Promise<EventListResponse> {
         let url_ = this.baseUrl + "/events?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -656,11 +656,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsGETGET(_response);
+            return this.processEventsGET(_response);
         });
     }
 
-    protected processEventsGETGET(response: Response): Promise<EventListResponse> {
+    protected processEventsGET(response: Response): Promise<EventListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -689,7 +689,7 @@ export class Client {
      * Crear evento
      * @return Evento creado
      */
-    eventsPOSTPOST(body: EventRequest): Promise<EventResponse> {
+    eventsPOST(body: EventRequest): Promise<EventResponse> {
         let url_ = this.baseUrl + "/events";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -705,11 +705,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsPOSTPOST(_response);
+            return this.processEventsPOST(_response);
         });
     }
 
-    protected processEventsPOSTPOST(response: Response): Promise<EventResponse> {
+    protected processEventsPOST(response: Response): Promise<EventResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -745,7 +745,7 @@ export class Client {
      * Obtener evento por ID
      * @return Evento encontrado
      */
-    eventsGETGET2(eventId: string): Promise<EventResponse> {
+    eventsGET2(eventId: string): Promise<EventResponse> {
         let url_ = this.baseUrl + "/events/{eventId}";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -760,11 +760,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsGETGET2(_response);
+            return this.processEventsGET2(_response);
         });
     }
 
-    protected processEventsGETGET2(response: Response): Promise<EventResponse> {
+    protected processEventsGET2(response: Response): Promise<EventResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -800,7 +800,7 @@ export class Client {
      * Actualizar evento
      * @return Evento actualizado
      */
-    eventsPUTPUT(body: EventRequest, eventId: string): Promise<EventResponse> {
+    eventsPUT(body: EventRequest, eventId: string): Promise<EventResponse> {
         let url_ = this.baseUrl + "/events/{eventId}";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -819,11 +819,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsPUTPUT(_response);
+            return this.processEventsPUT(_response);
         });
     }
 
-    protected processEventsPUTPUT(response: Response): Promise<EventResponse> {
+    protected processEventsPUT(response: Response): Promise<EventResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -866,7 +866,7 @@ export class Client {
      * Eliminar evento
      * @return Evento eliminado
      */
-    eventsDELETEDELETE(eventId: string): Promise<void> {
+    eventsDELETE(eventId: string): Promise<void> {
         let url_ = this.baseUrl + "/events/{eventId}";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -880,11 +880,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsDELETEDELETE(_response);
+            return this.processEventsDELETE(_response);
         });
     }
 
-    protected processEventsDELETEDELETE(response: Response): Promise<void> {
+    protected processEventsDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -924,7 +924,7 @@ export class Client {
      * Categorías habilitadas para el evento (con cupo y tarifas efectivas)
      * @return Categorías del evento
      */
-    categoriesGETGET(eventId: string): Promise<Anonymous> {
+    categoriesGET(eventId: string): Promise<EventCategoryListResponse> {
         let url_ = this.baseUrl + "/events/{eventId}/categories";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -939,18 +939,18 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesGETGET(_response);
+            return this.processCategoriesGET(_response);
         });
     }
 
-    protected processCategoriesGETGET(response: Response): Promise<Anonymous> {
+    protected processCategoriesGET(response: Response): Promise<EventCategoryListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous.fromJS(resultData200);
+            result200 = EventCategoryListResponse.fromJS(resultData200);
             return result200;
             });
         } else if (status === 404) {
@@ -972,14 +972,14 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous>(null as any);
+        return Promise.resolve<EventCategoryListResponse>(null as any);
     }
 
     /**
      * Actualizar categorías y tarifas habilitadas para el evento
      * @return Categorías actualizadas
      */
-    categoriesPUTPUT(body: Body, eventId: string): Promise<Anonymous2> {
+    categoriesPUT(body: Body, eventId: string): Promise<EventCategoryListResponse> {
         let url_ = this.baseUrl + "/events/{eventId}/categories";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -998,18 +998,18 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesPUTPUT(_response);
+            return this.processCategoriesPUT(_response);
         });
     }
 
-    protected processCategoriesPUTPUT(response: Response): Promise<Anonymous2> {
+    protected processCategoriesPUT(response: Response): Promise<EventCategoryListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous2.fromJS(resultData200);
+            result200 = EventCategoryListResponse.fromJS(resultData200);
             return result200;
             });
         } else if (status === 400) {
@@ -1038,7 +1038,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous2>(null as any);
+        return Promise.resolve<EventCategoryListResponse>(null as any);
     }
 
     /**
@@ -1049,7 +1049,7 @@ export class Client {
      * @param status (optional) 
      * @return Lista de inscritos
      */
-    inscriptionsGETGET(page: number | undefined, limit: number | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined, eventId: string): Promise<AdminInscriptionListResponse> {
+    inscriptionsGET(page: number | undefined, limit: number | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined, eventId: string): Promise<AdminInscriptionListResponse> {
         let url_ = this.baseUrl + "/events/{eventId}/inscriptions?";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -1080,11 +1080,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGETGET(_response);
+            return this.processInscriptionsGET(_response);
         });
     }
 
-    protected processInscriptionsGETGET(response: Response): Promise<AdminInscriptionListResponse> {
+    protected processInscriptionsGET(response: Response): Promise<AdminInscriptionListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1121,7 +1121,7 @@ export class Client {
      * @param categoryId (optional) 
      * @return Resultados con atribución obligatoria de SurfScores
      */
-    resultsGETGET(categoryId: string | undefined, eventId: string): Promise<Anonymous3> {
+    resultsGET(categoryId: string | undefined, eventId: string): Promise<Anonymous> {
         let url_ = this.baseUrl + "/events/{eventId}/results?";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -1140,11 +1140,125 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processResultsGETGET(_response);
+            return this.processResultsGET(_response);
         });
     }
 
-    protected processResultsGETGET(response: Response): Promise<Anonymous3> {
+    protected processResultsGET(response: Response): Promise<Anonymous> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Anonymous.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = ErrorResponse.fromJS(resultData404);
+            return throwException("Recurso no encontrado", status, _responseText, _headers, result404);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ErrorResponse.fromJS(resultData500);
+            return throwException("Error interno del servidor", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Anonymous>(null as any);
+    }
+
+    /**
+     * Registrar resultados de un evento
+     * @return Resultados registrados
+     */
+    resultsPOST(body: Body2, eventId: string): Promise<Anonymous2> {
+        let url_ = this.baseUrl + "/events/{eventId}/results";
+        if (eventId === undefined || eventId === null)
+            throw new globalThis.Error("The parameter 'eventId' must be defined.");
+        url_ = url_.replace("{eventId}", encodeURIComponent("" + eventId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processResultsPOST(_response);
+        });
+    }
+
+    protected processResultsPOST(response: Response): Promise<Anonymous2> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 201) {
+            return response.text().then((_responseText) => {
+            let result201: any = null;
+            let resultData201 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result201 = Anonymous2.fromJS(resultData201);
+            return result201;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationErrorResponse.fromJS(resultData400);
+            return throwException("Error de validaci\u00f3n en la solicitud", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ErrorResponse.fromJS(resultData500);
+            return throwException("Error interno del servidor", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Anonymous2>(null as any);
+    }
+
+    /**
+     * Distribución de premios según el nivel de estrellas del evento
+     * @return Tabla de premios
+     */
+    prizeDistribution(eventId: string): Promise<Anonymous3> {
+        let url_ = this.baseUrl + "/events/{eventId}/prize-distribution";
+        if (eventId === undefined || eventId === null)
+            throw new globalThis.Error("The parameter 'eventId' must be defined.");
+        url_ = url_.replace("{eventId}", encodeURIComponent("" + eventId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processPrizeDistribution(_response);
+        });
+    }
+
+    protected processPrizeDistribution(response: Response): Promise<Anonymous3> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1177,48 +1291,39 @@ export class Client {
     }
 
     /**
-     * Registrar resultados de un evento
-     * @return Resultados registrados
+     * Listar categorías de surf
+     * @param status (optional) 
+     * @return Lista de categorías
      */
-    resultsPOSTPOST(body: Body2, eventId: string): Promise<Anonymous4> {
-        let url_ = this.baseUrl + "/events/{eventId}/results";
-        if (eventId === undefined || eventId === null)
-            throw new globalThis.Error("The parameter 'eventId' must be defined.");
-        url_ = url_.replace("{eventId}", encodeURIComponent("" + eventId));
+    categoriesGET2(status: CategoryStatus | undefined): Promise<Anonymous4> {
+        let url_ = this.baseUrl + "/categories?";
+        if (status === null)
+            throw new globalThis.Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_: RequestInit = {
-            body: content_,
-            method: "POST",
+            method: "GET",
             headers: {
-                "Content-Type": "application/json",
                 "Accept": "application/json"
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processResultsPOSTPOST(_response);
+            return this.processCategoriesGET2(_response);
         });
     }
 
-    protected processResultsPOSTPOST(response: Response): Promise<Anonymous4> {
+    protected processCategoriesGET2(response: Response): Promise<Anonymous4> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 201) {
+        if (status === 200) {
             return response.text().then((_responseText) => {
-            let result201: any = null;
-            let resultData201 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result201 = Anonymous4.fromJS(resultData201);
-            return result201;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationErrorResponse.fromJS(resultData400);
-            return throwException("Error de validaci\u00f3n en la solicitud", status, _responseText, _headers, result400);
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Anonymous4.fromJS(resultData200);
+            return result200;
             });
         } else if (status === 500) {
             return response.text().then((_responseText) => {
@@ -1236,115 +1341,10 @@ export class Client {
     }
 
     /**
-     * Distribución de premios según el nivel de estrellas del evento
-     * @return Tabla de premios
-     */
-    prizeDistribution(eventId: string): Promise<Anonymous5> {
-        let url_ = this.baseUrl + "/events/{eventId}/prize-distribution";
-        if (eventId === undefined || eventId === null)
-            throw new globalThis.Error("The parameter 'eventId' must be defined.");
-        url_ = url_.replace("{eventId}", encodeURIComponent("" + eventId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPrizeDistribution(_response);
-        });
-    }
-
-    protected processPrizeDistribution(response: Response): Promise<Anonymous5> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous5.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 404) {
-            return response.text().then((_responseText) => {
-            let result404: any = null;
-            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result404 = ErrorResponse.fromJS(resultData404);
-            return throwException("Recurso no encontrado", status, _responseText, _headers, result404);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ErrorResponse.fromJS(resultData500);
-            return throwException("Error interno del servidor", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<Anonymous5>(null as any);
-    }
-
-    /**
-     * Listar categorías de surf
-     * @param status (optional) 
-     * @return Lista de categorías
-     */
-    categoriesGETGET2(status: CategoryStatus | undefined): Promise<Anonymous6> {
-        let url_ = this.baseUrl + "/categories?";
-        if (status === null)
-            throw new globalThis.Error("The parameter 'status' cannot be null.");
-        else if (status !== undefined)
-            url_ += "status=" + encodeURIComponent("" + status) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesGETGET2(_response);
-        });
-    }
-
-    protected processCategoriesGETGET2(response: Response): Promise<Anonymous6> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous6.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ErrorResponse.fromJS(resultData500);
-            return throwException("Error interno del servidor", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<Anonymous6>(null as any);
-    }
-
-    /**
      * Crear categoría
      * @return Categoría creada
      */
-    categoriesPOSTPOST(body: CategoryRequest): Promise<CategoryResponse> {
+    categoriesPOST(body: CategoryRequest): Promise<CategoryResponse> {
         let url_ = this.baseUrl + "/categories";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1360,11 +1360,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesPOSTPOST(_response);
+            return this.processCategoriesPOST(_response);
         });
     }
 
-    protected processCategoriesPOSTPOST(response: Response): Promise<CategoryResponse> {
+    protected processCategoriesPOST(response: Response): Promise<CategoryResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -1400,7 +1400,7 @@ export class Client {
      * Obtener categoría por ID
      * @return Categoría encontrada
      */
-    categoriesGETGET3(categoryId: string): Promise<CategoryResponse> {
+    categoriesGET3(categoryId: string): Promise<CategoryResponse> {
         let url_ = this.baseUrl + "/categories/{categoryId}";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -1415,11 +1415,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesGETGET3(_response);
+            return this.processCategoriesGET3(_response);
         });
     }
 
-    protected processCategoriesGETGET3(response: Response): Promise<CategoryResponse> {
+    protected processCategoriesGET3(response: Response): Promise<CategoryResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1455,7 +1455,7 @@ export class Client {
      * Actualizar categoría (incluye categoría sucesiva por límite de edad)
      * @return Categoría actualizada
      */
-    categoriesPUTPUT2(body: CategoryRequest, categoryId: string): Promise<CategoryResponse> {
+    categoriesPUT2(body: CategoryRequest, categoryId: string): Promise<CategoryResponse> {
         let url_ = this.baseUrl + "/categories/{categoryId}";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -1474,11 +1474,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesPUTPUT2(_response);
+            return this.processCategoriesPUT2(_response);
         });
     }
 
-    protected processCategoriesPUTPUT2(response: Response): Promise<CategoryResponse> {
+    protected processCategoriesPUT2(response: Response): Promise<CategoryResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1521,7 +1521,7 @@ export class Client {
      * Eliminar categoría
      * @return Categoría eliminada
      */
-    categoriesDELETEDELETE(categoryId: string): Promise<void> {
+    categoriesDELETE(categoryId: string): Promise<void> {
         let url_ = this.baseUrl + "/categories/{categoryId}";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -1535,11 +1535,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesDELETEDELETE(_response);
+            return this.processCategoriesDELETE(_response);
         });
     }
 
-    protected processCategoriesDELETEDELETE(response: Response): Promise<void> {
+    protected processCategoriesDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -1579,7 +1579,7 @@ export class Client {
      * Matriz de tarifas de la categoría (5 filas, una por nivel de estrellas)
      * @return Tarifas de la categoría
      */
-    tariffsGETGET(categoryId: string): Promise<Anonymous7> {
+    tariffsGET(categoryId: string): Promise<Anonymous5> {
         let url_ = this.baseUrl + "/categories/{categoryId}/tariffs";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -1594,18 +1594,18 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTariffsGETGET(_response);
+            return this.processTariffsGET(_response);
         });
     }
 
-    protected processTariffsGETGET(response: Response): Promise<Anonymous7> {
+    protected processTariffsGET(response: Response): Promise<Anonymous5> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous7.fromJS(resultData200);
+            result200 = Anonymous5.fromJS(resultData200);
             return result200;
             });
         } else if (status === 404) {
@@ -1627,14 +1627,14 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous7>(null as any);
+        return Promise.resolve<Anonymous5>(null as any);
     }
 
     /**
      * Actualizar tarifa para un nivel de estrellas específico
      * @return Tarifa actualizada
      */
-    tariffsPUTPUT(body: TariffRequest, categoryId: string, starLevel: number): Promise<TariffResponse> {
+    tariffsPUT(body: TariffRequest, categoryId: string, starLevel: number): Promise<TariffResponse> {
         let url_ = this.baseUrl + "/categories/{categoryId}/tariffs/{starLevel}";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -1656,11 +1656,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTariffsPUTPUT(_response);
+            return this.processTariffsPUT(_response);
         });
     }
 
-    protected processTariffsPUTPUT(response: Response): Promise<TariffResponse> {
+    protected processTariffsPUT(response: Response): Promise<TariffResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1709,7 +1709,7 @@ export class Client {
      * @param search (optional) 
      * @return Lista de competidores
      */
-    competitorsGETGET(page: number | undefined, limit: number | undefined, country: string | undefined, categoryId: string | undefined, licenseStatus: LicenseStatus | undefined, search: string | undefined): Promise<CompetitorListResponse> {
+    competitorsGET(page: number | undefined, limit: number | undefined, country: string | undefined, categoryId: string | undefined, licenseStatus: LicenseStatus | undefined, search: string | undefined): Promise<CompetitorListResponse> {
         let url_ = this.baseUrl + "/competitors?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -1745,11 +1745,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsGETGET(_response);
+            return this.processCompetitorsGET(_response);
         });
     }
 
-    protected processCompetitorsGETGET(response: Response): Promise<CompetitorListResponse> {
+    protected processCompetitorsGET(response: Response): Promise<CompetitorListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1834,7 +1834,7 @@ export class Client {
      * Obtener perfil del competidor
      * @return Perfil del competidor
      */
-    competitorsGETGET2(competitorId: string): Promise<CompetitorResponse> {
+    competitorsGET2(competitorId: string): Promise<CompetitorResponse> {
         let url_ = this.baseUrl + "/competitors/{competitorId}";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -1849,11 +1849,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsGETGET2(_response);
+            return this.processCompetitorsGET2(_response);
         });
     }
 
-    protected processCompetitorsGETGET2(response: Response): Promise<CompetitorResponse> {
+    protected processCompetitorsGET2(response: Response): Promise<CompetitorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1889,7 +1889,7 @@ export class Client {
      * Actualizar perfil del competidor (datos personales y deportivos)
      * @return Perfil actualizado
      */
-    competitorsPUTPUT(body: CompetitorRequest, competitorId: string): Promise<CompetitorResponse> {
+    competitorsPUT(body: CompetitorRequest, competitorId: string): Promise<CompetitorResponse> {
         let url_ = this.baseUrl + "/competitors/{competitorId}";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -1908,11 +1908,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsPUTPUT(_response);
+            return this.processCompetitorsPUT(_response);
         });
     }
 
-    protected processCompetitorsPUTPUT(response: Response): Promise<CompetitorResponse> {
+    protected processCompetitorsPUT(response: Response): Promise<CompetitorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1955,7 +1955,7 @@ export class Client {
      * Eliminar cuenta del competidor
      * @return Cuenta eliminada
      */
-    competitorsDELETEDELETE(competitorId: string): Promise<void> {
+    competitorsDELETE(competitorId: string): Promise<void> {
         let url_ = this.baseUrl + "/competitors/{competitorId}";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -1969,11 +1969,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsDELETEDELETE(_response);
+            return this.processCompetitorsDELETE(_response);
         });
     }
 
-    protected processCompetitorsDELETEDELETE(response: Response): Promise<void> {
+    protected processCompetitorsDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -2072,7 +2072,7 @@ export class Client {
      * Obtener preferencias de notificaciones
      * @return Preferencias actuales
      */
-    notificationsGETGET(competitorId: string): Promise<NotificationPreferencesResponse> {
+    notificationsGET(competitorId: string): Promise<NotificationPreferencesResponse> {
         let url_ = this.baseUrl + "/competitors/{competitorId}/notifications";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -2087,11 +2087,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNotificationsGETGET(_response);
+            return this.processNotificationsGET(_response);
         });
     }
 
-    protected processNotificationsGETGET(response: Response): Promise<NotificationPreferencesResponse> {
+    protected processNotificationsGET(response: Response): Promise<NotificationPreferencesResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2127,7 +2127,7 @@ export class Client {
      * Actualizar preferencias de notificaciones
      * @return Preferencias actualizadas
      */
-    notificationsPUTPUT(body: NotificationPreferencesRequest, competitorId: string): Promise<NotificationPreferencesResponse> {
+    notificationsPUT(body: NotificationPreferencesRequest, competitorId: string): Promise<NotificationPreferencesResponse> {
         let url_ = this.baseUrl + "/competitors/{competitorId}/notifications";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -2146,11 +2146,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNotificationsPUTPUT(_response);
+            return this.processNotificationsPUT(_response);
         });
     }
 
-    protected processNotificationsPUTPUT(response: Response): Promise<NotificationPreferencesResponse> {
+    protected processNotificationsPUT(response: Response): Promise<NotificationPreferencesResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2194,7 +2194,7 @@ export class Client {
      * @param status (optional) 
      * @return Inscripciones del competidor
      */
-    inscriptionsGETGET2(status: InscriptionStatusCompetitor | undefined, competitorId: string): Promise<InscriptionListResponse> {
+    inscriptionsGET2(status: InscriptionStatusCompetitor | undefined, competitorId: string): Promise<InscriptionListResponse> {
         let url_ = this.baseUrl + "/competitors/{competitorId}/inscriptions?";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -2213,11 +2213,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGETGET2(_response);
+            return this.processInscriptionsGET2(_response);
         });
     }
 
-    protected processInscriptionsGETGET2(response: Response): Promise<InscriptionListResponse> {
+    protected processInscriptionsGET2(response: Response): Promise<InscriptionListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2318,7 +2318,7 @@ export class Client {
      * Eventos inscritos del competidor (Mi perfil → Mi calendario)
      * @return Calendario de eventos
      */
-    calendar(competitorId: string): Promise<Anonymous8> {
+    calendar(competitorId: string): Promise<Anonymous6> {
         let url_ = this.baseUrl + "/competitors/{competitorId}/calendar";
         if (competitorId === undefined || competitorId === null)
             throw new globalThis.Error("The parameter 'competitorId' must be defined.");
@@ -2337,14 +2337,14 @@ export class Client {
         });
     }
 
-    protected processCalendar(response: Response): Promise<Anonymous8> {
+    protected processCalendar(response: Response): Promise<Anonymous6> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous8.fromJS(resultData200);
+            result200 = Anonymous6.fromJS(resultData200);
             return result200;
             });
         } else if (status === 404) {
@@ -2366,7 +2366,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous8>(null as any);
+        return Promise.resolve<Anonymous6>(null as any);
     }
 
     /**
@@ -2437,7 +2437,7 @@ export class Client {
      * @param status (optional) 
      * @return Lista de inscripciones
      */
-    inscriptionsGETGET3(page: number | undefined, limit: number | undefined, eventId: string | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined): Promise<AdminInscriptionListResponse> {
+    inscriptionsGET3(page: number | undefined, limit: number | undefined, eventId: string | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined): Promise<AdminInscriptionListResponse> {
         let url_ = this.baseUrl + "/inscriptions?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -2469,11 +2469,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGETGET3(_response);
+            return this.processInscriptionsGET3(_response);
         });
     }
 
-    protected processInscriptionsGETGET3(response: Response): Promise<AdminInscriptionListResponse> {
+    protected processInscriptionsGET3(response: Response): Promise<AdminInscriptionListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2502,7 +2502,7 @@ export class Client {
      * Crear inscripción (paso 3 del wizard de inscripción)
      * @return Inscripción creada
      */
-    inscriptionsPOSTPOST(body: InscriptionRequest): Promise<InscriptionResponse> {
+    inscriptionsPOST(body: InscriptionRequest): Promise<InscriptionResponse> {
         let url_ = this.baseUrl + "/inscriptions";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -2518,11 +2518,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsPOSTPOST(_response);
+            return this.processInscriptionsPOST(_response);
         });
     }
 
-    protected processInscriptionsPOSTPOST(response: Response): Promise<InscriptionResponse> {
+    protected processInscriptionsPOST(response: Response): Promise<InscriptionResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -2565,7 +2565,7 @@ export class Client {
      * Obtener inscripción por ID
      * @return Inscripción encontrada
      */
-    inscriptionsGETGET4(inscriptionId: string): Promise<InscriptionResponse> {
+    inscriptionsGET4(inscriptionId: string): Promise<InscriptionResponse> {
         let url_ = this.baseUrl + "/inscriptions/{inscriptionId}";
         if (inscriptionId === undefined || inscriptionId === null)
             throw new globalThis.Error("The parameter 'inscriptionId' must be defined.");
@@ -2580,11 +2580,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGETGET4(_response);
+            return this.processInscriptionsGET4(_response);
         });
     }
 
-    protected processInscriptionsGETGET4(response: Response): Promise<InscriptionResponse> {
+    protected processInscriptionsGET4(response: Response): Promise<InscriptionResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2620,7 +2620,7 @@ export class Client {
      * Actualizar inscripción (número de camiseta, estado, notas)
      * @return Inscripción actualizada
      */
-    inscriptionsPUTPUT(body: InscriptionUpdateRequest, inscriptionId: string): Promise<InscriptionResponse> {
+    inscriptionsPUT(body: InscriptionUpdateRequest, inscriptionId: string): Promise<InscriptionResponse> {
         let url_ = this.baseUrl + "/inscriptions/{inscriptionId}";
         if (inscriptionId === undefined || inscriptionId === null)
             throw new globalThis.Error("The parameter 'inscriptionId' must be defined.");
@@ -2639,11 +2639,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsPUTPUT(_response);
+            return this.processInscriptionsPUT(_response);
         });
     }
 
-    protected processInscriptionsPUTPUT(response: Response): Promise<InscriptionResponse> {
+    protected processInscriptionsPUT(response: Response): Promise<InscriptionResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2686,7 +2686,7 @@ export class Client {
      * Cancelar inscripción
      * @return Inscripción cancelada
      */
-    inscriptionsDELETEDELETE(inscriptionId: string): Promise<void> {
+    inscriptionsDELETE(inscriptionId: string): Promise<void> {
         let url_ = this.baseUrl + "/inscriptions/{inscriptionId}";
         if (inscriptionId === undefined || inscriptionId === null)
             throw new globalThis.Error("The parameter 'inscriptionId' must be defined.");
@@ -2700,11 +2700,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsDELETEDELETE(_response);
+            return this.processInscriptionsDELETE(_response);
         });
     }
 
-    protected processInscriptionsDELETEDELETE(response: Response): Promise<void> {
+    protected processInscriptionsDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -2750,7 +2750,7 @@ export class Client {
      * @param toDate (optional) 
      * @return Lista de pagos
      */
-    paymentsGETGET(page: number | undefined, limit: number | undefined, method: PaymentMethodEnum | undefined, status: PaymentStatusAdmin | undefined, fromDate: Date | undefined, toDate: Date | undefined): Promise<PaymentListResponse> {
+    paymentsGET(page: number | undefined, limit: number | undefined, method: PaymentMethodEnum | undefined, status: PaymentStatusAdmin | undefined, fromDate: Date | undefined, toDate: Date | undefined): Promise<PaymentListResponse> {
         let url_ = this.baseUrl + "/payments?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -2786,11 +2786,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPaymentsGETGET(_response);
+            return this.processPaymentsGET(_response);
         });
     }
 
-    protected processPaymentsGETGET(response: Response): Promise<PaymentListResponse> {
+    protected processPaymentsGET(response: Response): Promise<PaymentListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2819,7 +2819,7 @@ export class Client {
      * Registrar pago (callback de PayPal o confirmación de pago en playa)
      * @return Pago registrado
      */
-    paymentsPOSTPOST(body: PaymentRequest): Promise<PaymentResponse> {
+    paymentsPOST(body: PaymentRequest): Promise<PaymentResponse> {
         let url_ = this.baseUrl + "/payments";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -2835,11 +2835,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPaymentsPOSTPOST(_response);
+            return this.processPaymentsPOST(_response);
         });
     }
 
-    protected processPaymentsPOSTPOST(response: Response): Promise<PaymentResponse> {
+    protected processPaymentsPOST(response: Response): Promise<PaymentResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -2920,7 +2920,7 @@ export class Client {
      * Obtener pago por ID
      * @return Pago encontrado
      */
-    paymentsGETGET2(paymentId: string): Promise<PaymentResponse> {
+    paymentsGET2(paymentId: string): Promise<PaymentResponse> {
         let url_ = this.baseUrl + "/payments/{paymentId}";
         if (paymentId === undefined || paymentId === null)
             throw new globalThis.Error("The parameter 'paymentId' must be defined.");
@@ -2935,11 +2935,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPaymentsGETGET2(_response);
+            return this.processPaymentsGET2(_response);
         });
     }
 
-    protected processPaymentsGETGET2(response: Response): Promise<PaymentResponse> {
+    protected processPaymentsGET2(response: Response): Promise<PaymentResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2975,7 +2975,7 @@ export class Client {
      * Actualizar estado de pago (p.ej. validar pago en playa)
      * @return Pago actualizado
      */
-    paymentsPUTPUT(body: PaymentUpdateRequest, paymentId: string): Promise<PaymentResponse> {
+    paymentsPUT(body: PaymentUpdateRequest, paymentId: string): Promise<PaymentResponse> {
         let url_ = this.baseUrl + "/payments/{paymentId}";
         if (paymentId === undefined || paymentId === null)
             throw new globalThis.Error("The parameter 'paymentId' must be defined.");
@@ -2994,11 +2994,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPaymentsPUTPUT(_response);
+            return this.processPaymentsPUT(_response);
         });
     }
 
-    protected processPaymentsPUTPUT(response: Response): Promise<PaymentResponse> {
+    protected processPaymentsPUT(response: Response): Promise<PaymentResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3041,7 +3041,7 @@ export class Client {
      * Competidor solicita token de pago en playa
      * @return Solicitud enviada, pendiente de aprobación
      */
-    request22(body: BeachTokenRequest): Promise<BeachTokenPendingResponse> {
+    request2(body: BeachTokenRequest): Promise<BeachTokenPendingResponse> {
         let url_ = this.baseUrl + "/payments/beach/request";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -3057,11 +3057,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRequest22(_response);
+            return this.processRequest2(_response);
         });
     }
 
-    protected processRequest22(response: Response): Promise<BeachTokenPendingResponse> {
+    protected processRequest2(response: Response): Promise<BeachTokenPendingResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -3412,7 +3412,7 @@ export class Client {
      * Categorías disponibles en el ranking con años disponibles
      * @return Categorías disponibles
      */
-    categoriesGETGET4(): Promise<Anonymous9> {
+    categoriesGET4(): Promise<Anonymous7> {
         let url_ = this.baseUrl + "/rankings/categories";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -3424,18 +3424,18 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCategoriesGETGET4(_response);
+            return this.processCategoriesGET4(_response);
         });
     }
 
-    protected processCategoriesGETGET4(response: Response): Promise<Anonymous9> {
+    protected processCategoriesGET4(response: Response): Promise<Anonymous7> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous9.fromJS(resultData200);
+            result200 = Anonymous7.fromJS(resultData200);
             return result200;
             });
         } else if (status === 500) {
@@ -3450,7 +3450,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous9>(null as any);
+        return Promise.resolve<Anonymous7>(null as any);
     }
 
     /**
@@ -3462,7 +3462,7 @@ export class Client {
      * @param search (optional) 
      * @return Lista de artículos
      */
-    articlesGETGET(page: number | undefined, limit: number | undefined, category: ArticleCategory | undefined, featured: boolean | undefined, search: string | undefined): Promise<ArticleListResponse> {
+    articlesGET(page: number | undefined, limit: number | undefined, category: ArticleCategory | undefined, featured: boolean | undefined, search: string | undefined): Promise<ArticleListResponse> {
         let url_ = this.baseUrl + "/articles?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -3494,11 +3494,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processArticlesGETGET(_response);
+            return this.processArticlesGET(_response);
         });
     }
 
-    protected processArticlesGETGET(response: Response): Promise<ArticleListResponse> {
+    protected processArticlesGET(response: Response): Promise<ArticleListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3527,7 +3527,7 @@ export class Client {
      * Crear artículo (proxy hacia WordPress REST API)
      * @return Artículo creado en WordPress
      */
-    articlesPOSTPOST(body: ArticleRequest): Promise<ArticleResponse> {
+    articlesPOST(body: ArticleRequest): Promise<ArticleResponse> {
         let url_ = this.baseUrl + "/articles";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -3543,11 +3543,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processArticlesPOSTPOST(_response);
+            return this.processArticlesPOST(_response);
         });
     }
 
-    protected processArticlesPOSTPOST(response: Response): Promise<ArticleResponse> {
+    protected processArticlesPOST(response: Response): Promise<ArticleResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -3583,7 +3583,7 @@ export class Client {
      * Obtener artículo por slug
      * @return Artículo encontrado
      */
-    articlesGETGET2(slug: string): Promise<ArticleResponse> {
+    articlesGET2(slug: string): Promise<ArticleResponse> {
         let url_ = this.baseUrl + "/articles/{slug}";
         if (slug === undefined || slug === null)
             throw new globalThis.Error("The parameter 'slug' must be defined.");
@@ -3598,11 +3598,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processArticlesGETGET2(_response);
+            return this.processArticlesGET2(_response);
         });
     }
 
-    protected processArticlesGETGET2(response: Response): Promise<ArticleResponse> {
+    protected processArticlesGET2(response: Response): Promise<ArticleResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3638,7 +3638,7 @@ export class Client {
      * Actualizar artículo
      * @return Artículo actualizado
      */
-    articlesPUTPUT(body: ArticleRequest, slug: string): Promise<ArticleResponse> {
+    articlesPUT(body: ArticleRequest, slug: string): Promise<ArticleResponse> {
         let url_ = this.baseUrl + "/articles/{slug}";
         if (slug === undefined || slug === null)
             throw new globalThis.Error("The parameter 'slug' must be defined.");
@@ -3657,11 +3657,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processArticlesPUTPUT(_response);
+            return this.processArticlesPUT(_response);
         });
     }
 
-    protected processArticlesPUTPUT(response: Response): Promise<ArticleResponse> {
+    protected processArticlesPUT(response: Response): Promise<ArticleResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3704,7 +3704,7 @@ export class Client {
      * Eliminar artículo
      * @return Artículo eliminado
      */
-    articlesDELETEDELETE(slug: string): Promise<void> {
+    articlesDELETE(slug: string): Promise<void> {
         let url_ = this.baseUrl + "/articles/{slug}";
         if (slug === undefined || slug === null)
             throw new globalThis.Error("The parameter 'slug' must be defined.");
@@ -3718,11 +3718,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processArticlesDELETEDELETE(_response);
+            return this.processArticlesDELETE(_response);
         });
     }
 
-    protected processArticlesDELETEDELETE(response: Response): Promise<void> {
+    protected processArticlesDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -3757,7 +3757,7 @@ export class Client {
      * @param status (optional) 
      * @return Lista de usuarios administrativos
      */
-    usersGETGET(role: AdminRole | undefined, status: AdminUserStatus | undefined): Promise<AdminUserListResponse> {
+    usersGET(role: AdminRole | undefined, status: AdminUserStatus | undefined): Promise<AdminUserListResponse> {
         let url_ = this.baseUrl + "/admin/users?";
         if (role === null)
             throw new globalThis.Error("The parameter 'role' cannot be null.");
@@ -3777,11 +3777,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersGETGET(_response);
+            return this.processUsersGET(_response);
         });
     }
 
-    protected processUsersGETGET(response: Response): Promise<AdminUserListResponse> {
+    protected processUsersGET(response: Response): Promise<AdminUserListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3810,7 +3810,7 @@ export class Client {
      * Crear usuario administrativo con contraseña temporal y correo de invitación
      * @return Usuario creado
      */
-    usersPOSTPOST(body: AdminUserRequest): Promise<AdminUserResponse> {
+    usersPOST(body: AdminUserRequest): Promise<AdminUserResponse> {
         let url_ = this.baseUrl + "/admin/users";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -3826,11 +3826,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersPOSTPOST(_response);
+            return this.processUsersPOST(_response);
         });
     }
 
-    protected processUsersPOSTPOST(response: Response): Promise<AdminUserResponse> {
+    protected processUsersPOST(response: Response): Promise<AdminUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -3873,7 +3873,7 @@ export class Client {
      * Obtener usuario administrativo
      * @return Usuario encontrado
      */
-    usersGETGET22(userId: string): Promise<AdminUserResponse> {
+    usersGET2(userId: string): Promise<AdminUserResponse> {
         let url_ = this.baseUrl + "/admin/users/{userId}";
         if (userId === undefined || userId === null)
             throw new globalThis.Error("The parameter 'userId' must be defined.");
@@ -3888,11 +3888,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersGETGET22(_response);
+            return this.processUsersGET2(_response);
         });
     }
 
-    protected processUsersGETGET22(response: Response): Promise<AdminUserResponse> {
+    protected processUsersGET2(response: Response): Promise<AdminUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3928,7 +3928,7 @@ export class Client {
      * Actualizar rol o estado del usuario
      * @return Usuario actualizado
      */
-    usersPUTPUT(body: AdminUserUpdateRequest, userId: string): Promise<AdminUserResponse> {
+    usersPUT(body: AdminUserUpdateRequest, userId: string): Promise<AdminUserResponse> {
         let url_ = this.baseUrl + "/admin/users/{userId}";
         if (userId === undefined || userId === null)
             throw new globalThis.Error("The parameter 'userId' must be defined.");
@@ -3947,11 +3947,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersPUTPUT(_response);
+            return this.processUsersPUT(_response);
         });
     }
 
-    protected processUsersPUTPUT(response: Response): Promise<AdminUserResponse> {
+    protected processUsersPUT(response: Response): Promise<AdminUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3994,7 +3994,7 @@ export class Client {
      * Eliminar usuario administrativo
      * @return Usuario eliminado
      */
-    usersDELETEDELETE(userId: string): Promise<void> {
+    usersDELETE(userId: string): Promise<void> {
         let url_ = this.baseUrl + "/admin/users/{userId}";
         if (userId === undefined || userId === null)
             throw new globalThis.Error("The parameter 'userId' must be defined.");
@@ -4008,11 +4008,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersDELETEDELETE(_response);
+            return this.processUsersDELETE(_response);
         });
     }
 
-    protected processUsersDELETEDELETE(response: Response): Promise<void> {
+    protected processUsersDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -4100,7 +4100,7 @@ export class Client {
      * @param status (optional) 
      * @return Lista de membresías
      */
-    membershipsGETGET(page: number | undefined, limit: number | undefined, status: MembershipStatus | undefined): Promise<MembershipListResponse> {
+    membershipsGET(page: number | undefined, limit: number | undefined, status: MembershipStatus | undefined): Promise<MembershipListResponse> {
         let url_ = this.baseUrl + "/memberships?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -4124,11 +4124,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMembershipsGETGET(_response);
+            return this.processMembershipsGET(_response);
         });
     }
 
-    protected processMembershipsGETGET(response: Response): Promise<MembershipListResponse> {
+    protected processMembershipsGET(response: Response): Promise<MembershipListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -4157,7 +4157,7 @@ export class Client {
      * Crear membresía
      * @return Membresía creada
      */
-    membershipsPOSTPOST(body: MembershipRequest): Promise<MembershipResponse> {
+    membershipsPOST(body: MembershipRequest): Promise<MembershipResponse> {
         let url_ = this.baseUrl + "/memberships";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -4173,11 +4173,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMembershipsPOSTPOST(_response);
+            return this.processMembershipsPOST(_response);
         });
     }
 
-    protected processMembershipsPOSTPOST(response: Response): Promise<MembershipResponse> {
+    protected processMembershipsPOST(response: Response): Promise<MembershipResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -4213,7 +4213,7 @@ export class Client {
      * Obtener membresía
      * @return Membresía encontrada
      */
-    membershipsGETGET2(membershipId: string): Promise<MembershipResponse> {
+    membershipsGET2(membershipId: string): Promise<MembershipResponse> {
         let url_ = this.baseUrl + "/memberships/{membershipId}";
         if (membershipId === undefined || membershipId === null)
             throw new globalThis.Error("The parameter 'membershipId' must be defined.");
@@ -4228,11 +4228,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMembershipsGETGET2(_response);
+            return this.processMembershipsGET2(_response);
         });
     }
 
-    protected processMembershipsGETGET2(response: Response): Promise<MembershipResponse> {
+    protected processMembershipsGET2(response: Response): Promise<MembershipResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -4268,7 +4268,7 @@ export class Client {
      * Actualizar membresía
      * @return Membresía actualizada
      */
-    membershipsPUTPUT(body: MembershipRequest, membershipId: string): Promise<MembershipResponse> {
+    membershipsPUT(body: MembershipRequest, membershipId: string): Promise<MembershipResponse> {
         let url_ = this.baseUrl + "/memberships/{membershipId}";
         if (membershipId === undefined || membershipId === null)
             throw new globalThis.Error("The parameter 'membershipId' must be defined.");
@@ -4287,11 +4287,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMembershipsPUTPUT(_response);
+            return this.processMembershipsPUT(_response);
         });
     }
 
-    protected processMembershipsPUTPUT(response: Response): Promise<MembershipResponse> {
+    protected processMembershipsPUT(response: Response): Promise<MembershipResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -4334,7 +4334,7 @@ export class Client {
      * Cancelar membresía
      * @return Membresía cancelada
      */
-    membershipsDELETEDELETE(membershipId: string): Promise<void> {
+    membershipsDELETE(membershipId: string): Promise<void> {
         let url_ = this.baseUrl + "/memberships/{membershipId}";
         if (membershipId === undefined || membershipId === null)
             throw new globalThis.Error("The parameter 'membershipId' must be defined.");
@@ -4348,11 +4348,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMembershipsDELETEDELETE(_response);
+            return this.processMembershipsDELETE(_response);
         });
     }
 
-    protected processMembershipsDELETEDELETE(response: Response): Promise<void> {
+    protected processMembershipsDELETE(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
@@ -4430,7 +4430,7 @@ export class Client {
      * Sincronizar ranking de un circuito con surfscores.com
      * @return Sincronización exitosa
      */
-    sync(circuitId: string): Promise<Anonymous10> {
+    sync(circuitId: string): Promise<Anonymous8> {
         let url_ = this.baseUrl + "/surfscores/sync/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -4449,14 +4449,14 @@ export class Client {
         });
     }
 
-    protected processSync(response: Response): Promise<Anonymous10> {
+    protected processSync(response: Response): Promise<Anonymous8> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Anonymous10.fromJS(resultData200);
+            result200 = Anonymous8.fromJS(resultData200);
             return result200;
             });
         } else if (status === 400) {
@@ -4492,7 +4492,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Anonymous10>(null as any);
+        return Promise.resolve<Anonymous8>(null as any);
     }
 }
 
@@ -4535,6 +4535,12 @@ export enum EventAccessType {
     Abierto = "Abierto",
     Restringido = "Restringido",
     Solo_invitación = "Solo invitación",
+}
+
+export enum EventType {
+    Regular = "Regular",
+    Prime = "Prime",
+    SuperPrime = "SuperPrime",
 }
 
 export enum CategoryStatus {
@@ -4779,8 +4785,6 @@ export class AuthenticatedUser implements IAuthenticatedUser {
     fullName?: string;
     tipo?: UserType;
     adminRole?: AdminRole | undefined;
-    /** Id del competidor vinculado a esta cuenta (solo si tipo=competidor). */
-    competitorId?: string | undefined;
 
     [key: string]: any;
 
@@ -4804,7 +4808,6 @@ export class AuthenticatedUser implements IAuthenticatedUser {
             this.fullName = _data["fullName"];
             this.tipo = _data["tipo"];
             this.adminRole = _data["adminRole"];
-            this.competitorId = _data["competitorId"];
         }
     }
 
@@ -4826,7 +4829,6 @@ export class AuthenticatedUser implements IAuthenticatedUser {
         data["fullName"] = this.fullName;
         data["tipo"] = this.tipo;
         data["adminRole"] = this.adminRole;
-        data["competitorId"] = this.competitorId;
         return data;
     }
 }
@@ -4837,8 +4839,6 @@ export interface IAuthenticatedUser {
     fullName?: string;
     tipo?: UserType;
     adminRole?: AdminRole | undefined;
-    /** Id del competidor vinculado a esta cuenta (solo si tipo=competidor). */
-    competitorId?: string | undefined;
 
     [key: string]: any;
 }
@@ -5350,12 +5350,13 @@ export class EventRequest implements IEventRequest {
     pais!: string;
     ciudad!: string;
     playa!: string;
+    auspiciador?: string | undefined;
     stars!: number;
     capacidadMaxima?: number;
     prizeAmountUsd?: number;
-    surfScoresCode?: string;
-    /** URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster */
     imagenUrl?: string | undefined;
+    surfScoresCode?: string;
+    eventType?: EventType;
     accessType?: EventAccessType;
     estado?: EventStatusAdmin;
 
@@ -5369,6 +5370,7 @@ export class EventRequest implements IEventRequest {
             }
         }
         if (!data) {
+            this.eventType = EventType.Regular;
             this.estado = EventStatusAdmin.Borrador;
         }
     }
@@ -5386,11 +5388,13 @@ export class EventRequest implements IEventRequest {
             this.pais = _data["pais"];
             this.ciudad = _data["ciudad"];
             this.playa = _data["playa"];
+            this.auspiciador = _data["auspiciador"];
             this.stars = _data["stars"];
             this.capacidadMaxima = _data["capacidadMaxima"];
             this.prizeAmountUsd = _data["prizeAmountUsd"];
-            this.surfScoresCode = _data["surfScoresCode"];
             this.imagenUrl = _data["imagenUrl"];
+            this.surfScoresCode = _data["surfScoresCode"];
+            this.eventType = _data["eventType"] !== undefined ? _data["eventType"] : EventType.Regular;
             this.accessType = _data["accessType"];
             this.estado = _data["estado"] !== undefined ? _data["estado"] : EventStatusAdmin.Borrador;
         }
@@ -5416,11 +5420,13 @@ export class EventRequest implements IEventRequest {
         data["pais"] = this.pais;
         data["ciudad"] = this.ciudad;
         data["playa"] = this.playa;
+        data["auspiciador"] = this.auspiciador;
         data["stars"] = this.stars;
         data["capacidadMaxima"] = this.capacidadMaxima;
         data["prizeAmountUsd"] = this.prizeAmountUsd;
-        data["surfScoresCode"] = this.surfScoresCode;
         data["imagenUrl"] = this.imagenUrl;
+        data["surfScoresCode"] = this.surfScoresCode;
+        data["eventType"] = this.eventType;
         data["accessType"] = this.accessType;
         data["estado"] = this.estado;
         return data;
@@ -5435,12 +5441,13 @@ export interface IEventRequest {
     pais: string;
     ciudad: string;
     playa: string;
+    auspiciador?: string | undefined;
     stars: number;
     capacidadMaxima?: number;
     prizeAmountUsd?: number;
-    surfScoresCode?: string;
-    /** URL publica del afiche del evento, obtenida al subir la imagen via POST /uploads/event-poster */
     imagenUrl?: string | undefined;
+    surfScoresCode?: string;
+    eventType?: EventType;
     accessType?: EventAccessType;
     estado?: EventStatusAdmin;
 
@@ -5574,11 +5581,10 @@ export interface IEventListResponse {
 
 export class EventCategoryRequest implements IEventCategoryRequest {
     categoryId!: string;
-    /** Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento. */
+    /** null hereda el nivel de estrellas del evento */
     stars?: number | undefined;
     /** null hereda tarifa del circuito */
     customTariffUsd?: number | undefined;
-    customTariffCop?: number | undefined;
     capacidad?: number | undefined;
 
     [key: string]: any;
@@ -5601,7 +5607,6 @@ export class EventCategoryRequest implements IEventCategoryRequest {
             this.categoryId = _data["categoryId"];
             this.stars = _data["stars"];
             this.customTariffUsd = _data["customTariffUsd"];
-            this.customTariffCop = _data["customTariffCop"];
             this.capacidad = _data["capacidad"];
         }
     }
@@ -5622,7 +5627,6 @@ export class EventCategoryRequest implements IEventCategoryRequest {
         data["categoryId"] = this.categoryId;
         data["stars"] = this.stars;
         data["customTariffUsd"] = this.customTariffUsd;
-        data["customTariffCop"] = this.customTariffCop;
         data["capacidad"] = this.capacidad;
         return data;
     }
@@ -5630,11 +5634,10 @@ export class EventCategoryRequest implements IEventCategoryRequest {
 
 export interface IEventCategoryRequest {
     categoryId: string;
-    /** Nivel de estrellas de esta categoría en el evento. Si es null, se usa el nivel de estrellas del evento. */
+    /** null hereda el nivel de estrellas del evento */
     stars?: number | undefined;
     /** null hereda tarifa del circuito */
     customTariffUsd?: number | undefined;
-    customTariffCop?: number | undefined;
     capacidad?: number | undefined;
 
     [key: string]: any;
@@ -5642,8 +5645,8 @@ export interface IEventCategoryRequest {
 
 export class EventCategoryResponse extends EventCategoryRequest implements IEventCategoryResponse {
     categoryName?: string;
+    gender?: CategoryGender;
     effectiveTariffUsd?: number;
-    effectiveTariffCop?: number;
     enrolledCount?: number;
 
     [key: string]: any;
@@ -5660,8 +5663,8 @@ export class EventCategoryResponse extends EventCategoryRequest implements IEven
                     this[property] = _data[property];
             }
             this.categoryName = _data["categoryName"];
+            this.gender = _data["gender"];
             this.effectiveTariffUsd = _data["effectiveTariffUsd"];
-            this.effectiveTariffCop = _data["effectiveTariffCop"];
             this.enrolledCount = _data["enrolledCount"];
         }
     }
@@ -5680,8 +5683,8 @@ export class EventCategoryResponse extends EventCategoryRequest implements IEven
                 data[property] = this[property];
         }
         data["categoryName"] = this.categoryName;
+        data["gender"] = this.gender;
         data["effectiveTariffUsd"] = this.effectiveTariffUsd;
-        data["effectiveTariffCop"] = this.effectiveTariffCop;
         data["enrolledCount"] = this.enrolledCount;
         super.toJSON(data);
         return data;
@@ -5690,9 +5693,69 @@ export class EventCategoryResponse extends EventCategoryRequest implements IEven
 
 export interface IEventCategoryResponse extends IEventCategoryRequest {
     categoryName?: string;
+    gender?: CategoryGender;
     effectiveTariffUsd?: number;
-    effectiveTariffCop?: number;
     enrolledCount?: number;
+
+    [key: string]: any;
+}
+
+export class EventCategoryListResponse implements IEventCategoryListResponse {
+    useCircuitTariffs?: boolean;
+    data?: EventCategoryResponse[];
+
+    [key: string]: any;
+
+    constructor(data?: IEventCategoryListResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.useCircuitTariffs = _data["useCircuitTariffs"];
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(EventCategoryResponse.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): EventCategoryListResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new EventCategoryListResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["useCircuitTariffs"] = this.useCircuitTariffs;
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface IEventCategoryListResponse {
+    useCircuitTariffs?: boolean;
+    data?: EventCategoryResponse[];
 
     [key: string]: any;
 }
@@ -9484,132 +9547,12 @@ export interface IBody4 {
 }
 
 export class Anonymous implements IAnonymous {
-    useCircuitTariffs?: boolean;
-    data?: EventCategoryResponse[];
-
-    [key: string]: any;
-
-    constructor(data?: IAnonymous) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.useCircuitTariffs = _data["useCircuitTariffs"];
-            if (Array.isArray(_data["data"])) {
-                this.data = [] as any;
-                for (let item of _data["data"])
-                    this.data!.push(EventCategoryResponse.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Anonymous {
-        data = typeof data === 'object' ? data : {};
-        let result = new Anonymous();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["useCircuitTariffs"] = this.useCircuitTariffs;
-        if (Array.isArray(this.data)) {
-            data["data"] = [];
-            for (let item of this.data)
-                data["data"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
-}
-
-export interface IAnonymous {
-    useCircuitTariffs?: boolean;
-    data?: EventCategoryResponse[];
-
-    [key: string]: any;
-}
-
-export class Anonymous2 implements IAnonymous2 {
-    useCircuitTariffs?: boolean;
-    data?: EventCategoryResponse[];
-
-    [key: string]: any;
-
-    constructor(data?: IAnonymous2) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.useCircuitTariffs = _data["useCircuitTariffs"];
-            if (Array.isArray(_data["data"])) {
-                this.data = [] as any;
-                for (let item of _data["data"])
-                    this.data!.push(EventCategoryResponse.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Anonymous2 {
-        data = typeof data === 'object' ? data : {};
-        let result = new Anonymous2();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["useCircuitTariffs"] = this.useCircuitTariffs;
-        if (Array.isArray(this.data)) {
-            data["data"] = [];
-            for (let item of this.data)
-                data["data"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
-}
-
-export interface IAnonymous2 {
-    useCircuitTariffs?: boolean;
-    data?: EventCategoryResponse[];
-
-    [key: string]: any;
-}
-
-export class Anonymous3 implements IAnonymous3 {
     attribution?: string;
     data?: EventResultResponse[];
 
     [key: string]: any;
 
-    constructor(data?: IAnonymous3) {
+    constructor(data?: IAnonymous) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -9633,9 +9576,9 @@ export class Anonymous3 implements IAnonymous3 {
         }
     }
 
-    static fromJS(data: any): Anonymous3 {
+    static fromJS(data: any): Anonymous {
         data = typeof data === 'object' ? data : {};
-        let result = new Anonymous3();
+        let result = new Anonymous();
         result.init(data);
         return result;
     }
@@ -9656,15 +9599,131 @@ export class Anonymous3 implements IAnonymous3 {
     }
 }
 
-export interface IAnonymous3 {
+export interface IAnonymous {
     attribution?: string;
     data?: EventResultResponse[];
 
     [key: string]: any;
 }
 
-export class Anonymous4 implements IAnonymous4 {
+export class Anonymous2 implements IAnonymous2 {
     data?: EventResultResponse[];
+
+    [key: string]: any;
+
+    constructor(data?: IAnonymous2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(EventResultResponse.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Anonymous2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new Anonymous2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface IAnonymous2 {
+    data?: EventResultResponse[];
+
+    [key: string]: any;
+}
+
+export class Anonymous3 implements IAnonymous3 {
+    stars?: number;
+    data?: PrizeDistributionRow[];
+
+    [key: string]: any;
+
+    constructor(data?: IAnonymous3) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.stars = _data["stars"];
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(PrizeDistributionRow.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Anonymous3 {
+        data = typeof data === 'object' ? data : {};
+        let result = new Anonymous3();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["stars"] = this.stars;
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface IAnonymous3 {
+    stars?: number;
+    data?: PrizeDistributionRow[];
+
+    [key: string]: any;
+}
+
+export class Anonymous4 implements IAnonymous4 {
+    data?: CategoryResponse[];
 
     [key: string]: any;
 
@@ -9686,7 +9745,7 @@ export class Anonymous4 implements IAnonymous4 {
             if (Array.isArray(_data["data"])) {
                 this.data = [] as any;
                 for (let item of _data["data"])
-                    this.data!.push(EventResultResponse.fromJS(item));
+                    this.data!.push(CategoryResponse.fromJS(item));
             }
         }
     }
@@ -9714,14 +9773,13 @@ export class Anonymous4 implements IAnonymous4 {
 }
 
 export interface IAnonymous4 {
-    data?: EventResultResponse[];
+    data?: CategoryResponse[];
 
     [key: string]: any;
 }
 
 export class Anonymous5 implements IAnonymous5 {
-    stars?: number;
-    data?: PrizeDistributionRow[];
+    data?: TariffResponse[];
 
     [key: string]: any;
 
@@ -9740,11 +9798,10 @@ export class Anonymous5 implements IAnonymous5 {
                 if (_data.hasOwnProperty(property))
                     this[property] = _data[property];
             }
-            this.stars = _data["stars"];
             if (Array.isArray(_data["data"])) {
                 this.data = [] as any;
                 for (let item of _data["data"])
-                    this.data!.push(PrizeDistributionRow.fromJS(item));
+                    this.data!.push(TariffResponse.fromJS(item));
             }
         }
     }
@@ -9762,7 +9819,6 @@ export class Anonymous5 implements IAnonymous5 {
             if (this.hasOwnProperty(property))
                 data[property] = this[property];
         }
-        data["stars"] = this.stars;
         if (Array.isArray(this.data)) {
             data["data"] = [];
             for (let item of this.data)
@@ -9773,14 +9829,13 @@ export class Anonymous5 implements IAnonymous5 {
 }
 
 export interface IAnonymous5 {
-    stars?: number;
-    data?: PrizeDistributionRow[];
+    data?: TariffResponse[];
 
     [key: string]: any;
 }
 
 export class Anonymous6 implements IAnonymous6 {
-    data?: CategoryResponse[];
+    data?: CalendarEventResponse[];
 
     [key: string]: any;
 
@@ -9802,7 +9857,7 @@ export class Anonymous6 implements IAnonymous6 {
             if (Array.isArray(_data["data"])) {
                 this.data = [] as any;
                 for (let item of _data["data"])
-                    this.data!.push(CategoryResponse.fromJS(item));
+                    this.data!.push(CalendarEventResponse.fromJS(item));
             }
         }
     }
@@ -9830,13 +9885,13 @@ export class Anonymous6 implements IAnonymous6 {
 }
 
 export interface IAnonymous6 {
-    data?: CategoryResponse[];
+    data?: CalendarEventResponse[];
 
     [key: string]: any;
 }
 
 export class Anonymous7 implements IAnonymous7 {
-    data?: TariffResponse[];
+    data?: Data[];
 
     [key: string]: any;
 
@@ -9858,7 +9913,7 @@ export class Anonymous7 implements IAnonymous7 {
             if (Array.isArray(_data["data"])) {
                 this.data = [] as any;
                 for (let item of _data["data"])
-                    this.data!.push(TariffResponse.fromJS(item));
+                    this.data!.push(Data.fromJS(item));
             }
         }
     }
@@ -9886,131 +9941,19 @@ export class Anonymous7 implements IAnonymous7 {
 }
 
 export interface IAnonymous7 {
-    data?: TariffResponse[];
+    data?: Data[];
 
     [key: string]: any;
 }
 
 export class Anonymous8 implements IAnonymous8 {
-    data?: CalendarEventResponse[];
-
-    [key: string]: any;
-
-    constructor(data?: IAnonymous8) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["data"])) {
-                this.data = [] as any;
-                for (let item of _data["data"])
-                    this.data!.push(CalendarEventResponse.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Anonymous8 {
-        data = typeof data === 'object' ? data : {};
-        let result = new Anonymous8();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.data)) {
-            data["data"] = [];
-            for (let item of this.data)
-                data["data"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
-}
-
-export interface IAnonymous8 {
-    data?: CalendarEventResponse[];
-
-    [key: string]: any;
-}
-
-export class Anonymous9 implements IAnonymous9 {
-    data?: Data[];
-
-    [key: string]: any;
-
-    constructor(data?: IAnonymous9) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["data"])) {
-                this.data = [] as any;
-                for (let item of _data["data"])
-                    this.data!.push(Data.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Anonymous9 {
-        data = typeof data === 'object' ? data : {};
-        let result = new Anonymous9();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.data)) {
-            data["data"] = [];
-            for (let item of this.data)
-                data["data"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
-}
-
-export interface IAnonymous9 {
-    data?: Data[];
-
-    [key: string]: any;
-}
-
-export class Anonymous10 implements IAnonymous10 {
     syncedAt?: Date;
     recordsUpdated?: number;
     circuitCode?: string;
 
     [key: string]: any;
 
-    constructor(data?: IAnonymous10) {
+    constructor(data?: IAnonymous8) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -10031,9 +9974,9 @@ export class Anonymous10 implements IAnonymous10 {
         }
     }
 
-    static fromJS(data: any): Anonymous10 {
+    static fromJS(data: any): Anonymous8 {
         data = typeof data === 'object' ? data : {};
-        let result = new Anonymous10();
+        let result = new Anonymous8();
         result.init(data);
         return result;
     }
@@ -10051,7 +9994,7 @@ export class Anonymous10 implements IAnonymous10 {
     }
 }
 
-export interface IAnonymous10 {
+export interface IAnonymous8 {
     syncedAt?: Date;
     recordsUpdated?: number;
     circuitCode?: string;

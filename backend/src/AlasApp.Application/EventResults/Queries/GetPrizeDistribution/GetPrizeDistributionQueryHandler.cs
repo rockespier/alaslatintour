@@ -42,6 +42,8 @@ public sealed class GetPrizeDistributionQueryHandler(
             3 => row.Star3Percent,
             4 => row.Star4Percent,
             5 => row.Star5Percent,
+            6 => row.Star6Percent,
+            7 => row.Star7Percent,
             _ => 0
         };
     }

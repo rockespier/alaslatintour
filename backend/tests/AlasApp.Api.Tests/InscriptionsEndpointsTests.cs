@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace AlasApp.Api.Tests;
@@ -19,8 +21,10 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     {
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId);
-        var categoryId = await CreateCategoryAsync();
-        var competitorId = await CreateCompetitorAsync();
+        var categoryId = await CreateCategoryAsync("Open Mixto");
+        var deletableCategoryId = await CreateCategoryAsync("Junior Mixto");
+        var competitor = await RegisterAndLoginCompetitorAsync();
+        var competitorId = competitor.CompetitorId;
 
         var assignCategoryResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
         {
@@ -31,7 +35,12 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
                 {
                     categoryId,
                     customTariffUsd = 80,
-                    customTariffCop = 320000,
+                    capacidad = 2
+                },
+                new
+                {
+                    categoryId = deletableCategoryId,
+                    customTariffUsd = 55,
                     capacidad = 2
                 }
             }
@@ -105,11 +114,77 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
 
         Assert.Equal(HttpStatusCode.Conflict, duplicateResponse.StatusCode);
 
-        var deleteResponse = await _client.DeleteAsync($"/v1/inscriptions/{inscriptionId}");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", competitor.Token);
+
+        var deletePaidResponse = await _client.DeleteAsync($"/v1/inscriptions/{inscriptionId}");
+        Assert.Equal(HttpStatusCode.Conflict, deletePaidResponse.StatusCode);
+
+        var createPendingDeleteResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
+        {
+            competitorId,
+            eventId,
+            categoryId = deletableCategoryId,
+            shirtNumber = "#55",
+            paymentMethod = "paypal",
+            reglamento = true
+        });
+
+        Assert.Equal(HttpStatusCode.Created, createPendingDeleteResponse.StatusCode);
+
+        var pendingDeleteBody = await ReadJsonAsync(createPendingDeleteResponse);
+        var pendingDeleteId = pendingDeleteBody.RootElement.GetProperty("id").GetString();
+
+        var deleteResponse = await _client.DeleteAsync($"/v1/inscriptions/{pendingDeleteId}");
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var getAfterDeleteResponse = await _client.GetAsync($"/v1/inscriptions/{inscriptionId}");
+        var getAfterDeleteResponse = await _client.GetAsync($"/v1/inscriptions/{pendingDeleteId}");
         Assert.Equal(HttpStatusCode.NotFound, getAfterDeleteResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteInscription_ShouldRejectWhenCompetitorDoesNotOwnIt()
+    {
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+        var categoryId = await CreateCategoryAsync("Open Hombres");
+        var owner = await RegisterAndLoginCompetitorAsync();
+        var other = await RegisterAndLoginCompetitorAsync();
+
+        var assignCategoryResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    customTariffUsd = 80,
+                    capacidad = 2
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+
+        var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
+        {
+            competitorId = owner.CompetitorId,
+            eventId,
+            categoryId,
+            shirtNumber = "#23",
+            paymentMethod = "paypal",
+            reglamento = true
+        });
+
+        Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);
+
+        var created = await ReadJsonAsync(createInscriptionResponse);
+        var inscriptionId = created.RootElement.GetProperty("id").GetString();
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", other.Token);
+
+        var deleteResponse = await _client.DeleteAsync($"/v1/inscriptions/{inscriptionId}");
+        Assert.Equal(HttpStatusCode.Unauthorized, deleteResponse.StatusCode);
     }
 
     private async Task<string> CreateCircuitAsync()
@@ -152,11 +227,11 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         return body.RootElement.GetProperty("id").GetString()!;
     }
 
-    private async Task<string> CreateCategoryAsync()
+    private async Task<string> CreateCategoryAsync(string nombre)
     {
         var response = await _client.PostAsJsonAsync("/v1/categories", new
         {
-            nombre = "Open Mixto",
+            nombre,
             descripcion = "Categoria para inscriptions",
             gender = "Ambos",
             ageRestriction = false,
@@ -170,27 +245,47 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         return body.RootElement.GetProperty("id").GetString()!;
     }
 
-    private async Task<string> CreateCompetitorAsync()
+    private async Task<(string CompetitorId, string Token)> RegisterAndLoginCompetitorAsync()
     {
-        var response = await _client.PostAsJsonAsync("/v1/competitors", new
+        var email = $"competidor-{Guid.NewGuid():N}@test.com";
+
+        var registerResponse = await _client.PostAsJsonAsync("/v1/auth/register", new
         {
+            email,
+            password = "Password1",
             nombre = "Carlos",
             apellido = "Diaz",
-            email = "carlos.diaz@example.com",
+            tipo = "competidor",
+            pais = "Perú",
+            idiomaPreferido = "Español",
+            newsletter = true,
+            terminos = true,
+            reglamento = true,
             fechaNacimiento = "1997-02-05",
             genero = "Masculino",
-            pais = "Perú",
             telefono = "+51 900 123 456",
             club = "Club Ola",
             postura = "Regular",
             tallaCamiseta = "M",
-            numeroCamiseta = "#44",
             patrocinadores = "Marca E",
             federacion = "FENTA"
         });
 
-        var body = await ReadJsonAsync(response);
-        return body.RootElement.GetProperty("id").GetString()!;
+        Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+
+        var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password = "Password1",
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+
+        var loginJson = JObject.Parse(await loginResponse.Content.ReadAsStringAsync());
+        return (
+            loginJson["user"]?["competitorId"]?.Value<string>()!,
+            loginJson["accessToken"]?.Value<string>()!);
     }
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)

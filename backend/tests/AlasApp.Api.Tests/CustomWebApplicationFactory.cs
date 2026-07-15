@@ -1,4 +1,5 @@
 using AlasApp.Infrastructure.Persistence;
+using AlasApp.Application.Abstractions.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -58,7 +59,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var connectionString = BuildTestDatabaseConnectionString(configuration);
 
             services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
+            services.RemoveAll<IEmailSender>();
             services.AddDbContext<AlasAppDbContext>(options => options.UseSqlServer(connectionString));
+            services.AddSingleton<IEmailSender, NoOpEmailSender>();
             ConfigureTestServices(services);
         });
     }
@@ -133,5 +136,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             DELETE FROM [Categories];
             DELETE FROM [Circuits];
             """);
+    }
+
+    private sealed class NoOpEmailSender : IEmailSender
+    {
+        public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

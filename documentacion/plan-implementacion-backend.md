@@ -1,6 +1,6 @@
 # Plan de Implementacion Backend ALAS
 
-Ultima actualizacion: 2026-07-09 13:10:00 +02:00
+Ultima actualizacion: 2026-07-15 15:10:00 +02:00
 
 ## Objetivo
 
@@ -196,6 +196,11 @@ Endpoints objetivo:
 - Matriz centralizada de permisos por `AdminRole` y `AdminModule`, reutilizada por API y por el endpoint de roles.
 - Policies ASP.NET Core para lectura/escritura administrativa con tests HTTP de `401`, `403` y `200`.
 - Ajustes de compatibilidad EF Core en repositorios de `Inscriptions` y `Payments` para evitar proyecciones no traducibles en providers de testing.
+- Inicio de resolución de `Issue 2`:
+  - `EventType` (`Regular`, `Prime`, `SuperPrime`)
+  - `Auspiciador` en `Events`
+  - aplicación del bono de ranking `Prime`/`SuperPrime` en cache de SurfScores
+  - actualización del CRUD/admin de eventos y contratos OpenAPI
 
 ### En curso
 

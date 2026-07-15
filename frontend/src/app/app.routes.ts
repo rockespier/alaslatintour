@@ -60,6 +60,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/competitor/pago-playa/pago-playa.component').then(m => m.PagoPlayaComponent),
         title: 'Pago en Playa — ALAS Latin Tour',
       },
+      {
+        path: 'paypal/retorno',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/competitor/paypal-return/paypal-return.component').then(m => m.PaypalReturnComponent),
+        title: 'Confirmación PayPal — ALAS Latin Tour',
+      },
+      {
+        path: 'paypal/cancelado',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/competitor/paypal-return/paypal-return.component').then(m => m.PaypalReturnComponent),
+        title: 'Pago PayPal cancelado — ALAS Latin Tour',
+      },
       // ── Panel Competidor (nested inside public-layout for shared navbar) ──
       {
         path: 'mi-panel',

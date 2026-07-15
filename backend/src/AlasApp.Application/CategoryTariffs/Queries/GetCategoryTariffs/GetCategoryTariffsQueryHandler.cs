@@ -13,7 +13,7 @@ public sealed class GetCategoryTariffsQueryHandler(ICategoryRepository categoryR
         var category = await categoryRepository.GetEntityByIdAsync(request.CategoryId, cancellationToken)
             ?? throw new NotFoundException("Categoria no encontrada.");
 
-        return Enumerable.Range(1, 5)
+        return Enumerable.Range(1, 7)
             .Select(starLevel =>
             {
                 var tariff = category.Tariffs.FirstOrDefault(x => x.StarLevel == starLevel);

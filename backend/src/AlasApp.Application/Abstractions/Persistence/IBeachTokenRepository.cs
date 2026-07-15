@@ -16,7 +16,11 @@ public interface IBeachTokenRepository
 
     Task<BeachToken?> GetByTokenCodeAsync(string tokenCode, CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<BeachToken>> ListByInscriptionIdAsync(Guid inscriptionId, CancellationToken cancellationToken);
+
     Task AddAsync(BeachToken beachToken, CancellationToken cancellationToken);
+
+    void RemoveRange(IEnumerable<BeachToken> tokens);
 
     Task<BeachTokenAdminListDto> ListAdminAsync(int page, int limit, TokenHistoryStatus? status, DateTimeOffset utcNow, CancellationToken cancellationToken);
 }

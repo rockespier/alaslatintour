@@ -13,10 +13,12 @@ public sealed record UpdateEventCommand(
     string Pais,
     string Ciudad,
     string Playa,
+    string? Auspiciador,
     int Stars,
     int CapacidadMaxima,
     decimal PrizeAmountUsd,
     string? ImagenUrl,
     string? SurfScoresCode,
+    EventType EventType,
     EventAccessType AccessType,
     EventStatusAdmin Estado) : IRequest<EventDto>;

@@ -152,6 +152,14 @@ public sealed class Inscription : AuditableEntity
         SetUpdated(timestamp);
     }
 
+    public bool CanBeDeleted()
+    {
+        return EstadoAdmin == InscriptionStatusAdmin.Pendiente
+            && EstadoCompetidor == InscriptionStatusCompetitor.Pendiente
+            && string.IsNullOrWhiteSpace(TransaccionId)
+            && string.IsNullOrWhiteSpace(Resultado);
+    }
+
     private static void Validate(
         Guid competitorId,
         Guid eventId,

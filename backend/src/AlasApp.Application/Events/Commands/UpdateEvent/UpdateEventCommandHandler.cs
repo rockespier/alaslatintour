@@ -36,11 +36,13 @@ public sealed class UpdateEventCommandHandler(
                 request.Pais,
                 request.Ciudad,
                 request.Playa,
+                request.Auspiciador,
                 request.Stars,
                 request.CapacidadMaxima,
                 request.PrizeAmountUsd,
                 request.ImagenUrl,
                 request.SurfScoresCode,
+                request.EventType,
                 request.AccessType,
                 request.Estado);
 
@@ -76,9 +78,9 @@ public sealed class UpdateEventCommandHandler(
             errors.Add(new ValidationError("nombre", "El nombre es obligatorio."));
         }
 
-        if (request.Stars is < 1 or > 5)
+        if (request.Stars is < 1 or > 7)
         {
-            errors.Add(new ValidationError("stars", "Las estrellas deben estar entre 1 y 5."));
+            errors.Add(new ValidationError("stars", "Las estrellas deben estar entre 1 y 7."));
         }
 
         if (errors.Count > 0)
