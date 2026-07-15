@@ -272,15 +272,21 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label [class]="LABEL_INPUT">Usuario API</label>
-                  <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresUsername">
+                  <label [class]="LABEL_INPUT">Usuario API (correo)</label>
+                  <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresUsername" autocomplete="off">
                 </div>
                 <div>
-                  <label [class]="LABEL_INPUT">ID de Organización</label>
-                  <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresOrgId" placeholder="ej: 142">
-                  <p class="text-[11px] text-text-muted mt-1">Identificador numérico de la org. en SurfScores. Se usa en las consultas de ranking y circuitos.</p>
+                  <label [class]="LABEL_INPUT">Contraseña API</label>
+                  <input type="password" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresPassword" autocomplete="off">
                 </div>
               </div>
+
+              <div>
+                <label [class]="LABEL_INPUT">ID de Organización</label>
+                <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresOrgId" placeholder="ej: 142">
+                <p class="text-[11px] text-text-muted mt-1">Identificador numérico de la org. en SurfScores. Se usa en las consultas de ranking y circuitos.</p>
+              </div>
+              <p class="text-[11px] text-text-muted -mt-2">El BFF inicia sesión en SurfScores con estas credenciales y reutiliza el token de sesión obtenido en cada llamada mientras siga vigente; el token nunca se ingresa manualmente aquí.</p>
 
               <label class="flex items-center gap-3 cursor-pointer p-3 rounded-lg bg-navy-deepest border border-navy-mid">
                 <input type="checkbox" [(ngModel)]="surfScoresTermsAccepted" class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
@@ -762,6 +768,7 @@ export class ConfiguracionComponent implements OnInit {
   // ─── Tab: Integraciones ──────────────────────────────────────
   surfScoresEndpoint = '';
   surfScoresUsername = '';
+  surfScoresPassword = '';
   surfScoresOrgId = '';
   surfScoresTermsAccepted = true;
   surfScoresCacheMinutes = 5;
@@ -858,6 +865,7 @@ export class ConfiguracionComponent implements OnInit {
     const i = s.integrations ?? {};
     this.surfScoresEndpoint = i.surfScores?.endpoint ?? '';
     this.surfScoresUsername = i.surfScores?.username ?? '';
+    this.surfScoresPassword = i.surfScores?.password ?? '';
     this.surfScoresOrgId = i.surfScores?.organizacionId ?? '';
     this.surfScoresTermsAccepted = i.surfScores?.termsAccepted ?? false;
     this.surfScoresCacheMinutes = i.surfScores?.cacheMinutes ?? 5;
@@ -917,6 +925,7 @@ export class ConfiguracionComponent implements OnInit {
         surfScores: {
           endpoint: this.surfScoresEndpoint,
           username: this.surfScoresUsername,
+          password: this.surfScoresPassword,
           organizacionId: this.surfScoresOrgId,
           termsAccepted: this.surfScoresTermsAccepted,
           cacheMinutes: this.surfScoresCacheMinutes,

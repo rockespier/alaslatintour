@@ -49,4 +49,3 @@ Reglas:
 - Todos los eventos creados con esta interfaz, se crean con estado "borrador"
 - Se debe verificar si existe un eventos con el nombre similar, mostrando la advertencia y no crearlo para evitar duplicados.
 
-2. 

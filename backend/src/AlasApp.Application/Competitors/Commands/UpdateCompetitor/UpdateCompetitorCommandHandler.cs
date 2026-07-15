@@ -40,7 +40,8 @@ public sealed class UpdateCompetitorCommandHandler(
                 request.TallaCamiseta,
                 request.NumeroCamiseta,
                 request.Patrocinadores,
-                request.Federacion);
+                request.Federacion,
+                request.SurfScoresCode);
 
             competitor.SetUpdated(clock.UtcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);

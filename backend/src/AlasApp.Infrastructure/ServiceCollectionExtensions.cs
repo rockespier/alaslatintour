@@ -49,6 +49,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
+        services.AddSingleton<SurfScoresTokenCache>();
+        services.AddHttpClient<ISurfScoresImportGateway, SurfScoresImportGateway>();
         services.AddHttpClient<IWordPressService, WordPressService>(client =>
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.PostsBaseUrl, "posts"));

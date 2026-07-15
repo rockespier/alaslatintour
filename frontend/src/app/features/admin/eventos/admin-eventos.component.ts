@@ -48,6 +48,26 @@ interface EventCategoryEntry {
   enrolledCount?: number;
 }
 
+interface SurfScoresImportedEvent {
+  eventId: string;
+  nombre: string;
+  surfScoresCode: string;
+  categoriesLinked: number;
+  unmatchedCategoryCodes: string[];
+}
+
+interface SurfScoresSkippedEvent {
+  nombre: string;
+  surfScoresCode: string;
+  reason: string;
+}
+
+interface SurfScoresImportResult {
+  totalFetched: number;
+  created: SurfScoresImportedEvent[];
+  skipped: SurfScoresSkippedEvent[];
+}
+
 const ESTADOS_EVENTO = ['Borrador', 'Próximamente', 'Activo', 'Completado', 'Cancelado'];
 const ACCESS_TYPES = ['Abierto', 'Restringido', 'Solo invitación'];
 const EVENT_TYPES = ['Regular', 'Prime', 'SuperPrime'];
@@ -114,13 +134,22 @@ const PAGE_SIZE = 20;
             @for (p of countryOptions(); track p) { <option [value]="p">{{ p }}</option> }
           </select>
         </div>
-        <button (click)="openCreate()"
-                class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          Nuevo evento
-        </button>
+        <div class="flex items-center gap-2">
+          <button (click)="openImport()"
+                  class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Importar de SurfScores
+          </button>
+          <button (click)="openCreate()"
+                  class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo evento
+          </button>
+        </div>
       </div>
 
       <!-- Table -->
@@ -585,6 +614,102 @@ const PAGE_SIZE = 20;
       </div>
     }
 
+    <!-- Modal: Importar de SurfScores -->
+    @if (importModalOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+           style="background:rgba(0,35,89,0.8)" (click)="closeImport()">
+        <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+             (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between p-6 border-b border-navy-mid">
+            <h2 class="font-heading text-xl text-white">Importar eventos de SurfScores</h2>
+            <button (click)="closeImport()" class="text-text-muted hover:text-white transition">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-5">
+            @if (!importResult()) {
+              <div>
+                <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Circuito destino *</label>
+                <select [value]="importCircuitId()" (change)="onImportCircuitChange($event)"
+                        class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
+                  <option value="">— Seleccionar circuito —</option>
+                  @for (c of circuits(); track c.id) {
+                    <option [value]="c.id">{{ c.nombre }} ({{ c.temporada }})</option>
+                  }
+                </select>
+                <p class="text-text-muted/60 text-xs mt-1.5">Se traerán los eventos de la organización configurada en Configuración → Integraciones → SurfScores y se crearán en estado "Borrador".</p>
+              </div>
+              @if (importError()) {
+                <p class="text-error-brand text-xs">{{ importError() }}</p>
+              }
+            } @else {
+              <div class="space-y-4">
+                <p class="text-sm text-text-muted">
+                  Se encontraron <strong class="text-text-light">{{ importResult()!.totalFetched }}</strong> eventos en SurfScores.
+                </p>
+
+                @if (importResult()!.created.length > 0) {
+                  <div>
+                    <p class="text-xs font-accent uppercase tracking-wider text-success-brand mb-2">Creados ({{ importResult()!.created.length }})</p>
+                    <ul class="space-y-2">
+                      @for (ev of importResult()!.created; track ev.eventId) {
+                        <li class="rounded-lg border border-navy-mid p-3">
+                          <p class="text-text-light font-medium">{{ ev.nombre }}</p>
+                          <p class="text-xs text-text-muted mt-0.5">
+                            {{ ev.categoriesLinked }} categoría(s) enlazada(s)
+                            @if (ev.unmatchedCategoryCodes.length > 0) {
+                              · {{ ev.unmatchedCategoryCodes.length }} sin match
+                            }
+                          </p>
+                          @if (ev.unmatchedCategoryCodes.length > 0) {
+                            <p class="text-[11px] text-warning-brand mt-1">Sin coincidencia: {{ ev.unmatchedCategoryCodes.join(', ') }}</p>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                @if (importResult()!.skipped.length > 0) {
+                  <div>
+                    <p class="text-xs font-accent uppercase tracking-wider text-warning-brand mb-2">Omitidos ({{ importResult()!.skipped.length }})</p>
+                    <ul class="space-y-2">
+                      @for (ev of importResult()!.skipped; track ev.surfScoresCode) {
+                        <li class="rounded-lg border border-warning-brand/30 bg-warning-brand/5 p-3">
+                          <p class="text-text-light font-medium">{{ ev.nombre }}</p>
+                          <p class="text-xs text-warning-brand mt-0.5">{{ ev.reason }}</p>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                @if (importResult()!.created.length === 0 && importResult()!.skipped.length === 0) {
+                  <p class="text-text-muted text-sm py-6 text-center">No se encontraron eventos para importar.</p>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <button type="button" (click)="closeImport()"
+                    class="px-4 py-2 rounded-md border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light font-accent uppercase tracking-wider text-sm transition">
+              {{ importResult() ? 'Cerrar' : 'Cancelar' }}
+            </button>
+            @if (!importResult()) {
+              <button type="button" (click)="runImport()" [disabled]="importing() || !importCircuitId()"
+                      class="px-5 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-sm hover:bg-cyan-dark transition disabled:opacity-50">
+                {{ importing() ? 'Importando...' : 'Importar' }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Confirm Delete -->
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
@@ -630,6 +755,12 @@ export class AdminEventosComponent implements OnInit {
   modalTab = signal<'general' | 'categorias' | 'tarifas'>('general');
   editingId = signal<string | null>(null);
   deleteTarget = signal<EventItem | null>(null);
+
+  importModalOpen = signal(false);
+  importCircuitId = signal('');
+  importing = signal(false);
+  importError = signal<string | null>(null);
+  importResult = signal<SurfScoresImportResult | null>(null);
 
   uploadingPoster = signal(false);
   uploadError = signal<string | null>(null);
@@ -1002,6 +1133,42 @@ export class AdminEventosComponent implements OnInit {
       await this.loadEvents();
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  // ─── Importar de SurfScores ────────────────────────────────────
+
+  openImport(): void {
+    this.importCircuitId.set(this.filterCircuitId() || '');
+    this.importError.set(null);
+    this.importResult.set(null);
+    this.importModalOpen.set(true);
+  }
+
+  closeImport(): void {
+    this.importModalOpen.set(false);
+    if (this.importResult()) {
+      void this.loadEvents();
+    }
+  }
+
+  onImportCircuitChange(event: Event): void {
+    this.importCircuitId.set((event.target as HTMLSelectElement).value);
+  }
+
+  async runImport(): Promise<void> {
+    const circuitId = this.importCircuitId();
+    if (!circuitId) return;
+
+    this.importing.set(true);
+    this.importError.set(null);
+    try {
+      const result = await this.api.post<SurfScoresImportResult>(`/circuits/${circuitId}/surfscores-import`, {});
+      this.importResult.set(result);
+    } catch (err: any) {
+      this.importError.set(err?.body?.fields?.[0]?.message ?? err?.message ?? 'No se pudo importar desde SurfScores.');
+    } finally {
+      this.importing.set(false);
     }
   }
 

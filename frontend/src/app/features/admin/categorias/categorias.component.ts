@@ -13,6 +13,7 @@ interface Category {
   successorCategory?: { id: string; nombre: string } | null;
   status: 'Activo' | 'Inactivo';
   createdAt?: string;
+  surfScoresCode?: string | null;
 }
 
 @Component({
@@ -224,6 +225,14 @@ interface Category {
               <p class="text-text-muted/60 text-xs mt-1">Categoría a la que pasa el competidor al superar la edad máxima.</p>
             </div>
 
+            <!-- Código SurfScores -->
+            <div>
+              <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Código SurfScores</label>
+              <input formControlName="surfScoresCode" type="text" placeholder="Ej: OPEN-M"
+                     class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+              <p class="text-text-muted/60 text-xs mt-1">Código usado para enlazar esta categoría con la API de SurfScores.</p>
+            </div>
+
             <!-- Footer -->
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" (click)="closeModal()"
@@ -291,6 +300,7 @@ export class CategoriasComponent implements OnInit {
     maxAge: [null as number | null],
     successorCategoryId: [''],
     status: ['Activo', Validators.required],
+    surfScoresCode: [''],
   });
 
   filtered = computed(() => {
@@ -325,7 +335,7 @@ export class CategoriasComponent implements OnInit {
     this.form.reset({
       nombre: '', descripcion: '', gender: 'Masculino',
       ageRestriction: false, minAge: null, maxAge: null,
-      successorCategoryId: '', status: 'Activo',
+      successorCategoryId: '', status: 'Activo', surfScoresCode: '',
     });
     this.modalOpen.set(true);
   }
@@ -341,6 +351,7 @@ export class CategoriasComponent implements OnInit {
       maxAge: cat.maxAge ?? null,
       successorCategoryId: cat.successorCategory?.id ?? '',
       status: cat.status,
+      surfScoresCode: cat.surfScoresCode ?? '',
     });
     this.modalOpen.set(true);
   }
@@ -364,6 +375,7 @@ export class CategoriasComponent implements OnInit {
         maxAge: v.ageRestriction ? v.maxAge : null,
         successorCategoryId: v.successorCategoryId || null,
         status: v.status,
+        surfScoresCode: v.surfScoresCode || null,
       };
 
       const id = this.editingId();

@@ -22,7 +22,8 @@ public sealed class Category : AuditableEntity
         int? minAge,
         int? maxAge,
         Guid? successorCategoryId,
-        CategoryStatus status)
+        CategoryStatus status,
+        string? surfScoresCode)
     {
         Id = id;
         Nombre = nombre;
@@ -33,6 +34,7 @@ public sealed class Category : AuditableEntity
         MaxAge = maxAge;
         SuccessorCategoryId = successorCategoryId;
         Status = status;
+        SurfScoresCode = surfScoresCode;
     }
 
     public string Nombre { get; private set; } = string.Empty;
@@ -53,6 +55,8 @@ public sealed class Category : AuditableEntity
 
     public CategoryStatus Status { get; private set; }
 
+    public string? SurfScoresCode { get; private set; }
+
     public IReadOnlyCollection<CategoryTariff> Tariffs => _tariffs;
 
     public IReadOnlyCollection<EventCategory> EventCategories => _eventCategories;
@@ -65,9 +69,10 @@ public sealed class Category : AuditableEntity
         int? minAge,
         int? maxAge,
         Guid? successorCategoryId,
-        CategoryStatus status)
+        CategoryStatus status,
+        string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, null);
+        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, null, surfScoresCode);
 
         return new Category(
             Guid.NewGuid(),
@@ -78,7 +83,8 @@ public sealed class Category : AuditableEntity
             minAge,
             maxAge,
             successorCategoryId,
-            status);
+            status,
+            NormalizeOptional(surfScoresCode));
     }
 
     public void Update(
@@ -89,9 +95,10 @@ public sealed class Category : AuditableEntity
         int? minAge,
         int? maxAge,
         Guid? successorCategoryId,
-        CategoryStatus status)
+        CategoryStatus status,
+        string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, Id);
+        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, Id, surfScoresCode);
 
         Nombre = nombre.Trim();
         Descripcion = NormalizeOptional(descripcion);
@@ -101,6 +108,7 @@ public sealed class Category : AuditableEntity
         MaxAge = maxAge;
         SuccessorCategoryId = successorCategoryId;
         Status = status;
+        SurfScoresCode = NormalizeOptional(surfScoresCode);
     }
 
     public void EnsureCanBeDeleted()
@@ -133,7 +141,8 @@ public sealed class Category : AuditableEntity
         int? minAge,
         int? maxAge,
         Guid? successorCategoryId,
-        Guid? categoryId)
+        Guid? categoryId,
+        string? surfScoresCode)
     {
         if (string.IsNullOrWhiteSpace(nombre))
         {
@@ -143,6 +152,11 @@ public sealed class Category : AuditableEntity
         if (descripcion is not null && descripcion.Length > 2000)
         {
             throw new DomainRuleException("La descripcion de la categoria no puede exceder 2000 caracteres.");
+        }
+
+        if (surfScoresCode is not null && surfScoresCode.Length > 100)
+        {
+            throw new DomainRuleException("El codigo de SurfScores de la categoria no puede exceder 100 caracteres.");
         }
 
         if (!ageRestriction && (minAge.HasValue || maxAge.HasValue))

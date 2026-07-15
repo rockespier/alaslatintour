@@ -12,4 +12,5 @@ public sealed record CreateCategoryCommand(
     int? MinAge,
     int? MaxAge,
     Guid? SuccessorCategoryId,
-    CategoryStatus Status) : IRequest<CategoryDto>;
+    CategoryStatus Status,
+    string? SurfScoresCode) : IRequest<CategoryDto>;

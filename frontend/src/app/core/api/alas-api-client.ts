@@ -342,6 +342,7 @@ export class Client {
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
             return this.processCircuitsGET(_response);
+            return this.processCircuitsGET(_response);
         });
     }
 
@@ -430,7 +431,7 @@ export class Client {
      * Obtener circuito por ID
      * @return Circuito encontrado
      */
-    circuitsGET2(circuitId: string): Promise<CircuitResponse> {
+    circuitsGETGET(circuitId: string): Promise<CircuitResponse> {
         let url_ = this.baseUrl + "/circuits/{circuitId}";
         if (circuitId === undefined || circuitId === null)
             throw new globalThis.Error("The parameter 'circuitId' must be defined.");
@@ -445,11 +446,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCircuitsGET2(_response);
+            return this.processCircuitsGETGET(_response);
         });
     }
 
-    protected processCircuitsGET2(response: Response): Promise<CircuitResponse> {
+    protected processCircuitsGETGET(response: Response): Promise<CircuitResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -745,7 +746,7 @@ export class Client {
      * Obtener evento por ID
      * @return Evento encontrado
      */
-    eventsGET2(eventId: string): Promise<EventResponse> {
+    eventsGETGET22(eventId: string): Promise<EventResponse> {
         let url_ = this.baseUrl + "/events/{eventId}";
         if (eventId === undefined || eventId === null)
             throw new globalThis.Error("The parameter 'eventId' must be defined.");
@@ -760,11 +761,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEventsGET2(_response);
+            return this.processEventsGETGET22(_response);
         });
     }
 
-    protected processEventsGET2(response: Response): Promise<EventResponse> {
+    protected processEventsGETGET22(response: Response): Promise<EventResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1039,81 +1040,6 @@ export class Client {
             });
         }
         return Promise.resolve<EventCategoryListResponse>(null as any);
-    }
-
-    /**
-     * Inscritos de un evento con ranking previo y actual (vista admin)
-     * @param page (optional) 
-     * @param limit (optional) 
-     * @param categoryId (optional) 
-     * @param status (optional) 
-     * @return Lista de inscritos
-     */
-    inscriptionsGET(page: number | undefined, limit: number | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined, eventId: string): Promise<AdminInscriptionListResponse> {
-        let url_ = this.baseUrl + "/events/{eventId}/inscriptions?";
-        if (eventId === undefined || eventId === null)
-            throw new globalThis.Error("The parameter 'eventId' must be defined.");
-        url_ = url_.replace("{eventId}", encodeURIComponent("" + eventId));
-        if (page === null)
-            throw new globalThis.Error("The parameter 'page' cannot be null.");
-        else if (page !== undefined)
-            url_ += "page=" + encodeURIComponent("" + page) + "&";
-        if (limit === null)
-            throw new globalThis.Error("The parameter 'limit' cannot be null.");
-        else if (limit !== undefined)
-            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
-        if (categoryId === null)
-            throw new globalThis.Error("The parameter 'categoryId' cannot be null.");
-        else if (categoryId !== undefined)
-            url_ += "categoryId=" + encodeURIComponent("" + categoryId) + "&";
-        if (status === null)
-            throw new globalThis.Error("The parameter 'status' cannot be null.");
-        else if (status !== undefined)
-            url_ += "status=" + encodeURIComponent("" + status) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGET(_response);
-        });
-    }
-
-    protected processInscriptionsGET(response: Response): Promise<AdminInscriptionListResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AdminInscriptionListResponse.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 404) {
-            return response.text().then((_responseText) => {
-            let result404: any = null;
-            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result404 = ErrorResponse.fromJS(resultData404);
-            return throwException("Recurso no encontrado", status, _responseText, _headers, result404);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ErrorResponse.fromJS(resultData500);
-            return throwException("Error interno del servidor", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AdminInscriptionListResponse>(null as any);
     }
 
     /**
@@ -1778,7 +1704,7 @@ export class Client {
      * Crear perfil de competidor (invocado internamente tras registro)
      * @return Competidor creado
      */
-    competitorsPOST(body: CompetitorRequest): Promise<CompetitorResponse> {
+    competitorsPOSTPOST(body: CompetitorRequest): Promise<CompetitorResponse> {
         let url_ = this.baseUrl + "/competitors";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1794,11 +1720,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCompetitorsPOST(_response);
+            return this.processCompetitorsPOSTPOST(_response);
         });
     }
 
-    protected processCompetitorsPOST(response: Response): Promise<CompetitorResponse> {
+    protected processCompetitorsPOSTPOST(response: Response): Promise<CompetitorResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 201) {
@@ -2437,7 +2363,7 @@ export class Client {
      * @param status (optional) 
      * @return Lista de inscripciones
      */
-    inscriptionsGET3(page: number | undefined, limit: number | undefined, eventId: string | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined): Promise<AdminInscriptionListResponse> {
+    inscriptionsGET(page: number | undefined, limit: number | undefined, eventId: string | undefined, categoryId: string | undefined, status: InscriptionStatusAdmin | undefined): Promise<AdminInscriptionListResponse> {
         let url_ = this.baseUrl + "/inscriptions?";
         if (page === null)
             throw new globalThis.Error("The parameter 'page' cannot be null.");
@@ -2469,11 +2395,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGET3(_response);
+            return this.processInscriptionsGET(_response);
         });
     }
 
-    protected processInscriptionsGET3(response: Response): Promise<AdminInscriptionListResponse> {
+    protected processInscriptionsGET(response: Response): Promise<AdminInscriptionListResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2565,7 +2491,7 @@ export class Client {
      * Obtener inscripción por ID
      * @return Inscripción encontrada
      */
-    inscriptionsGET4(inscriptionId: string): Promise<InscriptionResponse> {
+    inscriptionsGETGET3(inscriptionId: string): Promise<InscriptionResponse> {
         let url_ = this.baseUrl + "/inscriptions/{inscriptionId}";
         if (inscriptionId === undefined || inscriptionId === null)
             throw new globalThis.Error("The parameter 'inscriptionId' must be defined.");
@@ -2580,11 +2506,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processInscriptionsGET4(_response);
+            return this.processInscriptionsGETGET3(_response);
         });
     }
 
-    protected processInscriptionsGET4(response: Response): Promise<InscriptionResponse> {
+    protected processInscriptionsGETGET3(response: Response): Promise<InscriptionResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2920,7 +2846,7 @@ export class Client {
      * Obtener pago por ID
      * @return Pago encontrado
      */
-    paymentsGET2(paymentId: string): Promise<PaymentResponse> {
+    paymentsGETGET22(paymentId: string): Promise<PaymentResponse> {
         let url_ = this.baseUrl + "/payments/{paymentId}";
         if (paymentId === undefined || paymentId === null)
             throw new globalThis.Error("The parameter 'paymentId' must be defined.");
@@ -2935,11 +2861,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPaymentsGET2(_response);
+            return this.processPaymentsGETGET22(_response);
         });
     }
 
-    protected processPaymentsGET2(response: Response): Promise<PaymentResponse> {
+    protected processPaymentsGETGET22(response: Response): Promise<PaymentResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3873,7 +3799,7 @@ export class Client {
      * Obtener usuario administrativo
      * @return Usuario encontrado
      */
-    usersGET2(userId: string): Promise<AdminUserResponse> {
+    usersGETGET2(userId: string): Promise<AdminUserResponse> {
         let url_ = this.baseUrl + "/admin/users/{userId}";
         if (userId === undefined || userId === null)
             throw new globalThis.Error("The parameter 'userId' must be defined.");
@@ -3888,11 +3814,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersGET2(_response);
+            return this.processUsersGETGET2(_response);
         });
     }
 
-    protected processUsersGET2(response: Response): Promise<AdminUserResponse> {
+    protected processUsersGETGET2(response: Response): Promise<AdminUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -5770,6 +5696,8 @@ export class CategoryRequest implements ICategoryRequest {
     /** ID de la categoría a la que el competidor pasa al superar el límite de edad (Sub-18 → Open) */
     successorCategoryId?: string | undefined;
     status?: CategoryStatus;
+    /** Código de la categoría en SurfScores para la integración de resultados. */
+    surfScoresCode?: string | undefined;
 
     [key: string]: any;
 
@@ -5800,6 +5728,7 @@ export class CategoryRequest implements ICategoryRequest {
             this.maxAge = _data["maxAge"];
             this.successorCategoryId = _data["successorCategoryId"];
             this.status = _data["status"] !== undefined ? _data["status"] : CategoryStatus.Activo;
+            this.surfScoresCode = _data["surfScoresCode"];
         }
     }
 
@@ -5824,6 +5753,7 @@ export class CategoryRequest implements ICategoryRequest {
         data["maxAge"] = this.maxAge;
         data["successorCategoryId"] = this.successorCategoryId;
         data["status"] = this.status;
+        data["surfScoresCode"] = this.surfScoresCode;
         return data;
     }
 }
@@ -5838,6 +5768,8 @@ export interface ICategoryRequest {
     /** ID de la categoría a la que el competidor pasa al superar el límite de edad (Sub-18 → Open) */
     successorCategoryId?: string | undefined;
     status?: CategoryStatus;
+    /** Código de la categoría en SurfScores para la integración de resultados. */
+    surfScoresCode?: string | undefined;
 
     [key: string]: any;
 }
@@ -6013,6 +5945,8 @@ export class CompetitorRequest implements ICompetitorRequest {
     numeroCamiseta?: string;
     patrocinadores?: string;
     federacion?: string;
+    /** Código del competidor en SurfScores para la integración de resultados. */
+    surfScoresCode?: string | undefined;
 
     [key: string]: any;
 
@@ -6044,6 +5978,7 @@ export class CompetitorRequest implements ICompetitorRequest {
             this.numeroCamiseta = _data["numeroCamiseta"];
             this.patrocinadores = _data["patrocinadores"];
             this.federacion = _data["federacion"];
+            this.surfScoresCode = _data["surfScoresCode"];
         }
     }
 
@@ -6073,6 +6008,7 @@ export class CompetitorRequest implements ICompetitorRequest {
         data["numeroCamiseta"] = this.numeroCamiseta;
         data["patrocinadores"] = this.patrocinadores;
         data["federacion"] = this.federacion;
+        data["surfScoresCode"] = this.surfScoresCode;
         return data;
     }
 }
@@ -6091,14 +6027,14 @@ export interface ICompetitorRequest {
     numeroCamiseta?: string;
     patrocinadores?: string;
     federacion?: string;
+    /** Código del competidor en SurfScores para la integración de resultados. */
+    surfScoresCode?: string | undefined;
 
     [key: string]: any;
 }
 
 export class CompetitorResponse extends CompetitorRequest implements ICompetitorResponse {
     id?: string;
-    /** Asignado por el sistema; no editable por el usuario */
-    surfScoresCode?: string;
     license?: LicenseInfo;
     createdAt?: Date;
 
@@ -6116,7 +6052,6 @@ export class CompetitorResponse extends CompetitorRequest implements ICompetitor
                     this[property] = _data[property];
             }
             this.id = _data["id"];
-            this.surfScoresCode = _data["surfScoresCode"];
             this.license = _data["license"] ? LicenseInfo.fromJS(_data["license"]) : undefined as any;
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
         }
@@ -6136,7 +6071,6 @@ export class CompetitorResponse extends CompetitorRequest implements ICompetitor
                 data[property] = this[property];
         }
         data["id"] = this.id;
-        data["surfScoresCode"] = this.surfScoresCode;
         data["license"] = this.license ? this.license.toJSON() : undefined as any;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
         super.toJSON(data);
@@ -6146,8 +6080,6 @@ export class CompetitorResponse extends CompetitorRequest implements ICompetitor
 
 export interface ICompetitorResponse extends ICompetitorRequest {
     id?: string;
-    /** Asignado por el sistema; no editable por el usuario */
-    surfScoresCode?: string;
     license?: LicenseInfo;
     createdAt?: Date;
 

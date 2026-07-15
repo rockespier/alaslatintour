@@ -80,6 +80,7 @@ using AlasApp.Application.Payments.Queries.ListPayments;
 using AlasApp.Application.Rankings.Commands.SyncSurfScoresCircuit;
 using AlasApp.Application.Rankings.Queries.GetRanking;
 using AlasApp.Application.Rankings.Queries.ListRankingCategories;
+using AlasApp.Application.SurfScoresImport.Commands.ImportSurfScoresEvents;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AlasApp.Application.Common;
@@ -174,6 +175,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<GetRankingQuery, Rankings.Models.RankingDto>, GetRankingQueryHandler>();
         services.AddScoped<IRequestHandler<ListRankingCategoriesQuery, IReadOnlyCollection<Rankings.Models.RankingCategoryAvailabilityDto>>, ListRankingCategoriesQueryHandler>();
         services.AddScoped<IRequestHandler<SyncSurfScoresCircuitCommand, Rankings.Models.SurfScoresSyncResultDto>, SyncSurfScoresCircuitCommandHandler>();
+        services.AddScoped<IRequestHandler<ImportSurfScoresEventsCommand, SurfScoresImport.Models.SurfScoresImportResultDto>, ImportSurfScoresEventsCommandHandler>();
 
         return services;
     }

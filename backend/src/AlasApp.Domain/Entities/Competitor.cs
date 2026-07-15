@@ -27,7 +27,8 @@ public sealed class Competitor : AuditableEntity
         CompetitorShirtSize tallaCamiseta,
         string numeroCamiseta,
         string patrocinadores,
-        string federacion)
+        string federacion,
+        string surfScoresCode)
     {
         Id = id;
         Nombre = nombre;
@@ -43,7 +44,7 @@ public sealed class Competitor : AuditableEntity
         NumeroCamiseta = numeroCamiseta;
         Patrocinadores = patrocinadores;
         Federacion = federacion;
-        SurfScoresCode = string.Empty;
+        SurfScoresCode = surfScoresCode;
         LicenseNumber = string.Empty;
         LicenseNumberLong = string.Empty;
         LicenseStatus = LicenseStatus.PendienteDeValidacion;
@@ -113,7 +114,8 @@ public sealed class Competitor : AuditableEntity
         CompetitorShirtSize tallaCamiseta,
         string numeroCamiseta,
         string patrocinadores,
-        string federacion)
+        string federacion,
+        string? surfScoresCode = null)
     {
         Validate(
             nombre,
@@ -126,7 +128,7 @@ public sealed class Competitor : AuditableEntity
             numeroCamiseta,
             patrocinadores,
             federacion,
-            string.Empty);
+            surfScoresCode ?? string.Empty);
 
         return new Competitor(
             Guid.NewGuid(),
@@ -142,7 +144,8 @@ public sealed class Competitor : AuditableEntity
             tallaCamiseta,
             NormalizeOptional(numeroCamiseta),
             NormalizeOptional(patrocinadores),
-            NormalizeOptional(federacion));
+            NormalizeOptional(federacion),
+            NormalizeOptional(surfScoresCode));
     }
 
     public void Update(
@@ -158,7 +161,8 @@ public sealed class Competitor : AuditableEntity
         CompetitorShirtSize tallaCamiseta,
         string numeroCamiseta,
         string patrocinadores,
-        string federacion)
+        string federacion,
+        string? surfScoresCode = null)
     {
         Validate(
             nombre,
@@ -171,7 +175,7 @@ public sealed class Competitor : AuditableEntity
             numeroCamiseta,
             patrocinadores,
             federacion,
-            SurfScoresCode);
+            surfScoresCode ?? string.Empty);
 
         Nombre = nombre.Trim();
         Apellido = apellido.Trim();
@@ -186,6 +190,7 @@ public sealed class Competitor : AuditableEntity
         NumeroCamiseta = NormalizeOptional(numeroCamiseta);
         Patrocinadores = NormalizeOptional(patrocinadores);
         Federacion = NormalizeOptional(federacion);
+        SurfScoresCode = NormalizeOptional(surfScoresCode);
     }
 
     public void UpdateLicense(

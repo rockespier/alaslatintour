@@ -29,6 +29,9 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.SurfScoresCode)
+            .HasMaxLength(100);
+
         builder.Property(x => x.CreatedAtUtc).IsRequired();
         builder.Property(x => x.UpdatedAtUtc).IsRequired();
 

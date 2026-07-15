@@ -18,4 +18,5 @@ public sealed record UpdateCompetitorCommand(
     CompetitorShirtSize TallaCamiseta,
     string NumeroCamiseta,
     string Patrocinadores,
-    string Federacion) : IRequest<CompetitorDto>;
+    string Federacion,
+    string? SurfScoresCode = null) : IRequest<CompetitorDto>;

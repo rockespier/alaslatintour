@@ -13,4 +13,5 @@ public sealed record CategoryDto(
     Guid? SuccessorCategoryId,
     CategorySummaryDto? SuccessorCategory,
     CategoryStatus Status,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string? SurfScoresCode);

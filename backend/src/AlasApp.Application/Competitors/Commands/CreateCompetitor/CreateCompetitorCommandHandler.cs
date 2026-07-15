@@ -38,7 +38,8 @@ public sealed class CreateCompetitorCommandHandler(
                 request.TallaCamiseta,
                 request.NumeroCamiseta,
                 request.Patrocinadores,
-                request.Federacion);
+                request.Federacion,
+                request.SurfScoresCode);
 
             competitor.SetCreated(clock.UtcNow);
 

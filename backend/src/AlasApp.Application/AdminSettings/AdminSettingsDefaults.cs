@@ -53,6 +53,7 @@ public static class AdminSettingsDefaults
                     "https://surfscores.com/api/v1/",
                     string.Empty,
                     string.Empty,
+                    string.Empty,
                     true,
                     5),
                 new WordPressSettingsDto(

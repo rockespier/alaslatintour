@@ -29,7 +29,8 @@ public sealed class CreateCategoryCommandHandler(
                 request.MinAge,
                 request.MaxAge,
                 request.SuccessorCategoryId,
-                request.Status);
+                request.Status,
+                request.SurfScoresCode);
 
             category.SetCreated(clock.UtcNow);
 

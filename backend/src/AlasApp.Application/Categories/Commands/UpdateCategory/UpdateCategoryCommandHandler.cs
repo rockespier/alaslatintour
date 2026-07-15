@@ -31,7 +31,8 @@ public sealed class UpdateCategoryCommandHandler(
                 request.MinAge,
                 request.MaxAge,
                 request.SuccessorCategoryId,
-                request.Status);
+                request.Status,
+                request.SurfScoresCode);
 
             category.SetUpdated(clock.UtcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);

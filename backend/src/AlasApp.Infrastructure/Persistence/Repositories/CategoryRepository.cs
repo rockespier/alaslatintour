@@ -79,6 +79,7 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
                 ? null
                 : new CategorySummaryDto(category.SuccessorCategory.Id, category.SuccessorCategory.Nombre),
             category.Status,
-            category.CreatedAtUtc);
+            category.CreatedAtUtc,
+            category.SurfScoresCode);
     }
 }
