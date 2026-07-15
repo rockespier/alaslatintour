@@ -374,7 +374,8 @@ public static class ApiContractMapper
             dto.Nombre,
             ToGeneratedCategoryStatus(dto.Status),
             dto.SuccessorCategory is null ? null : new Generated.SuccessorCategory(dto.SuccessorCategory.Id.ToString(), dto.SuccessorCategory.Nombre),
-            dto.SuccessorCategoryId?.ToString());
+            dto.SuccessorCategoryId?.ToString(),
+            dto.SurfScoresCode);
     }
 
     public static Generated.EventCategoryListResponse ToContract(EventCategoryListDto dto)
@@ -853,7 +854,8 @@ public static class ApiContractMapper
             request.MinAge,
             request.MaxAge,
             ParseNullableGuid(request.SuccessorCategoryId, "successorCategoryId"),
-            ToDomainCategoryStatus(request.Status));
+            ToDomainCategoryStatus(request.Status),
+            NormalizeOptional(request.SurfScoresCode));
     }
 
     public static UpdateCategoryCommand ToCommand(Guid categoryId, Generated.CategoryRequest request)
@@ -867,7 +869,8 @@ public static class ApiContractMapper
             request.MinAge,
             request.MaxAge,
             ParseNullableGuid(request.SuccessorCategoryId, "successorCategoryId"),
-            ToDomainCategoryStatus(request.Status));
+            ToDomainCategoryStatus(request.Status),
+            NormalizeOptional(request.SurfScoresCode));
     }
 
     public static CreateCompetitorCommand ToCommand(Generated.CompetitorRequest request)
@@ -885,7 +888,8 @@ public static class ApiContractMapper
             ToDomainCompetitorShirtSize(request.TallaCamiseta),
             request.NumeroCamiseta,
             request.Patrocinadores,
-            request.Federacion);
+            request.Federacion,
+            NormalizeOptional(request.SurfScoresCode));
     }
 
     public static UpdateCompetitorCommand ToCommand(Guid competitorId, Generated.CompetitorRequest request)
@@ -904,7 +908,8 @@ public static class ApiContractMapper
             ToDomainCompetitorShirtSize(request.TallaCamiseta),
             request.NumeroCamiseta,
             request.Patrocinadores,
-            request.Federacion);
+            request.Federacion,
+            NormalizeOptional(request.SurfScoresCode));
     }
 
     public static CreateMembershipCommand ToCommand(Generated.MembershipRequest request)

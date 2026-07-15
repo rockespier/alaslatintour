@@ -241,7 +241,7 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         /// <returns>Competidor creado</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("competitors")]
-        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
+        public abstract System.Threading.Tasks.Task<CompetitorResponse> CompetitorsPOSTPOST([Microsoft.AspNetCore.Mvc.FromBody] CompetitorRequest body);
 
         /// <summary>
         /// Obtener perfil del competidor
@@ -1695,7 +1695,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryRequest(bool @ageRestriction, string @descripcion, CategoryGender @gender, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId)
+        public CategoryRequest(bool @ageRestriction, string @descripcion, CategoryGender @gender, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId, string? @surfScoresCode)
         {
             this.Nombre = @nombre;
             this.Descripcion = @descripcion;
@@ -1705,6 +1705,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.MaxAge = @maxAge;
             this.SuccessorCategoryId = @successorCategoryId;
             this.Status = @status;
+            this.SurfScoresCode = @surfScoresCode;
         }
 
         [Newtonsoft.Json.JsonProperty("nombre", Required = Newtonsoft.Json.Required.Always)]
@@ -1738,6 +1739,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
         public CategoryStatus Status { get; }
 
+        /// <summary>
+        /// Código de la categoría en SurfScores para la integración de resultados.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? SurfScoresCode { get; }
+
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
         [Newtonsoft.Json.JsonExtensionData]
@@ -1753,8 +1760,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryResponse : CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryResponse(bool @ageRestriction, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId)
-            : base(ageRestriction, descripcion, gender, maxAge, minAge, nombre, status, successorCategoryId)
+        public CategoryResponse(bool @ageRestriction, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId, string? @surfScoresCode)
+            : base(ageRestriction, descripcion, gender, maxAge, minAge, nombre, status, successorCategoryId, surfScoresCode)
         {
             this.Id = @id;
             this.SuccessorCategory = @successorCategory;
@@ -1823,7 +1830,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CompetitorRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CompetitorRequest(string @apellido, string @club, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, ShirtSize @tallaCamiseta, string @telefono)
+        public CompetitorRequest(string @apellido, string @club, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string? @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
         {
             this.Nombre = @nombre;
             this.Apellido = @apellido;
@@ -1838,6 +1845,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.NumeroCamiseta = @numeroCamiseta;
             this.Patrocinadores = @patrocinadores;
             this.Federacion = @federacion;
+            this.SurfScoresCode = @surfScoresCode;
         }
 
         [Newtonsoft.Json.JsonProperty("nombre", Required = Newtonsoft.Json.Required.Always)]
@@ -1888,6 +1896,12 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("federacion", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Federacion { get; }
 
+        /// <summary>
+        /// Código del competidor en SurfScores para la integración de resultados.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? SurfScoresCode { get; }
+
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
         [Newtonsoft.Json.JsonExtensionData]
@@ -1903,23 +1917,16 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CompetitorResponse : CompetitorRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CompetitorResponse(string @apellido, string @club, System.DateTimeOffset @createdAt, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @id, LicenseInfo @license, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
-            : base(apellido, club, email, fechaNacimiento, federacion, genero, nombre, numeroCamiseta, pais, patrocinadores, postura, tallaCamiseta, telefono)
+        public CompetitorResponse(string @apellido, string @club, System.DateTimeOffset @createdAt, string @email, System.DateTimeOffset @fechaNacimiento, string @federacion, CompetitorRequestGenero @genero, string @id, LicenseInfo @license, string @nombre, string @numeroCamiseta, string @pais, string @patrocinadores, Postura @postura, string? @surfScoresCode, ShirtSize @tallaCamiseta, string @telefono)
+            : base(apellido, club, email, fechaNacimiento, federacion, genero, nombre, numeroCamiseta, pais, patrocinadores, postura, surfScoresCode, tallaCamiseta, telefono)
         {
             this.Id = @id;
-            this.SurfScoresCode = @surfScoresCode;
             this.License = @license;
             this.CreatedAt = @createdAt;
         }
 
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Id { get; }
-
-        /// <summary>
-        /// Asignado por el sistema; no editable por el usuario
-        /// </summary>
-        [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string SurfScoresCode { get; }
 
         [Newtonsoft.Json.JsonProperty("license", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public LicenseInfo License { get; }
