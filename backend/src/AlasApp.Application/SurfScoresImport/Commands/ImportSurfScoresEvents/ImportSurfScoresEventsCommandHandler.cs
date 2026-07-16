@@ -92,11 +92,13 @@ public sealed class ImportSurfScoresEventsCommandHandler(
                     string.IsNullOrWhiteSpace(remoteEvent.Country) ? DefaultPaisPlaya : remoteEvent.Country.Trim(),
                     DefaultCiudad,
                     string.IsNullOrWhiteSpace(remoteEvent.Place) ? DefaultPaisPlaya : remoteEvent.Place.Trim(),
+                    null,
                     DefaultStars,
                     DefaultCapacidadMaxima,
                     0m,
                     null,
                     remoteEvent.Id,
+                    EventType.Regular,
                     EventAccessType.Abierto,
                     EventStatusAdmin.Borrador);
 
@@ -122,7 +124,7 @@ public sealed class ImportSurfScoresEventsCommandHandler(
                 if (matchedCategoryIds.Count > 0)
                 {
                     var items = matchedCategoryIds
-                        .Select(categoryId => new EventCategoryUpsertItem(categoryId, null, null, null, null))
+                        .Select(categoryId => new EventCategoryUpsertItem(categoryId, null, null, null))
                         .ToList();
 
                     var assignments = await eventCategoryRepository.BuildAssignmentsAsync(@event.Id, items, cancellationToken);
