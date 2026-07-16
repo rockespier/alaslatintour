@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Preguntas generales
+    url: https://github.com/rockespier/alaslatintour/discussions
+    about: Utiliza Discussions para preguntas que no sean bugs o tareas.

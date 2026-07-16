@@ -1,0 +1,81 @@
+name: 🔧 Tarea técnica
+description: Refactorización, mantenimiento, actualización o deuda técnica
+title: "[TECH] "
+labels:
+  - technical-debt
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Explica la tarea técnica requerida.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivo
+      description: ¿Por qué debe realizarse este cambio?
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-files
+    attributes:
+      label: Componentes afectados
+      description: Proyectos, carpetas, clases, componentes o tablas conocidas.
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Consideraciones de implementación
+      description: Restricciones arquitectónicas o decisiones conocidas.
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Criterios de aceptación
+      placeholder: |
+        - [ ] La solución compila
+        - [ ] Las pruebas existentes continúan funcionando
+        - [ ] Se agregaron pruebas cuando corresponde
+        - [ ] No se modificaron contratos públicos
+        - [ ] La documentación fue actualizada
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation-commands
+    attributes:
+      label: Comandos de validación
+      placeholder: |
+        dotnet build
+        dotnet test
+        npm run build
+        npm test -- --watch=false
+
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Especialidad recomendada
+      options:
+        - Arquitecto .NET
+        - Desarrollador Backend
+        - Angular
+        - DBA / EF Core
+        - DevOps / GitHub Actions
+        - Revisión general
+    validations:
+      required: true
+          
+  - type: textarea
+    id: agent-instructions
+    attributes:
+      label: Instrucciones para el agente
+      description: Restricciones específicas que Codex o Claude deben respetar.
+      placeholder: |
+        - No modificar contratos públicos
+        - No agregar nuevas dependencias
+        - Respetar AGENTS.md
+        - No hacer commit ni push automáticamente          

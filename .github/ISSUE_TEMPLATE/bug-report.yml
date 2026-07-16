@@ -1,0 +1,131 @@
+name: 🐛 Reporte de error
+description: Reportar un comportamiento incorrecto o una regresión
+title: "[BUG] "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar el problema.
+        Completa toda la información posible para facilitar su reproducción.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del problema
+      description: Explica claramente qué está ocurriendo.
+      placeholder: Describe el problema observado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Comportamiento actual
+      description: ¿Qué sucede actualmente?
+      placeholder: Actualmente, cuando...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Comportamiento esperado
+      description: ¿Qué debería suceder?
+      placeholder: Se esperaba que...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Pasos para reproducir
+      description: Indica los pasos exactos para reproducir el problema.
+      placeholder: |
+        1. Acceder a...
+        2. Seleccionar...
+        3. Ejecutar...
+        4. Ver el error...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Área afectada
+      multiple: true
+      options:
+        - Backend .NET
+        - Frontend Angular
+        - Base de datos
+        - API o contratos
+        - Autenticación / Microsoft Entra ID
+        - Infraestructura / CI-CD
+        - Documentación
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Entorno
+      description: Desarrollo, pruebas, preproducción o producción.
+      placeholder: Desarrollo local / Producción
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencias
+      description: Incluye logs, capturas, mensajes de error o respuestas HTTP.
+      placeholder: Pega aquí los logs o adjunta capturas.
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Criterios de aceptación
+      description: Define cómo se comprobará que el problema está resuelto.
+      placeholder: |
+        - [ ] El error ya no se reproduce
+        - [ ] Se agregaron pruebas
+        - [ ] El build finaliza correctamente
+        - [ ] No se producen regresiones
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-context
+    attributes:
+      label: Contexto técnico
+      description: Endpoints, clases, componentes, tablas o archivos relacionados.
+      placeholder: |
+        Endpoint:
+        Componente:
+        Controlador:
+        Tabla:
+
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verificación previa
+      options:
+        - label: He comprobado que no existe otro issue duplicado.
+          required: true
+        - label: He incluido información suficiente para reproducir el problema.
+          required: true
+        - label: No he incluido contraseñas, tokens ni información sensible.
+          required: true
+          
+    - type: textarea
+      id: agent-instructions
+      attributes:
+        label: Instrucciones para el agente
+        description: Restricciones específicas que Codex o Claude deben respetar.
+        placeholder: |
+          - No modificar contratos públicos
+          - No agregar nuevas dependencias
+          - Respetar AGENTS.md
+          - No hacer commit ni push automáticamente          

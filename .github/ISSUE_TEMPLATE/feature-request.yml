@@ -1,0 +1,94 @@
+name: ✨ Nueva funcionalidad
+description: Solicitar una nueva característica o mejora
+title: "[FEATURE] "
+labels:
+  - enhancement
+  - needs-analysis
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo
+      description: Explica qué se quiere conseguir.
+      placeholder: Como usuario necesito...
+    validations:
+      required: true
+
+  - type: textarea
+    id: business-value
+    attributes:
+      label: Valor de negocio
+      description: Explica por qué esta funcionalidad es necesaria.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Solución propuesta
+      description: Describe el comportamiento esperado.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Área afectada
+      multiple: true
+      options:
+        - Backend .NET
+        - Frontend Angular
+        - Base de datos
+        - API o contratos
+        - Autenticación / Microsoft Entra ID
+        - Infraestructura / CI-CD
+        - Documentación
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Criterios de aceptación
+      placeholder: |
+        - [ ] El usuario puede...
+        - [ ] El sistema valida...
+        - [ ] Se muestran los mensajes correspondientes
+        - [ ] Se agregaron pruebas automatizadas
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: Consideraciones técnicas
+      description: APIs, seguridad, base de datos, rendimiento o compatibilidad.
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Fuera de alcance
+      description: Indica explícitamente qué no debe incluirse.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad propuesta
+      options:
+        - Baja
+        - Media
+        - Alta
+        - Crítica
+    validations:
+      required: true
+          
+  - type: textarea
+    id: agent-instructions
+    attributes:
+      label: Instrucciones para el agente
+      description: Restricciones específicas que Codex o Claude deben respetar.
+      placeholder: |
+        - No modificar contratos públicos
+        - No agregar nuevas dependencias
+        - Respetar AGENTS.md
+        - No hacer commit ni push automáticamente          
