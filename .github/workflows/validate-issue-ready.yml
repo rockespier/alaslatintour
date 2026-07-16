@@ -1,0 +1,160 @@
+name: Validate issue readiness
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  validate-ready:
+    name: Validate Ready requirements
+
+    if: github.event.label.name == 'status:ready'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate required sections
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body ?? "";
+
+            const requiredSections = [
+              "Descripción",
+              "Criterios de aceptación",
+              "Área afectada",
+              "Prioridad",
+              "Evidencias o contexto",
+              "Dependencias identificadas"
+            ];
+
+            function escapeRegex(value) {
+              return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            }
+
+            function getSectionContent(sectionName) {
+              const escapedName = escapeRegex(sectionName);
+
+              const expression = new RegExp(
+                `###\\s+${escapedName}\\s*\\n([\\s\\S]*?)(?=\\n###\\s+|$)`,
+                "i"
+              );
+
+              const result = body.match(expression);
+
+              return result ? result[1].trim() : "";
+            }
+
+            function normalizeContent(value) {
+              return value
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .replace(/_No response_/gi, "")
+                .trim();
+            }
+
+            function isIncomplete(value) {
+              const normalized = normalizeContent(value).toLowerCase();
+
+              const invalidValues = [
+                "",
+                "n/a",
+                "na",
+                "pendiente",
+                "por definir",
+                "todo",
+                "-"
+              ];
+
+              return invalidValues.includes(normalized);
+            }
+
+            const missing = [];
+
+            for (const section of requiredSections) {
+              const content = getSectionContent(section);
+
+              if (isIncomplete(content)) {
+                missing.push(section);
+              }
+            }
+
+            const acceptanceCriteria =
+              getSectionContent("Criterios de aceptación");
+
+            const hasAcceptanceChecklist =
+              /-\s*\[\s*[xX ]?\s*\]\s+\S+/.test(acceptanceCriteria);
+
+            if (
+              !missing.includes("Criterios de aceptación") &&
+              !hasAcceptanceChecklist
+            ) {
+              missing.push(
+                "Criterios de aceptación: debe contener una checklist"
+              );
+            }
+
+            if (missing.length === 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body:
+                  "✅ **Issue validado para Ready.**\n\n" +
+                  "Se verificaron los siguientes requisitos:\n\n" +
+                  "- Descripción completa\n" +
+                  "- Criterios de aceptación\n" +
+                  "- Área afectada\n" +
+                  "- Prioridad\n" +
+                  "- Evidencias o contexto\n" +
+                  "- Dependencias identificadas"
+              });
+
+              core.notice("El issue cumple los requisitos para Ready.");
+              return;
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                name: "status:ready"
+              });
+            } catch (error) {
+              core.warning(
+                `No se pudo eliminar la etiqueta: ${error.message}`
+              );
+            }
+
+            const checklist = requiredSections
+              .map(section => {
+                const isMissing = missing.some(item =>
+                  item.startsWith(section)
+                );
+
+                return `- [${isMissing ? " " : "x"}] ${section}`;
+              })
+              .join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body:
+                "⚠️ **El issue todavía no puede pasar a Ready.**\n\n" +
+                checklist +
+                "\n\nInformación pendiente:\n\n" +
+                missing.map(item => `- ${item}`).join("\n") +
+                "\n\nCompleta el issue y vuelve a añadir la etiqueta " +
+                "`status:ready`."
+            });
+
+            core.setFailed(
+              `El issue no cumple los requisitos: ${missing.join(", ")}`
+            );
