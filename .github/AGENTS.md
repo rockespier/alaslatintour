@@ -4,7 +4,7 @@
 
 - Every change must correspond to a GitHub issue.
 - Never push directly to main.
-- Do not commit or push unless explicitly requested.
+- Do not commit or push unless explicitly requested. Then create a new branch and Pull request.
 - Read the complete issue before modifying files.
 - First analyze the scope and propose a plan.
 - Keep changes limited to the issue.
@@ -17,7 +17,7 @@
 - Frontend uses Angular.
 - Do not expose persistence entities directly through API responses.
 - Do not introduce dependencies without justification.
-- Do not modify public API contracts without documenting the impact.
+
 
 ## Pull requests
 
