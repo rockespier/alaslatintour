@@ -29,6 +29,14 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.MembresiaAnualUsd)
+            .HasColumnType("decimal(18,2)")
+            .IsRequired();
+
+        builder.Property(x => x.MembresiaPorEventoUsd)
+            .HasColumnType("decimal(18,2)")
+            .IsRequired();
+
         builder.Property(x => x.SurfScoresCode)
             .HasMaxLength(100);
 

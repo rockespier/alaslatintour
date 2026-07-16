@@ -2,6 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using AlasApp.Application.AdminSettings;
+using AlasApp.Domain.Entities;
+using AlasApp.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -9,10 +14,12 @@ namespace AlasApp.Api.Tests;
 
 public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public InscriptionsEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -64,6 +71,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         var inscriptionId = created.RootElement.GetProperty("id").GetString();
         Assert.Equal("paypal", created.RootElement.GetProperty("paymentMethod").GetString());
         Assert.Equal("Pendiente", created.RootElement.GetProperty("estadoAdmin").GetString());
+        Assert.Equal(80m, created.RootElement.GetProperty("baseAmountUsd").GetDecimal());
+        Assert.False(created.RootElement.TryGetProperty("administrativeFeeUsd", out _));
+        Assert.Equal(80m, created.RootElement.GetProperty("montoUsd").GetDecimal());
 
         var getResponse = await _client.GetAsync($"/v1/inscriptions/{inscriptionId}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -139,6 +149,50 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
 
         var getAfterDeleteResponse = await _client.GetAsync($"/v1/inscriptions/{pendingDeleteId}");
         Assert.Equal(HttpStatusCode.NotFound, getAfterDeleteResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateInscription_ShouldIncludeAdministrativeFeeBreakdown_WhenConfigured()
+    {
+        await SeedAdministrativeFeeAsync(15m);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+        var categoryId = await CreateCategoryAsync("Open Fee");
+        var competitor = await RegisterAndLoginCompetitorAsync();
+
+        var assignCategoryResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    customTariffUsd = 80,
+                    capacidad = 2
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+
+        var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
+        {
+            competitorId = competitor.CompetitorId,
+            eventId,
+            categoryId,
+            shirtNumber = "#88",
+            paymentMethod = "paypal",
+            reglamento = true
+        });
+
+        Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);
+
+        var created = await ReadJsonAsync(createInscriptionResponse);
+        Assert.Equal(80m, created.RootElement.GetProperty("baseAmountUsd").GetDecimal());
+        Assert.Equal(15m, created.RootElement.GetProperty("administrativeFeeUsd").GetDecimal());
+        Assert.Equal(95m, created.RootElement.GetProperty("montoUsd").GetDecimal());
     }
 
     [Fact]
@@ -292,5 +346,31 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonDocument.Parse(content);
+    }
+
+    private async Task SeedAdministrativeFeeAsync(decimal amountUsd)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+
+        var settings = AdminSettingsDefaults.Create();
+        settings = settings with
+        {
+            General = settings.General with { AdministrativeFeeUsd = amountUsd }
+        };
+
+        var json = AdminSettingsSerializer.Serialize(settings);
+        var existing = await dbContext.SystemSettings.FirstOrDefaultAsync(x => x.Key == AdminSettingsDefaults.SettingsKey);
+
+        if (existing is null)
+        {
+            dbContext.SystemSettings.Add(SystemSetting.Create(AdminSettingsDefaults.SettingsKey, json, DateTimeOffset.UtcNow));
+        }
+        else
+        {
+            existing.Update(json, DateTimeOffset.UtcNow);
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }

@@ -13,5 +13,7 @@ public sealed record CategoryDto(
     Guid? SuccessorCategoryId,
     CategorySummaryDto? SuccessorCategory,
     CategoryStatus Status,
+    decimal MembresiaAnualUsd,
+    decimal MembresiaPorEventoUsd,
     DateTimeOffset CreatedAtUtc,
     string? SurfScoresCode);

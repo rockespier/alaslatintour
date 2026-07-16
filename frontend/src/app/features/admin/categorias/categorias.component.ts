@@ -14,6 +14,8 @@ interface Category {
   status: 'Activo' | 'Inactivo';
   createdAt?: string;
   surfScoresCode?: string | null;
+  membresiaAnualUsd?: number | null;
+  membresiaPorEventoUsd?: number | null;
 }
 
 @Component({
@@ -233,6 +235,20 @@ interface Category {
               <p class="text-text-muted/60 text-xs mt-1">Código usado para enlazar esta categoría con la API de SurfScores.</p>
             </div>
 
+            <!-- Membresías -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Membresía anual (USD)</label>
+                <input formControlName="membresiaAnualUsd" type="number" min="0" step="0.01" placeholder="35.00"
+                       class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+              </div>
+              <div>
+                <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Membresía por evento (USD)</label>
+                <input formControlName="membresiaPorEventoUsd" type="number" min="0" step="0.01" placeholder="12.00"
+                       class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+              </div>
+            </div>
+
             <!-- Footer -->
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" (click)="closeModal()"
@@ -301,6 +317,8 @@ export class CategoriasComponent implements OnInit {
     successorCategoryId: [''],
     status: ['Activo', Validators.required],
     surfScoresCode: [''],
+    membresiaAnualUsd: [null as number | null],
+    membresiaPorEventoUsd: [null as number | null],
   });
 
   filtered = computed(() => {
@@ -336,6 +354,7 @@ export class CategoriasComponent implements OnInit {
       nombre: '', descripcion: '', gender: 'Masculino',
       ageRestriction: false, minAge: null, maxAge: null,
       successorCategoryId: '', status: 'Activo', surfScoresCode: '',
+      membresiaAnualUsd: null, membresiaPorEventoUsd: null,
     });
     this.modalOpen.set(true);
   }
@@ -352,6 +371,8 @@ export class CategoriasComponent implements OnInit {
       successorCategoryId: cat.successorCategory?.id ?? '',
       status: cat.status,
       surfScoresCode: cat.surfScoresCode ?? '',
+      membresiaAnualUsd: cat.membresiaAnualUsd ?? null,
+      membresiaPorEventoUsd: cat.membresiaPorEventoUsd ?? null,
     });
     this.modalOpen.set(true);
   }
@@ -376,6 +397,8 @@ export class CategoriasComponent implements OnInit {
         successorCategoryId: v.successorCategoryId || null,
         status: v.status,
         surfScoresCode: v.surfScoresCode || null,
+        membresiaAnualUsd: v.membresiaAnualUsd != null ? Number(v.membresiaAnualUsd) : 0,
+        membresiaPorEventoUsd: v.membresiaPorEventoUsd != null ? Number(v.membresiaPorEventoUsd) : 0,
       };
 
       const id = this.editingId();

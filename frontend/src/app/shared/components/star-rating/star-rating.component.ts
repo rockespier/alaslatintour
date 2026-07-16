@@ -16,6 +16,6 @@ import { Component, input } from '@angular/core';
 })
 export class StarRatingComponent {
   value = input.required<number>();
-  max = input<number>(5);
+  max = input<number>(7);
   protected stars = () => Array.from({ length: this.max() }, (_, i) => i + 1);
 }

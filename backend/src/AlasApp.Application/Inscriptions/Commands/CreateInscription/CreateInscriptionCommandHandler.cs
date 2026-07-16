@@ -57,6 +57,11 @@ public sealed class CreateInscriptionCommandHandler(
             ? pricingContext.CircuitTariffUsd ?? 0m
             : pricingContext.CustomTariffUsd ?? pricingContext.CircuitTariffUsd ?? 0m;
 
+        var settingsJson = await adminSettingsRepository.GetJsonAsync(AdminSettingsDefaults.SettingsKey, cancellationToken);
+        var settings = AdminSettingsSerializer.DeserializeOrDefault(settingsJson);
+        var administrativeFeeUsd = settings.General.AdministrativeFeeUsd;
+        var totalMontoUsd = montoUsd + administrativeFeeUsd;
+
         try
         {
             var inscription = Inscription.Create(
@@ -66,6 +71,8 @@ public sealed class CreateInscriptionCommandHandler(
                 request.ShirtNumber,
                 request.PaymentMethod,
                 montoUsd,
+                administrativeFeeUsd,
+                totalMontoUsd,
                 request.Reglamento,
                 clock.UtcNow);
 

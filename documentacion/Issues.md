@@ -30,5 +30,10 @@
 
 14. Agregar la cuota administrativa como un valor configurable en configuración. En caso su valor sea 0, se debe ocultar del resumen de inscripción.
 
+    ## **Nuevas Issues**
     
+    15. Al momento de inscribirse un competidor debe aceptar los riesgos de la competencia y conceder a Alas el uso de sus imagenes y videos en la competencia.
+    16. Al momento de registrarse un nuevo competidor, debe ser obligatorio subir un documento de identidad (podemos crear una galeria especifica en WP para almacenar los documentos. El archivo debería tener el nombre y apellido del competidor) Ademas el competidor debe tener un nuevo estado que indique si su documento de identidad fue verificado por el staff de ALAS.
+    17. Esta pendiente crear la pagina del evento "en Vivo" que incluye los datos  ingresados en configuracion. Esta pagina debe reemplazar a la pagina de inicio, cuando exista un evento marcado como "en vivo"
+    18. En la pantalla de configuración del evento "en Vivo" se debe poder adjuntar un PDF con la programación del evento. Este documento se pondrá en la pagina para que los competidores lo puedan descargar.
 

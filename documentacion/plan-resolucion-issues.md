@@ -65,6 +65,8 @@ Actualizar eventos/categorías habilitadas:
 
 **Nota:** no requirió migración EF porque el cambio fue de reglas, contratos y configuración serializada; no cambió el esquema físico.
 
+**Estado frontend 2026-07-16:** implementado. Cambios: `star-rating.component.ts` (max 5→7), `calendario.component.ts` (loop de estrellas 5→7), `configuracion.component.ts` (tablas de puntos por posición y distribución de premios extendidas con columnas `s6`/`s7` y `p6`/`p7`, mapeadas a `star6`/`star7` y `star6Percent`/`star7Percent`). El formulario de eventos (`admin-eventos.component.ts`) ya soportaba 1-7 estrellas.
+
 ### Issue 3
 Eliminar `tarifa COP` de eventos/categorías habilitadas y contratos asociados.
 
@@ -88,12 +90,35 @@ Agregar en categorías:
 
 **Razón:** completa la estructura económica de categorías antes de configuración avanzada.
 
+**Estado 2026-07-16:** implementado en backend.
+
+**Checklist técnico del cierre:**
+- agregado de `MembresiaAnualUsd` y `MembresiaPorEventoUsd` al agregado `Category`,
+- validación de no negativos en dominio y capa de aplicación,
+- contratos OpenAPI y NSwag regenerados para `CategoryRequest` y `CategoryResponse`,
+- persistencia EF con columnas SQL Server `decimal(18,2)` en `Categories`,
+- migración `AddCategoryMembershipFees`,
+- tests de integración del slice de categorías en verde.
+
+**Estado frontend 2026-07-16:** implementado. `categorias.component.ts` agrega los campos `membresiaAnualUsd` y `membresiaPorEventoUsd` al formulario (crear/editar) y al payload de `POST/PUT /categories`.
+
 ### Issue 14
 Hacer configurable la cuota administrativa:
 - valor en configuración,
 - si `0`, no mostrarla en resumen de inscripción.
 
 **Dependencia:** issue 3 recomendado antes para evitar tocar dos veces la lógica de montos.
+
+**Estado 2026-07-16:** implementado en backend.
+
+**Checklist técnico del cierre:**
+- `general.administrativeFeeUsd` agregado a la configuración administrativa,
+- validación para impedir cuotas negativas,
+- desglose persistido en `Inscriptions` con `BaseAmountUsd` y `AdministrativeFeeUsd`,
+- respuesta de inscripción enriquecida con `baseAmountUsd` y `administrativeFeeUsd`,
+- ocultamiento del campo `administrativeFeeUsd` cuando la cuota configurada es `0`,
+- migración `AddInscriptionAdministrativeFee`,
+- tests de integración de settings e inscripciones en verde.
 
 ### Issue 7
 Configurar ranking:

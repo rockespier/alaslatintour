@@ -12,6 +12,8 @@ interface RankingPointsRow {
   s3: number;
   s4: number;
   s5: number;
+  s6: number;
+  s7: number;
 }
 
 interface PrizeDistRow {
@@ -21,6 +23,8 @@ interface PrizeDistRow {
   p3: number;
   p4: number;
   p5: number;
+  p6: number;
+  p7: number;
 }
 
 interface DemoEvento { id: string; label: string; }
@@ -167,6 +171,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-navy-mid/40">
@@ -178,6 +184,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.s3"></td>
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.s4"></td>
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.s5"></td>
+                        <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.s6"></td>
+                        <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.s7"></td>
                       </tr>
                     }
                   </tbody>
@@ -200,6 +208,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-navy-mid/40">
@@ -211,6 +221,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.p3">%</td>
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.p4">%</td>
                         <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.p5">%</td>
+                        <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.p6">%</td>
+                        <td class="px-4 py-3 text-right"><input type="number" class="rank-cell" [(ngModel)]="row.p7">%</td>
                       </tr>
                     }
                   </tbody>
@@ -856,10 +868,10 @@ export class ConfiguracionComponent implements OnInit {
     this.dnsPercent = r.dnsScorePercentage ?? 0;
     this.dsqPenalty = r.dsqPenaltyPoints ?? 0;
     this.rankingRows = (r.pointsMatrix ?? []).map((row: any) => ({
-      pos: row.position, s1: row.star1, s2: row.star2, s3: row.star3, s4: row.star4, s5: row.star5,
+      pos: row.position, s1: row.star1, s2: row.star2, s3: row.star3, s4: row.star4, s5: row.star5, s6: row.star6, s7: row.star7,
     }));
     this.prizeDistRows = (r.prizeDistribution ?? []).map((row: any) => ({
-      label: row.placeLabel, p1: row.star1Percent, p2: row.star2Percent, p3: row.star3Percent, p4: row.star4Percent, p5: row.star5Percent,
+      label: row.placeLabel, p1: row.star1Percent, p2: row.star2Percent, p3: row.star3Percent, p4: row.star4Percent, p5: row.star5Percent, p6: row.star6Percent, p7: row.star7Percent,
     }));
 
     const i = s.integrations ?? {};
@@ -915,10 +927,10 @@ export class ConfiguracionComponent implements OnInit {
         dnsScorePercentage: this.dnsPercent,
         dsqPenaltyPoints: this.dsqPenalty,
         pointsMatrix: this.rankingRows.map(row => ({
-          position: row.pos, star1: row.s1, star2: row.s2, star3: row.s3, star4: row.s4, star5: row.s5,
+          position: row.pos, star1: row.s1, star2: row.s2, star3: row.s3, star4: row.s4, star5: row.s5, star6: row.s6, star7: row.s7,
         })),
         prizeDistribution: this.prizeDistRows.map(row => ({
-          placeLabel: row.label, star1Percent: row.p1, star2Percent: row.p2, star3Percent: row.p3, star4Percent: row.p4, star5Percent: row.p5,
+          placeLabel: row.label, star1Percent: row.p1, star2Percent: row.p2, star3Percent: row.p3, star4Percent: row.p4, star5Percent: row.p5, star6Percent: row.p6, star7Percent: row.p7,
         })),
       },
       integrations: {

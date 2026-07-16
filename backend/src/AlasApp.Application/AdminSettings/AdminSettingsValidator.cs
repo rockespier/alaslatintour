@@ -37,6 +37,11 @@ public static class AdminSettingsValidator
             errors.Add(new ValidationError("general.season.startDate", "La fecha de inicio no puede ser posterior a la fecha de fin."));
         }
 
+        if (settings.General.AdministrativeFeeUsd < 0)
+        {
+            errors.Add(new ValidationError("general.administrativeFeeUsd", "La cuota administrativa no puede ser negativa."));
+        }
+
         if (settings.Ranking.BestResultsCount is < 1 or > 10)
         {
             errors.Add(new ValidationError("ranking.bestResultsCount", "Los mejores resultados a contar deben estar entre 1 y 10."));

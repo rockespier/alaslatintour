@@ -41,6 +41,10 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Galleries | `GET` | `/v1/galleries` | nuevo |
 | Galleries | `GET` | `/v1/galleries/{slug}` | modificado |
 | Uploads | `POST` | `/v1/uploads/event-poster` | nuevo |
+| Categories | `GET` | `/v1/categories` | modificado |
+| Categories | `GET` | `/v1/categories/{categoryId}` | modificado |
+| Categories | `POST` | `/v1/categories` | modificado |
+| Categories | `PUT` | `/v1/categories/{categoryId}` | modificado |
 | Rankings | `GET` | `/v1/rankings` | nuevo |
 | Rankings | `GET` | `/v1/rankings/categories` | nuevo |
 | SurfScores | `POST` | `/v1/surfscores/sync/{circuitId}` | nuevo |
@@ -64,12 +68,15 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - `GET /v1/galleries` devuelve una card liviana con una sola portada por galería.
 - `GET /v1/galleries/{slug}` ya no devuelve `photos` plano. Ahora devuelve `galleryDays[]` con `assets[]` tipados.
 - `POST /v1/uploads/event-poster` sube la imagen a WordPress y devuelve la URL final que luego debe enviarse en `POST/PUT /v1/events`.
+- `GET/PUT /v1/admin/settings` expone `general.administrativeFeeUsd` para parametrizar la cuota administrativa global.
 - `POST /v1/events` y `PUT /v1/events/{id}` aceptan `imagenUrl` para el afiche del evento.
 - `POST /v1/events` y `PUT /v1/events/{id}` aceptan además `auspiciador` y `eventType`.
 - `GET /v1/events` y `GET /v1/events/{id}` ahora devuelven `auspiciador` y `eventType`.
 - `POST /v1/events` y `PUT /v1/events/{id}` permiten `stars` de `1` a `7`.
 - `GET/PUT /v1/events/{eventId}/categories` devuelve `gender` y `stars` por categoría habilitada.
 - `GET/PUT /v1/events/{eventId}/categories` ya no maneja tarifa COP; el override por evento quedó solo en USD.
+- `GET/POST/PUT /v1/categories` ahora expone `membresiaAnualUsd` y `membresiaPorEventoUsd`.
+- `GET /v1/inscriptions`, `GET /v1/inscriptions/{id}` y `GET /v1/competitors/{id}/inscriptions` ahora devuelven `baseAmountUsd` y, solo si aplica, `administrativeFeeUsd`.
 - `GET /v1/categories/{categoryId}/tariffs` y `PUT /v1/categories/{categoryId}/tariffs/{starLevel}` soportan `starLevel` de `1` a `7`.
 - En ranking, los eventos `Prime` aplican bono `+10%` y `SuperPrime` `+50%` sobre `ligaPoints` al construir la caché.
 - La matriz de puntos y la distribución de premios ya contemplan eventos de 6 y 7 estrellas.
@@ -1180,6 +1187,8 @@ Content-Type: application/json
   "ageRestriction": true,
   "minAge": 12,
   "maxAge": 15,
+  "membresiaAnualUsd": 35.0,
+  "membresiaPorEventoUsd": 12.0,
   "successorCategoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "Activo"
 }
@@ -1202,6 +1211,8 @@ Content-Type: application/json
   "ageRestriction": true,
   "minAge": 12,
   "maxAge": 15,
+  "membresiaAnualUsd": 35.0,
+  "membresiaPorEventoUsd": 12.0,
   "successorCategory": {
     "id": "another-guid",
     "nombre": "Sub-18 Masculino"
@@ -1228,12 +1239,18 @@ Content-Type: application/json
   "ageRestriction": true,
   "minAge": 12,
   "maxAge": 15,
+  "membresiaAnualUsd": 40.0,
+  "membresiaPorEventoUsd": 15.0,
   "successorCategoryId": null,
   "status": "Activo"
 }
 ```
 
 **Response:** `200 OK`
+
+**Notas de frontend:**
+- Ambos importes deben enviarse siempre; si la UI todavía no tiene captura, enviar `0`.
+- La API rechaza valores negativos.
 
 ---
 
@@ -1560,6 +1577,46 @@ Content-Type: application/json
 
 **Response:** `201 Created`
 
+**Ejemplo de response:**
+```json
+{
+  "id": "guid",
+  "competitor": {
+    "id": "guid",
+    "fullName": "Carlos Diaz",
+    "country": "Perú"
+  },
+  "event": {
+    "id": "guid",
+    "nombre": "Evento Inscriptions",
+    "lugar": "Lima, Perú"
+  },
+  "category": {
+    "id": "guid",
+    "nombre": "Open Mixto"
+  },
+  "circuit": {
+    "id": "guid",
+    "nombre": "Circuito Inscriptions"
+  },
+  "shirtNumber": "#99",
+  "paymentMethod": "Paypal",
+  "baseAmountUsd": 80.0,
+  "administrativeFeeUsd": 15.0,
+  "montoUsd": 95.0,
+  "estadoAdmin": "Pendiente",
+  "estadoCompetidor": "Pendiente",
+  "resultado": null,
+  "transaccionId": null,
+  "inscripcionAt": "2026-07-16T00:00:00Z"
+}
+```
+
+**Reglas de frontend:**
+- `montoUsd` es el total final a cobrar y el único valor que debe usarse para iniciar PayPal o registrar pagos.
+- `baseAmountUsd` representa la inscripción sin recargo administrativo.
+- `administrativeFeeUsd` puede no venir en el payload cuando la cuota configurada es `0`; en ese caso la UI debe ocultar esa línea del resumen.
+
 ---
 
 ### GET /v1/inscriptions/{id}
@@ -1567,6 +1624,8 @@ Content-Type: application/json
 ```
 GET {{base_url}}/v1/inscriptions/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
+
+Devuelve el mismo desglose monetario de `POST /v1/inscriptions`.
 
 ### PUT /v1/inscriptions/{id}
 
@@ -1598,6 +1657,57 @@ DELETE {{base_url}}/v1/inscriptions/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 GET {{base_url}}/v1/events/{eventId}/inscriptions?page=1&limit=20&categoryId={categoryId}&status=Pendiente
 ```
+
+## 15. Admin Settings — `/v1/admin/settings`
+
+### GET /v1/admin/settings
+
+```http
+GET {{base_url}}/v1/admin/settings
+Authorization: Bearer {{access_token}}
+```
+
+**Campo nuevo relevante para frontend/backoffice:**
+- `general.administrativeFeeUsd`: cuota administrativa global en USD.
+
+**Ejemplo parcial de response:**
+```json
+{
+  "general": {
+    "organizationName": "ALAS Latin Tour",
+    "shortName": "ALAS",
+    "contactEmail": "info@alasglobaltour.com",
+    "phone": "+57 310 000 0000",
+    "website": "www.alaslatintour.com",
+    "headquartersCountry": "Colombia",
+    "administrativeFeeUsd": 15.0,
+    "socialLinks": {
+      "instagram": "@alasglobaltour",
+      "facebook": "facebook.com/alaslatintour",
+      "x": "@alasglobaltour",
+      "youTube": "youtube.com/@alasglobaltour"
+    },
+    "season": {
+      "currentYear": 2026,
+      "startDate": "2026-01-01",
+      "endDate": "2026-12-31"
+    }
+  }
+}
+```
+
+### PUT /v1/admin/settings
+
+```http
+PUT {{base_url}}/v1/admin/settings
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+```
+
+**Reglas del campo `general.administrativeFeeUsd`:**
+- debe enviarse como número decimal en USD,
+- no admite valores negativos,
+- si se guarda en `0`, las nuevas respuestas de inscripción omiten `administrativeFeeUsd`.
 
 ---
 

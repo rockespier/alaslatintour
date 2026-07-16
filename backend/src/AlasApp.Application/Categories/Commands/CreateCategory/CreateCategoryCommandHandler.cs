@@ -30,6 +30,8 @@ public sealed class CreateCategoryCommandHandler(
                 request.MaxAge,
                 request.SuccessorCategoryId,
                 request.Status,
+                request.MembresiaAnualUsd,
+                request.MembresiaPorEventoUsd,
                 request.SurfScoresCode);
 
             category.SetCreated(clock.UtcNow);
@@ -66,6 +68,16 @@ public sealed class CreateCategoryCommandHandler(
         if (string.IsNullOrWhiteSpace(request.Nombre))
         {
             errors.Add(new ValidationError("nombre", "El nombre es obligatorio."));
+        }
+
+        if (request.MembresiaAnualUsd < 0)
+        {
+            errors.Add(new ValidationError("membresiaAnualUsd", "La membresia anual no puede ser negativa."));
+        }
+
+        if (request.MembresiaPorEventoUsd < 0)
+        {
+            errors.Add(new ValidationError("membresiaPorEventoUsd", "La membresia por evento no puede ser negativa."));
         }
 
         if (errors.Count > 0)

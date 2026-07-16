@@ -370,6 +370,8 @@ public static class ApiContractMapper
             ToGeneratedCategoryGender(dto.Gender),
             dto.Id.ToString(),
             dto.MaxAge,
+            (float)dto.MembresiaAnualUsd,
+            (float)dto.MembresiaPorEventoUsd,
             dto.MinAge,
             dto.Nombre,
             ToGeneratedCategoryStatus(dto.Status),
@@ -527,6 +529,8 @@ public static class ApiContractMapper
             new Generated.Event(dto.Event.Id.ToString(), dto.Event.Lugar, dto.Event.Nombre),
             dto.Id.ToString(),
             dto.InscripcionAt,
+            (float)dto.BaseAmountUsd,
+            dto.AdministrativeFeeUsd.HasValue ? (float)dto.AdministrativeFeeUsd.Value : null,
             (float)dto.MontoUsd,
             ToGeneratedPaymentMethod(dto.PaymentMethod),
             dto.Resultado,
@@ -545,6 +549,8 @@ public static class ApiContractMapper
             new Generated.Event(dto.EventId, dto.EventLugar, dto.EventNombre),
             dto.Id.ToString(),
             dto.InscripcionAt,
+            (float)dto.BaseAmountUsd,
+            dto.AdministrativeFeeUsd.HasValue ? (float)dto.AdministrativeFeeUsd.Value : null,
             (float)dto.MontoUsd,
             ToGeneratedPaymentMethod(dto.PaymentMethod),
             dto.Resultado,
@@ -855,6 +861,8 @@ public static class ApiContractMapper
             request.MaxAge,
             ParseNullableGuid(request.SuccessorCategoryId, "successorCategoryId"),
             ToDomainCategoryStatus(request.Status),
+            (decimal)request.MembresiaAnualUsd,
+            (decimal)request.MembresiaPorEventoUsd,
             NormalizeOptional(request.SurfScoresCode));
     }
 
@@ -870,6 +878,8 @@ public static class ApiContractMapper
             request.MaxAge,
             ParseNullableGuid(request.SuccessorCategoryId, "successorCategoryId"),
             ToDomainCategoryStatus(request.Status),
+            (decimal)request.MembresiaAnualUsd,
+            (decimal)request.MembresiaPorEventoUsd,
             NormalizeOptional(request.SurfScoresCode));
     }
 
@@ -889,7 +899,7 @@ public static class ApiContractMapper
             request.NumeroCamiseta,
             request.Patrocinadores,
             request.Federacion,
-            NormalizeOptional(request.SurfScoresCode));
+            null);
     }
 
     public static UpdateCompetitorCommand ToCommand(Guid competitorId, Generated.CompetitorRequest request)
@@ -909,7 +919,7 @@ public static class ApiContractMapper
             request.NumeroCamiseta,
             request.Patrocinadores,
             request.Federacion,
-            NormalizeOptional(request.SurfScoresCode));
+            null);
     }
 
     public static CreateMembershipCommand ToCommand(Generated.MembershipRequest request)

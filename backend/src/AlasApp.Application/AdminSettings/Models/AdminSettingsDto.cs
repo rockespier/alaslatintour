@@ -14,6 +14,7 @@ public sealed record GeneralSettingsDto(
     string Phone,
     string Website,
     string HeadquartersCountry,
+    decimal AdministrativeFeeUsd,
     SocialLinksDto SocialLinks,
     SeasonSettingsDto Season);
 

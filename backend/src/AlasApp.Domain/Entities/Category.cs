@@ -23,6 +23,8 @@ public sealed class Category : AuditableEntity
         int? maxAge,
         Guid? successorCategoryId,
         CategoryStatus status,
+        decimal membresiaAnualUsd,
+        decimal membresiaPorEventoUsd,
         string? surfScoresCode)
     {
         Id = id;
@@ -34,6 +36,8 @@ public sealed class Category : AuditableEntity
         MaxAge = maxAge;
         SuccessorCategoryId = successorCategoryId;
         Status = status;
+        MembresiaAnualUsd = membresiaAnualUsd;
+        MembresiaPorEventoUsd = membresiaPorEventoUsd;
         SurfScoresCode = surfScoresCode;
     }
 
@@ -55,6 +59,10 @@ public sealed class Category : AuditableEntity
 
     public CategoryStatus Status { get; private set; }
 
+    public decimal MembresiaAnualUsd { get; private set; }
+
+    public decimal MembresiaPorEventoUsd { get; private set; }
+
     public string? SurfScoresCode { get; private set; }
 
     public IReadOnlyCollection<CategoryTariff> Tariffs => _tariffs;
@@ -70,9 +78,11 @@ public sealed class Category : AuditableEntity
         int? maxAge,
         Guid? successorCategoryId,
         CategoryStatus status,
+        decimal membresiaAnualUsd,
+        decimal membresiaPorEventoUsd,
         string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, null, surfScoresCode);
+        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, null, membresiaAnualUsd, membresiaPorEventoUsd, surfScoresCode);
 
         return new Category(
             Guid.NewGuid(),
@@ -84,6 +94,8 @@ public sealed class Category : AuditableEntity
             maxAge,
             successorCategoryId,
             status,
+            membresiaAnualUsd,
+            membresiaPorEventoUsd,
             NormalizeOptional(surfScoresCode));
     }
 
@@ -96,9 +108,11 @@ public sealed class Category : AuditableEntity
         int? maxAge,
         Guid? successorCategoryId,
         CategoryStatus status,
+        decimal membresiaAnualUsd,
+        decimal membresiaPorEventoUsd,
         string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, Id, surfScoresCode);
+        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, Id, membresiaAnualUsd, membresiaPorEventoUsd, surfScoresCode);
 
         Nombre = nombre.Trim();
         Descripcion = NormalizeOptional(descripcion);
@@ -108,6 +122,8 @@ public sealed class Category : AuditableEntity
         MaxAge = maxAge;
         SuccessorCategoryId = successorCategoryId;
         Status = status;
+        MembresiaAnualUsd = membresiaAnualUsd;
+        MembresiaPorEventoUsd = membresiaPorEventoUsd;
         SurfScoresCode = NormalizeOptional(surfScoresCode);
     }
 
@@ -142,6 +158,8 @@ public sealed class Category : AuditableEntity
         int? maxAge,
         Guid? successorCategoryId,
         Guid? categoryId,
+        decimal membresiaAnualUsd,
+        decimal membresiaPorEventoUsd,
         string? surfScoresCode)
     {
         if (string.IsNullOrWhiteSpace(nombre))
@@ -187,6 +205,16 @@ public sealed class Category : AuditableEntity
         if (successorCategoryId.HasValue && categoryId.HasValue && successorCategoryId.Value == categoryId.Value)
         {
             throw new DomainRuleException("La categoria sucesora no puede ser la misma categoria.");
+        }
+
+        if (membresiaAnualUsd < 0)
+        {
+            throw new DomainRuleException("La membresia anual no puede ser negativa.");
+        }
+
+        if (membresiaPorEventoUsd < 0)
+        {
+            throw new DomainRuleException("La membresia por evento no puede ser negativa.");
         }
     }
 

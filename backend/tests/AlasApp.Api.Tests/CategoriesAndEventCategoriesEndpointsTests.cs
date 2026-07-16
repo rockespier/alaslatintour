@@ -26,7 +26,9 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             minAge = (int?)null,
             maxAge = (int?)null,
             successorCategoryId = (string?)null,
-            status = "Activo"
+            status = "Activo",
+            membresiaAnualUsd = 25,
+            membresiaPorEventoUsd = 10
         });
 
         var successorBody = await successorResponse.Content.ReadAsStringAsync();
@@ -50,7 +52,9 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             minAge = 12,
             maxAge = 18,
             successorCategoryId = successorId,
-            status = "Activo"
+            status = "Activo",
+            membresiaAnualUsd = 30,
+            membresiaPorEventoUsd = 12
         });
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
@@ -59,6 +63,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         var categoryId = created.RootElement.GetProperty("id").GetString();
         Assert.Equal("Sub 18", created.RootElement.GetProperty("nombre").GetString());
         Assert.Equal(successorId, created.RootElement.GetProperty("successorCategoryId").GetString());
+        Assert.Equal(30, created.RootElement.GetProperty("membresiaAnualUsd").GetDouble());
+        Assert.Equal(12, created.RootElement.GetProperty("membresiaPorEventoUsd").GetDouble());
 
         var listResponse = await _client.GetAsync("/v1/categories?status=Activo");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
@@ -75,10 +81,16 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             minAge = 13,
             maxAge = 18,
             successorCategoryId = successorId,
-            status = "Inactivo"
+            status = "Inactivo",
+            membresiaAnualUsd = 45,
+            membresiaPorEventoUsd = 18
         });
 
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var updatedCategory = await ReadJsonAsync(updateResponse);
+        Assert.Equal(45, updatedCategory.RootElement.GetProperty("membresiaAnualUsd").GetDouble());
+        Assert.Equal(18, updatedCategory.RootElement.GetProperty("membresiaPorEventoUsd").GetDouble());
 
         var deleteSuccessorWhileReferenced = await _client.DeleteAsync($"/v1/categories/{successorId}");
         Assert.Equal(HttpStatusCode.Conflict, deleteSuccessorWhileReferenced.StatusCode);

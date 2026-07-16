@@ -14,6 +14,8 @@ public sealed record CompetitorInscriptionDto(
     string CircuitNombre,
     string? ShirtNumber,
     PaymentMethod PaymentMethod,
+    decimal BaseAmountUsd,
+    decimal? AdministrativeFeeUsd,
     decimal MontoUsd,
     InscriptionStatusAdmin EstadoAdmin,
     InscriptionStatusCompetitor EstadoCompetidor,

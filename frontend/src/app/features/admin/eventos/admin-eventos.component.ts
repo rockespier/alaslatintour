@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
@@ -39,12 +38,11 @@ interface CategoryOption {
 interface EventCategoryEntry {
   categoryId: string;
   categoryName?: string;
+  gender?: string;
   stars: number | null;
   customTariffUsd: number | null;
-  customTariffCop: number | null;
   capacidad: number | null;
   effectiveTariffUsd?: number;
-  effectiveTariffCop?: number;
   enrolledCount?: number;
 }
 
@@ -77,7 +75,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-admin-eventos',
   standalone: true,
-  imports: [ReactiveFormsModule, DecimalPipe],
+  imports: [ReactiveFormsModule],
   template: `
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
@@ -480,7 +478,12 @@ const PAGE_SIZE = 20;
                         <input type="checkbox" [checked]="isCategoryEnabled(cat.id)" (change)="toggleCategory(cat.id, cat.nombre)"
                                class="h-4 w-4 rounded border-navy-mid bg-navy-dark text-cyan-brand focus:ring-cyan-brand">
                         <div>
-                          <p class="font-medium text-text-light">{{ cat.nombre }}</p>
+                          <p class="font-medium text-text-light">
+                            {{ cat.nombre }}
+                            @if (categoryGender(cat.id); as gender) {
+                              <span class="text-[10px] text-text-muted font-accent uppercase tracking-wider ml-1">({{ gender }})</span>
+                            }
+                          </p>
                           @if (cat.descripcion) {
                             <p class="text-xs text-text-muted">{{ cat.descripcion }}</p>
                           }
@@ -536,7 +539,7 @@ const PAGE_SIZE = 20;
                           @for (c of eventCategories(); track c.categoryId) {
                             <li class="flex justify-between">
                               <span class="text-text-muted">{{ c.categoryName }} ({{ c.stars ? '★'.repeat(c.stars) : 'nivel del evento' }}):</span>
-                              <span class="font-mono">USD {{ c.effectiveTariffUsd ?? 0 }} · COP {{ (c.effectiveTariffCop ?? 0) | number:'1.0-0' }}</span>
+                              <span class="font-mono">USD {{ c.effectiveTariffUsd ?? 0 }}</span>
                             </li>
                           }
                         </ul>
@@ -551,7 +554,6 @@ const PAGE_SIZE = 20;
                           <tr>
                             <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
                             <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Tarifa USD</th>
-                            <th class="px-3 py-2 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Tarifa COP</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-navy-mid/50">
@@ -559,26 +561,14 @@ const PAGE_SIZE = 20;
                             <tr>
                               <td class="px-3 py-2 text-text-light">{{ c.categoryName }}</td>
                               <td class="px-3 py-2">
-                                @if (isEditingCell(c.categoryId, 'usd')) {
+                                @if (isEditingCell(c.categoryId)) {
                                   <input type="number" min="0" [value]="c.customTariffUsd ?? ''"
-                                         (blur)="commitCellEdit(c.categoryId, 'usd', $event)"
-                                         (keydown.enter)="commitCellEdit(c.categoryId, 'usd', $event)"
+                                         (blur)="commitCellEdit(c.categoryId, $event)"
+                                         (keydown.enter)="commitCellEdit(c.categoryId, $event)"
                                          class="bg-navy-mid/40 border border-cyan-brand rounded px-2 py-1 text-sm text-text-light w-28 focus:outline-none">
                                 } @else {
-                                  <span (click)="startCellEdit(c.categoryId, 'usd')" class="cursor-pointer hover:text-cyan-brand">
+                                  <span (click)="startCellEdit(c.categoryId)" class="cursor-pointer hover:text-cyan-brand">
                                     \${{ c.customTariffUsd ?? 0 }}
-                                  </span>
-                                }
-                              </td>
-                              <td class="px-3 py-2">
-                                @if (isEditingCell(c.categoryId, 'cop')) {
-                                  <input type="number" min="0" [value]="c.customTariffCop ?? ''"
-                                         (blur)="commitCellEdit(c.categoryId, 'cop', $event)"
-                                         (keydown.enter)="commitCellEdit(c.categoryId, 'cop', $event)"
-                                         class="bg-navy-mid/40 border border-cyan-brand rounded px-2 py-1 text-sm text-text-light w-32 focus:outline-none">
-                                } @else {
-                                  <span (click)="startCellEdit(c.categoryId, 'cop')" class="cursor-pointer hover:text-cyan-brand">
-                                    \${{ (c.customTariffCop ?? 0) | number:'1.0-0' }}
                                   </span>
                                 }
                               </td>
@@ -769,7 +759,7 @@ export class AdminEventosComponent implements OnInit {
 
   eventCategories = signal<EventCategoryEntry[]>([]);
   useCircuitTariffs = signal(true);
-  editingCell = signal<{ categoryId: string; field: 'usd' | 'cop' } | null>(null);
+  editingCell = signal<string | null>(null);
 
   starsOptions = STARS;
   accessTypes = ACCESS_TYPES;
@@ -935,13 +925,17 @@ export class AdminEventosComponent implements OnInit {
     return (entry?.stars ?? null) === star;
   }
 
+  categoryGender(categoryId: string): string | null {
+    return this.eventCategories().find(c => c.categoryId === categoryId)?.gender ?? null;
+  }
+
   toggleCategory(categoryId: string, categoryName: string): void {
     if (this.isCategoryEnabled(categoryId)) {
       this.eventCategories.update(list => list.filter(c => c.categoryId !== categoryId));
     } else {
       this.eventCategories.update(list => [...list, {
         categoryId, categoryName, stars: null,
-        customTariffUsd: null, customTariffCop: null, capacidad: null,
+        customTariffUsd: null, capacidad: null,
       }]);
     }
   }
@@ -956,22 +950,19 @@ export class AdminEventosComponent implements OnInit {
 
   // ─── Tarifas ───────────────────────────────────────────────────
 
-  isEditingCell(categoryId: string, field: 'usd' | 'cop'): boolean {
-    const cell = this.editingCell();
-    return cell?.categoryId === categoryId && cell.field === field;
+  isEditingCell(categoryId: string): boolean {
+    return this.editingCell() === categoryId;
   }
 
-  startCellEdit(categoryId: string, field: 'usd' | 'cop'): void {
-    this.editingCell.set({ categoryId, field });
+  startCellEdit(categoryId: string): void {
+    this.editingCell.set(categoryId);
   }
 
-  commitCellEdit(categoryId: string, field: 'usd' | 'cop', event: Event): void {
+  commitCellEdit(categoryId: string, event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     const value = raw === '' ? null : Number(raw);
     this.eventCategories.update(list =>
-      list.map(c => c.categoryId === categoryId
-        ? { ...c, [field === 'usd' ? 'customTariffUsd' : 'customTariffCop']: value }
-        : c),
+      list.map(c => c.categoryId === categoryId ? { ...c, customTariffUsd: value } : c),
     );
     this.editingCell.set(null);
   }
@@ -1098,7 +1089,6 @@ export class AdminEventosComponent implements OnInit {
             categoryId: c.categoryId,
             stars: c.stars,
             customTariffUsd: c.customTariffUsd,
-            customTariffCop: c.customTariffCop,
             capacidad: c.capacidad,
           })),
         });

@@ -99,7 +99,7 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
 
                       <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-4">
                         <div class="flex items-center gap-1 text-lg">
-                          @for (s of [1,2,3,4,5]; track s) {
+                          @for (s of [1,2,3,4,5,6,7]; track s) {
                             <span [class]="s <= ev.stars ? 'text-cyan-brand' : 'text-navy-mid'">★</span>
                           }
                         </div>

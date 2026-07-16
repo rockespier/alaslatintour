@@ -33,6 +33,7 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
     [Fact]
     public async Task GetSettings_ShouldReturnDefaults()
     {
+        await ResetStoredSettingsAsync();
         await AuthenticateAsAsync(AdminRole.SuperAdmin, $"settings-super-{Guid.NewGuid():N}@test.com");
 
         var response = await _client.GetAsync("/v1/admin/settings");
@@ -40,6 +41,7 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JObject.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal("ALAS Latin Tour", json["general"]?["organizationName"]?.Value<string>());
+        Assert.Equal(0m, json["general"]?["administrativeFeeUsd"]?.Value<decimal>());
         Assert.Equal(24, json["notifications"]?["tokenValidityHours"]?.Value<int>());
         Assert.Equal(8, json["ranking"]?["pointsMatrix"]?.Count());
         Assert.Equal(5, json["live"]?["surfScores"]?["refreshMinutes"]?.Value<int>());
@@ -48,14 +50,16 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
     [Fact]
     public async Task PutSettings_ShouldPersistConfiguration()
     {
+        await ResetStoredSettingsAsync();
         await AuthenticateAsAsync(AdminRole.SuperAdmin, $"settings-update-{Guid.NewGuid():N}@test.com");
 
         var defaultsResponse = await _client.GetAsync("/v1/admin/settings");
         var settings = JObject.Parse(await defaultsResponse.Content.ReadAsStringAsync());
         settings["general"]!["organizationName"] = "ALAS Global Tour";
+        settings["general"]!["administrativeFeeUsd"] = 12.5m;
         settings["general"]!["season"]!["currentYear"] = 2027;
-        settings["live"]!["youtube"]!["active"] = true;
-        settings["live"]!["youtube"]!["videoIdOrUrl"] = "dQw4w9WgXcQ";
+        settings["live"]!["youTube"]!["active"] = true;
+        settings["live"]!["youTube"]!["videoIdOrUrl"] = "dQw4w9WgXcQ";
 
         var updateResponse = await PutSettingsAsync(settings);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
@@ -63,13 +67,15 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
         var getResponse = await _client.GetAsync("/v1/admin/settings");
         var persisted = JObject.Parse(await getResponse.Content.ReadAsStringAsync());
         Assert.Equal("ALAS Global Tour", persisted["general"]?["organizationName"]?.Value<string>());
+        Assert.Equal(12.5m, persisted["general"]?["administrativeFeeUsd"]?.Value<decimal>());
         Assert.Equal(2027, persisted["general"]?["season"]?["currentYear"]?.Value<int>());
-        Assert.True(persisted["live"]?["youtube"]?["active"]?.Value<bool>());
+        Assert.True(persisted["live"]?["youTube"]?["active"]?.Value<bool>());
     }
 
     [Fact]
     public async Task PutSettings_WithInvalidSurfScoresRefresh_ShouldReturnBadRequest()
     {
+        await ResetStoredSettingsAsync();
         await AuthenticateAsAsync(AdminRole.SuperAdmin, $"settings-invalid-{Guid.NewGuid():N}@test.com");
 
         var defaultsResponse = await _client.GetAsync("/v1/admin/settings");
@@ -82,8 +88,24 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
     }
 
     [Fact]
+    public async Task PutSettings_WithNegativeAdministrativeFee_ShouldReturnBadRequest()
+    {
+        await ResetStoredSettingsAsync();
+        await AuthenticateAsAsync(AdminRole.SuperAdmin, $"settings-fee-invalid-{Guid.NewGuid():N}@test.com");
+
+        var defaultsResponse = await _client.GetAsync("/v1/admin/settings");
+        var settings = JObject.Parse(await defaultsResponse.Content.ReadAsStringAsync());
+        settings["general"]!["administrativeFeeUsd"] = -1;
+
+        var updateResponse = await PutSettingsAsync(settings);
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task TestIntegration_ShouldReturnConnectedWhenConfigured()
     {
+        await ResetStoredSettingsAsync();
         await AuthenticateAsAsync(AdminRole.SuperAdmin, $"settings-test-{Guid.NewGuid():N}@test.com");
 
         var response = await _client.PostAsync("/v1/admin/settings/integrations/surfscores/test", null);
@@ -97,6 +119,7 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
     [Fact]
     public async Task AdminRole_ShouldReadButNotWriteSettings()
     {
+        await ResetStoredSettingsAsync();
         await AuthenticateAsAsync(AdminRole.Admin, $"settings-admin-{Guid.NewGuid():N}@test.com");
 
         var getResponse = await _client.GetAsync("/v1/admin/settings");
@@ -155,6 +178,14 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
             role);
 
         dbContext.UserAccounts.Add(user);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task ResetStoredSettingsAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+        dbContext.SystemSettings.RemoveRange(dbContext.SystemSettings);
         await dbContext.SaveChangesAsync();
     }
 }

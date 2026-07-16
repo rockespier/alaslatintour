@@ -14,4 +14,6 @@ public sealed record UpdateCategoryCommand(
     int? MaxAge,
     Guid? SuccessorCategoryId,
     CategoryStatus Status,
+    decimal MembresiaAnualUsd,
+    decimal MembresiaPorEventoUsd,
     string? SurfScoresCode) : IRequest<CategoryDto>;

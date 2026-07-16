@@ -18,6 +18,7 @@ public static class AdminSettingsDefaults
                 "+57 310 000 0000",
                 "www.alaslatintour.com",
                 "Colombia",
+                0m,
                 new SocialLinksDto(
                     "@alasglobaltour",
                     "facebook.com/alaslatintour",

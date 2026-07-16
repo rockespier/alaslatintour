@@ -2436,6 +2436,22 @@ components:
         status:
           $ref: '#/components/schemas/CategoryStatus'
           default: Activo
+        membresiaAnualUsd:
+          type: number
+          format: float
+          minimum: 0
+          default: 0
+          description: Importe de membresia anual en USD para la categoria.
+        membresiaPorEventoUsd:
+          type: number
+          format: float
+          minimum: 0
+          default: 0
+          description: Importe de membresia por evento en USD para la categoria.
+        surfScoresCode:
+          type: string
+          nullable: true
+          description: Codigo opcional de la categoria en SurfScores.
 
     CategoryResponse:
       allOf:
@@ -2687,6 +2703,15 @@ components:
           nullable: true
         paymentMethod:
           $ref: '#/components/schemas/PaymentMethodEnum'
+        baseAmountUsd:
+          type: number
+          format: float
+          description: Monto base de la inscripción antes de la cuota administrativa.
+        administrativeFeeUsd:
+          type: number
+          format: float
+          nullable: true
+          description: Cuota administrativa aplicada. Si es null, no debe mostrarse en el resumen.
         montoUsd:
           type: number
           format: float

@@ -17,6 +17,8 @@ public sealed class Inscription : AuditableEntity
         Guid categoryId,
         string? shirtNumber,
         PaymentMethod paymentMethod,
+        decimal baseAmountUsd,
+        decimal administrativeFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado)
     {
@@ -26,6 +28,8 @@ public sealed class Inscription : AuditableEntity
         CategoryId = categoryId;
         ShirtNumber = NormalizeOptional(shirtNumber);
         PaymentMethod = paymentMethod;
+        BaseAmountUsd = baseAmountUsd;
+        AdministrativeFeeUsd = administrativeFeeUsd;
         MontoUsd = montoUsd;
         ReglamentoAceptado = reglamentoAceptado;
         EstadoAdmin = InscriptionStatusAdmin.Pendiente;
@@ -49,6 +53,10 @@ public sealed class Inscription : AuditableEntity
 
     public PaymentMethod PaymentMethod { get; private set; }
 
+    public decimal BaseAmountUsd { get; private set; }
+
+    public decimal AdministrativeFeeUsd { get; private set; }
+
     public decimal MontoUsd { get; private set; }
 
     public InscriptionStatusAdmin EstadoAdmin { get; private set; }
@@ -71,11 +79,13 @@ public sealed class Inscription : AuditableEntity
         Guid categoryId,
         string? shirtNumber,
         PaymentMethod paymentMethod,
+        decimal baseAmountUsd,
+        decimal administrativeFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado,
         DateTimeOffset inscripcionAt)
     {
-        Validate(competitorId, eventId, categoryId, shirtNumber, montoUsd, reglamentoAceptado);
+        Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, montoUsd, reglamentoAceptado);
 
         var inscription = new Inscription(
             Guid.NewGuid(),
@@ -84,6 +94,8 @@ public sealed class Inscription : AuditableEntity
             categoryId,
             shirtNumber,
             paymentMethod,
+            baseAmountUsd,
+            administrativeFeeUsd,
             montoUsd,
             reglamentoAceptado);
 
@@ -165,6 +177,8 @@ public sealed class Inscription : AuditableEntity
         Guid eventId,
         Guid categoryId,
         string? shirtNumber,
+        decimal baseAmountUsd,
+        decimal administrativeFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado)
     {
@@ -178,9 +192,24 @@ public sealed class Inscription : AuditableEntity
             throw new DomainRuleException("El competidor debe aceptar el reglamento ALAS.");
         }
 
+        if (baseAmountUsd < 0)
+        {
+            throw new DomainRuleException("El monto base de la inscripcion no puede ser negativo.");
+        }
+
+        if (administrativeFeeUsd < 0)
+        {
+            throw new DomainRuleException("La cuota administrativa no puede ser negativa.");
+        }
+
         if (montoUsd < 0)
         {
             throw new DomainRuleException("El monto de la inscripcion no puede ser negativo.");
+        }
+
+        if (decimal.Round(baseAmountUsd + administrativeFeeUsd, 2) != decimal.Round(montoUsd, 2))
+        {
+            throw new DomainRuleException("El monto total de la inscripcion no coincide con el desglose configurado.");
         }
 
         if (!string.IsNullOrWhiteSpace(shirtNumber) && shirtNumber.Trim().Length > 20)
