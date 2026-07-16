@@ -1,3 +1,4 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Payments.Queries.GetPaymentById;
@@ -5,6 +6,7 @@ using AlasApp.Application.Payments.Queries.GetPaymentKpis;
 using AlasApp.Application.Payments.Queries.ListPayments;
 using AlasApp.Application.Payments.Models;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
@@ -14,6 +16,7 @@ namespace AlasApp.Api.Controllers;
 public sealed class PaymentsController(IRequestDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = AdminPolicies.PaymentsRead)]
     [ProducesResponseType(typeof(Generated.PaymentListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.PaymentListResponse>> List(
         [FromQuery] int? page,
@@ -39,6 +42,7 @@ public sealed class PaymentsController(IRequestDispatcher dispatcher) : Controll
     }
 
     [HttpGet("{paymentId}")]
+    [Authorize(Policy = AdminPolicies.PaymentsRead)]
     [ProducesResponseType(typeof(Generated.PaymentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.PaymentResponse>> GetById(string paymentId, CancellationToken cancellationToken)
@@ -60,6 +64,7 @@ public sealed class PaymentsController(IRequestDispatcher dispatcher) : Controll
     }
 
     [HttpPut("{paymentId}")]
+    [Authorize(Policy = AdminPolicies.PaymentsWrite)]
     [ProducesResponseType(typeof(Generated.PaymentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.PaymentResponse>> Update(
@@ -75,6 +80,7 @@ public sealed class PaymentsController(IRequestDispatcher dispatcher) : Controll
     }
 
     [HttpGet("kpis")]
+    [Authorize(Policy = AdminPolicies.PaymentsRead)]
     [ProducesResponseType(typeof(Generated.PaymentKpiResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.PaymentKpiResponse>> GetKpis(CancellationToken cancellationToken)
     {

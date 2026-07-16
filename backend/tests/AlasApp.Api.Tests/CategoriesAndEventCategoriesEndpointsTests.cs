@@ -1,5 +1,7 @@
+using ClosedXML.Excel;
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using Xunit;
 
@@ -7,16 +9,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public CategoriesAndEventCategoriesEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task CategoryCrudFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var successorResponse = await _client.PostAsJsonAsync("/v1/categories", new
         {
             nombre = "Open",
@@ -28,7 +34,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             successorCategoryId = (string?)null,
             status = "Activo",
             membresiaAnualUsd = 25,
-            membresiaPorEventoUsd = 10
+            membresiaPorEventoUsd = 10,
+            bestResultsCount = 5
         });
 
         var successorBody = await successorResponse.Content.ReadAsStringAsync();
@@ -54,7 +61,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             successorCategoryId = successorId,
             status = "Activo",
             membresiaAnualUsd = 30,
-            membresiaPorEventoUsd = 12
+            membresiaPorEventoUsd = 12,
+            bestResultsCount = 4
         });
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
@@ -65,6 +73,7 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         Assert.Equal(successorId, created.RootElement.GetProperty("successorCategoryId").GetString());
         Assert.Equal(30, created.RootElement.GetProperty("membresiaAnualUsd").GetDouble());
         Assert.Equal(12, created.RootElement.GetProperty("membresiaPorEventoUsd").GetDouble());
+        Assert.Equal(4, created.RootElement.GetProperty("bestResultsCount").GetInt32());
 
         var listResponse = await _client.GetAsync("/v1/categories?status=Activo");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
@@ -83,7 +92,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             successorCategoryId = successorId,
             status = "Inactivo",
             membresiaAnualUsd = 45,
-            membresiaPorEventoUsd = 18
+            membresiaPorEventoUsd = 18,
+            bestResultsCount = 3
         });
 
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
@@ -91,6 +101,7 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         var updatedCategory = await ReadJsonAsync(updateResponse);
         Assert.Equal(45, updatedCategory.RootElement.GetProperty("membresiaAnualUsd").GetDouble());
         Assert.Equal(18, updatedCategory.RootElement.GetProperty("membresiaPorEventoUsd").GetDouble());
+        Assert.Equal(3, updatedCategory.RootElement.GetProperty("bestResultsCount").GetInt32());
 
         var deleteSuccessorWhileReferenced = await _client.DeleteAsync($"/v1/categories/{successorId}");
         Assert.Equal(HttpStatusCode.Conflict, deleteSuccessorWhileReferenced.StatusCode);
@@ -105,6 +116,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
     [Fact]
     public async Task EventCategoriesFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
         {
             nombre = "Circuito Categorias",
@@ -234,6 +247,8 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
     [Fact]
     public async Task EventCategoriesFlow_PerCategoryStars_ResolvesEffectiveTariffIndependentlyOfEventStars()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
         {
             nombre = "Circuito Estrellas",
@@ -366,9 +381,181 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         Assert.Equal(HttpStatusCode.NoContent, deleteCategoryResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task EventCategories_ShouldFilterByCompetitorGender_WhenCompetitorIdIsProvided()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito Gender Filter",
+            temporada = 2026,
+            descripcion = "Filtro por genero",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = "GF-2026"
+        });
+
+        var circuit = await ReadJsonAsync(circuitResponse);
+        var circuitId = circuit.RootElement.GetProperty("id").GetString();
+
+        var eventResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Evento Gender Filter",
+            circuitId,
+            fechaInicio = "2026-09-10",
+            fechaFin = "2026-09-12",
+            pais = "Perú",
+            ciudad = "Lobitos",
+            playa = "Lobitos",
+            stars = 3,
+            capacidadMaxima = 120,
+            prizeAmountUsd = 10000,
+            surfScoresCode = "EV-GF-2026",
+            accessType = "Abierto",
+            estado = "Activo"
+        });
+
+        var createdEvent = await ReadJsonAsync(eventResponse);
+        var eventId = createdEvent.RootElement.GetProperty("id").GetString();
+
+        var femaleCategoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Open Mujeres GF",
+            descripcion = "Categoria abierta",
+            gender = "Femenino",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo"
+        });
+
+        var mixedCategoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Open Mixto GF",
+            descripcion = "Categoria abierta",
+            gender = "Ambos",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo"
+        });
+
+        var maleCategoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Open Hombres GF",
+            descripcion = "Categoria abierta",
+            gender = "Masculino",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo"
+        });
+
+        var femaleCategoryId = (await ReadJsonAsync(femaleCategoryResponse)).RootElement.GetProperty("id").GetString();
+        var mixedCategoryId = (await ReadJsonAsync(mixedCategoryResponse)).RootElement.GetProperty("id").GetString();
+        var maleCategoryId = (await ReadJsonAsync(maleCategoryResponse)).RootElement.GetProperty("id").GetString();
+
+        var competitorResponse = await _client.PostAsJsonAsync("/v1/competitors", new
+        {
+            nombre = "Lucia",
+            apellido = "Perez",
+            email = $"lucia-{Guid.NewGuid():N}@test.com",
+            fechaNacimiento = "1998-03-08",
+            genero = "Femenino",
+            pais = "Perú",
+            telefono = "+51 900 000 111",
+            club = "Club Gender",
+            postura = "Regular",
+            tallaCamiseta = "M",
+            numeroCamiseta = "10",
+            federacion = "FENTA",
+            patrocinadores = "Marca Test"
+        });
+
+        var competitorId = (await ReadJsonAsync(competitorResponse)).RootElement.GetProperty("id").GetString();
+
+        var assignCategoriesResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[]
+            {
+                new { categoryId = femaleCategoryId, customTariffUsd = 90, capacidad = 20 },
+                new { categoryId = mixedCategoryId, customTariffUsd = 90, capacidad = 20 },
+                new { categoryId = maleCategoryId, customTariffUsd = 90, capacidad = 20 }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, assignCategoriesResponse.StatusCode);
+
+        var filteredResponse = await _client.GetAsync($"/v1/events/{eventId}/categories?competitorId={competitorId}");
+        Assert.Equal(HttpStatusCode.OK, filteredResponse.StatusCode);
+
+        var filtered = await ReadJsonAsync(filteredResponse);
+        Assert.Equal(2, filtered.RootElement.GetProperty("data").GetArrayLength());
+        Assert.DoesNotContain(filtered.RootElement.GetProperty("data").EnumerateArray(), x => x.GetProperty("gender").GetString() == "Masculino");
+    }
+
+    [Fact]
+    public async Task CategoriesTemplate_AndImportXlsx_Work_WithSuccessorCode()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var templateResponse = await _client.GetAsync("/v1/categories/template");
+        Assert.Equal(HttpStatusCode.OK, templateResponse.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", templateResponse.Content.Headers.ContentType?.MediaType);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Categories");
+        WriteRow(worksheet, 1, "Id", "SurfScoresCode", "Nombre", "Descripcion", "Gender", "AgeRestriction", "MinAge", "MaxAge", "SuccessorCategoryId", "SuccessorSurfScoresCode", "Status", "MembresiaAnualUsd", "MembresiaPorEventoUsd", "BestResultsCount");
+        WriteRow(worksheet, 2, "", "OPEN-XLSX", "Open XLSX", "Categoria base", "Ambos", "false", "", "", "", "", "Activo", "40", "15", "5");
+        WriteRow(worksheet, 3, "", "SUB18-XLSX", "Sub18 XLSX", "Categoria juvenil", "Masculino", "true", "14", "18", "", "OPEN-XLSX", "Activo", "35", "12", "4");
+
+        var response = await _client.PostAsync("/v1/categories/import", CreateExcelForm(workbook, "categories-import.xlsx"));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var payload = await ReadJsonAsync(response);
+        Assert.Equal(2, payload.RootElement.GetProperty("processedRows").GetInt32());
+        Assert.Equal(2, payload.RootElement.GetProperty("createdCount").GetInt32());
+        Assert.Equal(0, payload.RootElement.GetProperty("errors").GetArrayLength());
+
+        var listResponse = await _client.GetAsync("/v1/categories?status=Activo");
+        using var listJson = await ReadJsonAsync(listResponse);
+        var imported = listJson.RootElement.GetProperty("data").EnumerateArray()
+            .First(x => x.GetProperty("surfScoresCode").GetString() == "SUB18-XLSX");
+
+        Assert.Equal("Masculino", imported.GetProperty("gender").GetString());
+        Assert.Equal(4, imported.GetProperty("bestResultsCount").GetInt32());
+        Assert.Equal("Open XLSX", imported.GetProperty("successorCategory").GetProperty("nombre").GetString());
+    }
+
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonDocument.Parse(content);
+    }
+
+    private static MultipartFormDataContent CreateExcelForm(XLWorkbook workbook, string fileName)
+    {
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(stream.ToArray());
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        form.Add(fileContent, "file", fileName);
+        return form;
+    }
+
+    private static void WriteRow(IXLWorksheet worksheet, int rowNumber, params string[] values)
+    {
+        for (var index = 0; index < values.Length; index++)
+        {
+            worksheet.Cell(rowNumber, index + 1).Value = values[index];
+        }
     }
 }

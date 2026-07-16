@@ -8,6 +8,7 @@ namespace AlasApp.Domain.Entities;
 public sealed class Competitor : AuditableEntity
 {
     private readonly List<CompetitorLicenseCategory> _enabledLicenseCategories = [];
+    private readonly List<CompetitorFine> _fines = [];
 
     private Competitor()
     {
@@ -100,6 +101,8 @@ public sealed class Competitor : AuditableEntity
     public bool NotificationInscripciones { get; private set; }
 
     public IReadOnlyCollection<CompetitorLicenseCategory> EnabledLicenseCategories => _enabledLicenseCategories;
+
+    public IReadOnlyCollection<CompetitorFine> Fines => _fines;
 
     public static Competitor Create(
         string nombre,

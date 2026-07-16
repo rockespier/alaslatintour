@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { moduleGuard } from './core/guards/module.guard';
 // mi-panel route moved inside public-layout to avoid double navbar
 
 export const routes: Routes = [
@@ -139,43 +140,71 @@ export const routes: Routes = [
       },
       {
         path: 'usuarios',
+        canActivate: [moduleGuard],
+        data: { module: 'Usuarios' },
         loadComponent: () => import('./features/admin/usuarios/usuarios.component').then(m => m.UsuariosComponent),
         title: 'Usuarios — ALAS Admin',
       },
       {
+        path: 'competidores',
+        canActivate: [moduleGuard],
+        data: { module: 'Usuarios' },
+        loadComponent: () => import('./features/admin/competidores/competidores.component').then(m => m.CompetidoresComponent),
+        title: 'Competidores — ALAS Admin',
+      },
+      {
         path: 'circuitos',
+        canActivate: [moduleGuard],
+        data: { module: 'Circuitos' },
         loadComponent: () => import('./features/admin/circuitos/circuitos.component').then(m => m.CircuitosComponent),
         title: 'Circuitos — ALAS Admin',
       },
       {
         path: 'eventos',
+        canActivate: [moduleGuard],
+        data: { module: 'Eventos' },
         loadComponent: () => import('./features/admin/eventos/admin-eventos.component').then(m => m.AdminEventosComponent),
         title: 'Eventos — ALAS Admin',
       },
       {
         path: 'categorias',
+        canActivate: [moduleGuard],
+        data: { module: 'Categorias' },
         loadComponent: () => import('./features/admin/categorias/categorias.component').then(m => m.CategoriasComponent),
         title: 'Categorías — ALAS Admin',
       },
       {
         path: 'inscritos',
+        canActivate: [moduleGuard],
+        data: { module: 'Inscripciones' },
         loadComponent: () => import('./features/admin/inscritos/inscritos.component').then(m => m.InscritosComponent),
         title: 'Inscritos — ALAS Admin',
       },
       {
         path: 'pagos',
+        canActivate: [moduleGuard],
+        data: { module: 'Pagos' },
         loadComponent: () => import('./features/admin/pagos/pagos.component').then(m => m.PagosComponent),
         title: 'Pagos — ALAS Admin',
       },
       {
         path: 'tokens',
+        canActivate: [moduleGuard],
+        data: { module: 'Tokens' },
         loadComponent: () => import('./features/admin/tokens/admin-tokens.component').then(m => m.AdminTokensComponent),
         title: 'Tokens — ALAS Admin',
       },
       {
         path: 'configuracion',
+        canActivate: [moduleGuard],
+        data: { module: 'Configuracion' },
         loadComponent: () => import('./features/admin/configuracion/configuracion.component').then(m => m.ConfiguracionComponent),
         title: 'Configuración — ALAS Admin',
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./features/admin/perfil/perfil.component').then(m => m.AdminPerfilComponent),
+        title: 'Mi Perfil — ALAS Admin',
       },
     ],
   },

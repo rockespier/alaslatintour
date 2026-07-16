@@ -26,6 +26,8 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task InscriptionCrudFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId);
         var categoryId = await CreateCategoryAsync("Open Mixto");
@@ -154,6 +156,7 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task CreateInscription_ShouldIncludeAdministrativeFeeBreakdown_WhenConfigured()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
         await SeedAdministrativeFeeAsync(15m);
 
         var circuitId = await CreateCircuitAsync();
@@ -198,6 +201,8 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task DeleteInscription_ShouldRejectWhenCompetitorDoesNotOwnIt()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId);
         var categoryId = await CreateCategoryAsync("Open Hombres");

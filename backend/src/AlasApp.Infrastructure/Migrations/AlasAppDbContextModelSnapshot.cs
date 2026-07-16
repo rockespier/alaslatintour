@@ -82,6 +82,9 @@ namespace AlasApp.Infrastructure.Migrations
                     b.Property<bool>("AgeRestriction")
                         .HasColumnType("bit");
 
+                    b.Property<int>("BestResultsCount")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -336,6 +339,51 @@ namespace AlasApp.Infrastructure.Migrations
                     b.HasIndex("Pais");
 
                     b.ToTable("Competitors", (string)null);
+                });
+
+            modelBuilder.Entity("AlasApp.Domain.Entities.CompetitorFine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AmountUsd")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("CompetitorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitorId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("CompetitorFines", (string)null);
                 });
 
             modelBuilder.Entity("AlasApp.Domain.Entities.CompetitorLicenseCategory", b =>
@@ -892,6 +940,9 @@ namespace AlasApp.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("IdiomaPreferido")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -901,6 +952,9 @@ namespace AlasApp.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LastLoginAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("LockedUntilUtc")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("Newsletter")
@@ -977,6 +1031,15 @@ namespace AlasApp.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("AlasApp.Domain.Entities.CompetitorFine", b =>
+                {
+                    b.HasOne("AlasApp.Domain.Entities.Competitor", null)
+                        .WithMany("Fines")
+                        .HasForeignKey("CompetitorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AlasApp.Domain.Entities.CompetitorLicenseCategory", b =>
@@ -1138,6 +1201,8 @@ namespace AlasApp.Infrastructure.Migrations
             modelBuilder.Entity("AlasApp.Domain.Entities.Competitor", b =>
                 {
                     b.Navigation("EnabledLicenseCategories");
+
+                    b.Navigation("Fines");
                 });
 
             modelBuilder.Entity("AlasApp.Domain.Entities.Event", b =>

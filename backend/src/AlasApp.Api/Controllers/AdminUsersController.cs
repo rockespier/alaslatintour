@@ -1,6 +1,7 @@
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.AdminUsers.Commands.DeleteAdminUser;
+using AlasApp.Application.Auth.Commands.ChangeUserPassword;
 using AlasApp.Application.AdminUsers.Queries.GetAdminUserById;
 using AlasApp.Application.AdminUsers.Queries.ListAdminUsers;
 using Microsoft.AspNetCore.Authorization;
@@ -64,6 +65,22 @@ public sealed class AdminUsersController(IRequestDispatcher dispatcher) : Contro
         var currentUserId = TryParseCurrentUserId(User);
         await dispatcher.Send(new DeleteAdminUserCommand(ResolveRequestedUserId(userId, User), currentUserId), cancellationToken);
         return NoContent();
+    }
+
+    [HttpPost("{userId}/password")]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
+    [ProducesResponseType(typeof(Generated.MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Generated.MessageResponse>> ChangePassword(
+        string userId,
+        [FromBody] PasswordChangeRequest body,
+        CancellationToken cancellationToken)
+    {
+        await dispatcher.Send(
+            new ChangeUserPasswordCommand(ResolveRequestedUserId(userId, User), body.NewPassword),
+            cancellationToken);
+
+        return Ok(new Generated.MessageResponse("Contraseña actualizada correctamente."));
     }
 
     private static Guid ResolveRequestedUserId(string userId, ClaimsPrincipal principal)

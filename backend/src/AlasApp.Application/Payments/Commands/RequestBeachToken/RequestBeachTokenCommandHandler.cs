@@ -4,6 +4,7 @@ using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Common;
 using AlasApp.Application.Payments.Models;
 using AlasApp.Domain.Entities;
+using AlasApp.Domain.Enums;
 using AlasApp.Domain.Exceptions;
 
 namespace AlasApp.Application.Payments.Commands.RequestBeachToken;
@@ -11,6 +12,8 @@ namespace AlasApp.Application.Payments.Commands.RequestBeachToken;
 public sealed class RequestBeachTokenCommandHandler(
     IInscriptionRepository inscriptionRepository,
     IBeachTokenRepository beachTokenRepository,
+    IUserAccountRepository userAccountRepository,
+    IEmailSender emailSender,
     IUnitOfWork unitOfWork,
     IClock clock)
     : IRequestHandler<RequestBeachTokenCommand, BeachTokenPendingDto>
@@ -40,6 +43,8 @@ public sealed class RequestBeachTokenCommandHandler(
             await beachTokenRepository.AddAsync(beachToken, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
+            await NotifyAdminsAsync(beachToken.Id, request.InscriptionId, cancellationToken);
+
             return new BeachTokenPendingDto(
                 beachToken.Id,
                 "pending",
@@ -48,6 +53,38 @@ public sealed class RequestBeachTokenCommandHandler(
         catch (DomainRuleException exception)
         {
             throw new ValidationException(exception.Message, [new ValidationError("body", exception.Message)]);
+        }
+    }
+
+    private async Task NotifyAdminsAsync(Guid tokenId, Guid inscriptionId, CancellationToken cancellationToken)
+    {
+        var recipients = await userAccountRepository.ListAdminEmailsByPermissionAsync(
+            AdminModule.Tokens,
+            PermissionLevel.ReadOnly,
+            cancellationToken);
+
+        if (recipients.Count == 0)
+        {
+            return;
+        }
+
+        const string subject = "Revision requerida: token de pago en playa pendiente";
+
+        foreach (var recipient in recipients)
+        {
+            try
+            {
+                await emailSender.SendAsync(
+                    new EmailMessage(
+                        recipient,
+                        subject,
+                        $"Se registro una nueva solicitud de token de pago en playa. TokenId: {tokenId}. InscripcionId: {inscriptionId}. Revisa el modulo de Tokens en el panel administrativo."),
+                    cancellationToken);
+            }
+            catch
+            {
+                // El correo es opcional; la alerta del dashboard sigue siendo la notificacion principal.
+            }
         }
     }
 }

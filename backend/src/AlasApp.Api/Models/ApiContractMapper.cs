@@ -4,6 +4,7 @@ using AlasApp.Application.Articles.Models;
 using AlasApp.Application.AdminUsers.Commands.CreateAdminUser;
 using AlasApp.Application.AdminUsers.Commands.UpdateAdminUser;
 using AlasApp.Application.AdminUsers.Models;
+using AlasApp.Application.BulkImports.Models;
 using AlasApp.Application.Circuits.Commands.CreateCircuit;
 using AlasApp.Application.Circuits.Commands.UpdateCircuit;
 using AlasApp.Application.Circuits.Models;
@@ -19,6 +20,7 @@ using AlasApp.Application.Auth.Models;
 using AlasApp.Application.Competitors.Commands.CreateCompetitor;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitor;
 using AlasApp.Application.Competitors.Models;
+using AlasApp.Application.CompetitorFines.Models;
 using AlasApp.Application.Dashboard.Models;
 using AlasApp.Application.EventCategories.Commands.UpdateEventCategories;
 using AlasApp.Application.EventCategories.Models;
@@ -126,7 +128,7 @@ public static class ApiContractMapper
 
     public static Generated.DashboardResponse ToContract(DashboardDto dto)
     {
-        return new Generated.DashboardResponse(
+        var contract = new Generated.DashboardResponse(
             dto.ActiveEvents.Select(ToContract).ToList(),
             new Generated.Kpis(
                 (float)dto.Kpis.RecaudacionMesUsd,
@@ -135,6 +137,17 @@ public static class ApiContractMapper
                 dto.Kpis.TotalEventosActivos,
                 dto.Kpis.TotalInscripciones),
             dto.RecentInscriptions.Select(ToContract).ToList());
+
+        contract.AdditionalProperties["alerts"] = dto.Alerts.Select(x => new
+        {
+            module = x.Module,
+            level = x.Level,
+            title = x.Title,
+            message = x.Message,
+            count = x.Count
+        }).ToList();
+
+        return contract;
     }
 
     public static Generated.ActiveEvents ToContract(DashboardActiveEventDto dto)
@@ -365,6 +378,7 @@ public static class ApiContractMapper
     {
         return new Generated.CategoryResponse(
             dto.AgeRestriction,
+            dto.BestResultsCount,
             dto.CreatedAtUtc,
             dto.Descripcion ?? string.Empty,
             ToGeneratedCategoryGender(dto.Gender),
@@ -482,6 +496,20 @@ public static class ApiContractMapper
             dto.Push,
             dto.Resultados,
             dto.Tokens);
+    }
+
+    public static CompetitorFineResponse ToContract(CompetitorFineDto dto)
+    {
+        return new CompetitorFineResponse(
+            dto.Id.ToString(),
+            dto.CompetitorId.ToString(),
+            dto.AmountUsd,
+            dto.Reason,
+            dto.Notes,
+            dto.Status.ToString(),
+            dto.CreatedByUserId.ToString(),
+            dto.CreatedAtUtc,
+            dto.UpdatedAtUtc);
     }
 
     public static Generated.InscriptionListResponse ToContract(PagedResult<CompetitorInscriptionDto> result)
@@ -863,6 +891,7 @@ public static class ApiContractMapper
             ToDomainCategoryStatus(request.Status),
             (decimal)request.MembresiaAnualUsd,
             (decimal)request.MembresiaPorEventoUsd,
+            request.BestResultsCount ?? Domain.Entities.Category.DefaultBestResultsCount,
             NormalizeOptional(request.SurfScoresCode));
     }
 
@@ -880,6 +909,7 @@ public static class ApiContractMapper
             ToDomainCategoryStatus(request.Status),
             (decimal)request.MembresiaAnualUsd,
             (decimal)request.MembresiaPorEventoUsd,
+            request.BestResultsCount ?? Domain.Entities.Category.DefaultBestResultsCount,
             NormalizeOptional(request.SurfScoresCode));
     }
 
@@ -1828,6 +1858,15 @@ public static class ApiContractMapper
             _ when bool.TryParse(rawValue.ToString(), out var parsed) => parsed,
             _ => false
         };
+    }
+
+    public static BulkImportResponse ToContract(BulkImportResultDto dto)
+    {
+        return new BulkImportResponse(
+            dto.ProcessedRows,
+            dto.CreatedCount,
+            dto.UpdatedCount,
+            dto.Errors.Select(x => new BulkImportErrorResponse(x.RowNumber, x.Message)).ToList());
     }
 
     private static string NormalizeEnumText(string value)

@@ -1,4 +1,5 @@
 using AlasApp.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -73,27 +74,7 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
     {
         var email = $"viewer-{Guid.NewGuid():N}@test.com";
 
-        await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password = "Password1",
-            nombre = "Ana",
-            apellido = "Ruiz",
-            tipo = "espectador",
-            pais = "",
-            idiomaPreferido = "English",
-            newsletter = false,
-            terminos = true,
-            reglamento = false,
-            fechaNacimiento = "0001-01-01",
-            genero = "Ambos",
-            telefono = "",
-            club = "",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            federacion = "",
-            patrocinadores = ""
-        });
+        await RegisterCompetitorAsync(email, "Password1");
 
         var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
         {
@@ -144,27 +125,7 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
     {
         var email = $"reset-{Guid.NewGuid():N}@test.com";
 
-        await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password = "Password1",
-            nombre = "Luis",
-            apellido = "Perez",
-            tipo = "espectador",
-            pais = "",
-            idiomaPreferido = "English",
-            newsletter = true,
-            terminos = true,
-            reglamento = false,
-            fechaNacimiento = "0001-01-01",
-            genero = "Ambos",
-            telefono = "",
-            club = "",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            federacion = "",
-            patrocinadores = ""
-        });
+        await RegisterCompetitorAsync(email, "Password1");
 
         var response = await _client.PostAsJsonAsync("/v1/auth/password-reset/request", new { email });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -174,5 +135,146 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
 
         var persisted = dbContext.PasswordResetTokens.Any();
         Assert.True(persisted);
+    }
+
+    [Fact]
+    public async Task Login_ShouldLockAccountAfterThreeFailedAttempts()
+    {
+        var email = $"lock-{Guid.NewGuid():N}@test.com";
+        const string password = "Password1";
+
+        await RegisterCompetitorAsync(email, password);
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            var failedResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+            {
+                email,
+                password = "WrongPassword1",
+                rememberMe = false
+            });
+
+            Assert.Equal(HttpStatusCode.Unauthorized, failedResponse.StatusCode);
+        }
+
+        var correctWhileLockedResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password,
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, correctWhileLockedResponse.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+        var user = await dbContext.UserAccounts.SingleAsync(x => x.Email == email);
+
+        Assert.Equal(3, user.FailedLoginAttempts);
+        Assert.True(user.LockedUntilUtc.HasValue);
+        Assert.True(user.LockedUntilUtc.Value > DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public async Task Login_ShouldResetFailedAttemptsAfterSuccessfulAuthentication()
+    {
+        var email = $"reset-login-{Guid.NewGuid():N}@test.com";
+        const string password = "Password1";
+
+        await RegisterCompetitorAsync(email, password);
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            var failedResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+            {
+                email,
+                password = "WrongPassword1",
+                rememberMe = false
+            });
+
+            Assert.Equal(HttpStatusCode.Unauthorized, failedResponse.StatusCode);
+        }
+
+        var successResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password,
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, successResponse.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+        var user = await dbContext.UserAccounts.SingleAsync(x => x.Email == email);
+
+        Assert.Equal(0, user.FailedLoginAttempts);
+        Assert.Null(user.LockedUntilUtc);
+    }
+
+    [Fact]
+    public async Task Login_ShouldAllowAccessAfterLockExpires()
+    {
+        var email = $"unlock-{Guid.NewGuid():N}@test.com";
+        const string password = "Password1";
+
+        await RegisterCompetitorAsync(email, password);
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            await _client.PostAsJsonAsync("/v1/auth/login", new
+            {
+                email,
+                password = "WrongPassword1",
+                rememberMe = false
+            });
+        }
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+            var user = await dbContext.UserAccounts.SingleAsync(x => x.Email == email);
+            user.SetUpdated(DateTimeOffset.UtcNow);
+            typeof(AlasApp.Domain.Entities.UserAccount)
+                .GetProperty(nameof(AlasApp.Domain.Entities.UserAccount.LockedUntilUtc))!
+                .SetValue(user, DateTimeOffset.UtcNow.AddMinutes(-1));
+            await dbContext.SaveChangesAsync();
+        }
+
+        var successResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password,
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, successResponse.StatusCode);
+    }
+
+    private async Task RegisterCompetitorAsync(string email, string password)
+    {
+        var response = await _client.PostAsJsonAsync("/v1/auth/register", new
+        {
+            email,
+            password,
+            nombre = "Ana",
+            apellido = "Ruiz",
+            tipo = "competidor",
+            pais = "Perú",
+            idiomaPreferido = "Español",
+            newsletter = false,
+            terminos = true,
+            reglamento = true,
+            fechaNacimiento = "1998-04-22",
+            genero = "Femenino",
+            telefono = "+51 999 111 222",
+            club = "ALAS Club",
+            postura = "Regular",
+            tallaCamiseta = "M",
+            federacion = "FENTA",
+            patrocinadores = "Marca X"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 }

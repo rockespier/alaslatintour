@@ -66,6 +66,35 @@ public sealed class CircuitRepository(AlasAppDbContext dbContext) : ICircuitRepo
             .FirstOrDefaultAsync(x => x.Id == circuitId, cancellationToken);
     }
 
+    public Task<Circuit?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        var normalizedCode = surfScoresCode.Trim();
+
+        return dbContext.Circuits
+            .Include(x => x.Events)
+            .FirstOrDefaultAsync(x => x.SurfScoresCode == normalizedCode, cancellationToken);
+    }
+
+    public Task<Circuit?> GetEntityByNameAndSeasonAsync(string nombre, int temporada, CancellationToken cancellationToken)
+    {
+        var normalizedName = nombre.Trim();
+
+        return dbContext.Circuits
+            .Include(x => x.Events)
+            .FirstOrDefaultAsync(x => x.Nombre == normalizedName && x.Temporada == temporada, cancellationToken);
+    }
+
+    public Task<Circuit?> GetCurrentBySeasonAsync(int seasonYear, CancellationToken cancellationToken)
+    {
+        return dbContext.Circuits
+            .AsNoTracking()
+            .Where(x => x.Temporada == seasonYear)
+            .OrderBy(x => x.Estado == Domain.Enums.CircuitStatus.Activo ? 0 : x.Estado == Domain.Enums.CircuitStatus.Proximo ? 1 : 2)
+            .ThenByDescending(x => x.LastSyncAt ?? x.UpdatedAtUtc)
+            .ThenBy(x => x.Nombre)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public Task AddAsync(Circuit circuit, CancellationToken cancellationToken)
     {
         return dbContext.Circuits.AddAsync(circuit, cancellationToken).AsTask();

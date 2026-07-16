@@ -1,6 +1,7 @@
 using AlasApp.Application.Auth.Models;
 using AlasApp.Application.AdminUsers.Models;
 using AlasApp.Domain.Entities;
+using AlasApp.Domain.Enums;
 
 namespace AlasApp.Application.Abstractions.Persistence;
 
@@ -12,11 +13,18 @@ public interface IUserAccountRepository
 
     Task<UserAccount?> GetByIdAsync(Guid userId, CancellationToken cancellationToken);
 
+    Task<UserAccount?> GetByCompetitorIdAsync(Guid competitorId, CancellationToken cancellationToken);
+
     Task<IReadOnlyCollection<AdminUserDto>> ListAdminUsersAsync(CancellationToken cancellationToken);
 
     Task<AdminUserDto?> GetAdminUserByIdAsync(Guid userId, CancellationToken cancellationToken);
 
     Task<AuthenticatedUserDto?> GetAuthenticatedUserAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<string>> ListAdminEmailsByPermissionAsync(
+        AdminModule module,
+        PermissionLevel minimumLevel,
+        CancellationToken cancellationToken);
 
     Task AddAsync(UserAccount userAccount, CancellationToken cancellationToken);
 

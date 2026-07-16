@@ -2,6 +2,7 @@ using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Infrastructure.Authentication;
 using AlasApp.Infrastructure.Email;
+using AlasApp.Infrastructure.Imports;
 using AlasApp.Infrastructure.PayPal;
 using AlasApp.Infrastructure.Persistence;
 using AlasApp.Infrastructure.Persistence.Repositories;
@@ -39,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
         services.AddScoped<IEventResultRepository, EventResultRepository>();
         services.AddScoped<ICompetitorRepository, CompetitorRepository>();
+        services.AddScoped<ICompetitorFineRepository, CompetitorFineRepository>();
         services.AddScoped<IInscriptionRepository, InscriptionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IBeachTokenRepository, BeachTokenRepository>();
@@ -48,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
+        services.AddScoped<IBulkExcelService, ClosedXmlBulkExcelService>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
         services.AddSingleton<SurfScoresTokenCache>();
         services.AddHttpClient<ISurfScoresImportGateway, SurfScoresImportGateway>();

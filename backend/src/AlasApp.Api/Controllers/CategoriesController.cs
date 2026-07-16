@@ -1,17 +1,23 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
+using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Categories.Commands.DeleteCategory;
+using AlasApp.Application.Categories.Commands.ImportCategories;
 using AlasApp.Application.Categories.Queries.GetCategoryById;
 using AlasApp.Application.Categories.Queries.ListCategories;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
 
 [ApiController]
 [Route("v1/categories")]
-public sealed class CategoriesController(IRequestDispatcher dispatcher) : ControllerBase
+public sealed class CategoriesController(IRequestDispatcher dispatcher, IBulkExcelService bulkExcelService) : ControllerBase
 {
+    private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     [HttpGet]
     [ProducesResponseType(typeof(Generated.Response6), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.Response6>> List([FromQuery] string? status, CancellationToken cancellationToken)
@@ -36,6 +42,7 @@ public sealed class CategoriesController(IRequestDispatcher dispatcher) : Contro
     }
 
     [HttpPost]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
     [ProducesResponseType(typeof(Generated.CategoryResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<Generated.CategoryResponse>> Create([FromBody] Generated.CategoryRequest body, CancellationToken cancellationToken)
     {
@@ -46,6 +53,7 @@ public sealed class CategoriesController(IRequestDispatcher dispatcher) : Contro
     }
 
     [HttpPut("{categoryId}")]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
     [ProducesResponseType(typeof(Generated.CategoryResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.CategoryResponse>> Update(string categoryId, [FromBody] Generated.CategoryRequest body, CancellationToken cancellationToken)
     {
@@ -57,10 +65,36 @@ public sealed class CategoriesController(IRequestDispatcher dispatcher) : Contro
     }
 
     [HttpDelete("{categoryId}")]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(string categoryId, CancellationToken cancellationToken)
     {
         await dispatcher.Send(new DeleteCategoryCommand(ApiContractMapper.ParseGuid(categoryId, "categoryId")), cancellationToken);
         return NoContent();
+    }
+
+    [HttpGet("template")]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
+    public IActionResult DownloadTemplate()
+    {
+        return File(bulkExcelService.BuildCategoriesTemplate(), ExcelContentType, "categories-template.xlsx");
+    }
+
+    [HttpPost("import")]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
+    [ProducesResponseType(typeof(BulkImportResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BulkImportResponse>> Import([FromForm] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+        {
+            return BadRequest("El archivo XLSX no puede estar vacío.");
+        }
+
+        await using var stream = file.OpenReadStream();
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory, cancellationToken);
+
+        var result = await dispatcher.Send(new ImportCategoriesCommand(memory.ToArray()), cancellationToken);
+        return Ok(ApiContractMapper.ToContract(result));
     }
 }

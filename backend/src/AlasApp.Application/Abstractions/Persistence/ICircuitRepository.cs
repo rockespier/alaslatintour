@@ -12,6 +12,12 @@ public interface ICircuitRepository
 
     Task<Circuit?> GetEntityByIdAsync(Guid circuitId, CancellationToken cancellationToken);
 
+    Task<Circuit?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken);
+
+    Task<Circuit?> GetEntityByNameAndSeasonAsync(string nombre, int temporada, CancellationToken cancellationToken);
+
+    Task<Circuit?> GetCurrentBySeasonAsync(int seasonYear, CancellationToken cancellationToken);
+
     Task AddAsync(Circuit circuit, CancellationToken cancellationToken);
 
     Task<bool> HasEventsAsync(Guid circuitId, CancellationToken cancellationToken);

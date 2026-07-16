@@ -28,6 +28,11 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
 
         await CreatePaidInscriptionAsync(competitor1, eventId, categoryId);
         await CreatePaidInscriptionAsync(competitor2, eventId, categoryId);
+        await UpsertEventResultsAsync(
+            eventId,
+            categoryId,
+            (competitor1, "1", 400),
+            (competitor2, "2", 320));
 
         var syncResponse = await _client.PostAsync($"/v1/surfscores/sync/{circuitId}", null);
         var syncBody = await syncResponse.Content.ReadAsStringAsync();
@@ -57,23 +62,102 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
         Assert.Contains(categories.EnumerateArray(), x => x.GetProperty("id").GetString() == categoryId);
     }
 
-    private async Task<string> CreateCircuitAsync()
+    [Fact]
+    public async Task GetRanking_ShouldUseCurrentSeasonCircuitOnly()
+    {
+        var currentCircuitId = await CreateCircuitAsync("Ranking Current", "ALAS-RANK-CURRENT-26", "Activo");
+        var archivedCircuitId = await CreateCircuitAsync("Ranking Archived", "ALAS-RANK-ARCHIVE-26", "Archivado");
+        var categoryId = await CreateCategoryAsync();
+
+        var currentEventId = await CreateEventAsync(currentCircuitId, "Current Event", "RANK-CURRENT-26");
+        var archivedEventId = await CreateEventAsync(archivedCircuitId, "Archived Event", "RANK-ARCHIVE-26");
+
+        await AssignCategoryToEventAsync(currentEventId, categoryId);
+        await AssignCategoryToEventAsync(archivedEventId, categoryId);
+
+        var currentCompetitor = await CreateCompetitorAsync("Lucia", "Current", "Peru");
+        var archivedCompetitor = await CreateCompetitorAsync("Maria", "Archived", "Chile");
+
+        await CreatePaidInscriptionAsync(currentCompetitor, currentEventId, categoryId);
+        await CreatePaidInscriptionAsync(archivedCompetitor, archivedEventId, categoryId);
+        await UpsertEventResultsAsync(currentEventId, categoryId, (currentCompetitor, "1", 500));
+        await UpsertEventResultsAsync(archivedEventId, categoryId, (archivedCompetitor, "1", 900));
+
+        var syncCurrentResponse = await _client.PostAsync($"/v1/surfscores/sync/{currentCircuitId}", null);
+        Assert.Equal(HttpStatusCode.OK, syncCurrentResponse.StatusCode);
+
+        var syncArchivedResponse = await _client.PostAsync($"/v1/surfscores/sync/{archivedCircuitId}", null);
+        Assert.Equal(HttpStatusCode.OK, syncArchivedResponse.StatusCode);
+
+        var rankingResponse = await _client.GetAsync($"/v1/rankings?categoryId={categoryId}&year=2026&page=1&limit=10");
+        Assert.Equal(HttpStatusCode.OK, rankingResponse.StatusCode);
+
+        using var rankingJson = JsonDocument.Parse(await rankingResponse.Content.ReadAsStringAsync());
+        var data = rankingJson.RootElement.GetProperty("data");
+        Assert.Equal(1, data.GetArrayLength());
+        Assert.Equal("Lucia Current", data[0].GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public async Task GetRanking_ShouldRespectCategoryBestResultsCount()
+    {
+        var circuitId = await CreateCircuitAsync("Ranking Best Results", "ALAS-RANK-BEST-26", "Activo");
+        var categoryId = await CreateCategoryAsync(bestResultsCount: 1);
+        var firstEventId = await CreateEventAsync(circuitId, "Best Event 1", "BEST-EV-1-26");
+        var secondEventId = await CreateEventAsync(circuitId, "Best Event 2", "BEST-EV-2-26");
+
+        await AssignCategoryToEventAsync(firstEventId, categoryId);
+        await AssignCategoryToEventAsync(secondEventId, categoryId);
+
+        var competitorId = await CreateCompetitorAsync("Julia", "Top", "Peru");
+        var runnerUpId = await CreateCompetitorAsync("Laura", "Ride", "Chile");
+
+        await CreatePaidInscriptionAsync(competitorId, firstEventId, categoryId);
+        await CreatePaidInscriptionAsync(competitorId, secondEventId, categoryId);
+        await CreatePaidInscriptionAsync(runnerUpId, firstEventId, categoryId);
+
+        await UpsertEventResultsAsync(
+            firstEventId,
+            categoryId,
+            (competitorId, "2", 250),
+            (runnerUpId, "1", 300));
+        await UpsertEventResultsAsync(
+            secondEventId,
+            categoryId,
+            (competitorId, "1", 500));
+
+        var syncResponse = await _client.PostAsync($"/v1/surfscores/sync/{circuitId}", null);
+        Assert.Equal(HttpStatusCode.OK, syncResponse.StatusCode);
+
+        var rankingResponse = await _client.GetAsync($"/v1/rankings?categoryId={categoryId}&year=2026&page=1&limit=10");
+        Assert.Equal(HttpStatusCode.OK, rankingResponse.StatusCode);
+
+        using var rankingJson = JsonDocument.Parse(await rankingResponse.Content.ReadAsStringAsync());
+        var winner = rankingJson.RootElement.GetProperty("data")[0];
+        Assert.Equal("Julia Top", winner.GetProperty("name").GetString());
+        Assert.Equal(500, winner.GetProperty("points").GetInt32());
+    }
+
+    private Task<string> CreateCircuitAsync()
+        => CreateCircuitAsync("Ranking Tour", "ALAS-RANK-26", "Activo");
+
+    private async Task<string> CreateCircuitAsync(string nombre, string surfScoresCode, string estado)
     {
         var response = await _client.PostAsJsonAsync("/v1/circuits", new
         {
-            nombre = "Ranking Tour",
+            nombre,
             temporada = 2026,
             descripcion = "Circuito ranking",
             region = "Latinoamérica",
             modalidad = "Shortboard",
-            estado = "Activo",
-            surfScoresCode = "ALAS-RANK-26"
+            estado,
+            surfScoresCode
         });
 
         return await ReadIdAsync(response);
     }
 
-    private async Task<string> CreateCategoryAsync()
+    private async Task<string> CreateCategoryAsync(int? bestResultsCount = null)
     {
         var response = await _client.PostAsJsonAsync("/v1/categories", new
         {
@@ -83,17 +167,21 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
             ageRestriction = false,
             minAge = (int?)null,
             maxAge = (int?)null,
-            status = "Activo"
+            status = "Activo",
+            bestResultsCount
         });
 
         return await ReadIdAsync(response);
     }
 
-    private async Task<string> CreateEventAsync(string circuitId)
+    private Task<string> CreateEventAsync(string circuitId)
+        => CreateEventAsync(circuitId, "Ranking Pro", "RANKING-PRO-26");
+
+    private async Task<string> CreateEventAsync(string circuitId, string nombre, string surfScoresCode)
     {
         var response = await _client.PostAsJsonAsync("/v1/events", new
         {
-            nombre = "Ranking Pro",
+            nombre,
             circuitId,
             fechaInicio = "2026-08-10",
             fechaFin = "2026-08-12",
@@ -103,7 +191,7 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
             stars = 4,
             capacidadMaxima = 64,
             prizeAmountUsd = 10000,
-            surfScoresCode = "RANKING-PRO-26",
+            surfScoresCode,
             accessType = "Abierto",
             estado = "Activo"
         });
@@ -175,6 +263,30 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
         });
 
         Assert.Equal(HttpStatusCode.Created, paymentResponse.StatusCode);
+    }
+
+    private async Task UpsertEventResultsAsync(string eventId, string categoryId, params (string CompetitorId, string Place, int LigaPoints)[] results)
+    {
+        var response = await _client.PostAsJsonAsync($"/v1/events/{eventId}/results", new
+        {
+            categoryId,
+            results = results.Select(result => new
+            {
+                competitorId = result.CompetitorId,
+                place = result.Place,
+                ligaPoints = result.LigaPoints,
+                prizeUsd = (decimal?)null,
+                heatOla1 = (decimal?)null,
+                heatOla2 = (decimal?)null
+            }).ToArray()
+        });
+
+        var body = await response.Content.ReadAsStringAsync();
+        if (response.StatusCode != HttpStatusCode.Created)
+        {
+            throw new InvalidOperationException(
+                $"Expected 201 Created but received {(int)response.StatusCode} {response.StatusCode}. Body: {body}");
+        }
     }
 
     private static async Task<string> ReadIdAsync(HttpResponseMessage response)

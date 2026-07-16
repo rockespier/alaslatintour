@@ -15,5 +15,6 @@ public sealed record CategoryDto(
     CategoryStatus Status,
     decimal MembresiaAnualUsd,
     decimal MembresiaPorEventoUsd,
+    int BestResultsCount,
     DateTimeOffset CreatedAtUtc,
     string? SurfScoresCode);

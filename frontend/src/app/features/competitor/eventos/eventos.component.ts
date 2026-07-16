@@ -428,9 +428,10 @@ export class EventosComponent implements OnInit {
   ngOnInit(): void {
     this.title.setTitle('Eventos y Calendario 2026 — ALAS Latin Tour');
     this.meta.updateTag({ name: 'description', content: 'Calendario completo del ALAS Latin Tour 2026. Inscríbete en eventos, revisa categorías y consulta tus inscripciones.' });
-    this.loadEvents();
+    this.loadEvents().then(() => {
+      if (this.auth.isAuthenticated()) this.loadMyInscriptions();
+    });
     this.loadCircuits();
-    if (this.auth.isAuthenticated()) this.loadMyInscriptions();
     if (this.auth.isCompetitor()) this.loadCompetitorStats();
   }
 
@@ -455,10 +456,31 @@ export class EventosComponent implements OnInit {
   }
 
   private async loadMyInscriptions(): Promise<void> {
+    const competitorId = this.auth.currentUser()?.competitorId;
+    if (!competitorId) return;
     this.loadingInscriptions.set(true);
     try {
-      const res = await this.api.get<any>('/inscriptions/my?limit=5&status=activa');
-      this.myInscriptions.set(res?.data ?? []);
+      const res = await this.api.get<any>(`/competitors/${competitorId}/inscriptions?limit=20`);
+      const raw: any[] = res?.data ?? [];
+      const eventsById = new Map(this.events().map(e => [e.id, e]));
+      this.myInscriptions.set(
+        raw
+          .filter(i => (i?.estadoCompetidor ?? '').toString().toLowerCase() !== 'completado')
+          .slice(0, 5)
+          .map(i => {
+            const ev = eventsById.get(i?.event?.id);
+            const estadoAdmin = (i?.estadoAdmin ?? '').toString().toLowerCase();
+            return {
+              id: i.id,
+              eventoNombre: i?.event?.nombre ?? '',
+              eventoPais: ev ? this.flagOf(ev.pais) : '🏄',
+              categoria: i?.category?.nombre ?? '',
+              fechaInicio: ev?.fechaInicio ?? '',
+              fechaFin: ev?.fechaFin ?? '',
+              statusPago: estadoAdmin === 'pagado' ? 'confirmado' as const : estadoAdmin === 'pendiente' ? 'pendiente' as const : 'rechazado' as const,
+            };
+          }),
+      );
     } catch {
       this.myInscriptions.set([]);
     } finally {

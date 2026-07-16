@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 type UsuariosTab = 'usuarios' | 'roles' | 'permisos';
@@ -106,11 +107,13 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                 <option value="Inactivo">Inactivo</option>
               </select>
             </div>
-            <button (click)="openCreate()"
-                    class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Nuevo Usuario
-            </button>
+            @if (canEdit()) {
+              <button (click)="openCreate()"
+                      class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Nuevo Usuario
+              </button>
+            }
           </div>
 
           <!-- Users table -->
@@ -146,11 +149,16 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                         </span>
                       </td>
                       <td class="px-4 py-3 text-right whitespace-nowrap">
-                        <button (click)="openEdit(u)" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
-                        @if (u.estado === 'Activo') {
-                          <button (click)="confirmDeactivate(u)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                        @if (canEdit()) {
+                          <button (click)="openEdit(u)" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
+                          <button (click)="openPassword(u)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Contraseña</button>
+                          @if (u.estado === 'Activo') {
+                            <button (click)="confirmDeactivate(u)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
+                          } @else {
+                            <button (click)="activate(u)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Activar</button>
+                          }
                         } @else {
-                          <button (click)="activate(u)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Activar</button>
+                          <span class="text-xs text-text-muted">—</span>
                         }
                       </td>
                     </tr>
@@ -295,6 +303,37 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       </div>
     }
 
+    <!-- Modal Cambiar Contraseña -->
+    @if (passwordTarget()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closePassword()">
+        <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+            <h3 class="font-heading text-xl text-white">Cambiar contraseña</h3>
+            <button (click)="closePassword()" class="text-text-muted hover:text-white transition">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <p class="text-sm text-text-muted">{{ passwordTarget()!.nombreCompleto }}</p>
+            <div>
+              <label [class]="LABEL_INPUT">Nueva contraseña</label>
+              <input type="password" [class]="CLASS_INPUT" [(ngModel)]="newPasswordValue" autocomplete="new-password">
+              <p class="text-[11px] text-text-muted mt-1">Mínimo 8 caracteres, 1 mayúscula y 1 dígito.</p>
+            </div>
+            @if (passwordError()) {
+              <p class="text-error-brand text-xs">{{ passwordError() }}</p>
+            }
+          </div>
+          <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <button (click)="closePassword()" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+            <button (click)="confirmPasswordChange()" [disabled]="savingPassword()" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+              {{ savingPassword() ? 'Guardando...' : 'Guardar contraseña' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Toast -->
     @if (toast().show) {
       <div class="fixed bottom-6 right-6 z-50 bg-navy-dark border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3">
@@ -306,6 +345,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
 })
 export class UsuariosComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Usuarios'));
 
   readonly LABEL_INPUT = LABEL_INPUT;
   readonly CLASS_INPUT = CLASS_INPUT;
@@ -494,6 +536,43 @@ export class UsuariosComponent implements OnInit {
       this.showToast('Usuario activado');
     } catch {
       this.showToast('Error al activar usuario');
+    }
+  }
+
+  // ─── Cambiar contraseña ─────────────────────────────────────────
+
+  passwordTarget = signal<UsuarioAdmin | null>(null);
+  newPasswordValue = '';
+  savingPassword = signal(false);
+  passwordError = signal<string | null>(null);
+
+  openPassword(u: UsuarioAdmin): void {
+    this.passwordTarget.set(u);
+    this.newPasswordValue = '';
+    this.passwordError.set(null);
+  }
+
+  closePassword(): void {
+    this.passwordTarget.set(null);
+  }
+
+  async confirmPasswordChange(): Promise<void> {
+    const u = this.passwordTarget();
+    if (!u) return;
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(this.newPasswordValue)) {
+      this.passwordError.set('La contraseña debe tener al menos 8 caracteres, 1 mayúscula y 1 dígito.');
+      return;
+    }
+    this.savingPassword.set(true);
+    this.passwordError.set(null);
+    try {
+      await this.api.post(`/admin/users/${u.id}/password`, { newPassword: this.newPasswordValue });
+      this.closePassword();
+      this.showToast(`Contraseña actualizada para ${u.nombreCompleto}`);
+    } catch (err: any) {
+      this.passwordError.set(err?.body?.message ?? 'No se pudo actualizar la contraseña.');
+    } finally {
+      this.savingPassword.set(false);
     }
   }
 }

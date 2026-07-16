@@ -1,6 +1,8 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 interface Category {
   id: string;
@@ -16,12 +18,13 @@ interface Category {
   surfScoresCode?: string | null;
   membresiaAnualUsd?: number | null;
   membresiaPorEventoUsd?: number | null;
+  bestResultsCount?: number | null;
 }
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImportExcelModalComponent],
   template: `
     <!-- Header -->
     <div class="py-8">
@@ -30,13 +33,25 @@ interface Category {
           <h1 class="text-3xl font-heading text-white">Categorías</h1>
           <p class="text-text-muted text-sm mt-1">Gestión de categorías de competencia y sus tarifas base.</p>
         </div>
-        <button (click)="openCreate()"
-                class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          Nueva categoría
-        </button>
+        @if (canEdit()) {
+          <div class="flex items-center gap-2">
+            <button (click)="downloadTemplate()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Descargar plantilla
+            </button>
+            <button (click)="importOpen.set(true)"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Importar Excel
+            </button>
+            <button (click)="openCreate()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nueva categoría
+            </button>
+          </div>
+        }
       </div>
 
       <!-- Filters -->
@@ -102,24 +117,28 @@ interface Category {
                     </span>
                   </td>
                   <td class="px-4 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button (click)="openEdit(cat)"
-                              class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-cyan-brand"
-                              title="Editar">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"/>
-                        </svg>
-                      </button>
-                      <button (click)="confirmDelete(cat)"
-                              class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-error-brand"
-                              title="Eliminar">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      </button>
-                    </div>
+                    @if (canEdit()) {
+                      <div class="flex items-center justify-end gap-2">
+                        <button (click)="openEdit(cat)"
+                                class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-cyan-brand"
+                                title="Editar">
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"/>
+                          </svg>
+                        </button>
+                        <button (click)="confirmDelete(cat)"
+                                class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-error-brand"
+                                title="Eliminar">
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="text-xs text-text-muted">—</span>
+                    }
                   </td>
                 </tr>
               }
@@ -249,6 +268,14 @@ interface Category {
               </div>
             </div>
 
+            <!-- Ranking -->
+            <div>
+              <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Mejores resultados a contar (ranking)</label>
+              <input formControlName="bestResultsCount" type="number" min="1" max="10" placeholder="5"
+                     class="w-full max-w-[160px] bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+              <p class="text-text-muted/60 text-xs mt-1">Cantidad de mejores eventos (del circuito actual) que se suman para el ranking de esta categoría. Entre 1 y 10.</p>
+            </div>
+
             <!-- Footer -->
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" (click)="closeModal()"
@@ -264,6 +291,9 @@ interface Category {
         </div>
       </div>
     }
+
+    <app-import-excel-modal [open]="importOpen()" importPath="/categories/import" entityLabel="categorías"
+                             (close)="importOpen.set(false)" (imported)="onImported()" />
 
     <!-- Confirm Delete -->
     @if (deleteTarget()) {
@@ -292,6 +322,10 @@ interface Category {
 export class CategoriasComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Categorias'));
+  importOpen = signal(false);
 
   loading = signal(true);
   saving = signal(false);
@@ -319,6 +353,7 @@ export class CategoriasComponent implements OnInit {
     surfScoresCode: [''],
     membresiaAnualUsd: [null as number | null],
     membresiaPorEventoUsd: [null as number | null],
+    bestResultsCount: [5, [Validators.min(1), Validators.max(10)]],
   });
 
   filtered = computed(() => {
@@ -354,7 +389,7 @@ export class CategoriasComponent implements OnInit {
       nombre: '', descripcion: '', gender: 'Masculino',
       ageRestriction: false, minAge: null, maxAge: null,
       successorCategoryId: '', status: 'Activo', surfScoresCode: '',
-      membresiaAnualUsd: null, membresiaPorEventoUsd: null,
+      membresiaAnualUsd: null, membresiaPorEventoUsd: null, bestResultsCount: 5,
     });
     this.modalOpen.set(true);
   }
@@ -373,6 +408,7 @@ export class CategoriasComponent implements OnInit {
       surfScoresCode: cat.surfScoresCode ?? '',
       membresiaAnualUsd: cat.membresiaAnualUsd ?? null,
       membresiaPorEventoUsd: cat.membresiaPorEventoUsd ?? null,
+      bestResultsCount: cat.bestResultsCount ?? 5,
     });
     this.modalOpen.set(true);
   }
@@ -399,6 +435,7 @@ export class CategoriasComponent implements OnInit {
         surfScoresCode: v.surfScoresCode || null,
         membresiaAnualUsd: v.membresiaAnualUsd != null ? Number(v.membresiaAnualUsd) : 0,
         membresiaPorEventoUsd: v.membresiaPorEventoUsd != null ? Number(v.membresiaPorEventoUsd) : 0,
+        bestResultsCount: v.bestResultsCount != null ? Number(v.bestResultsCount) : 5,
       };
 
       const id = this.editingId();
@@ -416,6 +453,14 @@ export class CategoriasComponent implements OnInit {
 
   confirmDelete(cat: Category): void {
     this.deleteTarget.set(cat);
+  }
+
+  async downloadTemplate(): Promise<void> {
+    await this.api.downloadFile('/categories/template', 'categories-template.xlsx');
+  }
+
+  async onImported(): Promise<void> {
+    await this.load();
   }
 
   async doDelete(): Promise<void> {

@@ -37,6 +37,9 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
+        builder.Property(x => x.BestResultsCount)
+            .IsRequired();
+
         builder.Property(x => x.SurfScoresCode)
             .HasMaxLength(100);
 

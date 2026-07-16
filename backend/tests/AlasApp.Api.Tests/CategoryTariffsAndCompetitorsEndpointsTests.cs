@@ -7,16 +7,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public CategoryTariffsAndCompetitorsEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task CategoryTariffsFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var categoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
         {
             nombre = "Open Tariffs",
@@ -67,6 +71,8 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
     [Fact]
     public async Task CompetitorCrudFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var createResponse = await _client.PostAsJsonAsync("/v1/competitors", new
         {
             nombre = "Lucas",
@@ -152,6 +158,8 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
     [Fact]
     public async Task CompetitorAdditionalEndpoints_Work_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var createResponse = await _client.PostAsJsonAsync("/v1/competitors", new
         {
             nombre = "Maria",
@@ -237,6 +245,106 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
         var exportBody = await exportResponse.Content.ReadAsStringAsync();
         Assert.Contains("BEGIN:VCALENDAR", exportBody);
         Assert.Contains("END:VCALENDAR", exportBody);
+    }
+
+    [Fact]
+    public async Task CompetitorPasswordAndFines_ShouldWork_EndToEnd()
+    {
+        var competitorEmail = $"fine-competitor-{Guid.NewGuid():N}@test.com";
+        var competitorId = await RegisterCompetitorAsync(competitorEmail, "Password1");
+
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var passwordResponse = await _client.PostAsJsonAsync($"/v1/competitors/{competitorId}/password", new
+        {
+            newPassword = "Password2"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, passwordResponse.StatusCode);
+
+        _client.DefaultRequestHeaders.Authorization = null;
+
+        var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email = competitorEmail,
+            password = "Password2",
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var createFineResponse = await _client.PostAsJsonAsync($"/v1/competitors/{competitorId}/fines", new
+        {
+            amountUsd = 35.5m,
+            reason = "Late check-in",
+            notes = "Applied by staff"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, createFineResponse.StatusCode);
+
+        var createdFine = await ReadJsonAsync(createFineResponse);
+        var fineId = createdFine.RootElement.GetProperty("id").GetString();
+        Assert.Equal("Pendiente", createdFine.RootElement.GetProperty("status").GetString());
+
+        var listFinesResponse = await _client.GetAsync($"/v1/competitors/{competitorId}/fines");
+        Assert.Equal(HttpStatusCode.OK, listFinesResponse.StatusCode);
+
+        var fines = await ReadJsonAsync(listFinesResponse);
+        Assert.Equal(1, fines.RootElement.GetArrayLength());
+
+        var updateFineResponse = await _client.PutAsJsonAsync($"/v1/competitors/{competitorId}/fines/{fineId}", new
+        {
+            amountUsd = 35.5m,
+            reason = "Late check-in",
+            notes = "Paid at venue",
+            status = "Pagada"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, updateFineResponse.StatusCode);
+
+        var updatedFine = await ReadJsonAsync(updateFineResponse);
+        Assert.Equal("Pagada", updatedFine.RootElement.GetProperty("status").GetString());
+        Assert.Equal("Paid at venue", updatedFine.RootElement.GetProperty("notes").GetString());
+    }
+
+    private async Task<string> RegisterCompetitorAsync(string email, string password)
+    {
+        var registerResponse = await _client.PostAsJsonAsync("/v1/auth/register", new
+        {
+            email,
+            password,
+            nombre = "Competidor",
+            apellido = "Test",
+            tipo = "competidor",
+            pais = "Perú",
+            idiomaPreferido = "Español",
+            newsletter = true,
+            terminos = true,
+            reglamento = true,
+            fechaNacimiento = "1998-04-22",
+            genero = "Masculino",
+            telefono = "+51 999 000 111",
+            club = "Praia Club",
+            postura = "Regular",
+            tallaCamiseta = "M",
+            federacion = "FENTA",
+            patrocinadores = "Marca Z"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+
+        var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password,
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        var loginJson = await ReadJsonAsync(loginResponse);
+        return loginJson.RootElement.GetProperty("user").GetProperty("competitorId").GetString()!;
     }
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)

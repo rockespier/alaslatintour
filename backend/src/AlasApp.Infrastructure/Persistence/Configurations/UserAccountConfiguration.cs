@@ -47,7 +47,9 @@ public sealed class UserAccountConfiguration : IEntityTypeConfiguration<UserAcco
             .HasMaxLength(50);
 
         builder.Property(x => x.TokenVersion).IsRequired();
+        builder.Property(x => x.FailedLoginAttempts).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
+        builder.Property(x => x.LockedUntilUtc);
         builder.Property(x => x.Newsletter).IsRequired();
         builder.Property(x => x.AcceptedTerms).IsRequired();
         builder.Property(x => x.AcceptedReglamento).IsRequired();

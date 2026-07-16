@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 type InscritosTab = 'inscritos' | 'premios' | 'puestos';
@@ -151,7 +152,7 @@ function fmtDateTime(dt: string): string {
                       </td>
                       <td class="px-3 py-3 text-right whitespace-nowrap">
                         <button (click)="toggleExpand(row.id)" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver detalle</button>
-                        @if (row.estado === 'Pendiente') {
+                        @if (row.estado === 'Pendiente' && canEdit()) {
                           <button (click)="validarPago(row)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Validar pago</button>
                         }
                       </td>
@@ -177,10 +178,10 @@ function fmtDateTime(dt: string): string {
                               </div>
                               <div>
                                 <p class="font-accent uppercase text-xs tracking-wider text-text-muted mb-2">Notas</p>
-                                <textarea [class]="CLASS_INPUT + ' text-xs'" rows="3" placeholder="Notas internas..." [(ngModel)]="row.notas"></textarea>
+                                <textarea [class]="CLASS_INPUT + ' text-xs'" rows="3" placeholder="Notas internas..." [(ngModel)]="row.notas" [disabled]="!canEdit()"></textarea>
                               </div>
                             </div>
-                            @if (row.estado === 'Pendiente') {
+                            @if (row.estado === 'Pendiente' && canEdit()) {
                               <button (click)="validarPago(row)" class="px-4 py-2 bg-success-brand hover:bg-green-600 text-white font-accent uppercase tracking-wider text-sm rounded-md transition">Confirmar Pago en Playa</button>
                             }
                           </div>
@@ -340,6 +341,9 @@ function fmtDateTime(dt: string): string {
 })
 export class InscritosComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Inscripciones'));
 
   CLASS_INPUT = CLASS_INPUT;
 

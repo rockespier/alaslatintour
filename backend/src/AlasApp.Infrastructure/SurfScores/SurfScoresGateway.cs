@@ -26,6 +26,7 @@ public sealed class SurfScoresGateway(
             {
                 x.CategoryId,
                 CategoryName = x.Category != null ? x.Category.Nombre : string.Empty,
+                BestResultsCount = x.Category != null ? x.Category.BestResultsCount : bestResultsCount,
                 EventId = x.EventId,
                 EventYear = x.Event != null ? x.Event.FechaInicio.Year : 0,
                 CompetitorName = x.Competitor != null ? x.Competitor.Nombre + " " + x.Competitor.Apellido : string.Empty,
@@ -39,6 +40,7 @@ public sealed class SurfScoresGateway(
             .GroupBy(x => new { x.CategoryId, x.CategoryName, x.EventYear })
             .Select(group =>
             {
+                var categoryBestResultsCount = group.Max(x => x.BestResultsCount);
                 var entries = group
                     .GroupBy(x => new { x.CompetitorName, x.Country })
                     .Select(competitor => new
@@ -47,7 +49,7 @@ public sealed class SurfScoresGateway(
                         competitor.Key.Country,
                         Points = competitor
                             .OrderByDescending(x => x.Points)
-                            .Take(bestResultsCount)
+                            .Take(categoryBestResultsCount)
                             .Sum(x => x.Points),
                         Events = competitor.Select(x => x.EventId).Distinct().Count()
                     })

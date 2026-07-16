@@ -1,8 +1,10 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Inscriptions.Models;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
@@ -12,6 +14,7 @@ namespace AlasApp.Api.Controllers;
 public sealed class EventInscriptionsController(IRequestDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = AdminPolicies.InscriptionsRead)]
     [ProducesResponseType(typeof(Generated.AdminInscriptionListResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.AdminInscriptionListResponse>> List(

@@ -11,6 +11,8 @@ URL completa de ejemplo: `http://localhost:5132/v1/circuits`
 
 > **Autenticación:** `login`, `register`, `password-reset/request` y `password-reset/confirm` son públicos. `logout` requiere `Authorization: Bearer {{access_token}}`. Los endpoints de `/v1/admin/*` sí tienen enforcement de autenticación y permisos (`401` / `403`).
 
+> **Actualización 2026-07-16:** además de `/v1/admin/*`, varios endpoints operativos de backoffice ahora exigen JWT con permisos por rol. Ver la sección `Permisos por rol y rutas protegidas`.
+
 ---
 
 ## Convenciones generales
@@ -45,6 +47,12 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Categories | `GET` | `/v1/categories/{categoryId}` | modificado |
 | Categories | `POST` | `/v1/categories` | modificado |
 | Categories | `PUT` | `/v1/categories/{categoryId}` | modificado |
+| Categories | `GET` | `/v1/categories/template` | nuevo |
+| Categories | `POST` | `/v1/categories/import` | nuevo |
+| Circuits | `GET` | `/v1/circuits/template` | nuevo |
+| Circuits | `POST` | `/v1/circuits/import` | nuevo |
+| Events | `GET` | `/v1/events/template` | nuevo |
+| Events | `POST` | `/v1/events/import` | nuevo |
 | Rankings | `GET` | `/v1/rankings` | nuevo |
 | Rankings | `GET` | `/v1/rankings/categories` | nuevo |
 | SurfScores | `POST` | `/v1/surfscores/sync/{circuitId}` | nuevo |
@@ -55,11 +63,16 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Memberships | `DELETE` | `/v1/memberships/{membershipId}` | nuevo |
 | Admin | `GET` | `/v1/admin/users` | nuevo |
 | Admin | `GET` | `/v1/admin/users/{userId}` | nuevo |
+| Admin | `POST` | `/v1/admin/users/{userId}/password` | nuevo |
 | Admin | `POST` | `/v1/admin/users` | nuevo |
 | Admin | `PUT` | `/v1/admin/users/{userId}` | nuevo |
 | Admin | `DELETE` | `/v1/admin/users/{userId}` | nuevo |
 | Admin | `GET` | `/v1/admin/roles` | nuevo |
 | Admin | `GET` | `/v1/admin/dashboard` | nuevo |
+| Competitors | `POST` | `/v1/competitors/{competitorId}/password` | nuevo |
+| Competitors | `GET` | `/v1/competitors/{competitorId}/fines` | nuevo |
+| Competitors | `POST` | `/v1/competitors/{competitorId}/fines` | nuevo |
+| Competitors | `PUT` | `/v1/competitors/{competitorId}/fines/{fineId}` | nuevo |
 
 ### Cambios importantes de contrato
 
@@ -68,19 +81,86 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - `GET /v1/galleries` devuelve una card liviana con una sola portada por galería.
 - `GET /v1/galleries/{slug}` ya no devuelve `photos` plano. Ahora devuelve `galleryDays[]` con `assets[]` tipados.
 - `POST /v1/uploads/event-poster` sube la imagen a WordPress y devuelve la URL final que luego debe enviarse en `POST/PUT /v1/events`.
+- `GET /v1/circuits/template`, `GET /v1/events/template` y `GET /v1/categories/template` descargan plantillas reales `.xlsx`.
+- `POST /v1/circuits/import`, `POST /v1/events/import` y `POST /v1/categories/import` aceptan `multipart/form-data` con un único campo `file`.
+- La importación masiva hace `upsert`: si llega `Id` o existe `SurfScoresCode`, actualiza; si no, crea.
+- En `events/import`, frontend/backoffice puede referenciar el circuito por `CircuitId` o por `CircuitSurfScoresCode`.
+- En `categories/import`, la sucesora puede enviarse por `SuccessorCategoryId` o `SuccessorSurfScoresCode`.
+- Issue 9: el backoffice ya soporta cambio controlado de contraseña para competidores vía `POST /v1/competitors/{competitorId}/password`.
+- Issue 9: el admin autenticado puede usar `POST /v1/admin/users/me/password` para su propia contraseña, y `POST /v1/admin/users/{userId}/password` para otros admins cuando tiene permisos.
+- Issue 9: al cambiar la contraseña de una cuenta administrada, la API invalida las sesiones activas mediante incremento de `tokenVersion`.
 - `GET/PUT /v1/admin/settings` expone `general.administrativeFeeUsd` para parametrizar la cuota administrativa global.
 - `POST /v1/events` y `PUT /v1/events/{id}` aceptan `imagenUrl` para el afiche del evento.
 - `POST /v1/events` y `PUT /v1/events/{id}` aceptan además `auspiciador` y `eventType`.
 - `GET /v1/events` y `GET /v1/events/{id}` ahora devuelven `auspiciador` y `eventType`.
 - `POST /v1/events` y `PUT /v1/events/{id}` permiten `stars` de `1` a `7`.
 - `GET/PUT /v1/events/{eventId}/categories` devuelve `gender` y `stars` por categoría habilitada.
+- `GET /v1/events/{eventId}/categories?competitorId={guid}` filtra categorías incompatibles con el género del competidor.
 - `GET/PUT /v1/events/{eventId}/categories` ya no maneja tarifa COP; el override por evento quedó solo en USD.
 - `GET/POST/PUT /v1/categories` ahora expone `membresiaAnualUsd` y `membresiaPorEventoUsd`.
+- `GET/POST/PUT /v1/categories` ahora expone `bestResultsCount` para definir cuántos resultados cuentan en el ranking de esa categoría.
 - `GET /v1/inscriptions`, `GET /v1/inscriptions/{id}` y `GET /v1/competitors/{id}/inscriptions` ahora devuelven `baseAmountUsd` y, solo si aplica, `administrativeFeeUsd`.
 - `GET /v1/categories/{categoryId}/tariffs` y `PUT /v1/categories/{categoryId}/tariffs/{starLevel}` soportan `starLevel` de `1` a `7`.
 - En ranking, los eventos `Prime` aplican bono `+10%` y `SuperPrime` `+50%` sobre `ligaPoints` al construir la caché.
+- `GET /v1/rankings` y `GET /v1/rankings/categories` leen únicamente la caché del circuito actual de la temporada vigente.
 - La matriz de puntos y la distribución de premios ya contemplan eventos de 6 y 7 estrellas.
+- Después de 3 intentos fallidos de `login`, la cuenta queda bloqueada temporalmente por 15 minutos.
 - `/v1/admin/*` requiere JWT y aplica permisos por rol. Angular debe manejar `401 Unauthorized` y `403 Forbidden`.
+- Los writes de `/v1/circuits`, `/v1/events`, `/v1/categories`, `/v1/events/{eventId}/categories`, `/v1/events/{eventId}/results` y `/v1/circuits/{circuitId}/surfscores-import` ahora requieren JWT admin con permisos de escritura.
+- Los endpoints admin de inscripciones, pagos y tokens requieren JWT y respetan lectura vs escritura según rol.
+- El CRUD administrativo de competidores ahora exige JWT con permisos del módulo `Usuarios`.
+
+---
+
+## Permisos por rol y rutas protegidas
+
+### Matriz funcional para frontend admin
+
+| Rol | Dashboard | Usuarios | Circuitos | Eventos | Categorías | Inscripciones | Pagos | Tokens | Configuración |
+|-----|-----------|----------|-----------|---------|------------|---------------|-------|--------|---------------|
+| `SuperAdmin` | full | full | full | full | full | full | full | full | full |
+| `Admin` | full | full | full | full | full | full | full | full | read |
+| `Arbitro` | read | none | none | full | read | full | none | none | none |
+| `Revisor` | read | read | read | read | read | read | read | read | none |
+
+### Rutas protegidas agregadas o endurecidas
+
+| Método | Ruta | Permiso mínimo |
+|--------|------|----------------|
+| `POST/PUT/DELETE` | `/v1/circuits` y `/v1/circuits/{id}` | `Circuitos: Full` |
+| `GET` | `/v1/circuits/template` | `Circuitos: Full` |
+| `POST` | `/v1/circuits/import` | `Circuitos: Full` |
+| `POST/PUT/DELETE` | `/v1/events` y `/v1/events/{id}` | `Eventos: Full` |
+| `GET` | `/v1/events/template` | `Eventos: Full` |
+| `POST` | `/v1/events/import` | `Eventos: Full` |
+| `POST/PUT/DELETE` | `/v1/categories` y `/v1/categories/{id}` | `Categorias: Full` |
+| `GET` | `/v1/categories/template` | `Categorias: Full` |
+| `POST` | `/v1/categories/import` | `Categorias: Full` |
+| `GET` | `/v1/competitors` y `/v1/competitors/{id}` | `Usuarios: Read` |
+| `POST/PUT/DELETE` | `/v1/competitors` y `/v1/competitors/{id}` | `Usuarios: Full` |
+| `PUT` | `/v1/competitors/{id}/license` | `Usuarios: Full` |
+| `POST` | `/v1/competitors/{id}/password` | `Usuarios: Full` |
+| `GET` | `/v1/categories/{categoryId}/tariffs` | `Categorias: Read` |
+| `PUT` | `/v1/categories/{categoryId}/tariffs/{starLevel}` | `Categorias: Full` |
+| `PUT` | `/v1/events/{eventId}/categories` | `Eventos: Full` |
+| `POST` | `/v1/events/{eventId}/results` | `Eventos: Full` |
+| `GET` | `/v1/inscriptions` | `Inscritos: Read` |
+| `PUT` | `/v1/inscriptions/{id}` | `Inscritos: Full` |
+| `GET` | `/v1/events/{eventId}/inscriptions` | `Inscritos: Read` |
+| `GET` | `/v1/payments`, `/v1/payments/{id}`, `/v1/payments/kpis` | `Pagos: Read` |
+| `PUT` | `/v1/payments/{id}` | `Pagos: Full` |
+| `GET` | `/v1/competitors/{competitorId}/fines` | `Pagos: Read` |
+| `POST/PUT` | `/v1/competitors/{competitorId}/fines*` | `Pagos: Full` |
+| `GET` | `/v1/payments/beach/tokens` | `Tokens: Read` |
+| `POST` | `/v1/payments/beach/tokens/{id}/approve` | `Tokens: Full` |
+| `POST` | `/v1/payments/beach/tokens/{id}/reject` | `Tokens: Full` |
+| `POST` | `/v1/circuits/{circuitId}/surfscores-import` | `Circuitos: Full` |
+
+### Guía para Angular
+
+- Si el login devuelve `user.adminRole`, úsalo como fuente principal para construir el menú.
+- Si una vista recibe `403 Forbidden`, debe ocultar acciones de edición y dejar la pantalla en modo lectura o sin acceso según el módulo.
+- El frontend no debe asumir que una vista visible implica permiso de escritura; la acción debe habilitarse solo si el rol tiene `full` en el módulo.
 
 ---
 
@@ -121,7 +201,13 @@ Content-Type: application/json
 
 **Errores comunes:**
 - `401 Unauthorized` si el email o password no coinciden.
+- `401 Unauthorized` si la cuenta quedó bloqueada temporalmente por múltiples intentos fallidos.
 - `400 Bad Request` si faltan campos obligatorios.
+
+**Regla de seguridad:**
+- máximo 3 intentos fallidos consecutivos por usuario,
+- al tercer error la cuenta queda bloqueada por 15 minutos,
+- un login correcto resetea el contador.
 
 ---
 
@@ -400,6 +486,58 @@ DELETE {{base_url}}/v1/circuits/3fa85f64-5717-4562-b3fc-2c963f66afa6
 
 ---
 
+### GET /v1/circuits/template — Descargar plantilla XLSX
+
+```http
+GET {{base_url}}/v1/circuits/template
+Authorization: Bearer {{access_token}}
+```
+
+**Auth:** requiere `Circuitos: Full`.
+
+**Archivo:** `circuits-template.xlsx`
+
+**Columnas de la hoja `Circuits`:**
+- `Id`
+- `SurfScoresCode`
+- `Nombre`
+- `Temporada`
+- `Descripcion`
+- `Region`
+- `Modalidad`
+- `Estado`
+
+**Regla de importación posterior:**
+- si `Id` existe, actualiza ese circuito,
+- si no hay `Id` pero sí `SurfScoresCode` ya existente, actualiza,
+- si no coincide ninguno, crea.
+
+---
+
+### POST /v1/circuits/import — Importar circuitos XLSX
+
+```http
+POST {{base_url}}/v1/circuits/import
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+- `file`: archivo `.xlsx`
+
+**Response:** `200 OK`
+
+```json
+{
+  "processedRows": 2,
+  "createdCount": 1,
+  "updatedCount": 1,
+  "errors": []
+}
+```
+
+---
+
 ## 2. Events — `/v1/events`
 
 ### GET /v1/events — Listar eventos
@@ -532,6 +670,68 @@ Content-Type: application/json
 - `auspiciador` es opcional y puede enviarse `null`.
 - `eventType` es obligatorio y debe enviarse siempre; si no hay selección explícita usar `Regular`.
 - La UI de ranking no recibe el multiplicador por separado; el valor final ya llega aplicado en `points`.
+
+---
+
+### GET /v1/events/template — Descargar plantilla XLSX
+
+```http
+GET {{base_url}}/v1/events/template
+Authorization: Bearer {{access_token}}
+```
+
+**Auth:** requiere `Eventos: Full`.
+
+**Archivo:** `events-template.xlsx`
+
+**Columnas de la hoja `Events`:**
+- `Id`
+- `SurfScoresCode`
+- `CircuitId`
+- `CircuitSurfScoresCode`
+- `Nombre`
+- `FechaInicio`
+- `FechaFin`
+- `Pais`
+- `Ciudad`
+- `Playa`
+- `Auspiciador`
+- `ImagenUrl`
+- `Stars`
+- `CapacidadMaxima`
+- `PrizeAmountUsd`
+- `EventType`
+- `AccessType`
+- `Estado`
+
+**Notas para frontend/admin:**
+- basta completar uno de `CircuitId` o `CircuitSurfScoresCode`,
+- fechas en formato `yyyy-MM-dd`,
+- `ImagenUrl` debe ser la URL final ya subida a WordPress si el evento lleva afiche.
+
+---
+
+### POST /v1/events/import — Importar eventos XLSX
+
+```http
+POST {{base_url}}/v1/events/import
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+- `file`: archivo `.xlsx`
+
+**Response:** `200 OK`
+
+```json
+{
+  "processedRows": 3,
+  "createdCount": 2,
+  "updatedCount": 1,
+  "errors": []
+}
+```
 
 ---
 
@@ -1123,6 +1323,15 @@ Authorization: Bearer {{access_token}}
       "inscritosCount": 2
     }
   ],
+  "alerts": [
+    {
+      "module": "tokens",
+      "level": "warning",
+      "title": "Tokens de pago en playa pendientes",
+      "message": "Hay 1 solicitud(es) de token pendientes por revisar.",
+      "count": 1
+    }
+  ],
   "recentInscriptions": [
     {
       "competitorName": "Laura Mendez",
@@ -1133,6 +1342,11 @@ Authorization: Bearer {{access_token}}
   ]
 }
 ```
+
+**Uso frontend:**
+- `alerts[]` es una notificación interna liviana para mostrar banners, cards o badges en el dashboard.
+- Por ahora solo se emite alerta automática para tokens de pago en playa pendientes.
+- `module = "tokens"` puede enlazar al listado `/v1/payments/beach/tokens`.
 
 ---
 
@@ -1189,6 +1403,7 @@ Content-Type: application/json
   "maxAge": 15,
   "membresiaAnualUsd": 35.0,
   "membresiaPorEventoUsd": 12.0,
+  "bestResultsCount": 5,
   "successorCategoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "Activo"
 }
@@ -1213,6 +1428,7 @@ Content-Type: application/json
   "maxAge": 15,
   "membresiaAnualUsd": 35.0,
   "membresiaPorEventoUsd": 12.0,
+  "bestResultsCount": 5,
   "successorCategory": {
     "id": "another-guid",
     "nombre": "Sub-18 Masculino"
@@ -1241,6 +1457,7 @@ Content-Type: application/json
   "maxAge": 15,
   "membresiaAnualUsd": 40.0,
   "membresiaPorEventoUsd": 15.0,
+  "bestResultsCount": 4,
   "successorCategoryId": null,
   "status": "Activo"
 }
@@ -1251,6 +1468,7 @@ Content-Type: application/json
 **Notas de frontend:**
 - Ambos importes deben enviarse siempre; si la UI todavía no tiene captura, enviar `0`.
 - La API rechaza valores negativos.
+- `bestResultsCount` debe enviarse entre `1` y `10`. Si la UI aún no expone el campo, usar `5`.
 
 ---
 
@@ -1264,6 +1482,80 @@ DELETE {{base_url}}/v1/categories/3fa85f64-5717-4562-b3fc-2c963f66afa6
 
 ---
 
+### GET /v1/categories/template — Descargar plantilla XLSX
+
+```http
+GET {{base_url}}/v1/categories/template
+Authorization: Bearer {{access_token}}
+```
+
+**Auth:** requiere `Categorias: Full`.
+
+**Archivo:** `categories-template.xlsx`
+
+**Columnas de la hoja `Categories`:**
+- `Id`
+- `SurfScoresCode`
+- `Nombre`
+- `Descripcion`
+- `Gender`
+- `AgeRestriction`
+- `MinAge`
+- `MaxAge`
+- `SuccessorCategoryId`
+- `SuccessorSurfScoresCode`
+- `Status`
+- `MembresiaAnualUsd`
+- `MembresiaPorEventoUsd`
+- `BestResultsCount`
+
+**Notas para frontend/admin:**
+- `AgeRestriction` debe enviarse como `true` o `false`,
+- si `AgeRestriction = false`, dejar `MinAge` y `MaxAge` vacíos,
+- la sucesora puede resolverse por GUID o por `SurfScoresCode`.
+
+---
+
+### POST /v1/categories/import — Importar categorías XLSX
+
+```http
+POST {{base_url}}/v1/categories/import
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+- `file`: archivo `.xlsx`
+
+**Response:** `200 OK`
+
+```json
+{
+  "processedRows": 2,
+  "createdCount": 2,
+  "updatedCount": 0,
+  "errors": []
+}
+```
+
+**Errores por fila:**
+
+```json
+{
+  "processedRows": 2,
+  "createdCount": 1,
+  "updatedCount": 0,
+  "errors": [
+    {
+      "rowNumber": 3,
+      "message": "Fila 3: el campo 'BestResultsCount' debe ser numérico."
+    }
+  ]
+}
+```
+
+---
+
 ## 4. Event Categories — `/v1/events/{eventId}/categories`
 
 ### GET /v1/events/{eventId}/categories — Ver categorías del evento
@@ -1273,6 +1565,11 @@ GET {{base_url}}/v1/events/3fa85f64-5717-4562-b3fc-2c963f66afa6/categories
 ```
 
 **Responses:** `200 OK` · `404 Not Found`
+
+**Reglas de backend:**
+- devuelve únicamente la caché del circuito actual de la temporada configurada,
+- la suma de puntos ya respeta `category.bestResultsCount`,
+- la UI no debe mezclar rankings de circuitos archivados con el circuito actual.
 
 **Ejemplo de response:**
 ```json
@@ -1332,6 +1629,9 @@ Content-Type: application/json
 
 **Response:** `200 OK`
 
+**Regla de backend:**
+- solo lista categorías que tengan caché en el circuito actual de la temporada vigente.
+
 ---
 
 ## 5. Category Tariffs — `/v1/categories/{categoryId}/tariffs`
@@ -1390,6 +1690,12 @@ Content-Type: application/json
 ---
 
 ## 6. Competitors — `/v1/competitors`
+
+### Resumen issue 9
+
+- El CRUD administrativo de competidores permanece en `/v1/competitors`.
+- Se agregó gestión controlada de contraseña para la cuenta vinculada al competidor.
+- El cambio de contraseña es una acción administrativa; no reutiliza el flujo público de recuperación.
 
 ### GET /v1/competitors — Listar competidores
 
@@ -1469,6 +1775,41 @@ DELETE {{base_url}}/v1/competitors/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
 **Response:** `204 No Content`
+
+**Nota issue 9:**
+- este endpoint elimina el competidor desde el módulo `Usuarios`,
+- si el frontend administra cuentas vinculadas, debe considerar que la operación impacta la identidad asociada a ese competidor.
+
+---
+
+### POST /v1/competitors/{id}/password — Cambiar contraseña del competidor
+
+```http
+POST {{base_url}}/v1/competitors/3fa85f64-5717-4562-b3fc-2c963f66afa6/password
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+```
+
+```json
+{
+  "newPassword": "Password2"
+}
+```
+
+**Auth:** requiere `Usuarios: Full`.
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true
+}
+```
+
+**Reglas de la issue 9:**
+- la contraseña debe cumplir la misma política general: mínimo 8 caracteres, al menos 1 mayúscula y 1 dígito,
+- el endpoint actúa sobre la cuenta asociada al competidor, no sobre el perfil deportivo,
+- al cambiar la contraseña, se invalidan sesiones JWT previas de esa cuenta.
 
 ---
 
@@ -1554,6 +1895,8 @@ Devuelve archivo `text/calendar`.
 ```
 GET {{base_url}}/v1/inscriptions?page=1&limit=20&eventId={eventId}&categoryId={categoryId}&status=Pendiente
 ```
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Inscritos: Read`.
 
 ---
 
@@ -1642,6 +1985,8 @@ Content-Type: application/json
 }
 ```
 
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Inscritos: Full`.
+
 ### DELETE /v1/inscriptions/{id}
 
 ```
@@ -1657,6 +2002,8 @@ DELETE {{base_url}}/v1/inscriptions/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 GET {{base_url}}/v1/events/{eventId}/inscriptions?page=1&limit=20&categoryId={categoryId}&status=Pendiente
 ```
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Inscritos: Read`.
 
 ## 15. Admin Settings — `/v1/admin/settings`
 
@@ -1729,6 +2076,8 @@ GET {{base_url}}/v1/payments?page=1&limit=20&method=Paypal&status=Confirmado
 | `status` | `Confirmado` · `Pendiente` |
 | `fromDate` | `yyyy-MM-dd` |
 | `toDate` | `yyyy-MM-dd` |
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Pagos: Read`.
 
 ---
 
@@ -1808,6 +2157,8 @@ Content-Type: application/json
 GET {{base_url}}/v1/payments/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Pagos: Read`.
+
 ### PUT /v1/payments/{id}
 
 ```http
@@ -1822,11 +2173,15 @@ Content-Type: application/json
 }
 ```
 
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Pagos: Full`.
+
 ### GET /v1/payments/kpis
 
 ```
 GET {{base_url}}/v1/payments/kpis
 ```
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Pagos: Read`.
 
 ---
 
@@ -1875,6 +2230,39 @@ GET {{base_url}}/v1/payments/beach/tokens?page=1&limit=20&status=Pendiente
 
 **Status válidos:** `Pendiente` · `Usado` · `Expirado` · `Rechazado`
 
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Tokens: Read`.
+
+**Ejemplo de response relevante para dashboard/admin:**
+```json
+{
+  "pendingRequests": [
+    {
+      "id": "guid-token",
+      "competitorName": "Laura Mendez",
+      "competitorEmail": "laura.mendez@example.com",
+      "event": "Evento Payments",
+      "category": "Open Payments",
+      "amountUsd": 95.0,
+      "status": "Pendiente",
+      "createdAt": "2026-07-16T10:00:00Z"
+    }
+  ],
+  "history": [],
+  "dailyStats": {
+    "requested": 1,
+    "approved": 0,
+    "rejected": 0,
+    "redeemed": 0
+  },
+  "pagination": {
+    "currentPage": 1,
+    "itemsPerPage": 20,
+    "totalItems": 1,
+    "totalPages": 1
+  }
+}
+```
+
 ---
 
 ### POST /v1/payments/beach/tokens/{id}/approve
@@ -1882,6 +2270,12 @@ GET {{base_url}}/v1/payments/beach/tokens?page=1&limit=20&status=Pendiente
 ```
 POST {{base_url}}/v1/payments/beach/tokens/{id}/approve
 ```
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Tokens: Full`.
+
+**Efecto adicional 2026-07-16:**
+- al aprobar, el competidor sigue recibiendo el correo con el token,
+- la solicitud deja de aparecer como pendiente en dashboard.
 
 ### POST /v1/payments/beach/tokens/{id}/reject
 
@@ -1895,6 +2289,17 @@ Content-Type: application/json
   "reason": "Documentacion incompleta"
 }
 ```
+
+**Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Tokens: Full`.
+
+### Notificación a administradores al solicitar token
+
+Cuando el competidor llama `POST /v1/payments/beach/request`:
+
+- la API crea la solicitud pendiente,
+- intenta notificar por correo a admins/revisores con acceso al módulo `Tokens`,
+- si SMTP no está configurado, la operación sigue respondiendo `201 Created`,
+- el mecanismo principal para el panel es la alerta de `GET /v1/admin/dashboard`.
 
 ---
 

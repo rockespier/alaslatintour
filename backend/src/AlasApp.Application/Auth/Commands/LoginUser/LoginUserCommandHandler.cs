@@ -7,6 +7,12 @@ using AlasApp.Domain.Exceptions;
 
 namespace AlasApp.Application.Auth.Commands.LoginUser;
 
+internal static class LoginSecurityPolicy
+{
+    public const int MaxFailedAttempts = 3;
+    public static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(15);
+}
+
 public sealed class LoginUserCommandHandler(
     IUserAccountRepository userAccountRepository,
     IPasswordHasher passwordHasher,
@@ -26,7 +32,7 @@ public sealed class LoginUserCommandHandler(
 
         var userAccount = await userAccountRepository.GetByEmailAsync(request.Email, cancellationToken);
 
-        if (userAccount is null || !passwordHasher.Verify(request.Password, userAccount.PasswordHash))
+        if (userAccount is null)
         {
             throw new UnauthorizedAccessException("Credenciales inválidas.");
         }
@@ -34,6 +40,27 @@ public sealed class LoginUserCommandHandler(
         try
         {
             userAccount.EnsureActive();
+            userAccount.EnsureNotLocked(clock.UtcNow);
+        }
+        catch (DomainRuleException exception)
+        {
+            throw new UnauthorizedAccessException(exception.Message);
+        }
+
+        if (!passwordHasher.Verify(request.Password, userAccount.PasswordHash))
+        {
+            userAccount.RegisterFailedLoginAttempt(clock.UtcNow, LoginSecurityPolicy.MaxFailedAttempts, LoginSecurityPolicy.LockDuration);
+            userAccount.SetUpdated(clock.UtcNow);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            throw new UnauthorizedAccessException(
+                userAccount.LockedUntilUtc.HasValue && userAccount.LockedUntilUtc.Value > clock.UtcNow
+                    ? "La cuenta está bloqueada temporalmente por múltiples intentos fallidos."
+                    : "Credenciales inválidas.");
+        }
+
+        try
+        {
             userAccount.RecordLogin(clock.UtcNow);
             userAccount.SetUpdated(clock.UtcNow);
         }

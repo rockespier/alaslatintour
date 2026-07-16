@@ -188,6 +188,9 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         Assert.True(dashboardJson["kpis"]?["tokensPendientes"]?.Value<int>() >= 1);
         Assert.True(dashboardJson["activeEvents"]?.Count() >= 1);
         Assert.True(dashboardJson["recentInscriptions"]?.Count() >= 1);
+        Assert.True(dashboardJson["alerts"]?.Count() >= 1);
+        Assert.Equal("tokens", dashboardJson["alerts"]?[0]?["module"]?.Value<string>());
+        Assert.Equal("warning", dashboardJson["alerts"]?[0]?["level"]?.Value<string>());
     }
 
     [Fact]
@@ -227,6 +230,24 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         var rolesResponse = await _client.GetAsync("/v1/admin/roles");
         Assert.Equal(HttpStatusCode.Forbidden, rolesResponse.StatusCode);
 
+        var paymentsResponse = await _client.GetAsync("/v1/payments");
+        Assert.Equal(HttpStatusCode.OK, paymentsResponse.StatusCode);
+
+        var tokensResponse = await _client.GetAsync("/v1/payments/beach/tokens");
+        Assert.Equal(HttpStatusCode.OK, tokensResponse.StatusCode);
+
+        var createCircuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito bloqueado",
+            temporada = 2026,
+            descripcion = "sin permisos",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = $"BLK-{Guid.NewGuid():N}".Substring(0, 12)
+        });
+        Assert.Equal(HttpStatusCode.Forbidden, createCircuitResponse.StatusCode);
+
         await AuthenticateAsAsync(AdminRole.Arbitro, $"arbitro-{Guid.NewGuid():N}@test.com");
 
         var usersForbiddenResponse = await _client.GetAsync("/v1/admin/users");
@@ -234,6 +255,28 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
 
         var dashboardAllowedResponse = await _client.GetAsync("/v1/admin/dashboard");
         Assert.Equal(HttpStatusCode.OK, dashboardAllowedResponse.StatusCode);
+
+        var paymentsForbiddenResponse = await _client.GetAsync("/v1/payments");
+        Assert.Equal(HttpStatusCode.Forbidden, paymentsForbiddenResponse.StatusCode);
+
+        var eventWriteResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Evento arbitro",
+            circuitId = Guid.NewGuid().ToString(),
+            fechaInicio = "2026-10-02",
+            fechaFin = "2026-10-04",
+            pais = "Perú",
+            ciudad = "Lima",
+            playa = "Punta Rocas",
+            stars = 4,
+            capacidadMaxima = 150,
+            prizeAmountUsd = 20000,
+            surfScoresCode = $"EV-{Guid.NewGuid():N}".Substring(0, 12),
+            accessType = "Abierto",
+            estado = "Activo"
+        });
+
+        Assert.NotEqual(HttpStatusCode.Unauthorized, eventWriteResponse.StatusCode);
     }
 
     [Fact]
@@ -250,6 +293,31 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         Assert.Equal(email, payload["email"]?.Value<string>());
         Assert.Equal("Revisor", payload["role"]?.Value<string>());
         Assert.Equal("Activo", payload["status"]?.Value<string>());
+    }
+
+    [Fact]
+    public async Task AdminUserPasswordChange_ShouldAllowLoginWithNewPassword()
+    {
+        var email = $"pwd-admin-{Guid.NewGuid():N}@test.com";
+        await AuthenticateAsAsync(AdminRole.SuperAdmin, email);
+
+        var response = await _client.PostAsJsonAsync("/v1/admin/users/me/password", new
+        {
+            newPassword = "Password2"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        _client.DefaultRequestHeaders.Authorization = null;
+
+        var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password = "Password2",
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
     }
 
     private async Task AuthenticateAsAsync(AdminRole role, string email, string password = "Password1")

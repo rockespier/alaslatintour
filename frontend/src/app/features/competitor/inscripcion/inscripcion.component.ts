@@ -232,12 +232,12 @@ const FLAGS: Record<string, string> = {
                   <div class="flex justify-between"><span class="text-text-muted">Camiseta solicitada</span><span>#{{ shirtNumber }}</span></div>
                 }
                 <div class="flex justify-between"><span class="text-text-muted">Tarifa de categoría</span><span>{{ formatUSD(selectedCategory()?.tarifa ?? 0) }}</span></div>
-                <div class="flex justify-between"><span class="text-text-muted">Cuota administrativa</span><span>{{ formatUSD(5) }}</span></div>
                 <div class="pt-3 border-t border-navy-mid flex justify-between items-baseline">
                   <span class="font-heading text-lg">Total</span>
                   <span class="font-heading text-3xl text-cyan-brand">{{ formatUSD(totalAmount()) }}<span class="text-base ml-1">USD</span></span>
                 </div>
               </div>
+              <p class="text-[11px] text-text-muted mt-3">Si aplica una cuota administrativa, se sumará al total y quedará reflejada en la confirmación de tu inscripción.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -356,7 +356,7 @@ export class InscripcionComponent implements OnInit {
     this.categories().find(c => c.id === this.selectedCategoryId()) ?? null
   );
 
-  totalAmount = computed(() => (this.selectedCategory()?.tarifa ?? 0) + 5);
+  totalAmount = computed(() => this.selectedCategory()?.tarifa ?? 0);
 
   constructor() {
     effect(() => {
@@ -386,7 +386,9 @@ export class InscripcionComponent implements OnInit {
     this.loadingCategories.set(true);
     try {
       await this.loadCompetitorGender();
-      const res = await this.api.get<any>(`/events/${this.eventId()}/categories`);
+      const competitorId = this.auth.currentUser()?.competitorId;
+      const query = competitorId ? `?competitorId=${encodeURIComponent(competitorId)}` : '';
+      const res = await this.api.get<any>(`/events/${this.eventId()}/categories${query}`);
       const raw: any[] = res?.data ?? [];
       const mapped = raw.map(c => ({
         id: c.categoryId,

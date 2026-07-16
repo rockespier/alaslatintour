@@ -3,6 +3,7 @@ using AlasApp.Application.AdminUsers.Models;
 using AlasApp.Application.Auth.Models;
 using AlasApp.Domain.Entities;
 using AlasApp.Domain.Enums;
+using AlasApp.Domain.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace AlasApp.Infrastructure.Persistence.Repositories;
@@ -24,6 +25,11 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
     public Task<UserAccount?> GetByIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         return dbContext.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+    }
+
+    public Task<UserAccount?> GetByCompetitorIdAsync(Guid competitorId, CancellationToken cancellationToken)
+    {
+        return dbContext.UserAccounts.FirstOrDefaultAsync(x => x.CompetitorId == competitorId, cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<AdminUserDto>> ListAdminUsersAsync(CancellationToken cancellationToken)
@@ -104,6 +110,28 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
                 item.Tipo,
                 item.AdminRole,
                 item.CompetitorId);
+    }
+
+    public async Task<IReadOnlyCollection<string>> ListAdminEmailsByPermissionAsync(
+        AdminModule module,
+        PermissionLevel minimumLevel,
+        CancellationToken cancellationToken)
+    {
+        var items = await dbContext.UserAccounts
+            .AsNoTracking()
+            .Where(x => x.IsActive && x.AdminRole != null)
+            .Select(x => new
+            {
+                x.Email,
+                Role = x.AdminRole!.Value
+            })
+            .ToListAsync(cancellationToken);
+
+        return items
+            .Where(x => AdminRolePermissionMatrix.HasPermission(x.Role, module, minimumLevel))
+            .Select(x => x.Email)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     public Task AddAsync(UserAccount userAccount, CancellationToken cancellationToken)

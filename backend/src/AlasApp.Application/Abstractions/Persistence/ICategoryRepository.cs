@@ -11,6 +11,10 @@ public interface ICategoryRepository
 
     Task<Category?> GetEntityByIdAsync(Guid categoryId, CancellationToken cancellationToken);
 
+    Task<Category?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken);
+
+    Task<Category?> GetEntityByNameAsync(string nombre, CancellationToken cancellationToken);
+
     Task<bool> ExistsAsync(Guid categoryId, CancellationToken cancellationToken);
 
     Task<bool> HasSuccessorsAsync(Guid categoryId, CancellationToken cancellationToken);

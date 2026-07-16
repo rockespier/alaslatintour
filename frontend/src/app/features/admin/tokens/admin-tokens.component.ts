@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 interface TokenRequest {
@@ -114,15 +115,19 @@ function fmt(dt: string | null | undefined): string {
                     <td class="px-3 py-4 text-text-light">{{ req.category }}</td>
                     <td class="px-3 py-4 text-right text-cyan-brand font-heading text-base">\${{ req.amount }}</td>
                     <td class="px-5 py-4 text-right">
-                      <div class="inline-flex gap-2">
-                        <button (click)="openApprove(req)" class="px-4 py-2 rounded-md bg-success-brand hover:bg-green-600 text-white font-accent uppercase tracking-wider text-xs transition flex items-center gap-1 whitespace-nowrap">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                          Aprobar y generar token
-                        </button>
-                        <button (click)="openReject(req)" class="px-3 py-2 rounded-md border border-error-brand text-error-brand hover:bg-error-brand hover:text-white font-accent uppercase tracking-wider text-xs transition">
-                          Rechazar
-                        </button>
-                      </div>
+                      @if (canEdit()) {
+                        <div class="inline-flex gap-2">
+                          <button (click)="openApprove(req)" class="px-4 py-2 rounded-md bg-success-brand hover:bg-green-600 text-white font-accent uppercase tracking-wider text-xs transition flex items-center gap-1 whitespace-nowrap">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Aprobar y generar token
+                          </button>
+                          <button (click)="openReject(req)" class="px-3 py-2 rounded-md border border-error-brand text-error-brand hover:bg-error-brand hover:text-white font-accent uppercase tracking-wider text-xs transition">
+                            Rechazar
+                          </button>
+                        </div>
+                      } @else {
+                        <span class="text-xs text-text-muted">—</span>
+                      }
                     </td>
                   </tr>
                 } @empty {
@@ -313,6 +318,9 @@ function fmt(dt: string | null | undefined): string {
 })
 export class AdminTokensComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Tokens'));
 
   CLASS_INPUT = CLASS_INPUT;
 

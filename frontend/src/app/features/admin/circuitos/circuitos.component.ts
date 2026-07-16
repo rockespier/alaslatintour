@@ -1,6 +1,8 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 interface Circuit {
   id: string;
@@ -25,7 +27,7 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
 @Component({
   selector: 'app-circuitos',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImportExcelModalComponent],
   template: `
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
@@ -33,13 +35,25 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
           <h1 class="text-3xl font-heading text-white">Circuitos</h1>
           <p class="text-text-muted text-sm mt-1">Gestión de circuitos del ALAS Latin Tour.</p>
         </div>
-        <button (click)="openCreate()"
-                class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          Nuevo circuito
-        </button>
+        @if (canEdit()) {
+          <div class="flex items-center gap-2">
+            <button (click)="downloadTemplate()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Descargar plantilla
+            </button>
+            <button (click)="openImport()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Importar Excel
+            </button>
+            <button (click)="openCreate()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nuevo circuito
+            </button>
+          </div>
+        }
       </div>
 
       <!-- Filters -->
@@ -103,22 +117,26 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
                     <td class="px-4 py-4 text-center text-text-muted">{{ c.eventsCount ?? 0 }}</td>
                     <td class="px-4 py-4 text-center text-text-muted">{{ c.competidoresCount ?? 0 }}</td>
                     <td class="px-4 py-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button (click)="openEdit(c)"
-                                class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-cyan-brand" title="Editar">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"/>
-                          </svg>
-                        </button>
-                        <button (click)="confirmDelete(c)"
-                                class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-error-brand" title="Eliminar">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                          </svg>
-                        </button>
-                      </div>
+                      @if (canEdit()) {
+                        <div class="flex items-center justify-end gap-2">
+                          <button (click)="openEdit(c)"
+                                  class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-cyan-brand" title="Editar">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"/>
+                            </svg>
+                          </button>
+                          <button (click)="confirmDelete(c)"
+                                  class="p-1.5 rounded hover:bg-navy-mid transition text-text-muted hover:text-error-brand" title="Eliminar">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                          </button>
+                        </div>
+                      } @else {
+                        <span class="text-xs text-text-muted">—</span>
+                      }
                     </td>
                   </tr>
                 }
@@ -216,6 +234,9 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
       </div>
     }
 
+    <app-import-excel-modal [open]="importOpen()" importPath="/circuits/import" entityLabel="circuitos"
+                             (close)="importOpen.set(false)" (imported)="onImported()" />
+
     <!-- Confirm Delete -->
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
@@ -243,6 +264,9 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
 export class CircuitosComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Circuitos'));
 
   loading = signal(true);
   saving = signal(false);
@@ -251,6 +275,8 @@ export class CircuitosComponent implements OnInit {
   modalOpen = signal(false);
   editingId = signal<string | null>(null);
   deleteTarget = signal<Circuit | null>(null);
+
+  importOpen = signal(false);
 
   regions = REGIONS;
   modalidades = MODALIDADES;
@@ -361,6 +387,18 @@ export class CircuitosComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  async downloadTemplate(): Promise<void> {
+    await this.api.downloadFile('/circuits/template', 'circuits-template.xlsx');
+  }
+
+  openImport(): void {
+    this.importOpen.set(true);
+  }
+
+  async onImported(): Promise<void> {
+    await this.load();
   }
 
   estadoClass(estado: string): string {

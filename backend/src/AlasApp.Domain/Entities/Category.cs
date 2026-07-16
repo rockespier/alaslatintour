@@ -6,6 +6,8 @@ namespace AlasApp.Domain.Entities;
 
 public sealed class Category : AuditableEntity
 {
+    public const int DefaultBestResultsCount = 5;
+
     private readonly List<CategoryTariff> _tariffs = [];
     private readonly List<EventCategory> _eventCategories = [];
 
@@ -25,6 +27,7 @@ public sealed class Category : AuditableEntity
         CategoryStatus status,
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
+        int bestResultsCount,
         string? surfScoresCode)
     {
         Id = id;
@@ -38,6 +41,7 @@ public sealed class Category : AuditableEntity
         Status = status;
         MembresiaAnualUsd = membresiaAnualUsd;
         MembresiaPorEventoUsd = membresiaPorEventoUsd;
+        BestResultsCount = bestResultsCount;
         SurfScoresCode = surfScoresCode;
     }
 
@@ -63,6 +67,8 @@ public sealed class Category : AuditableEntity
 
     public decimal MembresiaPorEventoUsd { get; private set; }
 
+    public int BestResultsCount { get; private set; }
+
     public string? SurfScoresCode { get; private set; }
 
     public IReadOnlyCollection<CategoryTariff> Tariffs => _tariffs;
@@ -80,9 +86,21 @@ public sealed class Category : AuditableEntity
         CategoryStatus status,
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
+        int bestResultsCount,
         string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, null, membresiaAnualUsd, membresiaPorEventoUsd, surfScoresCode);
+        Validate(
+            nombre,
+            descripcion,
+            ageRestriction,
+            minAge,
+            maxAge,
+            successorCategoryId,
+            null,
+            membresiaAnualUsd,
+            membresiaPorEventoUsd,
+            bestResultsCount,
+            surfScoresCode);
 
         return new Category(
             Guid.NewGuid(),
@@ -96,6 +114,7 @@ public sealed class Category : AuditableEntity
             status,
             membresiaAnualUsd,
             membresiaPorEventoUsd,
+            bestResultsCount,
             NormalizeOptional(surfScoresCode));
     }
 
@@ -110,9 +129,21 @@ public sealed class Category : AuditableEntity
         CategoryStatus status,
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
+        int bestResultsCount,
         string? surfScoresCode)
     {
-        Validate(nombre, descripcion, ageRestriction, minAge, maxAge, successorCategoryId, Id, membresiaAnualUsd, membresiaPorEventoUsd, surfScoresCode);
+        Validate(
+            nombre,
+            descripcion,
+            ageRestriction,
+            minAge,
+            maxAge,
+            successorCategoryId,
+            Id,
+            membresiaAnualUsd,
+            membresiaPorEventoUsd,
+            bestResultsCount,
+            surfScoresCode);
 
         Nombre = nombre.Trim();
         Descripcion = NormalizeOptional(descripcion);
@@ -124,6 +155,7 @@ public sealed class Category : AuditableEntity
         Status = status;
         MembresiaAnualUsd = membresiaAnualUsd;
         MembresiaPorEventoUsd = membresiaPorEventoUsd;
+        BestResultsCount = bestResultsCount;
         SurfScoresCode = NormalizeOptional(surfScoresCode);
     }
 
@@ -160,6 +192,7 @@ public sealed class Category : AuditableEntity
         Guid? categoryId,
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
+        int bestResultsCount,
         string? surfScoresCode)
     {
         if (string.IsNullOrWhiteSpace(nombre))
@@ -215,6 +248,11 @@ public sealed class Category : AuditableEntity
         if (membresiaPorEventoUsd < 0)
         {
             throw new DomainRuleException("La membresia por evento no puede ser negativa.");
+        }
+
+        if (bestResultsCount is < 1 or > 10)
+        {
+            throw new DomainRuleException("La cantidad de mejores resultados debe estar entre 1 y 10.");
         }
     }
 

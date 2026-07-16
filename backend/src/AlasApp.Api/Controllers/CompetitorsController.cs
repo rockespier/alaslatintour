@@ -1,5 +1,9 @@
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
+using AlasApp.Application.Auth.Commands.ChangeUserPassword;
+using AlasApp.Application.CompetitorFines.Commands.CreateCompetitorFine;
+using AlasApp.Application.CompetitorFines.Commands.UpdateCompetitorFine;
+using AlasApp.Application.CompetitorFines.Queries.ListCompetitorFines;
 using AlasApp.Application.Competitors.Commands.DeleteCompetitor;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitorLicense;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitorNotifications;
@@ -9,17 +13,22 @@ using AlasApp.Application.Competitors.Queries.GetCompetitorInscriptions;
 using AlasApp.Application.Competitors.Queries.GetCompetitorNotifications;
 using AlasApp.Application.Competitors.Queries.GetCompetitorPointsHistory;
 using AlasApp.Application.Competitors.Queries.ListCompetitors;
+using AlasApp.Application.Abstractions.Persistence;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using AlasApp.Api.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text;
 
 namespace AlasApp.Api.Controllers;
 
 [ApiController]
 [Route("v1/competitors")]
-public sealed class CompetitorsController(IRequestDispatcher dispatcher) : ControllerBase
+public sealed class CompetitorsController(IRequestDispatcher dispatcher, IUserAccountRepository userAccountRepository) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = AdminPolicies.UsersRead)]
     [ProducesResponseType(typeof(Generated.CompetitorListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.CompetitorListResponse>> List(
         [FromQuery] int? page,
@@ -45,6 +54,7 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpGet("{competitorId}")]
+    [Authorize(Policy = AdminPolicies.UsersRead)]
     [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.CompetitorResponse>> GetById(string competitorId, CancellationToken cancellationToken)
@@ -57,6 +67,7 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpPost]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
     [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<Generated.CompetitorResponse>> Create([FromBody] Generated.CompetitorRequest body, CancellationToken cancellationToken)
     {
@@ -67,6 +78,7 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpPut("{competitorId}")]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
     [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.CompetitorResponse>> Update(
@@ -82,6 +94,7 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpDelete("{competitorId}")]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(string competitorId, CancellationToken cancellationToken)
@@ -91,6 +104,7 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpPut("{competitorId}/license")]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
     [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.CompetitorResponse>> UpdateLicense(
@@ -105,6 +119,80 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
                 body.LicenseNumber,
                 body.ExpirationDate,
                 body.EnabledCategories),
+            cancellationToken);
+
+        return Ok(ApiContractMapper.ToContract(result));
+    }
+
+    [HttpPost("{competitorId}/password")]
+    [Authorize(Policy = AdminPolicies.UsersWrite)]
+    [ProducesResponseType(typeof(Generated.MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Generated.MessageResponse>> ChangePassword(
+        string competitorId,
+        [FromBody] PasswordChangeRequest body,
+        CancellationToken cancellationToken)
+    {
+        var competitorGuid = ApiContractMapper.ParseGuid(competitorId, "competitorId");
+        var userAccount = await userAccountRepository.GetByCompetitorIdAsync(competitorGuid, cancellationToken)
+            ?? throw new AlasApp.Application.Common.NotFoundException("No existe una cuenta de usuario vinculada a este competidor.");
+
+        await dispatcher.Send(new ChangeUserPasswordCommand(userAccount.Id, body.NewPassword), cancellationToken);
+        return Ok(new Generated.MessageResponse("Contraseña actualizada correctamente."));
+    }
+
+    [HttpGet("{competitorId}/fines")]
+    [Authorize(Policy = AdminPolicies.PaymentsRead)]
+    [ProducesResponseType(typeof(IReadOnlyCollection<CompetitorFineResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<CompetitorFineResponse>>> ListFines(
+        string competitorId,
+        CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(
+            new ListCompetitorFinesQuery(ApiContractMapper.ParseGuid(competitorId, "competitorId")),
+            cancellationToken);
+
+        return Ok(result.Select(ApiContractMapper.ToContract).ToList());
+    }
+
+    [HttpPost("{competitorId}/fines")]
+    [Authorize(Policy = AdminPolicies.PaymentsWrite)]
+    [ProducesResponseType(typeof(CompetitorFineResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<CompetitorFineResponse>> CreateFine(
+        string competitorId,
+        [FromBody] CompetitorFineRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(
+            new CreateCompetitorFineCommand(
+                ApiContractMapper.ParseGuid(competitorId, "competitorId"),
+                body.AmountUsd,
+                body.Reason,
+                body.Notes,
+                ResolveCurrentUserId(User)),
+            cancellationToken);
+
+        return StatusCode(StatusCodes.Status201Created, ApiContractMapper.ToContract(result));
+    }
+
+    [HttpPut("{competitorId}/fines/{fineId}")]
+    [Authorize(Policy = AdminPolicies.PaymentsWrite)]
+    [ProducesResponseType(typeof(CompetitorFineResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CompetitorFineResponse>> UpdateFine(
+        string competitorId,
+        string fineId,
+        [FromBody] CompetitorFineUpdateRequest body,
+        CancellationToken cancellationToken)
+    {
+        _ = ApiContractMapper.ParseGuid(competitorId, "competitorId");
+
+        var result = await dispatcher.Send(
+            new UpdateCompetitorFineCommand(
+                ApiContractMapper.ParseGuid(fineId, "fineId"),
+                body.AmountUsd,
+                body.Reason,
+                body.Notes,
+                body.Status),
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));
@@ -225,5 +313,16 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher) : Contr
 
         builder.AppendLine("END:VCALENDAR");
         return builder.ToString();
+    }
+
+    private static Guid ResolveCurrentUserId(ClaimsPrincipal principal)
+    {
+        var value = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(value, out var userId))
+        {
+            throw new UnauthorizedAccessException("No se pudo identificar el usuario autenticado.");
+        }
+
+        return userId;
     }
 }

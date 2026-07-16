@@ -19,6 +19,8 @@ public sealed class AlasAppDbContext(DbContextOptions<AlasAppDbContext> options)
 
     public DbSet<Competitor> Competitors => Set<Competitor>();
 
+    public DbSet<CompetitorFine> CompetitorFines => Set<CompetitorFine>();
+
     public DbSet<CompetitorLicenseCategory> CompetitorLicenseCategories => Set<CompetitorLicenseCategory>();
 
     public DbSet<Inscription> Inscriptions => Set<Inscription>();

@@ -2,6 +2,8 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 interface EventItem {
   id: string;
@@ -75,7 +77,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-admin-eventos',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImportExcelModalComponent],
   template: `
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
@@ -132,22 +134,32 @@ const PAGE_SIZE = 20;
             @for (p of countryOptions(); track p) { <option [value]="p">{{ p }}</option> }
           </select>
         </div>
-        <div class="flex items-center gap-2">
-          <button (click)="openImport()"
-                  class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
-            </svg>
-            Importar de SurfScores
-          </button>
-          <button (click)="openCreate()"
-                  class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo evento
-          </button>
-        </div>
+        @if (canEdit()) {
+          <div class="flex items-center gap-2">
+            <button (click)="downloadTemplate()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Descargar plantilla
+            </button>
+            <button (click)="importOpen.set(true)"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Importar Excel
+            </button>
+            <button (click)="openImport()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              Importar de SurfScores
+            </button>
+            <button (click)="openCreate()"
+                    class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nuevo evento
+            </button>
+          </div>
+        }
       </div>
 
       <!-- Table -->
@@ -222,14 +234,16 @@ const PAGE_SIZE = 20;
                               class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-3">
                         Ver Inscritos
                       </button>
-                      <button (click)="openEdit(ev)"
-                              class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-3">
-                        Editar
-                      </button>
-                      <button (click)="confirmDelete(ev)"
-                              class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">
-                        Eliminar
-                      </button>
+                      @if (canEdit()) {
+                        <button (click)="openEdit(ev)"
+                                class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-3">
+                          Editar
+                        </button>
+                        <button (click)="confirmDelete(ev)"
+                                class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">
+                          Eliminar
+                        </button>
+                      }
                     </td>
                   </tr>
                 }
@@ -700,6 +714,9 @@ const PAGE_SIZE = 20;
       </div>
     }
 
+    <app-import-excel-modal [open]="importOpen()" importPath="/events/import" entityLabel="eventos"
+                             (close)="importOpen.set(false)" (imported)="onImported()" />
+
     <!-- Confirm Delete -->
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
@@ -728,6 +745,10 @@ export class AdminEventosComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Eventos'));
+  importOpen = signal(false);
 
   loading = signal(true);
   saving = signal(false);
@@ -834,6 +855,14 @@ export class AdminEventosComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async downloadTemplate(): Promise<void> {
+    await this.api.downloadFile('/events/template', 'events-template.xlsx');
+  }
+
+  async onImported(): Promise<void> {
+    await this.loadEvents();
   }
 
   private async loadCircuits(): Promise<void> {

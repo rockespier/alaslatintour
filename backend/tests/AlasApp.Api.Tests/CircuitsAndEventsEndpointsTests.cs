@@ -1,5 +1,7 @@
+using ClosedXML.Excel;
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using Xunit;
 
@@ -7,16 +9,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public CircuitsAndEventsEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task CircuitCrudFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var createResponse = await _client.PostAsJsonAsync("/v1/circuits", new
         {
             nombre = "ALAS Open",
@@ -70,6 +76,8 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
     [Fact]
     public async Task EventCrudFlow_Works_EndToEnd_AndPreventsDeletingCircuitWithEvents()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
         {
             nombre = "ALAS Surf",
@@ -183,9 +191,91 @@ public sealed class CircuitsAndEventsEndpointsTests : IClassFixture<CustomWebApp
         Assert.Equal(HttpStatusCode.NoContent, deleteEventResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task CircuitsTemplate_AndImportXlsx_Work()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var templateResponse = await _client.GetAsync("/v1/circuits/template");
+        Assert.Equal(HttpStatusCode.OK, templateResponse.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", templateResponse.Content.Headers.ContentType?.MediaType);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Circuits");
+        WriteRow(worksheet, 1, "Id", "SurfScoresCode", "Nombre", "Temporada", "Descripcion", "Region", "Modalidad", "Estado");
+        WriteRow(worksheet, 2, "", "CIR-IMPORT-2026", "Circuito Importado", "2026", "Carga masiva", "Latinoamerica", "Shortboard", "Activo");
+
+        var response = await _client.PostAsync("/v1/circuits/import", CreateExcelForm(workbook, "circuits-import.xlsx"));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var payload = await ReadJsonAsync(response);
+        Assert.Equal(1, payload.RootElement.GetProperty("processedRows").GetInt32());
+        Assert.Equal(1, payload.RootElement.GetProperty("createdCount").GetInt32());
+        Assert.Equal(0, payload.RootElement.GetProperty("errors").GetArrayLength());
+
+        var listResponse = await _client.GetAsync("/v1/circuits?year=2026");
+        using var listJson = await ReadJsonAsync(listResponse);
+        Assert.Contains(listJson.RootElement.GetProperty("data").EnumerateArray(), x => x.GetProperty("surfScoresCode").GetString() == "CIR-IMPORT-2026");
+    }
+
+    [Fact]
+    public async Task EventsImportXlsx_Works_WithCircuitSurfScoresCode()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito Import Events",
+            temporada = 2026,
+            descripcion = "Circuito base",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = "BASE-EVENTS-2026"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, circuitResponse.StatusCode);
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Events");
+        WriteRow(worksheet, 1, "Id", "SurfScoresCode", "CircuitId", "CircuitSurfScoresCode", "Nombre", "FechaInicio", "FechaFin", "Pais", "Ciudad", "Playa", "Auspiciador", "ImagenUrl", "Stars", "CapacidadMaxima", "PrizeAmountUsd", "EventType", "AccessType", "Estado");
+        WriteRow(worksheet, 2, "", "EV-IMPORT-2026", "", "BASE-EVENTS-2026", "Evento XLSX", "2026-10-01", "2026-10-03", "Peru", "Lima", "Punta Rocas", "Marca XLSX", "https://cdn.test/xlsx-event.png", "7", "150", "9000.50", "SuperPrime", "Abierto", "Activo");
+
+        var response = await _client.PostAsync("/v1/events/import", CreateExcelForm(workbook, "events-import.xlsx"));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var payload = await ReadJsonAsync(response);
+        Assert.Equal(1, payload.RootElement.GetProperty("createdCount").GetInt32());
+        Assert.Equal(0, payload.RootElement.GetProperty("errors").GetArrayLength());
+
+        var listResponse = await _client.GetAsync("/v1/events?year=2026");
+        using var listJson = await ReadJsonAsync(listResponse);
+        Assert.Contains(listJson.RootElement.GetProperty("data").EnumerateArray(), x => x.GetProperty("surfScoresCode").GetString() == "EV-IMPORT-2026");
+    }
+
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonDocument.Parse(content);
+    }
+
+    private static MultipartFormDataContent CreateExcelForm(XLWorkbook workbook, string fileName)
+    {
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(stream.ToArray());
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        form.Add(fileContent, "file", fileName);
+        return form;
+    }
+
+    private static void WriteRow(IXLWorksheet worksheet, int rowNumber, params string[] values)
+    {
+        for (var index = 0; index < values.Length; index++)
+        {
+            worksheet.Cell(rowNumber, index + 1).Value = values[index];
+        }
     }
 }

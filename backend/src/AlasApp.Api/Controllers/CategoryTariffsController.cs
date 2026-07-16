@@ -1,8 +1,10 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.CategoryTariffs.Commands.UpsertCategoryTariff;
 using AlasApp.Application.CategoryTariffs.Queries.GetCategoryTariffs;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
@@ -12,6 +14,7 @@ namespace AlasApp.Api.Controllers;
 public sealed class CategoryTariffsController(IRequestDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = AdminPolicies.CategoriesRead)]
     [ProducesResponseType(typeof(Generated.Response7), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.Response7>> List(string categoryId, CancellationToken cancellationToken)
@@ -24,6 +27,7 @@ public sealed class CategoryTariffsController(IRequestDispatcher dispatcher) : C
     }
 
     [HttpPut("{starLevel:int}")]
+    [Authorize(Policy = AdminPolicies.CategoriesWrite)]
     [ProducesResponseType(typeof(Generated.TariffResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.TariffResponse>> Upsert(

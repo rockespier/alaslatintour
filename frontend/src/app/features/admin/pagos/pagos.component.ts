@@ -2,9 +2,28 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
-type PagosTab = 'resumen' | 'inscripciones' | 'membresias';
+type PagosTab = 'resumen' | 'inscripciones' | 'membresias' | 'multas';
+
+type FineEstado = 'Pendiente' | 'Pagada' | 'Anulada';
+
+interface CompetitorSearchResult {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+}
+
+interface Fine {
+  id: string;
+  motivo: string;
+  montoUsd: number;
+  estado: FineEstado;
+  createdAt: string;
+  createdByName?: string;
+}
 
 interface Transaccion {
   id: string;
@@ -66,6 +85,7 @@ function fmtDate(dt: string): string {
           <button (click)="tab.set('resumen')" [class]="tabClass('resumen')">Resumen</button>
           <button (click)="tab.set('inscripciones')" [class]="tabClass('inscripciones')">Inscripciones</button>
           <button (click)="tab.set('membresias')" [class]="tabClass('membresias')">Membresías</button>
+          <button (click)="tab.set('multas')" [class]="tabClass('multas')">Multas</button>
         </nav>
       </div>
 
@@ -224,7 +244,7 @@ function fmtDate(dt: string): string {
                         </span>
                       </td>
                       <td class="px-4 py-3 text-right">
-                        @if (t.estado === 'Pendiente') {
+                        @if (t.estado === 'Pendiente' && canEdit()) {
                           <button (click)="openValidateModal(t)"
                                   class="px-2 py-1 bg-success-brand/10 hover:bg-success-brand/20 text-success-brand border border-success-brand/30 font-accent uppercase tracking-wider text-[10px] rounded transition">
                             Validar Pago
@@ -255,11 +275,13 @@ function fmtDate(dt: string): string {
 
           <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
             <h2 class="font-heading text-xl text-white">Membresías activas</h2>
+            @if (canEdit()) {
             <button (click)="openCreateMembresia()"
                     class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               Nueva Membresía
             </button>
+            }
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
@@ -305,7 +327,7 @@ function fmtDate(dt: string): string {
                       </td>
                       <td class="px-4 py-3 text-right font-medium text-text-light">{{ m.monto }}</td>
                       <td class="px-4 py-3 text-right whitespace-nowrap">
-                        @if (m.plan === 'Mensual') {
+                        @if (m.plan === 'Mensual' && canEdit()) {
                           <button (click)="renovarMembresia(m)"
                                   [class]="m.vencimientoWarning
                                     ? 'text-xs font-accent uppercase tracking-wider text-warning-brand hover:text-yellow-400 mr-2'
@@ -320,6 +342,93 @@ function fmtDate(dt: string): string {
               </table>
             </div>
           </div>
+        </div>
+      }
+
+      <!-- ═══ TAB: MULTAS ═══ -->
+      @if (tab() === 'multas') {
+        <div>
+          <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
+            <h2 class="font-heading text-xl text-white mb-1">Buscar competidor</h2>
+            <p class="text-sm text-text-muted mb-4">Busca por nombre o email para ver y registrar multas.</p>
+            <div class="relative max-w-md">
+              <input type="text" placeholder="Buscar competidor..." [(ngModel)]="finesSearchTerm"
+                     (ngModelChange)="onFinesSearchChange($event)"
+                     class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+            </div>
+            @if (finesSearchResults().length > 0 && !finesSelectedCompetitor()) {
+              <div class="mt-3 border border-navy-mid rounded-lg divide-y divide-navy-mid overflow-hidden max-w-md">
+                @for (c of finesSearchResults(); track c.id) {
+                  <button type="button" (click)="selectCompetitorForFines(c)"
+                          class="w-full text-left px-4 py-2.5 hover:bg-navy-mid/30 transition">
+                    <p class="text-sm text-text-light">{{ c.nombre }} {{ c.apellido }}</p>
+                    <p class="text-xs text-text-muted">{{ c.email }}</p>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          @if (finesSelectedCompetitor(); as sel) {
+            <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
+              <div class="px-6 py-4 border-b border-navy-mid flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h2 class="font-heading text-xl text-white">{{ sel.nombre }} {{ sel.apellido }}</h2>
+                  <p class="text-xs text-text-muted">{{ sel.email }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  @if (canEdit()) {
+                    <button (click)="openCreateFine()"
+                            class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition">
+                      Nueva multa
+                    </button>
+                  }
+                  <button (click)="clearFinesSelection()"
+                          class="px-3 py-2 border border-navy-mid text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-xs rounded-md transition">
+                    Cambiar competidor
+                  </button>
+                </div>
+              </div>
+
+              @if (loadingFines()) {
+                <div class="p-6 text-sm text-text-muted">Cargando multas...</div>
+              } @else if (fines().length === 0) {
+                <div class="p-6 text-sm text-text-muted">Este competidor no tiene multas registradas.</div>
+              } @else {
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="border-b border-navy-mid">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Fecha</th>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Motivo</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Monto</th>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-navy-mid/50">
+                      @for (f of fines(); track f.id) {
+                        <tr class="hover:bg-cyan-brand/5 transition">
+                          <td class="px-4 py-3 text-text-muted text-xs">{{ fmtDate(f.createdAt) }}</td>
+                          <td class="px-4 py-3 text-text-light">{{ f.motivo }}</td>
+                          <td class="px-4 py-3 text-right font-heading text-text-light">\${{ f.montoUsd | number:'1.0-2' }}</td>
+                          <td class="px-4 py-3">
+                            <span [class]="fineEstadoClass(f.estado)">{{ f.estado }}</span>
+                          </td>
+                          <td class="px-4 py-3 text-right whitespace-nowrap">
+                            @if (f.estado === 'Pendiente' && canEdit()) {
+                              <button (click)="updateFineEstado(f, 'Pagada')" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400 mr-3">Marcar pagada</button>
+                              <button (click)="updateFineEstado(f, 'Anulada')" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Anular</button>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
         </div>
       }
       }
@@ -416,6 +525,39 @@ function fmtDate(dt: string): string {
       </div>
     }
 
+    <!-- Modal: Nueva Multa -->
+    @if (createFineOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="createFineOpen.set(false)">
+        <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+            <h3 class="font-heading text-xl text-white">Nueva multa</h3>
+            <button (click)="createFineOpen.set(false)" class="text-text-muted hover:text-white transition">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            @if (finesSelectedCompetitor(); as sel) {
+              <p class="text-sm text-text-muted">Competidor: <span class="text-text-light">{{ sel.nombre }} {{ sel.apellido }}</span></p>
+            }
+            <div>
+              <label [class]="LABEL_INPUT">Motivo *</label>
+              <textarea [class]="CLASS_INPUT" rows="3" placeholder="Ej: Conducta antideportiva en Heat 3" [(ngModel)]="formFineMotivo"></textarea>
+            </div>
+            <div>
+              <label [class]="LABEL_INPUT">Monto (USD) *</label>
+              <input type="number" min="0" step="0.01" [class]="CLASS_INPUT" placeholder="50.00" [(ngModel)]="formFineMonto">
+            </div>
+          </div>
+          <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <button (click)="createFineOpen.set(false)" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+            <button (click)="confirmCreateFine()" [disabled]="savingFine()" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+              {{ savingFine() ? 'Registrando...' : 'Registrar multa' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Toast -->
     @if (toast().show) {
       <div class="fixed bottom-6 right-6 z-50 bg-navy-dark border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3">
@@ -427,6 +569,9 @@ function fmtDate(dt: string): string {
 })
 export class PagosComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Pagos'));
 
   CLASS_INPUT = CLASS_INPUT;
   LABEL_INPUT = LABEL_INPUT;
@@ -644,5 +789,117 @@ export class PagosComponent implements OnInit {
   showToast(message: string): void {
     this.toast.set({ show: true, message });
     setTimeout(() => this.toast.set({ show: false, message: '' }), 3000);
+  }
+
+  fmtDate(dt: string): string { return fmtDate(dt); }
+
+  // ─── Multas ────────────────────────────────────────────────────
+
+  finesSearchTerm = '';
+  finesSearchResults = signal<CompetitorSearchResult[]>([]);
+  finesSelectedCompetitor = signal<CompetitorSearchResult | null>(null);
+  fines = signal<Fine[]>([]);
+  loadingFines = signal(false);
+
+  createFineOpen = signal(false);
+  formFineMotivo = '';
+  formFineMonto: number | null = null;
+  savingFine = signal(false);
+
+  private finesSearchDebounce?: ReturnType<typeof setTimeout>;
+
+  onFinesSearchChange(term: string): void {
+    clearTimeout(this.finesSearchDebounce);
+    if (!term.trim()) {
+      this.finesSearchResults.set([]);
+      return;
+    }
+    this.finesSearchDebounce = setTimeout(() => void this.searchCompetitorsForFines(term), 300);
+  }
+
+  private async searchCompetitorsForFines(term: string): Promise<void> {
+    try {
+      const res = await this.api.get<any>(`/competitors?search=${encodeURIComponent(term)}&limit=10`);
+      const data: any[] = res?.data ?? [];
+      this.finesSearchResults.set(data.map(c => ({ id: c.id, nombre: c.nombre, apellido: c.apellido, email: c.email })));
+    } catch {
+      this.finesSearchResults.set([]);
+    }
+  }
+
+  selectCompetitorForFines(c: CompetitorSearchResult): void {
+    this.finesSelectedCompetitor.set(c);
+    this.finesSearchResults.set([]);
+    this.finesSearchTerm = `${c.nombre} ${c.apellido}`;
+    void this.loadFines();
+  }
+
+  clearFinesSelection(): void {
+    this.finesSelectedCompetitor.set(null);
+    this.finesSearchTerm = '';
+    this.fines.set([]);
+  }
+
+  private async loadFines(): Promise<void> {
+    const competitor = this.finesSelectedCompetitor();
+    if (!competitor) return;
+    this.loadingFines.set(true);
+    try {
+      const res = await this.api.get<any>(`/competitors/${competitor.id}/fines`);
+      this.fines.set(res?.data ?? []);
+    } catch {
+      this.fines.set([]);
+    } finally {
+      this.loadingFines.set(false);
+    }
+  }
+
+  fineEstadoClass(estado: FineEstado): string {
+    const map: Record<FineEstado, string> = {
+      Pendiente: 'px-2 py-0.5 rounded text-[10px] font-accent uppercase tracking-wider bg-warning-brand/15 text-warning-brand',
+      Pagada: 'px-2 py-0.5 rounded text-[10px] font-accent uppercase tracking-wider bg-success-brand/15 text-success-brand',
+      Anulada: 'px-2 py-0.5 rounded text-[10px] font-accent uppercase tracking-wider bg-navy-mid/50 text-text-muted',
+    };
+    return map[estado];
+  }
+
+  openCreateFine(): void {
+    this.formFineMotivo = '';
+    this.formFineMonto = null;
+    this.createFineOpen.set(true);
+  }
+
+  async confirmCreateFine(): Promise<void> {
+    const competitor = this.finesSelectedCompetitor();
+    if (!competitor || !this.formFineMotivo.trim() || !this.formFineMonto) {
+      this.showToast('Completa motivo y monto de la multa');
+      return;
+    }
+    this.savingFine.set(true);
+    try {
+      await this.api.post<any>(`/competitors/${competitor.id}/fines`, {
+        motivo: this.formFineMotivo,
+        montoUsd: Number(this.formFineMonto),
+      });
+      await this.loadFines();
+      this.createFineOpen.set(false);
+      this.showToast('Multa registrada');
+    } catch (err: any) {
+      this.showToast(err?.body?.message ?? 'Error al registrar la multa');
+    } finally {
+      this.savingFine.set(false);
+    }
+  }
+
+  async updateFineEstado(f: Fine, estado: FineEstado): Promise<void> {
+    const competitor = this.finesSelectedCompetitor();
+    if (!competitor) return;
+    try {
+      await this.api.put<any>(`/competitors/${competitor.id}/fines/${f.id}`, { estado });
+      this.fines.update(list => list.map(x => x.id === f.id ? { ...x, estado } : x));
+      this.showToast(estado === 'Pagada' ? 'Multa marcada como pagada' : 'Multa anulada');
+    } catch {
+      this.showToast('Error al actualizar la multa');
+    }
   }
 }

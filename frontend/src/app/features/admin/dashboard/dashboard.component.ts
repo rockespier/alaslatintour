@@ -33,6 +33,14 @@ interface DashboardInscripcion {
   categoria: string;
 }
 
+interface DashboardAlert {
+  module: string;
+  level: 'warning' | 'info' | 'error';
+  title: string;
+  message: string;
+  count?: number;
+}
+
 const COUNTRY_FLAGS: Record<string, string> = {
   PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
   CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
@@ -61,6 +69,27 @@ function rangoFechas(inicio: string, fin: string): string {
       @if (loading()) {
         <app-loading-spinner />
       } @else {
+
+      <!-- ===== ALERTAS ===== -->
+      @if (alerts().length > 0) {
+        <section class="space-y-3">
+          @for (a of alerts(); track a.module) {
+            <button (click)="goTo('/admin/' + a.module)"
+                    [class]="alertClass(a.level)">
+              <svg class="h-5 w-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+              </svg>
+              <div class="text-left">
+                <p class="font-heading text-sm">{{ a.title }}</p>
+                <p class="text-xs opacity-80">{{ a.message }}</p>
+              </div>
+              @if (a.count) {
+                <span class="ml-auto font-heading text-lg">{{ a.count }}</span>
+              }
+            </button>
+          }
+        </section>
+      }
 
       <!-- ===== STATS ===== -->
       <section>
@@ -262,6 +291,7 @@ export class AdminDashboardComponent implements OnInit {
   eventos = signal<DashboardEventRow[]>([]);
   circuitos = signal<DashboardCircuito[]>([]);
   inscripciones = signal<DashboardInscripcion[]>([]);
+  alerts = signal<DashboardAlert[]>([]);
 
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
@@ -276,6 +306,7 @@ export class AdminDashboardComponent implements OnInit {
       this.statTotalInscripciones.set(dash?.kpis?.totalInscripciones ?? 0);
       this.statTokensPendientes.set(dash?.kpis?.tokensPendientes ?? 0);
       this.statRecaudacion.set(dash?.kpis?.recaudacionMesUsd ?? 0);
+      this.alerts.set(dash?.alerts ?? []);
 
       const eventsById = new Map<string, any>((eventsRes?.data ?? []).map((e: any) => [e.id, e]));
       this.eventos.set((dash?.activeEvents ?? []).map((ae: any) => {
@@ -314,6 +345,16 @@ export class AdminDashboardComponent implements OnInit {
 
   goTo(path: string): void {
     this.router.navigateByUrl(path);
+  }
+
+  alertClass(level: DashboardAlert['level']): string {
+    const base = 'w-full flex items-start gap-3 rounded-xl border p-4 transition hover:-translate-y-0.5';
+    const map: Record<DashboardAlert['level'], string> = {
+      warning: `${base} bg-warning-brand/10 border-warning-brand/30 text-warning-brand`,
+      error: `${base} bg-error-brand/10 border-error-brand/30 text-error-brand`,
+      info: `${base} bg-cyan-brand/10 border-cyan-brand/30 text-cyan-brand`,
+    };
+    return map[level] ?? map.info;
   }
 
   estadoEventoClass(estado: string): string {

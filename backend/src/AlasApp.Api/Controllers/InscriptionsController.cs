@@ -1,3 +1,4 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
@@ -16,6 +17,7 @@ namespace AlasApp.Api.Controllers;
 public sealed class InscriptionsController(IRequestDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = AdminPolicies.InscriptionsRead)]
     [ProducesResponseType(typeof(Generated.AdminInscriptionListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.AdminInscriptionListResponse>> List(
         [FromQuery] int? page,
@@ -60,6 +62,7 @@ public sealed class InscriptionsController(IRequestDispatcher dispatcher) : Cont
     }
 
     [HttpPut("{inscriptionId}")]
+    [Authorize(Policy = AdminPolicies.InscriptionsWrite)]
     [ProducesResponseType(typeof(Generated.InscriptionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.InscriptionResponse>> Update(

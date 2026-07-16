@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 type ConfigTab = 'general' | 'ranking' | 'integraciones' | 'notificaciones' | 'envivo';
@@ -41,6 +42,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       <div class="mb-6">
         <h1 class="text-3xl font-heading text-white">Configuración del Sistema</h1>
         <p class="text-text-muted text-sm mt-1">Parámetros generales de la plataforma ALAS Latin Tour.</p>
+        @if (!canEdit()) {
+          <p class="text-warning-brand text-xs mt-2 font-accent uppercase tracking-wider">Tu rol tiene acceso de solo lectura a esta sección.</p>
+        }
       </div>
 
       <!-- Tabs -->
@@ -99,6 +103,11 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   @for (c of countries; track c) { <option [value]="c">{{ c }}</option> }
                 </select>
               </div>
+              <div>
+                <label [class]="LABEL_INPUT">Cuota administrativa (USD)</label>
+                <input type="number" min="0" step="0.01" [class]="CLASS_INPUT" [(ngModel)]="administrativeFeeUsd">
+                <p class="text-[11px] text-text-muted mt-1">Se suma a la tarifa de categoría en cada inscripción. Si se guarda en 0, no se muestra en el resumen de inscripción.</p>
+              </div>
             </div>
           </div>
 
@@ -145,7 +154,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="flex justify-end">
-            <button (click)="saveSettings('Configuración guardada correctamente')" [disabled]="saving()"
+            <button (click)="saveSettings('Configuración guardada correctamente')" [disabled]="saving() || !canEdit()"
                     class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
               {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
             </button>
@@ -252,7 +261,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="flex justify-end">
-            <button (click)="saveSettings('Parámetros de ranking guardados')" [disabled]="saving()"
+            <button (click)="saveSettings('Parámetros de ranking guardados')" [disabled]="saving() || !canEdit()"
                     class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
               {{ saving() ? 'Guardando...' : 'Guardar parámetros' }}
             </button>
@@ -319,11 +328,11 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               </div>
 
               <div class="flex flex-col sm:flex-row gap-3">
-                <button type="button" (click)="testIntegration('surfscores')" [disabled]="testing()"
+                <button type="button" (click)="testIntegration('surfscores')" [disabled]="testing() || !canEdit()"
                         class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                   Probar conexión
                 </button>
-                <button type="button" (click)="saveSettings('Integración SurfScores guardada')" [disabled]="saving()"
+                <button type="button" (click)="saveSettings('Integración SurfScores guardada')" [disabled]="saving() || !canEdit()"
                         class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                   Guardar
                 </button>
@@ -354,11 +363,11 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                 <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="wordPressUsername">
               </div>
               <div class="flex gap-3">
-                <button type="button" (click)="testIntegration('wordpress')" [disabled]="testing()"
+                <button type="button" (click)="testIntegration('wordpress')" [disabled]="testing() || !canEdit()"
                         class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                   Probar conexión
                 </button>
-                <button type="button" (click)="saveSettings('Integración WordPress guardada')" [disabled]="saving()"
+                <button type="button" (click)="saveSettings('Integración WordPress guardada')" [disabled]="saving() || !canEdit()"
                         class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                   Guardar
                 </button>
@@ -438,9 +447,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                     <p class="font-medium text-sm text-text-light">Notificar nuevas inscripciones al admin</p>
                     <p class="text-xs text-text-muted">Envía email cada vez que un competidor se inscribe a un evento.</p>
                   </div>
-                  <button type="button" (click)="notifNewInscription.set(!notifNewInscription())"
+                  <button type="button" (click)="notifNewInscription.set(!notifNewInscription())" [disabled]="!canEdit()"
                           [class]="notifNewInscription() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
                     <span [class]="notifNewInscription() ? 'translate-x-6' : 'translate-x-0.5'"
                           class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
                   </button>
@@ -451,9 +460,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                     <p class="font-medium text-sm text-text-light">Notificar pagos confirmados</p>
                     <p class="text-xs text-text-muted">Email al competidor cuando su pago es validado.</p>
                   </div>
-                  <button type="button" (click)="notifPaymentConfirmed.set(!notifPaymentConfirmed())"
+                  <button type="button" (click)="notifPaymentConfirmed.set(!notifPaymentConfirmed())" [disabled]="!canEdit()"
                           [class]="notifPaymentConfirmed() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
                     <span [class]="notifPaymentConfirmed() ? 'translate-x-6' : 'translate-x-0.5'"
                           class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
                   </button>
@@ -464,9 +473,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                     <p class="font-medium text-sm text-text-light">Notificar tokens expirados</p>
                     <p class="text-xs text-text-muted">Avisa al competidor y admin cuando un token caduca sin ser canjeado.</p>
                   </div>
-                  <button type="button" (click)="notifTokenExpired.set(!notifTokenExpired())"
+                  <button type="button" (click)="notifTokenExpired.set(!notifTokenExpired())" [disabled]="!canEdit()"
                           [class]="notifTokenExpired() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
                     <span [class]="notifTokenExpired() ? 'translate-x-6' : 'translate-x-0.5'"
                           class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
                   </button>
@@ -476,7 +485,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="flex justify-end">
-            <button (click)="saveSettings('Configuración de notificaciones guardada')" [disabled]="saving()"
+            <button (click)="saveSettings('Configuración de notificaciones guardada')" [disabled]="saving() || !canEdit()"
                     class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
               {{ saving() ? 'Guardando...' : 'Guardar configuración' }}
             </button>
@@ -512,9 +521,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                     <span class="text-text-muted font-accent uppercase tracking-wider">Inactivo</span>
                   </div>
                 }
-                <button type="button" (click)="ytActive.set(!ytActive())"
+                <button type="button" (click)="ytActive.set(!ytActive())" [disabled]="!canEdit()"
                         [class]="ytActive() ? 'bg-error-brand' : 'bg-navy-mid'"
-                        class="relative w-14 h-7 rounded-full transition flex-shrink-0">
+                        class="relative w-14 h-7 rounded-full transition flex-shrink-0 disabled:opacity-50">
                   <span [class]="ytActive() ? 'translate-x-7' : 'translate-x-0.5'"
                         class="absolute top-1 w-5 h-5 rounded-full bg-white transition-transform shadow"></span>
                 </button>
@@ -590,12 +599,12 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-navy-mid">
-              <button type="button" (click)="saveSettings('Configuración de streaming guardada')" [disabled]="saving()"
+              <button type="button" (click)="saveSettings('Configuración de streaming guardada')" [disabled]="saving() || !canEdit()"
                       class="px-5 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                 Guardar streaming
               </button>
-              <button type="button" (click)="ytActive.set(false); saveSettings('Streaming desactivado del sitio público')"
-                      class="px-5 py-2.5 border border-error-brand/40 hover:border-error-brand text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition">
+              <button type="button" (click)="ytActive.set(false); saveSettings('Streaming desactivado del sitio público')" [disabled]="!canEdit()"
+                      class="px-5 py-2.5 border border-error-brand/40 hover:border-error-brand text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                 Desactivar y ocultar
               </button>
             </div>
@@ -625,9 +634,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                     <span class="text-text-muted font-accent uppercase tracking-wider">Inactivo</span>
                   </div>
                 }
-                <button type="button" (click)="ssActive.set(!ssActive())"
+                <button type="button" (click)="ssActive.set(!ssActive())" [disabled]="!canEdit()"
                         [class]="ssActive() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                        class="relative w-14 h-7 rounded-full transition flex-shrink-0">
+                        class="relative w-14 h-7 rounded-full transition flex-shrink-0 disabled:opacity-50">
                   <span [class]="ssActive() ? 'translate-x-7' : 'translate-x-0.5'"
                         class="absolute top-1 w-5 h-5 rounded-full bg-white transition-transform shadow"></span>
                 </button>
@@ -686,12 +695,12 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-navy-mid">
-              <button type="button" (click)="saveSettings('Configuración de puntajes guardada')" [disabled]="saving()"
+              <button type="button" (click)="saveSettings('Configuración de puntajes guardada')" [disabled]="saving() || !canEdit()"
                       class="px-5 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                 Guardar configuración
               </button>
-              <button type="button" (click)="ssActive.set(false); saveSettings('Iframe de SurfScores desactivado')"
-                      class="px-5 py-2.5 border border-navy-mid hover:border-error-brand text-text-muted hover:text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition">
+              <button type="button" (click)="ssActive.set(false); saveSettings('Iframe de SurfScores desactivado')" [disabled]="!canEdit()"
+                      class="px-5 py-2.5 border border-navy-mid hover:border-error-brand text-text-muted hover:text-error-brand font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
                 Desactivar iframe
               </button>
             </div>
@@ -730,6 +739,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
 })
 export class ConfiguracionComponent implements OnInit {
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
+
+  canEdit = computed(() => this.permissions.canEdit('Configuracion'));
 
   readonly LABEL_INPUT = LABEL_INPUT;
   readonly CLASS_INPUT = CLASS_INPUT;
@@ -759,6 +771,7 @@ export class ConfiguracionComponent implements OnInit {
   orgPhone = '';
   orgWebsite = '';
   orgCountry = '';
+  administrativeFeeUsd: number | null = 0;
   countries = ['Colombia', 'Perú', 'Chile', 'Brasil', 'Argentina', 'México', 'Costa Rica', 'Ecuador'];
 
   igHandle = '';
@@ -855,6 +868,7 @@ export class ConfiguracionComponent implements OnInit {
     this.orgPhone = g.phone ?? '';
     this.orgWebsite = g.website ?? '';
     this.orgCountry = g.headquartersCountry ?? '';
+    this.administrativeFeeUsd = g.administrativeFeeUsd ?? 0;
     this.igHandle = g.socialLinks?.instagram ?? '';
     this.fbHandle = g.socialLinks?.facebook ?? '';
     this.twHandle = g.socialLinks?.x ?? '';
@@ -919,6 +933,7 @@ export class ConfiguracionComponent implements OnInit {
         phone: this.orgPhone,
         website: this.orgWebsite,
         headquartersCountry: this.orgCountry,
+        administrativeFeeUsd: this.administrativeFeeUsd ?? 0,
         socialLinks: { instagram: this.igHandle, facebook: this.fbHandle, x: this.twHandle, youTube: this.ytHandle },
         season: { currentYear: this.temporadaActual, startDate: this.temporadaInicio, endDate: this.temporadaFin },
       },

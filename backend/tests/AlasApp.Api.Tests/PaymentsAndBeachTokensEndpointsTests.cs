@@ -7,16 +7,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public PaymentsAndBeachTokensEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task PaymentsAndBeachTokensFlow_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId);
         var categoryId = await CreateCategoryAsync();

@@ -44,6 +44,26 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
             .FirstOrDefaultAsync(x => x.Id == categoryId, cancellationToken);
     }
 
+    public Task<Category?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        var normalizedCode = surfScoresCode.Trim();
+
+        return dbContext.Categories
+            .Include(x => x.Tariffs)
+            .Include(x => x.EventCategories)
+            .FirstOrDefaultAsync(x => x.SurfScoresCode == normalizedCode, cancellationToken);
+    }
+
+    public Task<Category?> GetEntityByNameAsync(string nombre, CancellationToken cancellationToken)
+    {
+        var normalizedName = nombre.Trim();
+
+        return dbContext.Categories
+            .Include(x => x.Tariffs)
+            .Include(x => x.EventCategories)
+            .FirstOrDefaultAsync(x => x.Nombre == normalizedName, cancellationToken);
+    }
+
     public Task<bool> ExistsAsync(Guid categoryId, CancellationToken cancellationToken)
     {
         return dbContext.Categories.AnyAsync(x => x.Id == categoryId, cancellationToken);
@@ -81,6 +101,7 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
             category.Status,
             category.MembresiaAnualUsd,
             category.MembresiaPorEventoUsd,
+            category.BestResultsCount,
             category.CreatedAtUtc,
             category.SurfScoresCode);
     }

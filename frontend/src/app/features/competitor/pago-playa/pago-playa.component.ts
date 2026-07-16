@@ -10,6 +10,9 @@ interface InscriptionSummary {
   eventoNombre: string;
   eventoPais: string;
   categoria: string;
+  baseAmountUsd: number;
+  administrativeFeeUsd: number | null;
+  montoUsd: number;
 }
 
 const TOTAL_SECONDS = 24 * 3600;
@@ -33,12 +36,24 @@ const TOTAL_SECONDS = 24 * 3600;
 
         <!-- Inscription info banner -->
         @if (inscription()) {
-          <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 mb-8 flex items-center gap-4">
-            <div class="text-3xl">{{ inscription()!.eventoPais }}</div>
-            <div>
-              <p class="font-accent uppercase text-cyan-brand text-xs tracking-wider">Inscripción #{{ inscriptionId() }}</p>
-              <h2 class="font-heading text-xl leading-tight">{{ inscription()!.eventoNombre }}</h2>
-              <p class="text-sm text-text-muted">{{ inscription()!.categoria }}</p>
+          <div class="bg-navy-dark border border-navy-mid rounded-xl p-5 mb-8">
+            <div class="flex items-center gap-4">
+              <div class="text-3xl">{{ inscription()!.eventoPais }}</div>
+              <div>
+                <p class="font-accent uppercase text-cyan-brand text-xs tracking-wider">Inscripción #{{ inscriptionId() }}</p>
+                <h2 class="font-heading text-xl leading-tight">{{ inscription()!.eventoNombre }}</h2>
+                <p class="text-sm text-text-muted">{{ inscription()!.categoria }}</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-navy-mid space-y-1.5 text-sm">
+              <div class="flex justify-between"><span class="text-text-muted">Tarifa de categoría</span><span>{{ formatUSD(inscription()!.baseAmountUsd) }}</span></div>
+              @if (inscription()!.administrativeFeeUsd) {
+                <div class="flex justify-between"><span class="text-text-muted">Cuota administrativa</span><span>{{ formatUSD(inscription()!.administrativeFeeUsd!) }}</span></div>
+              }
+              <div class="flex justify-between items-baseline pt-1.5 border-t border-navy-mid/60">
+                <span class="font-heading">Total</span>
+                <span class="font-heading text-xl text-cyan-brand">{{ formatUSD(inscription()!.montoUsd) }}<span class="text-xs ml-1">USD</span></span>
+              </div>
             </div>
           </div>
         }
@@ -260,6 +275,9 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
         eventoNombre: d?.eventoNombre ?? d?.event?.nombre ?? '',
         eventoPais: d?.eventoPais ?? d?.event?.pais ?? '',
         categoria: d?.categoriaNombre ?? d?.categoria?.nombre ?? '',
+        baseAmountUsd: Number(d?.baseAmountUsd ?? d?.montoUsd ?? 0),
+        administrativeFeeUsd: d?.administrativeFeeUsd != null ? Number(d.administrativeFeeUsd) : null,
+        montoUsd: Number(d?.montoUsd ?? 0),
       });
     } catch { /* optional */ }
   }
@@ -307,6 +325,8 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
       this.submitting.set(false);
     }
   }
+
+  formatUSD(n: number): string { return '$' + n.toLocaleString('en-US'); }
 
   private startCountdown(seconds = TOTAL_SECONDS): void {
     if (!isPlatformBrowser(this.platformId)) return;

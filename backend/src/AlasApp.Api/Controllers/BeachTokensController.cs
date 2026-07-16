@@ -1,3 +1,4 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Payments.Commands.ApproveBeachToken;
@@ -5,6 +6,7 @@ using AlasApp.Application.Payments.Commands.RequestBeachToken;
 using AlasApp.Application.Payments.Commands.RedeemBeachToken;
 using AlasApp.Application.Payments.Queries.ListBeachTokens;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
@@ -34,6 +36,7 @@ public sealed class BeachTokensController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpGet("tokens")]
+    [Authorize(Policy = AdminPolicies.TokensRead)]
     [ProducesResponseType(typeof(Generated.BeachTokenAdminListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.BeachTokenAdminListResponse>> ListTokens(
         [FromQuery] int? page,
@@ -49,6 +52,7 @@ public sealed class BeachTokensController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpPost("tokens/{tokenId}/approve")]
+    [Authorize(Policy = AdminPolicies.TokensWrite)]
     [ProducesResponseType(typeof(Generated.BeachTokenAdminResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.BeachTokenAdminResponse>> Approve(
@@ -63,6 +67,7 @@ public sealed class BeachTokensController(IRequestDispatcher dispatcher) : Contr
     }
 
     [HttpPost("tokens/{tokenId}/reject")]
+    [Authorize(Policy = AdminPolicies.TokensWrite)]
     [ProducesResponseType(typeof(Generated.BeachTokenAdminResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.BeachTokenAdminResponse>> Reject(

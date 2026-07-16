@@ -1,18 +1,24 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
+using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Events.Commands.DeleteEvent;
+using AlasApp.Application.Events.Commands.ImportEvents;
 using AlasApp.Application.Events.Models;
 using AlasApp.Application.Events.Queries.GetEventById;
 using AlasApp.Application.Events.Queries.ListEvents;
 using Generated = AlasApp.AlasApi.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
 
 [ApiController]
 [Route("v1/events")]
-public sealed class EventsController(IRequestDispatcher dispatcher) : ControllerBase
+public sealed class EventsController(IRequestDispatcher dispatcher, IBulkExcelService bulkExcelService) : ControllerBase
 {
+    private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     [HttpGet]
     [ProducesResponseType(typeof(Generated.EventListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.EventListResponse>> List(
@@ -56,6 +62,7 @@ public sealed class EventsController(IRequestDispatcher dispatcher) : Controller
     }
 
     [HttpPost]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
     [ProducesResponseType(typeof(Generated.EventResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<Generated.EventResponse>> Create([FromBody] Generated.EventRequest body, CancellationToken cancellationToken)
     {
@@ -66,6 +73,7 @@ public sealed class EventsController(IRequestDispatcher dispatcher) : Controller
     }
 
     [HttpPut("{eventId}")]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
     [ProducesResponseType(typeof(Generated.EventResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<Generated.EventResponse>> Update(string eventId, [FromBody] Generated.EventRequest body, CancellationToken cancellationToken)
     {
@@ -77,6 +85,7 @@ public sealed class EventsController(IRequestDispatcher dispatcher) : Controller
     }
 
     [HttpDelete("{eventId}")]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(string eventId, CancellationToken cancellationToken)
     {
@@ -85,5 +94,30 @@ public sealed class EventsController(IRequestDispatcher dispatcher) : Controller
             cancellationToken);
 
         return NoContent();
+    }
+
+    [HttpGet("template")]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
+    public IActionResult DownloadTemplate()
+    {
+        return File(bulkExcelService.BuildEventsTemplate(), ExcelContentType, "events-template.xlsx");
+    }
+
+    [HttpPost("import")]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
+    [ProducesResponseType(typeof(BulkImportResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BulkImportResponse>> Import([FromForm] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+        {
+            return BadRequest("El archivo XLSX no puede estar vacío.");
+        }
+
+        await using var stream = file.OpenReadStream();
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory, cancellationToken);
+
+        var result = await dispatcher.Send(new ImportEventsCommand(memory.ToArray()), cancellationToken);
+        return Ok(ApiContractMapper.ToContract(result));
     }
 }

@@ -83,6 +83,15 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
             .FirstOrDefaultAsync(x => x.Id == eventId, cancellationToken);
     }
 
+    public Task<Event?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        var normalizedCode = surfScoresCode.Trim();
+
+        return dbContext.Events
+            .Include(x => x.Categories)
+            .FirstOrDefaultAsync(x => x.SurfScoresCode == normalizedCode, cancellationToken);
+    }
+
     public Task AddAsync(Event @event, CancellationToken cancellationToken)
     {
         return dbContext.Events.AddAsync(@event, cancellationToken).AsTask();

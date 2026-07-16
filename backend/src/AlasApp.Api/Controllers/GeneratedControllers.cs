@@ -1695,7 +1695,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryRequest(bool @ageRestriction, string @descripcion, CategoryGender @gender, int? @maxAge, float @membresiaAnualUsd, float @membresiaPorEventoUsd, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId, string? @surfScoresCode)
+        public CategoryRequest(bool @ageRestriction, int? @bestResultsCount, string @descripcion, CategoryGender @gender, int? @maxAge, float @membresiaAnualUsd, float @membresiaPorEventoUsd, int? @minAge, string @nombre, CategoryStatus @status, string? @successorCategoryId, string? @surfScoresCode)
         {
             this.Nombre = @nombre;
             this.Descripcion = @descripcion;
@@ -1707,6 +1707,7 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.Status = @status;
             this.MembresiaAnualUsd = @membresiaAnualUsd;
             this.MembresiaPorEventoUsd = @membresiaPorEventoUsd;
+            this.BestResultsCount = @bestResultsCount;
             this.SurfScoresCode = @surfScoresCode;
         }
 
@@ -1756,6 +1757,13 @@ namespace AlasApp.AlasApi.Api.Controllers
         public float MembresiaPorEventoUsd { get; }
 
         /// <summary>
+        /// Cantidad de mejores resultados que cuentan para el ranking de esta categoría en el circuito actual.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("bestResultsCount", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        [System.ComponentModel.DataAnnotations.Range(1, 10)]
+        public int? BestResultsCount { get; }
+
+        /// <summary>
         /// Codigo opcional de la categoria en SurfScores.
         /// </summary>
         [Newtonsoft.Json.JsonProperty("surfScoresCode", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -1776,8 +1784,8 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class CategoryResponse : CategoryRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public CategoryResponse(bool @ageRestriction, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, float @membresiaAnualUsd, float @membresiaPorEventoUsd, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId, string? @surfScoresCode)
-            : base(ageRestriction, descripcion, gender, maxAge, membresiaAnualUsd, membresiaPorEventoUsd, minAge, nombre, status, successorCategoryId, surfScoresCode)
+        public CategoryResponse(bool @ageRestriction, int? @bestResultsCount, System.DateTimeOffset @createdAt, string @descripcion, CategoryGender @gender, string @id, int? @maxAge, float @membresiaAnualUsd, float @membresiaPorEventoUsd, int? @minAge, string @nombre, CategoryStatus @status, SuccessorCategory? @successorCategory, string? @successorCategoryId, string? @surfScoresCode)
+            : base(ageRestriction, bestResultsCount, descripcion, gender, maxAge, membresiaAnualUsd, membresiaPorEventoUsd, minAge, nombre, status, successorCategoryId, surfScoresCode)
         {
             this.Id = @id;
             this.SuccessorCategory = @successorCategory;

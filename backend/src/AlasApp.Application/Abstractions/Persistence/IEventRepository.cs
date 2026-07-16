@@ -12,6 +12,8 @@ public interface IEventRepository
 
     Task<Event?> GetEntityByIdAsync(Guid eventId, CancellationToken cancellationToken);
 
+    Task<Event?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken);
+
     Task AddAsync(Event @event, CancellationToken cancellationToken);
 
     void Remove(Event @event);

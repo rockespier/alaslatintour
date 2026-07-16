@@ -16,16 +16,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebApplicationFactory>
 {
+    private readonly EventResultsWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public EventResultsEndpointsTests(EventResultsWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task ResultsEndpoints_ShouldPersistAndReturnEventCategoryResults()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 10000, stars: 6);
         var categoryId = await CreateCategoryAsync();
@@ -81,6 +85,8 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
     [Fact]
     public async Task PrizeDistribution_ShouldUseEventPrizeAndConfiguredStars()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 20000, stars: 7);
 
@@ -96,6 +102,8 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
     [Fact]
     public async Task UpsertResults_WithCompetitorNotRegistered_ShouldReturnBadRequest()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 10000);
         var categoryId = await CreateCategoryAsync();

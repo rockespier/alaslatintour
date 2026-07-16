@@ -25,7 +25,7 @@ export class ApiService {
       );
     } catch (err) {
       if (err instanceof HttpErrorResponse) {
-        if (err.status === 401) this.auth.logout();
+        if (err.status === 401 && !path.startsWith('/auth/')) this.auth.logout();
         throw Object.assign(new Error(err.error?.message ?? err.statusText), { status: err.status, body: err.error });
       }
       throw err;
@@ -50,5 +50,27 @@ export class ApiService {
       }
       throw err;
     }
+  }
+
+  async downloadFile(path: string, filename: string): Promise<void> {
+    const url = `${this.baseUrl}${path}`;
+    let blob: Blob;
+    try {
+      blob = await firstValueFrom(
+        this.http.get(url, { headers: this.buildHeaders(null), responseType: 'blob' }),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401) this.auth.logout();
+        throw Object.assign(new Error(err.statusText), { status: err.status });
+      }
+      throw err;
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
   }
 }

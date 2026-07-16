@@ -7,7 +7,7 @@ namespace AlasApp.Infrastructure.Persistence.Repositories;
 
 public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepository
 {
-    public async Task<RankingDto?> GetAsync(Guid categoryId, int year, int page, int limit, CancellationToken cancellationToken)
+    public async Task<RankingDto?> GetAsync(Guid circuitId, Guid categoryId, int year, int page, int limit, CancellationToken cancellationToken)
     {
         page = page <= 0 ? 1 : page;
         limit = limit <= 0 ? 20 : limit;
@@ -15,7 +15,7 @@ public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepo
         var snapshot = await dbContext.RankingSnapshots
             .AsNoTracking()
             .Include(x => x.Entries.OrderBy(e => e.Position))
-            .Where(x => x.CategoryId == categoryId && x.Year == year)
+            .Where(x => x.CircuitId == circuitId && x.CategoryId == categoryId && x.Year == year)
             .OrderByDescending(x => x.CachedAtUtc)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -45,10 +45,11 @@ public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepo
                 limit == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)limit)));
     }
 
-    public async Task<IReadOnlyCollection<RankingCategoryAvailabilityDto>> ListAvailableCategoriesAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<RankingCategoryAvailabilityDto>> ListAvailableCategoriesAsync(Guid circuitId, CancellationToken cancellationToken)
     {
         var snapshotRows = await dbContext.RankingSnapshots
             .AsNoTracking()
+            .Where(x => x.CircuitId == circuitId)
             .Select(x => new
             {
                 x.CategoryId,

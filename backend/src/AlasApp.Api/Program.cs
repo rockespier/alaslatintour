@@ -97,6 +97,54 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser()
             .AddRequirements(new AdminPermissionRequirement(AdminModule.Usuarios, PermissionLevel.Full)));
 
+    options.AddPolicy(AdminPolicies.CircuitsRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Circuitos, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.CircuitsWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Circuitos, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.EventsRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Eventos, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.EventsWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Eventos, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.CategoriesRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Categorias, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.CategoriesWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Categorias, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.InscriptionsRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Inscritos, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.InscriptionsWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Inscritos, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.PaymentsRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Pagos, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.PaymentsWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Pagos, PermissionLevel.Full)));
+
+    options.AddPolicy(AdminPolicies.TokensRead, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Tokens, PermissionLevel.ReadOnly)));
+
+    options.AddPolicy(AdminPolicies.TokensWrite, policy =>
+        policy.RequireAuthenticatedUser()
+            .AddRequirements(new AdminPermissionRequirement(AdminModule.Tokens, PermissionLevel.Full)));
+
     options.AddPolicy(AdminPolicies.ConfigurationRead, policy =>
         policy.RequireAuthenticatedUser()
             .AddRequirements(new AdminPermissionRequirement(AdminModule.Configuracion, PermissionLevel.ReadOnly)));

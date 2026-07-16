@@ -2442,14 +2442,21 @@ components:
           minimum: 0
           default: 0
           description: Importe de membresia anual en USD para la categoria.
-        membresiaPorEventoUsd:
-          type: number
-          format: float
-          minimum: 0
-          default: 0
-          description: Importe de membresia por evento en USD para la categoria.
-        surfScoresCode:
-          type: string
+          membresiaPorEventoUsd:
+            type: number
+            format: float
+            minimum: 0
+            default: 0
+            description: Importe de membresia por evento en USD para la categoria.
+          bestResultsCount:
+            type: integer
+            nullable: true
+            minimum: 1
+            maximum: 10
+            default: 5
+            description: Cantidad de mejores resultados que cuentan para el ranking de esta categoría en el circuito actual.
+          surfScoresCode:
+            type: string
           nullable: true
           description: Codigo opcional de la categoria en SurfScores.
 

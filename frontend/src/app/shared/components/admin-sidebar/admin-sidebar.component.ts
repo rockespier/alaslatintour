@@ -1,13 +1,15 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
+import { PermissionsService, AdminModule } from '../../../core/services/permissions.service';
 
 interface NavItem {
   label: string;
   icon: string;
   route: string;
+  module: AdminModule;
   badge?: number;
 }
 
@@ -35,7 +37,7 @@ interface NavItem {
 
       <!-- Nav links -->
       <nav class="flex-1 overflow-y-auto py-4">
-        @for (item of navItems; track item.route) {
+        @for (item of visibleNavItems(); track item.route) {
           <a [routerLink]="item.route" routerLinkActive="bg-[#0081C6]/20 text-[#0081C6] border-r-2 border-[#0081C6]"
              (click)="open.set(false)"
              class="flex items-center gap-3 px-5 py-2.5 text-sm text-[#AAAAAA] hover:text-white hover:bg-white/5 relative">
@@ -51,22 +53,22 @@ interface NavItem {
       </nav>
 
       <!-- User info -->
-      <div class="border-t border-white/10 px-5 py-4">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-[#0081C6] flex items-center justify-center text-sm font-bold text-white">
+      <div class="border-t border-white/10 px-5 py-4 flex items-center gap-3">
+        <a routerLink="/admin/perfil" (click)="open.set(false)" class="flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition">
+          <div class="w-8 h-8 rounded-full bg-[#0081C6] flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
             {{ initials() }}
           </div>
           <div class="min-w-0">
             <p class="text-xs font-medium text-[#EEEEEE] truncate">{{ auth.currentUser()?.fullName }}</p>
             <p class="text-xs text-[#AAAAAA]">{{ auth.currentUser()?.adminRole }}</p>
           </div>
-          <button (click)="auth.logout()" class="ml-auto text-[#AAAAAA] hover:text-white p-1" title="Cerrar sesión">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-            </svg>
-          </button>
-        </div>
+        </a>
+        <button (click)="auth.logout()" class="text-[#AAAAAA] hover:text-white p-1 flex-shrink-0" title="Cerrar sesión">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
       </div>
     </aside>
 
@@ -82,6 +84,7 @@ interface NavItem {
 export class AdminSidebarComponent implements OnInit {
   auth = inject(AuthService);
   private api = inject(ApiService);
+  private permissions = inject(PermissionsService);
   private platformId = inject(PLATFORM_ID);
 
   open = signal(false);
@@ -89,16 +92,19 @@ export class AdminSidebarComponent implements OnInit {
   pendingTokens = signal(0);
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '📊', route: '/admin' },
-    { label: 'Usuarios', icon: '👥', route: '/admin/usuarios' },
-    { label: 'Circuitos', icon: '🌊', route: '/admin/circuitos' },
-    { label: 'Eventos', icon: '📅', route: '/admin/eventos' },
-    { label: 'Categorías', icon: '🏷️', route: '/admin/categorias' },
-    { label: 'Inscritos', icon: '📋', route: '/admin/inscritos' },
-    { label: 'Pagos', icon: '💳', route: '/admin/pagos' },
-    { label: 'Tokens', icon: '🔑', route: '/admin/tokens' },
-    { label: 'Configuración', icon: '⚙️', route: '/admin/configuracion' },
+    { label: 'Dashboard', icon: '📊', route: '/admin', module: 'Dashboard' },
+    { label: 'Usuarios', icon: '👥', route: '/admin/usuarios', module: 'Usuarios' },
+    { label: 'Competidores', icon: '🏄', route: '/admin/competidores', module: 'Usuarios' },
+    { label: 'Circuitos', icon: '🌊', route: '/admin/circuitos', module: 'Circuitos' },
+    { label: 'Eventos', icon: '📅', route: '/admin/eventos', module: 'Eventos' },
+    { label: 'Categorías', icon: '🏷️', route: '/admin/categorias', module: 'Categorias' },
+    { label: 'Inscritos', icon: '📋', route: '/admin/inscritos', module: 'Inscripciones' },
+    { label: 'Pagos', icon: '💳', route: '/admin/pagos', module: 'Pagos' },
+    { label: 'Tokens', icon: '🔑', route: '/admin/tokens', module: 'Tokens' },
+    { label: 'Configuración', icon: '⚙️', route: '/admin/configuracion', module: 'Configuracion' },
   ];
+
+  visibleNavItems = computed(() => this.navItems.filter(item => this.permissions.canView(item.module)));
 
   initials = () => {
     const name = this.auth.currentUser()?.fullName ?? '';

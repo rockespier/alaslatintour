@@ -41,7 +41,9 @@ public sealed class UserAccount : AuditableEntity
         AdminRole = adminRole;
         IsActive = true;
         TokenVersion = 1;
+        FailedLoginAttempts = 0;
         LastLoginAtUtc = null;
+        LockedUntilUtc = null;
         PasswordChangedAtUtc = null;
     }
 
@@ -72,6 +74,10 @@ public sealed class UserAccount : AuditableEntity
     public bool IsActive { get; private set; }
 
     public int TokenVersion { get; private set; }
+
+    public int FailedLoginAttempts { get; private set; }
+
+    public DateTimeOffset? LockedUntilUtc { get; private set; }
 
     public DateTimeOffset? LastLoginAtUtc { get; private set; }
 
@@ -114,7 +120,40 @@ public sealed class UserAccount : AuditableEntity
     public void RecordLogin(DateTimeOffset timestamp)
     {
         EnsureActive();
+        EnsureNotLocked(timestamp);
         LastLoginAtUtc = timestamp;
+        FailedLoginAttempts = 0;
+        LockedUntilUtc = null;
+    }
+
+    public bool RegisterFailedLoginAttempt(DateTimeOffset timestamp, int maxAttempts, TimeSpan lockDuration)
+    {
+        if (maxAttempts <= 0)
+        {
+            throw new DomainRuleException("La configuración de intentos fallidos no es válida.");
+        }
+
+        if (lockDuration <= TimeSpan.Zero)
+        {
+            throw new DomainRuleException("La duración del bloqueo debe ser positiva.");
+        }
+
+        if (LockedUntilUtc.HasValue && LockedUntilUtc.Value <= timestamp)
+        {
+            FailedLoginAttempts = 0;
+            LockedUntilUtc = null;
+        }
+
+        FailedLoginAttempts++;
+
+        if (FailedLoginAttempts >= maxAttempts)
+        {
+            FailedLoginAttempts = maxAttempts;
+            LockedUntilUtc = timestamp.Add(lockDuration);
+            return true;
+        }
+
+        return false;
     }
 
     public void ChangePassword(string passwordHash, DateTimeOffset timestamp)
@@ -157,6 +196,23 @@ public sealed class UserAccount : AuditableEntity
         {
             throw new DomainRuleException("La cuenta de usuario está inactiva.");
         }
+    }
+
+    public void EnsureNotLocked(DateTimeOffset timestamp)
+    {
+        if (!LockedUntilUtc.HasValue)
+        {
+            return;
+        }
+
+        if (LockedUntilUtc.Value <= timestamp)
+        {
+            FailedLoginAttempts = 0;
+            LockedUntilUtc = null;
+            return;
+        }
+
+        throw new DomainRuleException("La cuenta está bloqueada temporalmente por múltiples intentos fallidos.");
     }
 
     private static void Validate(

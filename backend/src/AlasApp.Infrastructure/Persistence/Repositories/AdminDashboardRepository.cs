@@ -45,6 +45,17 @@ public sealed class AdminDashboardRepository(AlasAppDbContext dbContext) : IAdmi
             .Take(10)
             .ToListAsync(cancellationToken);
 
+        var alerts = new List<DashboardAlertDto>();
+        if (tokensPendientes > 0)
+        {
+            alerts.Add(new DashboardAlertDto(
+                "tokens",
+                "warning",
+                "Tokens de pago en playa pendientes",
+                $"Hay {tokensPendientes} solicitud(es) de token pendientes por revisar.",
+                tokensPendientes));
+        }
+
         return new DashboardDto(
             new DashboardKpiDto(
                 totalCompetidores,
@@ -53,6 +64,7 @@ public sealed class AdminDashboardRepository(AlasAppDbContext dbContext) : IAdmi
                 recaudacionMesUsd,
                 tokensPendientes),
             activeEvents,
-            recentInscriptions);
+            recentInscriptions,
+            alerts);
     }
 }

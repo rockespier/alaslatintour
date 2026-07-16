@@ -1,8 +1,10 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.EventResults.Commands.UpsertEventResults;
 using AlasApp.Application.EventResults.Queries.GetEventResults;
 using AlasApp.Application.EventResults.Queries.GetPrizeDistribution;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Generated = AlasApp.AlasApi.Api.Controllers;
 
@@ -34,6 +36,7 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher) : Cont
     }
 
     [HttpPost("results")]
+    [Authorize(Policy = AdminPolicies.EventsWrite)]
     [ProducesResponseType(typeof(Generated.Response2), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
