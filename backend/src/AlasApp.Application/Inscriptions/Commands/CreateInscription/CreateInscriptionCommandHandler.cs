@@ -74,6 +74,8 @@ public sealed class CreateInscriptionCommandHandler(
                 administrativeFeeUsd,
                 totalMontoUsd,
                 request.Reglamento,
+                request.RiesgosAceptados,
+                request.UsoImagenAceptado,
                 clock.UtcNow);
 
             inscription.SetCreated(clock.UtcNow);
@@ -157,6 +159,21 @@ public sealed class CreateInscriptionCommandHandler(
         if (request.CategoryId == Guid.Empty)
         {
             errors.Add(new ValidationError("categoryId", "El identificador de la categoria es invalido."));
+        }
+
+        if (!request.Reglamento)
+        {
+            errors.Add(new ValidationError("reglamento", "El competidor debe aceptar el reglamento ALAS."));
+        }
+
+        if (!request.RiesgosAceptados)
+        {
+            errors.Add(new ValidationError("riesgosAceptados", "El competidor debe aceptar los riesgos de participar en una competencia de surf."));
+        }
+
+        if (!request.UsoImagenAceptado)
+        {
+            errors.Add(new ValidationError("usoImagenAceptado", "El competidor debe autorizar el uso de fotos y videos del evento."));
         }
 
         if (errors.Count > 0)

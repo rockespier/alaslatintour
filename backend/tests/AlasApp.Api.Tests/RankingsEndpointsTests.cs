@@ -249,7 +249,9 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
             categoryId,
             shirtNumber = "11",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         var inscriptionId = await ReadIdAsync(inscriptionResponse);

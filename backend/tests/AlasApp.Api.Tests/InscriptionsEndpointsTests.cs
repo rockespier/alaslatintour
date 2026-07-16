@@ -64,7 +64,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             categoryId,
             shirtNumber = "#99",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);
@@ -76,6 +78,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         Assert.Equal(80m, created.RootElement.GetProperty("baseAmountUsd").GetDecimal());
         Assert.False(created.RootElement.TryGetProperty("administrativeFeeUsd", out _));
         Assert.Equal(80m, created.RootElement.GetProperty("montoUsd").GetDecimal());
+        Assert.True(created.RootElement.GetProperty("reglamentoAceptado").GetBoolean());
+        Assert.True(created.RootElement.GetProperty("riesgosAceptados").GetBoolean());
+        Assert.True(created.RootElement.GetProperty("usoImagenAceptado").GetBoolean());
 
         var getResponse = await _client.GetAsync($"/v1/inscriptions/{inscriptionId}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -121,7 +126,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             categoryId,
             shirtNumber = "#77",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         Assert.Equal(HttpStatusCode.Conflict, duplicateResponse.StatusCode);
@@ -138,7 +145,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             categoryId = deletableCategoryId,
             shirtNumber = "#55",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         Assert.Equal(HttpStatusCode.Created, createPendingDeleteResponse.StatusCode);
@@ -187,7 +196,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             categoryId,
             shirtNumber = "#88",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);
@@ -196,6 +207,47 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         Assert.Equal(80m, created.RootElement.GetProperty("baseAmountUsd").GetDecimal());
         Assert.Equal(15m, created.RootElement.GetProperty("administrativeFeeUsd").GetDecimal());
         Assert.Equal(95m, created.RootElement.GetProperty("montoUsd").GetDecimal());
+    }
+
+    [Fact]
+    public async Task CreateInscription_ShouldRejectWhenRequiredConsentsAreMissing()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+        var categoryId = await CreateCategoryAsync("Open Consent");
+        var competitor = await RegisterAndLoginCompetitorAsync();
+
+        var assignCategoryResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    customTariffUsd = 80,
+                    capacidad = 2
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+
+        var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
+        {
+            competitorId = competitor.CompetitorId,
+            eventId,
+            categoryId,
+            shirtNumber = "#18",
+            paymentMethod = "paypal",
+            reglamento = true,
+            riesgosAceptados = false,
+            usoImagenAceptado = false
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, createInscriptionResponse.StatusCode);
     }
 
     [Fact]
@@ -232,7 +284,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             categoryId,
             shirtNumber = "#23",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);

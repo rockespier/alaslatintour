@@ -6497,6 +6497,10 @@ export class InscriptionRequest implements IInscriptionRequest {
     paymentMethod!: PaymentMethodEnum;
     /** El competidor acepta el reglamento ALAS */
     reglamento!: boolean;
+    /** El competidor acepta los riesgos propios de una competencia de surf */
+    riesgosAceptados!: boolean;
+    /** El competidor autoriza el uso de fotos y videos del evento */
+    usoImagenAceptado!: boolean;
 
     [key: string]: any;
 
@@ -6521,6 +6525,8 @@ export class InscriptionRequest implements IInscriptionRequest {
             this.shirtNumber = _data["shirtNumber"];
             this.paymentMethod = _data["paymentMethod"];
             this.reglamento = _data["reglamento"];
+            this.riesgosAceptados = _data["riesgosAceptados"];
+            this.usoImagenAceptado = _data["usoImagenAceptado"];
         }
     }
 
@@ -6543,6 +6549,8 @@ export class InscriptionRequest implements IInscriptionRequest {
         data["shirtNumber"] = this.shirtNumber;
         data["paymentMethod"] = this.paymentMethod;
         data["reglamento"] = this.reglamento;
+        data["riesgosAceptados"] = this.riesgosAceptados;
+        data["usoImagenAceptado"] = this.usoImagenAceptado;
         return data;
     }
 }
@@ -6555,6 +6563,10 @@ export interface IInscriptionRequest {
     paymentMethod: PaymentMethodEnum;
     /** El competidor acepta el reglamento ALAS */
     reglamento: boolean;
+    /** El competidor acepta los riesgos propios de una competencia de surf */
+    riesgosAceptados: boolean;
+    /** El competidor autoriza el uso de fotos y videos del evento */
+    usoImagenAceptado: boolean;
 
     [key: string]: any;
 }
@@ -6627,7 +6639,10 @@ export class InscriptionResponse implements IInscriptionResponse {
     estadoAdmin?: InscriptionStatusAdmin;
     estadoCompetidor?: InscriptionStatusCompetitor;
     resultado?: string | undefined;
+    reglamentoAceptado?: boolean;
+    riesgosAceptados?: boolean;
     transaccionId?: string | undefined;
+    usoImagenAceptado?: boolean;
     inscripcionAt?: Date;
 
     [key: string]: any;
@@ -6658,7 +6673,10 @@ export class InscriptionResponse implements IInscriptionResponse {
             this.estadoAdmin = _data["estadoAdmin"];
             this.estadoCompetidor = _data["estadoCompetidor"];
             this.resultado = _data["resultado"];
+            this.reglamentoAceptado = _data["reglamentoAceptado"];
+            this.riesgosAceptados = _data["riesgosAceptados"];
             this.transaccionId = _data["transaccionId"];
+            this.usoImagenAceptado = _data["usoImagenAceptado"];
             this.inscripcionAt = _data["inscripcionAt"] ? new Date(_data["inscripcionAt"].toString()) : undefined as any;
         }
     }
@@ -6687,7 +6705,10 @@ export class InscriptionResponse implements IInscriptionResponse {
         data["estadoAdmin"] = this.estadoAdmin;
         data["estadoCompetidor"] = this.estadoCompetidor;
         data["resultado"] = this.resultado;
+        data["reglamentoAceptado"] = this.reglamentoAceptado;
+        data["riesgosAceptados"] = this.riesgosAceptados;
         data["transaccionId"] = this.transaccionId;
+        data["usoImagenAceptado"] = this.usoImagenAceptado;
         data["inscripcionAt"] = this.inscripcionAt ? this.inscripcionAt.toISOString() : undefined as any;
         return data;
     }
@@ -6705,7 +6726,10 @@ export interface IInscriptionResponse {
     estadoAdmin?: InscriptionStatusAdmin;
     estadoCompetidor?: InscriptionStatusCompetitor;
     resultado?: string | undefined;
+    reglamentoAceptado?: boolean;
+    riesgosAceptados?: boolean;
     transaccionId?: string | undefined;
+    usoImagenAceptado?: boolean;
     inscripcionAt?: Date;
 
     [key: string]: any;

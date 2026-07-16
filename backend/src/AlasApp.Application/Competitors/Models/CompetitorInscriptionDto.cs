@@ -21,4 +21,7 @@ public sealed record CompetitorInscriptionDto(
     InscriptionStatusCompetitor EstadoCompetidor,
     string? Resultado,
     string? TransaccionId,
+    bool ReglamentoAceptado,
+    bool RiesgosAceptados,
+    bool UsoImagenAceptado,
     DateTimeOffset InscripcionAt);

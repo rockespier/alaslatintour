@@ -121,6 +121,9 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             x.EstadoCompetidor,
             x.Resultado,
             x.TransaccionId,
+            x.ReglamentoAceptado,
+            x.RiesgosAceptados,
+            x.UsoImagenAceptado,
             x.InscripcionAt)).ToList();
 
         return new PagedResult<CompetitorInscriptionDto>(mapped, 1, 20, mapped.Count);
@@ -234,6 +237,9 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             x.EstadoCompetidor,
             x.Resultado,
             x.TransaccionId,
+            x.ReglamentoAceptado,
+            x.RiesgosAceptados,
+            x.UsoImagenAceptado,
             x.InscripcionAt,
             x.Notes);
     }

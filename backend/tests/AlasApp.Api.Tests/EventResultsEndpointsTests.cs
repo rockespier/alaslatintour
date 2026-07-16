@@ -236,7 +236,9 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
             categoryId,
             shirtNumber = "21",
             paymentMethod = "paypal",
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         var body = await response.Content.ReadAsStringAsync();
