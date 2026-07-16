@@ -103,7 +103,7 @@ Agregar en categorías: **OK**
 **Estado frontend 2026-07-16:** implementado. `categorias.component.ts` agrega los campos `membresiaAnualUsd` y `membresiaPorEventoUsd` al formulario (crear/editar) y al payload de `POST/PUT /categories`.
 
 ### Issue 14
-Hacer configurable la cuota administrativa:
+Hacer configurable la cuota administrativa: **OK**
 - valor en configuración,
 - si `0`, no mostrarla en resumen de inscripción.
 
