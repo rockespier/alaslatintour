@@ -242,13 +242,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
             <h2 class="font-heading text-xl text-white mb-1">Configuración de ranking</h2>
-            <p class="text-sm text-text-muted mb-6">Reglas adicionales para el cálculo del ranking general.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label [class]="LABEL_INPUT">Mejores resultados a contar</label>
-                <input type="number" min="1" max="10" [class]="CLASS_INPUT" [(ngModel)]="bestResultsCount">
-                <p class="text-[11px] text-text-muted mt-1">Solo se consideran los N mejores eventos de cada competidor para el ranking final.</p>
-              </div>
+            <p class="text-sm text-text-muted mb-6">Reglas adicionales para el cálculo del ranking general. La cantidad de mejores resultados ahora se define por categoría desde el CRUD de Categorías.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label [class]="LABEL_INPUT">% del puntaje si no compite (DNS)</label>
                 <input type="number" [class]="CLASS_INPUT" [(ngModel)]="dnsPercent">

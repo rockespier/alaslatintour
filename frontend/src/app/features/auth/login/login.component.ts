@@ -166,7 +166,7 @@ export class LoginComponent {
         this.router.navigate(['/']);
       }
     } catch (err: any) {
-      this.error.set(err.body?.message ?? 'Correo o contraseña incorrectos.');
+      this.error.set(err?.body?.message ?? err?.message ?? 'Correo o contraseña incorrectos.');
     } finally {
       this.loading.set(false);
     }

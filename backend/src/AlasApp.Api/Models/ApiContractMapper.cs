@@ -96,7 +96,7 @@ public static class ApiContractMapper
 
     public static Generated.AdminUserResponse ToContract(AdminUserDto dto)
     {
-        return new Generated.AdminUserResponse(
+        var contract = new Generated.AdminUserResponse(
             dto.CreatedAt,
             dto.Email,
             dto.FullName,
@@ -105,6 +105,16 @@ public static class ApiContractMapper
             dto.LastSession,
             ToGeneratedAdminRole(dto.Role),
             ToGeneratedAdminUserStatus(dto.Status));
+
+        contract.AdditionalProperties["isLocked"] = dto.IsLocked;
+        contract.AdditionalProperties["failedLoginAttempts"] = dto.FailedLoginAttempts;
+
+        if (dto.LockedUntil.HasValue)
+        {
+            contract.AdditionalProperties["lockedUntilUtc"] = dto.LockedUntil.Value;
+        }
+
+        return contract;
     }
 
     public static Generated.RoleListResponse ToContract(IReadOnlyCollection<RoleDto> roles)

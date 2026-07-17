@@ -22,7 +22,7 @@ interface Fine {
   montoUsd: number;
   estado: FineEstado;
   createdAt: string;
-  createdByName?: string;
+  notes?: string;
 }
 
 interface Transaccion {
@@ -846,12 +846,24 @@ export class PagosComponent implements OnInit {
     this.loadingFines.set(true);
     try {
       const res = await this.api.get<any>(`/competitors/${competitor.id}/fines`);
-      this.fines.set(res?.data ?? []);
+      const data: any[] = Array.isArray(res) ? res : (res?.data ?? []);
+      this.fines.set(data.map(f => this.mapFine(f)));
     } catch {
       this.fines.set([]);
     } finally {
       this.loadingFines.set(false);
     }
+  }
+
+  private mapFine(f: any): Fine {
+    return {
+      id: f.id,
+      motivo: f.reason ?? '',
+      montoUsd: Number(f.amountUsd ?? 0),
+      estado: f.status,
+      createdAt: f.createdAt,
+      notes: f.notes ?? undefined,
+    };
   }
 
   fineEstadoClass(estado: FineEstado): string {
@@ -878,8 +890,9 @@ export class PagosComponent implements OnInit {
     this.savingFine.set(true);
     try {
       await this.api.post<any>(`/competitors/${competitor.id}/fines`, {
-        motivo: this.formFineMotivo,
-        montoUsd: Number(this.formFineMonto),
+        reason: this.formFineMotivo.trim(),
+        amountUsd: Number(this.formFineMonto),
+        notes: null,
       });
       await this.loadFines();
       this.createFineOpen.set(false);
@@ -895,8 +908,14 @@ export class PagosComponent implements OnInit {
     const competitor = this.finesSelectedCompetitor();
     if (!competitor) return;
     try {
-      await this.api.put<any>(`/competitors/${competitor.id}/fines/${f.id}`, { estado });
-      this.fines.update(list => list.map(x => x.id === f.id ? { ...x, estado } : x));
+      const updated = await this.api.put<any>(`/competitors/${competitor.id}/fines/${f.id}`, {
+        amountUsd: f.montoUsd,
+        reason: f.motivo,
+        notes: f.notes ?? null,
+        status: estado,
+      });
+
+      this.fines.update(list => list.map(x => x.id === f.id ? this.mapFine(updated) : x));
       this.showToast(estado === 'Pagada' ? 'Multa marcada como pagada' : 'Multa anulada');
     } catch {
       this.showToast('Error al actualizar la multa');

@@ -71,8 +71,8 @@ public sealed class CreateAdminUserCommandHandler(
 
             var html = TransactionalEmailTemplate.Render(
                 "Invitación",
-                $"Bienvenido al panel de ALAS Latin Tour, {request.Nombre}",
-                $"Hola {request.Nombre}, se ha creado una cuenta de administrador para ti en la plataforma ALAS Latin Tour. Usa las credenciales a continuación para acceder.",
+                $"Bienvenido al panel de ALAS Global Tour, {request.Nombre}",
+                $"Hola {request.Nombre}, se ha creado una cuenta de administrador para ti en la plataforma ALAS Global Tour. Usa las credenciales a continuación para acceder.",
                 "Contraseña temporal",
                 tempPassword,
                 [
@@ -80,7 +80,7 @@ public sealed class CreateAdminUserCommandHandler(
                     new EmailDetail("Rol asignado", rolLabel),
                 ],
                 "Por seguridad, cambia tu contraseña inmediatamente después del primer inicio de sesión. Esta contraseña es de un solo uso.",
-                "Este mensaje fue enviado automáticamente por ALAS Latin Tour.");
+                "Este mensaje fue enviado automáticamente por ALAS Global Tour.");
 
             await emailSender.SendAsync(
                 new EmailMessage(

@@ -58,9 +58,9 @@ public sealed class UpdateCircuitCommandHandler(
             errors.Add(new ValidationError("nombre", "El nombre es obligatorio."));
         }
 
-        if (request.Temporada is < 2020 or > 2030)
+        if (request.Temporada is < 2000 or > 2030)
         {
-            errors.Add(new ValidationError("temporada", "La temporada debe estar entre 2020 y 2030."));
+            errors.Add(new ValidationError("temporada", "La temporada debe estar entre 2000 y 2030."));
         }
 
         if (errors.Count > 0)

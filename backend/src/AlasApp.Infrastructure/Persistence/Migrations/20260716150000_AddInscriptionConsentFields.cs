@@ -1,9 +1,13 @@
+using AlasApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
 namespace AlasApp.Infrastructure.Persistence.Migrations
 {
+    [DbContext(typeof(AlasAppDbContext))]
+    [Migration("20260716150000_AddInscriptionConsentFields")]
     /// <inheritdoc />
     public partial class AddInscriptionConsentFields : Migration
     {

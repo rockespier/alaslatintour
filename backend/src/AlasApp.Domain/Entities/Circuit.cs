@@ -112,9 +112,9 @@ public sealed class Circuit : AuditableEntity
             throw new DomainRuleException("El nombre del circuito es obligatorio.");
         }
 
-        if (temporada is < 2020 or > 2030)
+        if (temporada is < 2000 or > 2030)
         {
-            throw new DomainRuleException("La temporada del circuito debe estar entre 2020 y 2030.");
+            throw new DomainRuleException("La temporada del circuito debe estar entre 2000 y 2030.");
         }
 
         if (descripcion is not null && descripcion.Length > 2000)

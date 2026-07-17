@@ -34,6 +34,8 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
 
     public async Task<IReadOnlyCollection<AdminUserDto>> ListAdminUsersAsync(CancellationToken cancellationToken)
     {
+        var utcNow = DateTimeOffset.UtcNow;
+
         var items = await dbContext.UserAccounts
             .AsNoTracking()
             .Where(x => x.AdminRole != null)
@@ -48,7 +50,9 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
                 x.AdminRole,
                 x.IsActive,
                 x.LastLoginAtUtc,
-                x.CreatedAtUtc
+                x.CreatedAtUtc,
+                x.LockedUntilUtc,
+                x.FailedLoginAttempts
             })
             .ToListAsync(cancellationToken);
 
@@ -60,12 +64,17 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
             x.AdminRole ?? AdminRole.Admin,
             x.IsActive ? AdminUserStatus.Activo : AdminUserStatus.Inactivo,
             x.LastLoginAtUtc,
-            x.CreatedAtUtc))
+            x.CreatedAtUtc,
+            x.IsActive && x.LockedUntilUtc.HasValue && x.LockedUntilUtc.Value > utcNow,
+            x.LockedUntilUtc,
+            x.FailedLoginAttempts))
             .ToList();
     }
 
     public async Task<AdminUserDto?> GetAdminUserByIdAsync(Guid userId, CancellationToken cancellationToken)
     {
+        var utcNow = DateTimeOffset.UtcNow;
+
         var item = await dbContext.UserAccounts
             .AsNoTracking()
             .Where(x => x.Id == userId && x.AdminRole != null)
@@ -78,7 +87,9 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
                 x.AdminRole,
                 x.IsActive,
                 x.LastLoginAtUtc,
-                x.CreatedAtUtc
+                x.CreatedAtUtc,
+                x.LockedUntilUtc,
+                x.FailedLoginAttempts
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -92,7 +103,10 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
                 item.AdminRole ?? AdminRole.Admin,
                 item.IsActive ? AdminUserStatus.Activo : AdminUserStatus.Inactivo,
                 item.LastLoginAtUtc,
-                item.CreatedAtUtc);
+                item.CreatedAtUtc,
+                item.IsActive && item.LockedUntilUtc.HasValue && item.LockedUntilUtc.Value > utcNow,
+                item.LockedUntilUtc,
+                item.FailedLoginAttempts);
     }
 
     public async Task<AuthenticatedUserDto?> GetAuthenticatedUserAsync(Guid userId, CancellationToken cancellationToken)

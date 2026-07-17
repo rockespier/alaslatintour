@@ -296,10 +296,54 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
     }
 
     [Fact]
+    public async Task AdminUsersList_ShouldExposeLockState()
+    {
+        await AuthenticateAsAsync(AdminRole.SuperAdmin, $"superadmin-lock-{Guid.NewGuid():N}@test.com");
+
+        var lockedEmail = $"locked-admin-{Guid.NewGuid():N}@test.com";
+        var lockedUserId = await SeedAdminUserAsync(lockedEmail, "Password1", AdminRole.Admin, true);
+
+        var listResponse = await _client.GetAsync("/v1/admin/users");
+        Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
+
+        var listJson = JObject.Parse(await listResponse.Content.ReadAsStringAsync());
+        var lockedItem = listJson["data"]!.Single(item => item?["id"]?.Value<string>() == lockedUserId.ToString());
+
+        Assert.Equal("Activo", lockedItem?["status"]?.Value<string>());
+        Assert.True(lockedItem?["isLocked"]?.Value<bool>());
+        Assert.False(string.IsNullOrWhiteSpace(lockedItem?["lockedUntilUtc"]?.Value<string>()));
+    }
+
+    [Fact]
     public async Task AdminUserPasswordChange_ShouldAllowLoginWithNewPassword()
     {
         var email = $"pwd-admin-{Guid.NewGuid():N}@test.com";
         await AuthenticateAsAsync(AdminRole.SuperAdmin, email);
+
+        var response = await _client.PostAsJsonAsync("/v1/admin/users/me/password", new
+        {
+            newPassword = "Password2"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        _client.DefaultRequestHeaders.Authorization = null;
+
+        var loginResponse = await _client.PostAsJsonAsync("/v1/auth/login", new
+        {
+            email,
+            password = "Password2",
+            rememberMe = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Revisor_ShouldBeAbleToChangeOwnPassword()
+    {
+        var email = $"pwd-revisor-{Guid.NewGuid():N}@test.com";
+        await AuthenticateAsAsync(AdminRole.Revisor, email);
 
         var response = await _client.PostAsJsonAsync("/v1/admin/users/me/password", new
         {
@@ -340,7 +384,7 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
-    private async Task<Guid> SeedAdminUserAsync(string email, string password, AdminRole role = AdminRole.SuperAdmin)
+    private async Task<Guid> SeedAdminUserAsync(string email, string password, AdminRole role = AdminRole.SuperAdmin, bool isLocked = false)
     {
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
@@ -359,6 +403,13 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
             false,
             null,
             role);
+
+        if (isLocked)
+        {
+            user.RegisterFailedLoginAttempt(DateTimeOffset.UtcNow, 3, TimeSpan.FromMinutes(15));
+            user.RegisterFailedLoginAttempt(DateTimeOffset.UtcNow, 3, TimeSpan.FromMinutes(15));
+            user.RegisterFailedLoginAttempt(DateTimeOffset.UtcNow, 3, TimeSpan.FromMinutes(15));
+        }
 
         dbContext.UserAccounts.Add(user);
         await dbContext.SaveChangesAsync();

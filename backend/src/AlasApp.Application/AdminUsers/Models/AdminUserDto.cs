@@ -10,4 +10,7 @@ public sealed record AdminUserDto(
     AdminRole Role,
     AdminUserStatus Status,
     DateTimeOffset? LastSession,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool IsLocked,
+    DateTimeOffset? LockedUntil,
+    int FailedLoginAttempts);

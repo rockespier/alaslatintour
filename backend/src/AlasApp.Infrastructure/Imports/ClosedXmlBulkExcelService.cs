@@ -59,7 +59,7 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
     ];
 
     public byte[] BuildCircuitsTemplate()
-        => BuildWorkbook("Circuits", CircuitHeaders, ["", "ALAS-2026", "ALAS Latin Tour", "2026", "Circuito principal", "Latinoamerica", "Shortboard", "Activo"]);
+        => BuildWorkbook("Circuits", CircuitHeaders, ["", "ALAS-2026", "ALAS Global Tour", "2026", "Circuito principal", "Latinoamerica", "Shortboard", "Activo"]);
 
     public byte[] BuildEventsTemplate()
         => BuildWorkbook("Events", EventHeaders, ["", "MANCORA-2026", "", "ALAS-2026", "Mancora Pro", "2026-08-10", "2026-08-13", "Peru", "Mancora", "Playa Pocitas", "Marca X", "https://cdn.test/event.png", "6", "120", "5000.00", "Prime", "Abierto", "Activo"]);

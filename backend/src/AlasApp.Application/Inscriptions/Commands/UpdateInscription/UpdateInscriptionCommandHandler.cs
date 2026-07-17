@@ -83,7 +83,7 @@ public sealed class UpdateInscriptionCommandHandler(
                     new EmailDetail("Estado", "Confirmado ✓"),
                 ],
                 "Conserva este correo como comprobante de tu inscripción.",
-                "Notificación automática de ALAS Latin Tour.");
+                "Notificación automática de ALAS Global Tour.");
 
             var textBody = $"Hola {competitor.Nombre}, tu pago para {dto.Event.Nombre} / {dto.Category.Nombre} fue confirmado. Monto: USD {dto.MontoUsd:0.##}.";
 

@@ -18,5 +18,5 @@ public sealed class SmtpEmailOptions
 
     public string FromEmail { get; init; } = string.Empty;
 
-    public string FromName { get; init; } = "ALAS Latin Tour";
+    public string FromName { get; init; } = "ALAS Global Tour";
 }

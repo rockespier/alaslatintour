@@ -83,6 +83,22 @@ public sealed class AdminUsersController(IRequestDispatcher dispatcher) : Contro
         return Ok(new Generated.MessageResponse("Contraseña actualizada correctamente."));
     }
 
+    [HttpPost("me/password")]
+    [ProducesResponseType(typeof(Generated.MessageResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Generated.MessageResponse>> ChangeOwnPassword(
+        [FromBody] PasswordChangeRequest body,
+        CancellationToken cancellationToken)
+    {
+        var currentUserId = TryParseCurrentUserId(User)
+            ?? throw new UnauthorizedAccessException("No se pudo identificar el usuario autenticado.");
+
+        await dispatcher.Send(
+            new ChangeUserPasswordCommand(currentUserId, body.NewPassword),
+            cancellationToken);
+
+        return Ok(new Generated.MessageResponse("Contraseña actualizada correctamente."));
+    }
+
     private static Guid ResolveRequestedUserId(string userId, ClaimsPrincipal principal)
     {
         if (string.Equals(userId, "me", StringComparison.OrdinalIgnoreCase))

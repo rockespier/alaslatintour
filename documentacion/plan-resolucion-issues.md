@@ -144,10 +144,12 @@ Configurar ranking:
 
 **Estado frontend 2026-07-16:** implementado. `categorias.component.ts` agrega el campo `bestResultsCount` (1-10, default 5) al formulario y al payload de `POST/PUT /categories`. `ranking.component.ts`/`ranking.service.ts` no requirieron cambios: nunca expusieron selector de circuito, así que la restricción de backend a "circuito actual de la temporada vigente" es transparente para la UI pública.
 
+**Ajuste frontend 2026-07-17:** `configuracion.component.ts` dejó de exponer un `bestResultsCount` global en la pestaña Ranking, porque esa regla ya no pertenece a configuración general sino a cada categoría. Se mantienen solo parámetros globales que siguen vigentes (`dnsScorePercentage`, `dsqPenaltyPoints`).
+
 ## Fase 2. Seguridad, acceso y notificaciones
 
 ### Issue 11
-Limitar login a máximo 3 intentos fallidos.
+Limitar login a máximo 3 intentos fallidos. **OK**
 
 **Incluye:**
 - contador por usuario,
@@ -172,7 +174,7 @@ Limitar login a máximo 3 intentos fallidos.
 - Corregí un bug en `api.service.ts`: cualquier `401` disparaba `AuthService.logout()` (que navega a `/login` y limpia sesión), incluyendo el del propio `POST /auth/login`. Con el nuevo bloqueo de 3 intentos esto se volvía más frecuente y podía pisar `returnUrl` en la URL de login. Se excluyó `/auth/*` de ese comportamiento.
 
 ### Issue 12
-Permisos por rol en panel admin:
+Permisos por rol en panel admin: **OK**
 - ocultar opciones sin acceso,
 - si el rol tiene solo lectura, permitir ver pero no editar.
 
@@ -196,7 +198,7 @@ Permisos por rol en panel admin:
 - No se tocó el modo de solo-lectura del formulario de `configuracion` campo por campo (los inputs no se deshabilitan individualmente); alcanzó con ocultar/deshabilitar los botones de "Guardar" y toggles, ya que sin esos nada persiste.
 
 ### Issue 1
-Agregar notificación al administrador para revisar tokens de pago en playa.
+Agregar notificación al administrador para revisar tokens de pago en playa. **OK**
 
 **Canales sugeridos:**
 - notificación interna/dashboard,
@@ -218,7 +220,7 @@ Agregar notificación al administrador para revisar tokens de pago en playa.
 ## Fase 3. Usuarios y competidores
 
 ### Issue 8
-Completar CRUD de competidores desde administración.
+Completar CRUD de competidores desde administración. **OK**
 
 **Alcance esperado:**
 - listar,
@@ -240,7 +242,7 @@ Completar CRUD de competidores desde administración.
 **Nota:** no se pudo verificar en navegador contra un backend real (bloqueado en este entorno por la conexión a SQL Server, ver nota del Issue 2); la respuesta exacta de `GET /competitors` tampoco tiene un ejemplo de JSON en `api-postman.md` — se infirió el shape a partir del body de `POST/PUT /competitors` y de `PUT /competitors/{id}/license`, que sí están documentados. Validar contra el backend real antes de dar por cerrado.
 
 ### Issue 9
-Permitir acceso al perfil personal del usuario:
+Permitir acceso al perfil personal del usuario: **OK**
 - admin puede entrar a su perfil y cambiar contraseña,
 - desde la ficha de usuario/competidor/espectador debe poder cambiarse la contraseña de forma controlada.
 
@@ -266,7 +268,7 @@ Permitir acceso al perfil personal del usuario:
 - Queda pendiente (fuera de alcance, señalado por el propio backend): ficha de cambio de contraseña para cuentas espectador sin `CompetitorId`.
 
 ### Issue 13
-Filtrar categorías disponibles en inscripción según sexo del competidor.
+Filtrar categorías disponibles en inscripción según sexo del competidor. **OK**
 
 **Estado:** probablemente ya implementado en frontend; validar backend y contratos para no depender solo del cliente.
 
@@ -337,6 +339,8 @@ Descarga de plantilla Excel e importación masiva para:
 - Nuevo método `ApiService.downloadFile(path, filename)` (usa `responseType: 'blob'` + descarga vía anchor temporal) — no existía forma de bajar binarios antes.
 - Nuevo componente compartido `shared/components/import-excel-modal/import-excel-modal.component.ts`: sube el `.xlsx`, muestra el resumen (`processedRows`/`createdCount`/`updatedCount`/`errors[]`), reutilizado en los 3 lugares en vez de triplicar el modal.
 - `circuitos.component.ts`, `categorias.component.ts` y `admin-eventos.component.ts`: botones "Descargar plantilla" e "Importar Excel" (visibles solo si `canEdit`), que recargan el listado al terminar. En eventos, el nuevo "Importar Excel" queda como flujo separado del ya existente "Importar de SurfScores" (son fuentes de datos distintas).
+
+**Ajuste frontend 2026-07-17:** `import-excel-modal.component.ts` corrige la visualización del resumen de importación para leer `errors` como objetos `{ rowNumber, message }` del backend y mostrarlos como texto legible (`Fila N: ...`) en vez de renderizar `[object Object]`.
 
 ## Slices sugeridos
 

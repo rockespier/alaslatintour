@@ -12,7 +12,7 @@ public static class AdminSettingsDefaults
     {
         return new AdminSettingsDto(
             new GeneralSettingsDto(
-                "ALAS Latin Tour",
+                "ALAS Global Tour",
                 "ALAS",
                 "info@alasglobaltour.com",
                 "+57 310 000 0000",

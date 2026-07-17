@@ -16,7 +16,8 @@ interface UsuarioAdmin {
   email: string;
   rol: RolUsuario;
   ultimaSesion: string;
-  estado: 'Activo' | 'Inactivo';
+  estado: 'Activo' | 'Inactivo' | 'Bloqueado';
+  bloqueadoHasta: string | null;
 }
 
 interface ApiRolePermission {
@@ -104,6 +105,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               <select [class]="CLASS_INPUT + ' sm:max-w-[180px]'" [(ngModel)]="filterEstado">
                 <option value="">Todos los estados</option>
                 <option value="Activo">Activo</option>
+                <option value="Bloqueado">Bloqueado</option>
                 <option value="Inactivo">Inactivo</option>
               </select>
             </div>
@@ -140,11 +142,14 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                       <td class="px-4 py-3 font-medium text-text-light">{{ u.nombreCompleto }}</td>
                       <td class="px-4 py-3 text-text-muted">{{ u.email }}</td>
                       <td class="px-4 py-3"><span [class]="rolClass(u.rol)">{{ u.rol }}</span></td>
-                      <td class="px-4 py-3 text-text-muted">{{ u.ultimaSesion }}</td>
+                      <td class="px-4 py-3 text-text-muted">
+                        {{ u.ultimaSesion }}
+                        @if (u.bloqueadoHasta) {
+                          <div class="text-[11px] text-warning-brand mt-1">Bloqueado hasta {{ u.bloqueadoHasta }}</div>
+                        }
+                      </td>
                       <td class="px-4 py-3">
-                        <span [class]="u.estado === 'Activo'
-                          ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider'
-                          : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-brand/15 text-error-brand text-xs font-accent uppercase tracking-wider'">
+                        <span [class]="estadoClass(u.estado)">
                           {{ u.estado }}
                         </span>
                       </td>
@@ -152,7 +157,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                         @if (canEdit()) {
                           <button (click)="openEdit(u)" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Editar</button>
                           <button (click)="openPassword(u)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light mr-2">Contraseña</button>
-                          @if (u.estado === 'Activo') {
+                          @if (u.estado !== 'Inactivo') {
                             <button (click)="confirmDeactivate(u)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-error-brand">Desactivar</button>
                           } @else {
                             <button (click)="activate(u)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Activar</button>
@@ -411,6 +416,17 @@ export class UsuariosComponent implements OnInit {
     return map[rol];
   }
 
+  estadoClass(estado: UsuarioAdmin['estado']): string {
+    switch (estado) {
+      case 'Activo':
+        return 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider';
+      case 'Bloqueado':
+        return 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider';
+      default:
+        return 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-brand/15 text-error-brand text-xs font-accent uppercase tracking-wider';
+    }
+  }
+
   toast = signal<{ show: boolean; message: string }>({ show: false, message: '' });
   showToast(message: string): void {
     this.toast.set({ show: true, message });
@@ -448,6 +464,9 @@ export class UsuariosComponent implements OnInit {
   }
 
   private mapUser(u: any): UsuarioAdmin {
+    const isLocked = Boolean(u.isLocked);
+    const lockedUntil = u.lockedUntilUtc ? new Date(u.lockedUntilUtc) : null;
+
     return {
       id: u.id,
       iniciales: u.initials,
@@ -456,7 +475,8 @@ export class UsuariosComponent implements OnInit {
       email: u.email,
       rol: u.role,
       ultimaSesion: u.lastSession ? new Date(u.lastSession).toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' }) : 'Nunca',
-      estado: u.status,
+      estado: isLocked ? 'Bloqueado' : u.status,
+      bloqueadoHasta: lockedUntil ? lockedUntil.toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' }) : null,
     };
   }
 
@@ -477,7 +497,7 @@ export class UsuariosComponent implements OnInit {
     this.formApellido = resto.join(' ');
     this.formEmail = u.email;
     this.formRol = u.rol;
-    this.formEstado = u.estado;
+    this.formEstado = u.estado === 'Inactivo' ? 'Inactivo' : 'Activo';
     this.modalOpen.set(true);
   }
 

@@ -1,11 +1,16 @@
 import { Component, inject, input, output, signal, effect } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 
+export interface ImportErrorItem {
+  rowNumber?: number;
+  message: string;
+}
+
 export interface ImportResult {
   processedRows: number;
   createdCount: number;
   updatedCount: number;
-  errors: string[];
+  errors: ImportErrorItem[];
 }
 
 @Component({
@@ -49,7 +54,14 @@ export interface ImportResult {
                   <div class="text-warning-brand text-xs mt-2">
                     <p class="font-accent uppercase tracking-wider mb-1">Errores ({{ result()!.errors.length }})</p>
                     <ul class="list-disc list-inside space-y-0.5">
-                      @for (e of result()!.errors; track e) { <li>{{ e }}</li> }
+                      @for (e of result()!.errors; track trackError($index, e)) {
+                        <li>
+                          @if (e.rowNumber) {
+                            <span>Fila {{ e.rowNumber }}: </span>
+                          }
+                          <span>{{ e.message }}</span>
+                        </li>
+                      }
                     </ul>
                   </div>
                 }
@@ -101,14 +113,31 @@ export class ImportExcelModalComponent {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await this.api.upload<ImportResult>(this.importPath(), formData);
-      this.result.set(res);
-      this.imported.emit(res);
+      const res = await this.api.upload<any>(this.importPath(), formData);
+      const normalized: ImportResult = {
+        processedRows: Number(res?.processedRows ?? 0),
+        createdCount: Number(res?.createdCount ?? 0),
+        updatedCount: Number(res?.updatedCount ?? 0),
+        errors: Array.isArray(res?.errors)
+          ? res.errors.map((item: any) => typeof item === 'string'
+              ? { message: item }
+              : {
+                  rowNumber: typeof item?.rowNumber === 'number' ? item.rowNumber : undefined,
+                  message: String(item?.message ?? item),
+                })
+          : [],
+      };
+      this.result.set(normalized);
+      this.imported.emit(normalized);
     } catch (err: any) {
       this.error.set(err?.body?.message ?? err?.message ?? 'No se pudo importar el archivo.');
     } finally {
       this.uploading.set(false);
       input.value = '';
     }
+  }
+
+  trackError(index: number, error: ImportErrorItem): string {
+    return `${error.rowNumber ?? index}-${error.message}`;
   }
 }

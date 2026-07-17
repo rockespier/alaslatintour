@@ -104,6 +104,6 @@ public sealed class ApproveBeachTokenCommandHandler(
                 new EmailDetail("Valido hasta", expiration)
             ],
             "Usa este codigo en la web, sección 'Mis Inscripciones' para completar tu inscripción con pago en efectivo. El token es personal y vence a las 24 horas.",
-            "Este mensaje fue enviado automaticamente por ALAS Latin Tour.");
+            "Este mensaje fue enviado automaticamente por ALAS Global Tour.");
     }
 }

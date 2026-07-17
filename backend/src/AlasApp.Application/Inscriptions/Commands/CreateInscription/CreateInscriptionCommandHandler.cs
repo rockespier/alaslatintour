@@ -127,7 +127,7 @@ public sealed class CreateInscriptionCommandHandler(
                     new EmailDetail("Monto", $"USD {dto.MontoUsd:0.##}"),
                 ],
                 "Revisa el panel de Inscritos para gestionar el pago y validar la inscripción.",
-                "Notificación automática de ALAS Latin Tour.");
+                "Notificación automática de ALAS Global Tour.");
 
             var textBody = $"Nueva inscripción: {competitorName} → {dto.Event.Nombre} / {dto.Category.Nombre}. Monto: USD {dto.MontoUsd:0.##}. Método: {dto.PaymentMethod}.";
 

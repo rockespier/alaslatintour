@@ -52,7 +52,7 @@ public sealed class RequestPasswordResetCommandHandler(
             await emailSender.SendAsync(
                 new EmailMessage(
                     userAccount.Email,
-                    "Recuperacion de contrasena ALAS Latin Tour",
+                    "Recuperacion de contrasena ALAS Global Tour",
                     BuildPasswordResetText(rawToken),
                     BuildPasswordResetHtml(rawToken)),
                 cancellationToken);
@@ -69,7 +69,7 @@ public sealed class RequestPasswordResetCommandHandler(
     private static string BuildPasswordResetText(string token)
     {
         return $"""
-            Recibimos una solicitud para restablecer tu contrasena de ALAS Latin Tour.
+            Recibimos una solicitud para restablecer tu contrasena de ALAS Global Tour.
 
             Usa este token para confirmar la nueva contrasena:
             {token}
@@ -83,7 +83,7 @@ public sealed class RequestPasswordResetCommandHandler(
         return TransactionalEmailTemplate.Render(
             "Seguridad",
             "Restablece tu contrasena",
-            "Recibimos una solicitud para restablecer tu contrasena de ALAS Latin Tour. Ingresa este token en la pantalla de recuperacion para continuar.",
+            "Recibimos una solicitud para restablecer tu contrasena de ALAS Global Tour. Ingresa este token en la pantalla de recuperacion para continuar.",
             "Token de recuperacion",
             token,
             [
@@ -91,6 +91,6 @@ public sealed class RequestPasswordResetCommandHandler(
                 new EmailDetail("Uso", "Un solo intento de recuperacion")
             ],
             "Si no solicitaste este cambio, puedes ignorar este correo. Tu contrasena actual seguira siendo valida.",
-            "Este mensaje fue enviado automaticamente por ALAS Latin Tour.");
+            "Este mensaje fue enviado automaticamente por ALAS Global Tour.");
     }
 }

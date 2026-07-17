@@ -45,7 +45,7 @@ public static class TransactionalEmailTemplate
                         <td style="padding:0 0 16px 0;">
                           <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
                             <tr>
-                              <td style="font-size:20px;line-height:24px;font-weight:800;color:#0b2532;letter-spacing:0;">ALAS Latin Tour</td>
+                              <td style="font-size:20px;line-height:24px;font-weight:800;color:#0b2532;letter-spacing:0;">ALAS Global Tour</td>
                               <td align="right" style="font-size:11px;line-height:16px;font-weight:700;color:#5b7080;letter-spacing:.08em;text-transform:uppercase;">{safeEyebrow}</td>
                             </tr>
                           </table>
