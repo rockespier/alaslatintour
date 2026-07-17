@@ -6,6 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { RankingService, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
+import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -408,8 +409,8 @@ export class HomeComponent implements OnInit {
 
   private async loadEvents(): Promise<void> {
     try {
-      const res = await this.api.get<any>('/events?limit=4&page=1');
-      this.events.set(res?.data ?? []);
+      const res = await this.api.get<any>('/events?limit=100&page=1');
+      this.events.set(sortEventsForDisplay(res?.data ?? []).slice(0, 4));
     } catch {
       this.events.set([]);
     } finally {
