@@ -4,7 +4,7 @@
 
 - Every change must correspond to a GitHub issue.
 - Never push directly to main.
-- Do not commit or push unless explicitly requested. Then create a new branch and Pull request.
+- Do not commit or push changes unless explicitly requested. You must create a new branch and a pull request.
 - Read the complete issue before modifying files.
 - First analyze the scope and propose a plan.
 - Keep changes limited to the issue.
@@ -17,6 +17,7 @@
 - Frontend uses Angular.
 - Do not expose persistence entities directly through API responses.
 - Do not introduce dependencies without justification.
+- If you are going to modify the API endpoints, document it in the api-postman.md file located in the documentation folder.
 
 
 ## Pull requests
