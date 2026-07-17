@@ -1,5 +1,7 @@
+using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlasApp.Api.Controllers;
@@ -13,6 +15,11 @@ public sealed class UploadsController(IWordPressService wordPressService) : Cont
         "image/jpeg",
         "image/png",
         "image/webp"
+    ];
+
+    private static readonly HashSet<string> AllowedSchedulePdfContentTypes =
+    [
+        "application/pdf"
     ];
 
     [HttpPost("event-poster")]
@@ -31,6 +38,35 @@ public sealed class UploadsController(IWordPressService wordPressService) : Cont
         if (!AllowedContentTypes.Contains(file.ContentType))
         {
             return BadRequest(new { message = "Solo se permiten archivos JPG, PNG o WEBP." });
+        }
+
+        await using var stream = file.OpenReadStream();
+        var result = await wordPressService.UploadMediaAsync(
+            stream,
+            file.FileName,
+            file.ContentType,
+            cancellationToken);
+
+        return StatusCode(StatusCodes.Status201Created, ApiContractMapper.ToContract(result));
+    }
+
+    [HttpPost("live-schedule")]
+    [Authorize(Policy = AdminPolicies.ConfigurationWrite)]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(UploadedMediaResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UploadedMediaResponse>> UploadLiveSchedule(
+        [FromForm] IFormFile? file,
+        CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest(new { message = "Debes adjuntar un archivo." });
+        }
+
+        if (!AllowedSchedulePdfContentTypes.Contains(file.ContentType))
+        {
+            return BadRequest(new { message = "Solo se permiten archivos PDF." });
         }
 
         await using var stream = file.OpenReadStream();

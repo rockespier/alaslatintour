@@ -1,8 +1,8 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta, Title, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { RankingService, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
@@ -25,6 +25,26 @@ interface EventCard {
 
 type ArticleCard = ArticleSummary;
 
+interface LiveEvent {
+  id: string;
+  nombre: string;
+  pais: string;
+  ciudad: string;
+  playa: string;
+  fechaInicio: string;
+  fechaFin: string;
+  imagenUrl?: string | null;
+}
+
+interface LiveStatus {
+  isLive: boolean;
+  event?: LiveEvent | null;
+  youTubeVideoId?: string | null;
+  youTubeWidth: number;
+  youTubeHeight: number;
+  schedulePdfUrl?: string | null;
+}
+
 const COUNTRY_FLAGS: Record<string, string> = {
   PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
   CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
@@ -36,6 +56,49 @@ const COUNTRY_FLAGS: Record<string, string> = {
   standalone: true,
   imports: [RouterLink, DecimalPipe, ReactiveFormsModule, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent],
   template: `
+    <!-- ═══ EVENTO EN VIVO ═══ -->
+    @if (liveStatus()?.isLive) {
+      <section class="py-10 px-4 sm:px-6 lg:px-8 bg-navy-deepest border-b border-error-brand/30">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-brand opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error-brand"></span>
+            </span>
+            <span class="font-accent uppercase text-error-brand tracking-[0.2em] text-sm">En Vivo Ahora</span>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 rounded-xl overflow-hidden border border-navy-mid bg-black">
+              @if (liveEmbedUrl()) {
+                <div class="relative" style="padding-top: 56.25%">
+                  <iframe class="absolute inset-0 w-full h-full" [src]="liveEmbedUrl()"
+                          title="Streaming en vivo — ALAS Latin Tour" frameborder="0"
+                          allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              }
+            </div>
+            <div class="flex flex-col justify-center gap-4">
+              <div>
+                <h2 class="font-heading text-3xl md:text-4xl leading-tight">{{ liveStatus()?.event?.nombre }}</h2>
+                <p class="text-text-muted mt-1">
+                  {{ liveStatus()?.event?.playa }}, {{ liveStatus()?.event?.ciudad }}, {{ liveStatus()?.event?.pais }}
+                </p>
+              </div>
+              @if (liveStatus()?.schedulePdfUrl) {
+                <a [href]="liveStatus()?.schedulePdfUrl" target="_blank" rel="noopener"
+                   class="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider rounded-md transition w-fit">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  Ver programación del evento
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
     <!-- ═══ HERO ═══ -->
     <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden">
       <div class="absolute inset-0 opacity-30 pointer-events-none"
@@ -374,6 +437,7 @@ export class HomeComponent implements OnInit {
   private fb = inject(FormBuilder);
   private title = inject(Title);
   private meta = inject(Meta);
+  private sanitizer = inject(DomSanitizer);
   private platformId = inject(PLATFORM_ID);
 
   readonly currentYear = new Date().getFullYear();
@@ -386,6 +450,14 @@ export class HomeComponent implements OnInit {
   loadingRanking = signal(true);
   rankingCategoryName = signal('Open Hombres');
   rankingCachedAgo = signal('');
+
+  liveStatus = signal<LiveStatus | null>(null);
+  liveEmbedUrl = computed<SafeResourceUrl | null>(() => {
+    const status = this.liveStatus();
+    if (!status?.isLive || !status.youTubeVideoId) return null;
+    const url = `https://www.youtube.com/embed/${status.youTubeVideoId}?autoplay=1&rel=0&modestbranding=1`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  });
 
   contactForm = this.fb.group({
     nombre:  ['', Validators.required],
@@ -405,6 +477,16 @@ export class HomeComponent implements OnInit {
     this.loadEvents();
     this.loadArticles();
     this.loadRanking();
+    this.loadLiveStatus();
+  }
+
+  private async loadLiveStatus(): Promise<void> {
+    try {
+      const status = await this.api.get<LiveStatus>('/live');
+      this.liveStatus.set(status ?? null);
+    } catch {
+      this.liveStatus.set(null);
+    }
   }
 
   private async loadEvents(): Promise<void> {

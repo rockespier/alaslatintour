@@ -71,6 +71,7 @@ public static class AdminSettingsDefaults
                 true),
             new LiveSettingsDto(
                 new YouTubeLiveSettingsDto(false, null, string.Empty, "public", 100, 480),
-                new SurfScoresLiveSettingsDto(false, null, string.Empty, 100, 600, MinimumSurfScoresRefreshMinutes, true)));
+                new SurfScoresLiveSettingsDto(false, null, string.Empty, 100, 600, MinimumSurfScoresRefreshMinutes, true),
+                string.Empty));
     }
 }

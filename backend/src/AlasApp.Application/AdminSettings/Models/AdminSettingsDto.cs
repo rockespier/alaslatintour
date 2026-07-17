@@ -84,7 +84,8 @@ public sealed record NotificationSettingsDto(
 
 public sealed record LiveSettingsDto(
     YouTubeLiveSettingsDto YouTube,
-    SurfScoresLiveSettingsDto SurfScores);
+    SurfScoresLiveSettingsDto SurfScores,
+    string SchedulePdfUrl);
 
 public sealed record YouTubeLiveSettingsDto(
     bool Active,
