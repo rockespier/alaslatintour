@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 
 interface EventoApi {
   id: string;
@@ -245,7 +246,7 @@ export class CalendarioComponent implements OnInit {
   visibleEventos = computed(() => {
     const t = this.tab();
     const list = t === 'all' ? this.eventos() : this.eventos().filter(e => e.circuitId === t);
-    return [...list].sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
+    return sortEventsForDisplay(list);
   });
 
   async toggleExpand(id: string): Promise<void> {
