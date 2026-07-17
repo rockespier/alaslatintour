@@ -122,23 +122,40 @@ const FLAGS: Record<string, string> = {
             </div>
 
             <div class="mt-8 pt-6 border-t border-navy-mid">
-              <label class="flex items-start gap-3 cursor-pointer group">
-                <input type="checkbox" [(ngModel)]="reglamentoAccepted"
-                       class="mt-1 w-5 h-5 rounded border-navy-mid bg-navy-deepest accent-cyan-brand" />
-                <span class="text-sm text-text-light group-hover:text-cyan-brand transition">
-                  Confirmo que he leído y acepto el
-                  <a href="#" class="text-cyan-brand hover:underline">reglamento del evento</a>
-                  y las <a href="#" class="text-cyan-brand hover:underline">políticas del circuito ALAS</a>.
-                </span>
-              </label>
+              <p class="font-accent uppercase tracking-wider text-xs text-cyan-brand mb-4">Aceptaciones obligatorias</p>
+              <div class="space-y-4">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                  <input type="checkbox" [(ngModel)]="reglamentoAccepted"
+                         class="mt-1 w-5 h-5 rounded border-navy-mid bg-navy-deepest accent-cyan-brand" />
+                  <span class="text-sm text-text-light group-hover:text-cyan-brand transition">
+                    Confirmo que he leído y acepto el
+                    <a href="#" class="text-cyan-brand hover:underline">reglamento del evento</a>
+                    y las <a href="#" class="text-cyan-brand hover:underline">políticas del circuito ALAS</a>.
+                  </span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                  <input type="checkbox" [(ngModel)]="riesgosAccepted"
+                         class="mt-1 w-5 h-5 rounded border-navy-mid bg-navy-deepest accent-cyan-brand" />
+                  <span class="text-sm text-text-light group-hover:text-cyan-brand transition">
+                    Acepto los riesgos propios de participar en una competencia de surf y libero de responsabilidad a la organización según las condiciones del evento.
+                  </span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                  <input type="checkbox" [(ngModel)]="usoImagenAccepted"
+                         class="mt-1 w-5 h-5 rounded border-navy-mid bg-navy-deepest accent-cyan-brand" />
+                  <span class="text-sm text-text-light group-hover:text-cyan-brand transition">
+                    Autorizo a la organización a usar fotos y videos capturados durante el evento para comunicación, prensa y difusión del circuito.
+                  </span>
+                </label>
+              </div>
             </div>
 
             <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
               <a routerLink="/eventos" class="text-sm text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider">← Volver a eventos</a>
               <button (click)="goToStep2()"
-                      [disabled]="!reglamentoAccepted"
+                      [disabled]="!consentsAccepted()"
                       class="px-7 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition shadow-lg"
-                      [class]="reglamentoAccepted ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
+                      [class]="consentsAccepted() ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
                 Siguiente →
               </button>
             </div>
@@ -317,7 +334,7 @@ const FLAGS: Record<string, string> = {
             </div>
 
             <p class="text-xs text-text-muted text-center mt-6 leading-relaxed">
-              Al confirmar aceptas el reglamento del circuito. Para pagos en playa, tu cupo queda reservado pero pendiente hasta el pago presencial.
+              Para pagos en playa, tu cupo queda reservado pero pendiente hasta el pago presencial.
             </p>
           </div>
         }
@@ -343,6 +360,8 @@ export class InscripcionComponent implements OnInit {
   selectedCategoryId = signal('');
   paymentMethod = signal<'paypal' | 'beach' | ''>('');
   reglamentoAccepted = false;
+  riesgosAccepted = false;
+  usoImagenAccepted = false;
   shirtNumber: number | null = null;
   readonly skeletons = [1, 2, 3, 4];
 
@@ -464,10 +483,14 @@ export class InscripcionComponent implements OnInit {
   }
 
   goToStep2(): void {
-    if (this.reglamentoAccepted) {
+    if (this.consentsAccepted()) {
       this.step.set(2);
       if (this.categories().length === 0) this.loadCategories();
     }
+  }
+
+  consentsAccepted(): boolean {
+    return this.reglamentoAccepted && this.riesgosAccepted && this.usoImagenAccepted;
   }
 
   goToStep3(): void {
@@ -475,7 +498,7 @@ export class InscripcionComponent implements OnInit {
   }
 
   async confirm(): Promise<void> {
-    if (!this.paymentMethod() || this.submitting()) return;
+    if (!this.paymentMethod() || this.submitting() || !this.consentsAccepted()) return;
     this.submitting.set(true);
     this.errorMessage.set('');
     try {
@@ -485,7 +508,9 @@ export class InscripcionComponent implements OnInit {
         categoryId: this.selectedCategoryId(),
         paymentMethod: this.paymentMethod() === 'beach' ? 'beach' : 'Paypal',
         shirtNumber: this.shirtNumber != null ? String(this.shirtNumber) : undefined,
-        reglamento: true,
+        reglamento: this.reglamentoAccepted,
+        riesgosAceptados: this.riesgosAccepted,
+        usoImagenAceptado: this.usoImagenAccepted,
       });
       const inscriptionId: string = inscRes?.data?.id ?? inscRes?.id;
 

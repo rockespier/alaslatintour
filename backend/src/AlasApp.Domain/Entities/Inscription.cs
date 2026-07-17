@@ -20,7 +20,9 @@ public sealed class Inscription : AuditableEntity
         decimal baseAmountUsd,
         decimal administrativeFeeUsd,
         decimal montoUsd,
-        bool reglamentoAceptado)
+        bool reglamentoAceptado,
+        bool riesgosAceptados,
+        bool usoImagenAceptado)
     {
         Id = id;
         CompetitorId = competitorId;
@@ -32,6 +34,8 @@ public sealed class Inscription : AuditableEntity
         AdministrativeFeeUsd = administrativeFeeUsd;
         MontoUsd = montoUsd;
         ReglamentoAceptado = reglamentoAceptado;
+        RiesgosAceptados = riesgosAceptados;
+        UsoImagenAceptado = usoImagenAceptado;
         EstadoAdmin = InscriptionStatusAdmin.Pendiente;
         EstadoCompetidor = InscriptionStatusCompetitor.Pendiente;
         InscripcionAt = DateTimeOffset.UtcNow;
@@ -71,6 +75,10 @@ public sealed class Inscription : AuditableEntity
 
     public bool ReglamentoAceptado { get; private set; }
 
+    public bool RiesgosAceptados { get; private set; }
+
+    public bool UsoImagenAceptado { get; private set; }
+
     public DateTimeOffset InscripcionAt { get; private set; }
 
     public static Inscription Create(
@@ -83,9 +91,11 @@ public sealed class Inscription : AuditableEntity
         decimal administrativeFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado,
+        bool riesgosAceptados,
+        bool usoImagenAceptado,
         DateTimeOffset inscripcionAt)
     {
-        Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, montoUsd, reglamentoAceptado);
+        Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, montoUsd, reglamentoAceptado, riesgosAceptados, usoImagenAceptado);
 
         var inscription = new Inscription(
             Guid.NewGuid(),
@@ -97,7 +107,9 @@ public sealed class Inscription : AuditableEntity
             baseAmountUsd,
             administrativeFeeUsd,
             montoUsd,
-            reglamentoAceptado);
+            reglamentoAceptado,
+            riesgosAceptados,
+            usoImagenAceptado);
 
         inscription.InscripcionAt = inscripcionAt;
         return inscription;
@@ -180,7 +192,9 @@ public sealed class Inscription : AuditableEntity
         decimal baseAmountUsd,
         decimal administrativeFeeUsd,
         decimal montoUsd,
-        bool reglamentoAceptado)
+        bool reglamentoAceptado,
+        bool riesgosAceptados,
+        bool usoImagenAceptado)
     {
         if (competitorId == Guid.Empty || eventId == Guid.Empty || categoryId == Guid.Empty)
         {
@@ -190,6 +204,16 @@ public sealed class Inscription : AuditableEntity
         if (!reglamentoAceptado)
         {
             throw new DomainRuleException("El competidor debe aceptar el reglamento ALAS.");
+        }
+
+        if (!riesgosAceptados)
+        {
+            throw new DomainRuleException("El competidor debe aceptar los riesgos de participar en una competencia de surf.");
+        }
+
+        if (!usoImagenAceptado)
+        {
+            throw new DomainRuleException("El competidor debe autorizar el uso de fotos y videos del evento.");
         }
 
         if (baseAmountUsd < 0)

@@ -474,7 +474,9 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
             categoryId,
             shirtNumber = "21",
             paymentMethod,
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         var responseBody = await response.Content.ReadAsStringAsync();

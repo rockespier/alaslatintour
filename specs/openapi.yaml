@@ -2640,7 +2640,7 @@ components:
 
     InscriptionRequest:
       type: object
-      required: [competitorId, eventId, categoryId, paymentMethod, reglamento]
+      required: [competitorId, eventId, categoryId, paymentMethod, reglamento, riesgosAceptados, usoImagenAceptado]
       properties:
         competitorId:
           type: string
@@ -2656,6 +2656,12 @@ components:
         reglamento:
           type: boolean
           description: El competidor acepta el reglamento ALAS
+        riesgosAceptados:
+          type: boolean
+          description: El competidor acepta los riesgos propios de una competencia de surf
+        usoImagenAceptado:
+          type: boolean
+          description: El competidor autoriza el uso de fotos y videos del evento
 
     InscriptionUpdateRequest:
       type: object
@@ -2730,9 +2736,15 @@ components:
           type: string
           nullable: true
           example: 3° lugar · 920 pts
+        reglamentoAceptado:
+          type: boolean
+        riesgosAceptados:
+          type: boolean
         transaccionId:
           type: string
           nullable: true
+        usoImagenAceptado:
+          type: boolean
         inscripcionAt:
           type: string
           format: date-time

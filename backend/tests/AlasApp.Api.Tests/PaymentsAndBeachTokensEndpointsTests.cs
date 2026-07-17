@@ -243,7 +243,9 @@ public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomW
             categoryId,
             shirtNumber = "#77",
             paymentMethod,
-            reglamento = true
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
         });
 
         var body = await ReadJsonAsync(response);

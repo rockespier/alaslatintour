@@ -562,8 +562,11 @@ public static class ApiContractMapper
             (float)dto.MontoUsd,
             ToGeneratedPaymentMethod(dto.PaymentMethod),
             dto.Resultado,
+            dto.ReglamentoAceptado,
+            dto.RiesgosAceptados,
             dto.ShirtNumber,
-            dto.TransaccionId);
+            dto.TransaccionId,
+            dto.UsoImagenAceptado);
     }
 
     public static Generated.InscriptionResponse ToContract(CompetitorInscriptionDto dto)
@@ -582,8 +585,11 @@ public static class ApiContractMapper
             (float)dto.MontoUsd,
             ToGeneratedPaymentMethod(dto.PaymentMethod),
             dto.Resultado,
+            dto.ReglamentoAceptado,
+            dto.RiesgosAceptados,
             dto.ShirtNumber,
-            dto.TransaccionId);
+            dto.TransaccionId,
+            dto.UsoImagenAceptado);
     }
 
     public static Generated.PointsHistoryResponse ToContract(CompetitorPointsHistoryDto dto)
@@ -983,7 +989,9 @@ public static class ApiContractMapper
             ParseGuid(request.CategoryId, "categoryId"),
             NormalizeOptional(request.ShirtNumber),
             ToDomainPaymentMethod(request.PaymentMethod),
-            request.Reglamento);
+            request.Reglamento,
+            request.RiesgosAceptados,
+            request.UsoImagenAceptado);
     }
 
     public static UpdateInscriptionCommand ToCommand(Guid inscriptionId, Generated.InscriptionUpdateRequest request)

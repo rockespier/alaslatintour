@@ -2139,7 +2139,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class InscriptionRequest
     {
         [Newtonsoft.Json.JsonConstructor]
-        public InscriptionRequest(string @categoryId, string @competitorId, string @eventId, PaymentMethodEnum @paymentMethod, bool @reglamento, string @shirtNumber)
+        public InscriptionRequest(string @categoryId, string @competitorId, string @eventId, PaymentMethodEnum @paymentMethod, bool @reglamento, bool @riesgosAceptados, string @shirtNumber, bool @usoImagenAceptado)
         {
             this.CompetitorId = @competitorId;
             this.EventId = @eventId;
@@ -2147,6 +2147,8 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.ShirtNumber = @shirtNumber;
             this.PaymentMethod = @paymentMethod;
             this.Reglamento = @reglamento;
+            this.RiesgosAceptados = @riesgosAceptados;
+            this.UsoImagenAceptado = @usoImagenAceptado;
         }
 
         [Newtonsoft.Json.JsonProperty("competitorId", Required = Newtonsoft.Json.Required.Always)]
@@ -2174,6 +2176,18 @@ namespace AlasApp.AlasApi.Api.Controllers
         /// </summary>
         [Newtonsoft.Json.JsonProperty("reglamento", Required = Newtonsoft.Json.Required.Always)]
         public bool Reglamento { get; }
+
+        /// <summary>
+        /// El competidor acepta los riesgos propios de una competencia de surf
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("riesgosAceptados", Required = Newtonsoft.Json.Required.Always)]
+        public bool RiesgosAceptados { get; }
+
+        /// <summary>
+        /// El competidor autoriza el uso de fotos y videos del evento
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty("usoImagenAceptado", Required = Newtonsoft.Json.Required.Always)]
+        public bool UsoImagenAceptado { get; }
 
         private System.Collections.Generic.IDictionary<string, object>? _additionalProperties;
 
@@ -2222,7 +2236,7 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class InscriptionResponse
     {
         [Newtonsoft.Json.JsonConstructor]
-        public InscriptionResponse(Category @category, Circuit @circuit, Competitor @competitor, InscriptionStatusAdmin @estadoAdmin, InscriptionStatusCompetitor @estadoCompetidor, Event @event, string @id, System.DateTimeOffset @inscripcionAt, float @baseAmountUsd, float? @administrativeFeeUsd, float @montoUsd, PaymentMethodEnum @paymentMethod, string? @resultado, string? @shirtNumber, string? @transaccionId)
+        public InscriptionResponse(Category @category, Circuit @circuit, Competitor @competitor, InscriptionStatusAdmin @estadoAdmin, InscriptionStatusCompetitor @estadoCompetidor, Event @event, string @id, System.DateTimeOffset @inscripcionAt, float @baseAmountUsd, float? @administrativeFeeUsd, float @montoUsd, PaymentMethodEnum @paymentMethod, string? @resultado, bool @reglamentoAceptado, bool @riesgosAceptados, string? @shirtNumber, string? @transaccionId, bool @usoImagenAceptado)
         {
             this.Id = @id;
             this.Competitor = @competitor;
@@ -2237,7 +2251,10 @@ namespace AlasApp.AlasApi.Api.Controllers
             this.EstadoAdmin = @estadoAdmin;
             this.EstadoCompetidor = @estadoCompetidor;
             this.Resultado = @resultado;
+            this.ReglamentoAceptado = @reglamentoAceptado;
+            this.RiesgosAceptados = @riesgosAceptados;
             this.TransaccionId = @transaccionId;
+            this.UsoImagenAceptado = @usoImagenAceptado;
             this.InscripcionAt = @inscripcionAt;
         }
 
@@ -2283,8 +2300,17 @@ namespace AlasApp.AlasApi.Api.Controllers
         [Newtonsoft.Json.JsonProperty("resultado", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? Resultado { get; }
 
+        [Newtonsoft.Json.JsonProperty("reglamentoAceptado", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool ReglamentoAceptado { get; }
+
+        [Newtonsoft.Json.JsonProperty("riesgosAceptados", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool RiesgosAceptados { get; }
+
         [Newtonsoft.Json.JsonProperty("transaccionId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? TransaccionId { get; }
+
+        [Newtonsoft.Json.JsonProperty("usoImagenAceptado", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool UsoImagenAceptado { get; }
 
         [Newtonsoft.Json.JsonProperty("inscripcionAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset InscripcionAt { get; }

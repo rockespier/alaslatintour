@@ -26,7 +26,7 @@ builder.Services.AddHttpClient<IWordPressService, WordPressService>(client =>
 
 <?php
 // Hook para inicializar los campos en la API REST
-add_action('init', 'rtres_register_post_meta_fields');
+add_action('init', 'rtres_register_post_meta_fields');                                    
 
 function rtres_register_post_meta_fields() {
     
@@ -38,7 +38,7 @@ function rtres_register_post_meta_fields() {
         'default'      => 'Redactor ALAS',
         'sanitize_callback' => 'sanitize_text_field'
     ]);
-
+    
     // 2. Campo: Tiempo de Lectura (Read Time en minutos)
     register_post_meta('post', 'read_time_minutes', [
         'show_in_rest' => true,
@@ -47,14 +47,14 @@ function rtres_register_post_meta_fields() {
         'default'      => 3,
         'sanitize_callback' => 'absint'
     ]);
-	
-	// Agrégalo dentro de tu función existente donde registramos 'author_role'
-	register_post_meta('post', 'show_ranking', [
-		'show_in_rest' => true,
-		'single'       => true,
-		'type'         => 'boolean',
-		'default'      => false
-	]);
+    
+    // Agrégalo dentro de tu función existente donde registramos 'author_role'
+    register_post_meta('post', 'show_ranking', [
+    	'show_in_rest' => true,
+    	'single'       => true,
+    	'type'         => 'boolean',
+    	'default'      => false
+    ]);
 }
 
 <?php
@@ -70,7 +70,7 @@ function alas_inject_custom_fields_to_api() {
             return empty($val) ? 'Redactor ALAS' : $val;
         }
     ]);
-
+    
     // 2. Inyectamos el Flag del Ranking
     register_rest_field('post', 'show_ranking', [
         'get_callback' => function($post_arr) {
@@ -105,10 +105,10 @@ function alas_render_headless_ui($post) {
     $current_role = get_post_meta($post->ID, 'author_role', true) ?: 'Redactor ALAS';
     // Recuperamos el booleano (WordPress guarda los booleanos como '1' o '')
     $show_ranking = get_post_meta($post->ID, 'show_ranking', true);
-
+    
     echo '<label for="author_role" style="font-weight:600; display:block; margin-bottom:4px;">Cargo del Autor:</label>';
     echo '<input type="text" id="author_role" name="author_role" value="' . esc_attr($current_role) . '" style="width:100%; padding: 5px; margin-bottom:15px;" />';
-
+    
     // UI: Checkbox para el Ranking
     echo '<label style="font-weight:600; display:flex; align-items:center; gap: 8px;">';
     // La función checked() de WP marca el checkbox si el valor en DB es '1'
@@ -152,7 +152,7 @@ public static partial class ContentMetricsHelper
     public static int CalculateReadTime(string htmlContent)
     {
         if (string.IsNullOrWhiteSpace(htmlContent)) return 1;
-
+    
         // Limpiamos los tags HTML de forma ultra-rápida
         var textOnly = HtmlTagsRegex().Replace(htmlContent, string.Empty);
         
@@ -206,6 +206,6 @@ public async Task<List<NewsArticleDto>> GetNewsForAngularAsync(CancellationToken
         PublishedDate: wp.Date,
         ReadTimeMinutes: ContentMetricsHelper.CalculateReadTime(wp.Content.Rendered)
     )).ToList();
-
+    
     return cleanNews;
 }

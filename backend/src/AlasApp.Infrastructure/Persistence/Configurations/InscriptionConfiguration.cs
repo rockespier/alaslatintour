@@ -49,6 +49,8 @@ public sealed class InscriptionConfiguration : IEntityTypeConfiguration<Inscript
             .HasMaxLength(2000);
 
         builder.Property(x => x.ReglamentoAceptado).IsRequired();
+        builder.Property(x => x.RiesgosAceptados).IsRequired();
+        builder.Property(x => x.UsoImagenAceptado).IsRequired();
         builder.Property(x => x.InscripcionAt).IsRequired();
         builder.Property(x => x.CreatedAtUtc).IsRequired();
         builder.Property(x => x.UpdatedAtUtc).IsRequired();

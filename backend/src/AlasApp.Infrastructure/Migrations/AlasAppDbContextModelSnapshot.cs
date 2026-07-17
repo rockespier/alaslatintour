@@ -629,6 +629,9 @@ namespace AlasApp.Infrastructure.Migrations
                     b.Property<bool>("ReglamentoAceptado")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("RiesgosAceptados")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Resultado")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
@@ -643,6 +646,9 @@ namespace AlasApp.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("UsoImagenAceptado")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
