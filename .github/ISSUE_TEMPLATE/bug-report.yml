@@ -2,21 +2,23 @@ name: 🐛 Reporte de error
 description: Reportar un comportamiento incorrecto o una regresión
 title: "[BUG] "
 labels:
-  - bug
-  - needs-triage
+  - "type:bug"
+  - "status:triage"
+
 body:
   - type: markdown
     attributes:
       value: |
-        Gracias por reportar el problema.
-        Completa toda la información posible para facilitar su reproducción.
+        Gracias por reportar este problema.
+
+        Completa la información solicitada para facilitar su análisis y reproducción.
 
   - type: textarea
     id: description
     attributes:
-      label: Descripción del problema
-      description: Explica claramente qué está ocurriendo.
-      placeholder: Describe el problema observado.
+      label: Descripción
+      description: Explica claramente el problema encontrado.
+      placeholder: Describe qué está ocurriendo.
     validations:
       required: true
 
@@ -24,8 +26,8 @@ body:
     id: current-behavior
     attributes:
       label: Comportamiento actual
-      description: ¿Qué sucede actualmente?
-      placeholder: Actualmente, cuando...
+      description: Indica qué sucede actualmente.
+      placeholder: Actualmente, cuando realizo...
     validations:
       required: true
 
@@ -33,7 +35,7 @@ body:
     id: expected-behavior
     attributes:
       label: Comportamiento esperado
-      description: ¿Qué debería suceder?
+      description: Indica qué debería suceder.
       placeholder: Se esperaba que...
     validations:
       required: true
@@ -42,12 +44,12 @@ body:
     id: reproduction
     attributes:
       label: Pasos para reproducir
-      description: Indica los pasos exactos para reproducir el problema.
+      description: Describe los pasos exactos para reproducir el error.
       placeholder: |
         1. Acceder a...
         2. Seleccionar...
         3. Ejecutar...
-        4. Ver el error...
+        4. Observar el error...
     validations:
       required: true
 
@@ -55,6 +57,7 @@ body:
     id: affected-area
     attributes:
       label: Área afectada
+      description: Selecciona las áreas relacionadas con el problema.
       multiple: true
       options:
         - Backend .NET
@@ -67,21 +70,44 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - Crítica
+        - Alta
+        - Media
+        - Baja
+    validations:
+      required: true
+
   - type: input
     id: environment
     attributes:
       label: Entorno
-      description: Desarrollo, pruebas, preproducción o producción.
-      placeholder: Desarrollo local / Producción
+      description: Indica dónde ocurre el problema.
+      placeholder: Desarrollo, pruebas, preproducción o producción
     validations:
       required: true
 
   - type: textarea
     id: evidence
     attributes:
-      label: Evidencias
+      label: Evidencias o contexto
       description: Incluye logs, capturas, mensajes de error o respuestas HTTP.
-      placeholder: Pega aquí los logs o adjunta capturas.
+      placeholder: Arrastra capturas aquí o pega los mensajes de error.
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencias identificadas
+      description: Indica otros issues, servicios o decisiones relacionadas.
+      placeholder: Escribe "Ninguna" cuando no existan dependencias.
+    validations:
+      required: true
 
   - type: textarea
     id: acceptance-criteria
@@ -90,22 +116,11 @@ body:
       description: Define cómo se comprobará que el problema está resuelto.
       placeholder: |
         - [ ] El error ya no se reproduce
-        - [ ] Se agregaron pruebas
+        - [ ] Se agregaron o actualizaron las pruebas
         - [ ] El build finaliza correctamente
-        - [ ] No se producen regresiones
+        - [ ] No se detectaron regresiones
     validations:
       required: true
-
-  - type: textarea
-    id: technical-context
-    attributes:
-      label: Contexto técnico
-      description: Endpoints, clases, componentes, tablas o archivos relacionados.
-      placeholder: |
-        Endpoint:
-        Componente:
-        Controlador:
-        Tabla:
 
   - type: checkboxes
     id: verification
@@ -118,14 +133,3 @@ body:
           required: true
         - label: No he incluido contraseñas, tokens ni información sensible.
           required: true
-          
-    - type: textarea
-      id: agent-instructions
-      attributes:
-        label: Instrucciones para el agente
-        description: Restricciones específicas que Codex o Claude deben respetar.
-        placeholder: |
-          - No modificar contratos públicos
-          - No agregar nuevas dependencias
-          - Respetar AGENTS.md
-          - No hacer commit ni push automáticamente          
