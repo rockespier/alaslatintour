@@ -410,7 +410,8 @@ export class HomeComponent implements OnInit {
   private async loadEvents(): Promise<void> {
     try {
       const res = await this.api.get<any>('/events?limit=100&page=1');
-      this.events.set(sortEventsForDisplay(res?.data ?? []).slice(0, 4));
+      const events = (res?.data ?? []) as EventCard[];
+      this.events.set(sortEventsForDisplay(events).slice(0, 4));
     } catch {
       this.events.set([]);
     } finally {
