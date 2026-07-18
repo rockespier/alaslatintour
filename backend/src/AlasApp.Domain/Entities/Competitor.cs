@@ -84,6 +84,10 @@ public sealed class Competitor : AuditableEntity
 
     public string SurfScoresCode { get; private set; } = string.Empty;
 
+    public string IdentityDocumentBlobName { get; private set; } = string.Empty;
+
+    public DateTimeOffset? IdentityDocumentUploadedAtUtc { get; private set; }
+
     public string LicenseNumber { get; private set; } = string.Empty;
 
     public string LicenseNumberLong { get; private set; } = string.Empty;
@@ -149,6 +153,17 @@ public sealed class Competitor : AuditableEntity
             NormalizeOptional(patrocinadores),
             NormalizeOptional(federacion),
             NormalizeOptional(surfScoresCode));
+    }
+
+    public void AttachIdentityDocument(string blobName, DateTimeOffset uploadedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(blobName))
+        {
+            throw new DomainRuleException("El documento de identidad es obligatorio.");
+        }
+
+        IdentityDocumentBlobName = blobName.Trim();
+        IdentityDocumentUploadedAtUtc = uploadedAtUtc;
     }
 
     public void Update(

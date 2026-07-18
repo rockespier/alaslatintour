@@ -251,6 +251,15 @@ const PAISES = [
                       <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Patrocinadores</label>
                       <input formControlName="patrocinadores" type="text" placeholder="Opcional — ej: Marca X, Marca Y" class="input-field" />
                     </div>
+                    <div>
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Documento de identidad</label>
+                      <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="input-field"
+                        (change)="onIdentityDocumentSelected($event)" [class.field-error]="invalid('identityDocument')" />
+                      <p class="mt-1 text-xs text-text-muted">Sube una foto o PDF de tu documento. Se guardará de forma privada para la verificación manual de edad.</p>
+                      @if (invalid('identityDocument')) {
+                        <p class="mt-1 text-xs text-error-brand">El documento de identidad es obligatorio</p>
+                      }
+                    </div>
 
                     <!-- Reglamento -->
                     <label class="flex items-start gap-3 cursor-pointer pt-2">
@@ -352,6 +361,7 @@ export class RegistroComponent {
     patrocinadores: [''],
     terminos: [false, Validators.requiredTrue],
     reglamento: [false],
+    identityDocument: [null as File | null],
   });
 
   invalid(field: string): boolean {
@@ -361,6 +371,14 @@ export class RegistroComponent {
 
   setTipo(tipo: 'espectador' | 'competidor'): void {
     this.form.patchValue({ tipo });
+  }
+
+  onIdentityDocumentSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.form.controls.identityDocument.setValue(file);
+    this.form.controls.identityDocument.setErrors(file ? null : { required: true });
+    this.form.controls.identityDocument.markAsTouched();
   }
 
   goStep2(): void {
@@ -381,36 +399,41 @@ export class RegistroComponent {
     if (this.esCompetidor()) {
       this.form.controls.reglamento.markAsTouched();
       this.form.controls.fechaNacimiento.markAsTouched();
+      this.form.controls.identityDocument.markAsTouched();
     }
     if (this.form.controls.terminos.invalid) return;
     if (this.esCompetidor() && !this.form.value.reglamento) return;
+    if (this.esCompetidor() && !this.form.value.identityDocument) {
+      this.form.controls.identityDocument.setErrors({ required: true });
+      return;
+    }
 
     this.loading.set(true);
     this.error.set('');
     try {
       const v = this.form.value;
-      const body: Record<string, unknown> = {
-        email: v.email,
-        password: v.password,
-        nombre: v.nombre,
-        apellido: v.apellido,
-        tipo: v.tipo,
-        terminos: true,
-        newsletter: true,
-      };
-      if (v.pais) body['pais'] = v.pais;
-      if (v.telefono) body['telefono'] = v.telefono;
+      const body = new FormData();
+      body.append('email', v.email ?? '');
+      body.append('password', v.password ?? '');
+      body.append('nombre', v.nombre ?? '');
+      body.append('apellido', v.apellido ?? '');
+      body.append('tipo', v.tipo ?? '');
+      body.append('terminos', 'true');
+      body.append('newsletter', 'true');
+      if (v.pais) body.append('pais', v.pais);
+      if (v.telefono) body.append('telefono', v.telefono);
       if (this.esCompetidor()) {
-        body['reglamento'] = true;
-        if (v.fechaNacimiento) body['fechaNacimiento'] = v.fechaNacimiento;
-        if (v.genero) body['genero'] = v.genero;
-        if (v.postura) body['postura'] = v.postura;
-        if (v.club) body['club'] = v.club;
-        if (v.tallaCamiseta) body['tallaCamiseta'] = v.tallaCamiseta;
-        body['federacion'] = v.federacion ?? '';
-        body['patrocinadores'] = v.patrocinadores ?? '';
+        body.append('reglamento', 'true');
+        if (v.fechaNacimiento) body.append('fechaNacimiento', v.fechaNacimiento);
+        if (v.genero) body.append('genero', v.genero);
+        if (v.postura) body.append('postura', v.postura);
+        if (v.club) body.append('club', v.club);
+        if (v.tallaCamiseta) body.append('tallaCamiseta', v.tallaCamiseta);
+        body.append('federacion', v.federacion ?? '');
+        body.append('patrocinadores', v.patrocinadores ?? '');
+        if (v.identityDocument) body.append('identityDocument', v.identityDocument);
       }
-      await this.api.post('/auth/register', body);
+      await this.api.upload('/auth/register', body);
       this.success.set(true);
     } catch (err: any) {
       this.error.set(err.body?.message ?? 'No se pudo completar el registro. Intenta de nuevo.');

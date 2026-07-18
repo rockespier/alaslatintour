@@ -801,7 +801,8 @@ public static class ApiContractMapper
             ToNullableDomainCompetitorPostura(request.Postura),
             ToNullableDomainCompetitorShirtSize(request.TallaCamiseta),
             request.Federacion,
-            request.Patrocinadores);
+            request.Patrocinadores,
+            null);
     }
 
     public static LoginUserCommand ToCommand(Generated.LoginRequest request)

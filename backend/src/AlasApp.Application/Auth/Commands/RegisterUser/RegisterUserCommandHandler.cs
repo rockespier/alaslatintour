@@ -13,6 +13,7 @@ public sealed class RegisterUserCommandHandler(
     IUserAccountRepository userAccountRepository,
     ICompetitorRepository competitorRepository,
     IPasswordHasher passwordHasher,
+    IIdentityDocumentStorage identityDocumentStorage,
     IUnitOfWork unitOfWork,
     IClock clock)
     : IRequestHandler<RegisterUserCommand, RegisterResultDto>
@@ -49,6 +50,8 @@ public sealed class RegisterUserCommandHandler(
                     request.Patrocinadores,
                     request.Federacion);
 
+                var blobName = await identityDocumentStorage.UploadAsync(competitor.Id, request.IdentityDocument!, cancellationToken);
+                competitor.AttachIdentityDocument(blobName, clock.UtcNow);
                 competitor.SetCreated(clock.UtcNow);
                 await competitorRepository.AddAsync(competitor, cancellationToken);
 
@@ -156,6 +159,11 @@ public sealed class RegisterUserCommandHandler(
             if (string.IsNullOrWhiteSpace(request.Pais))
             {
                 errors.Add(new ValidationError("pais", "El país es obligatorio."));
+            }
+
+            if (request.IdentityDocument is null || request.IdentityDocument.Length <= 0)
+            {
+                errors.Add(new ValidationError("identityDocument", "El documento de identidad es obligatorio para competidores."));
             }
         }
 
