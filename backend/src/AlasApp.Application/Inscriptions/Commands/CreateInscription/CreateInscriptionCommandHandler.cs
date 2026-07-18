@@ -7,6 +7,7 @@ using AlasApp.Application.Competitors.Models;
 using AlasApp.Application.Emails;
 using AlasApp.Application.Inscriptions.Models;
 using AlasApp.Domain.Entities;
+using AlasApp.Domain.Enums;
 using AlasApp.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +29,13 @@ public sealed class CreateInscriptionCommandHandler(
 
         var competitor = await competitorRepository.GetByIdAsync(request.CompetitorId, cancellationToken)
             ?? throw new NotFoundException("Competidor no encontrado.");
+
+        if (competitor.License.Status != LicenseStatus.Activa)
+        {
+            throw new ValidationException(
+                "Solo los competidores verificados pueden inscribirse en una competencia.",
+                [new ValidationError("competitorId", "El competidor debe estar verificado para inscribirse.")]);
+        }
 
         var pricingContext = await inscriptionRepository.GetPricingContextAsync(request.EventId, request.CategoryId, cancellationToken)
             ?? throw new NotFoundException("Evento o categoria no encontrados para la inscripcion.");

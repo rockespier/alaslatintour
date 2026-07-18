@@ -3,6 +3,7 @@ using AlasApp.Application.Abstractions.Services;
 using AlasApp.Infrastructure.Authentication;
 using AlasApp.Infrastructure.Email;
 using AlasApp.Infrastructure.Imports;
+using AlasApp.Infrastructure.IdentityDocuments;
 using AlasApp.Infrastructure.PayPal;
 using AlasApp.Infrastructure.Persistence;
 using AlasApp.Infrastructure.Persistence.Repositories;
@@ -33,6 +34,7 @@ public static class ServiceCollectionExtensions
         services.Configure<SmtpEmailOptions>(configuration.GetSection(SmtpEmailOptions.SectionName));
         services.Configure<BootstrapAdminOptions>(configuration.GetSection(BootstrapAdminOptions.SectionName));
         services.Configure<PayPalOptions>(configuration.GetSection(PayPalOptions.SectionName));
+        services.Configure<AzureBlobIdentityDocumentOptions>(configuration.GetSection(AzureBlobIdentityDocumentOptions.SectionName));
 
         services.AddScoped<ICircuitRepository, CircuitRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
@@ -52,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<IBulkExcelService, ClosedXmlBulkExcelService>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
+        services.AddScoped<IIdentityDocumentStorage, AzureBlobIdentityDocumentStorage>();
         services.AddSingleton<SurfScoresTokenCache>();
         services.AddHttpClient<ISurfScoresImportGateway, SurfScoresImportGateway>();
         services.AddHttpClient<IWordPressService, WordPressService>(client =>

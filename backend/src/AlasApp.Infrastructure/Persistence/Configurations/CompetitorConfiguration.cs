@@ -52,6 +52,10 @@ public sealed class CompetitorConfiguration : IEntityTypeConfiguration<Competito
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.IdentityDocumentBlobName)
+            .HasMaxLength(1024)
+            .IsRequired();
+
         builder.Property(x => x.LicenseNumber)
             .HasMaxLength(100)
             .IsRequired();
