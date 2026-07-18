@@ -329,7 +329,7 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             ciudad = "Lima",
             playa = "Punta Rocas",
             stars = 4,
-            capacidadMaxima = 120,
+            capacidadMaxima = 4,
             prizeAmountUsd = 15000,
             surfScoresCode = "EV-INS-2026",
             accessType = "Abierto",

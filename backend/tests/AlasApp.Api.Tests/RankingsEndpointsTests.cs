@@ -189,7 +189,7 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
             ciudad = "Lima",
             playa = "Punta Rocas",
             stars = 4,
-            capacidadMaxima = 64,
+            capacidadMaxima = 32,
             prizeAmountUsd = 10000,
             surfScoresCode,
             accessType = "Abierto",

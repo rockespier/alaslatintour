@@ -182,7 +182,7 @@ public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomW
             ciudad = "Lima",
             playa = "Punta Rocas",
             stars = 4,
-            capacidadMaxima = 150,
+            capacidadMaxima = 5,
             prizeAmountUsd = 20000,
             surfScoresCode = "EV-PAY-2026",
             accessType = "Abierto",

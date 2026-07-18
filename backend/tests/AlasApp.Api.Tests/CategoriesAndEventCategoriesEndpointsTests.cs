@@ -204,13 +204,13 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                 {
                     categoryId = categoryAId,
                     customTariffUsd = 85,
-                    capacidad = 32
+                    capacidad = 60
                 },
                 new
                 {
                     categoryId = categoryBId,
                     customTariffUsd = 90,
-                    capacidad = 40
+                    capacidad = 60
                 }
             }
         });
@@ -242,6 +242,79 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         var deleteCategoryBResponse = await _client.DeleteAsync($"/v1/categories/{categoryBId}");
         Assert.Equal(HttpStatusCode.NoContent, deleteCategoryAResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, deleteCategoryBResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateEventCategories_ShouldReject_WhenCategoryCapacitiesDoNotMatchEventCapacity()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito Capacidad",
+            temporada = 2026,
+            descripcion = "Circuito para validar capacidad por categoria",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = "CAP-2026"
+        });
+
+        var circuit = await ReadJsonAsync(circuitResponse);
+        var circuitId = circuit.RootElement.GetProperty("id").GetString();
+
+        var eventResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Evento Capacidad Categoria",
+            circuitId,
+            fechaInicio = "2026-10-10",
+            fechaFin = "2026-10-12",
+            pais = "Perú",
+            ciudad = "Lobitos",
+            playa = "Lobitos",
+            stars = 4,
+            capacidadMaxima = 100,
+            prizeAmountUsd = 10000,
+            surfScoresCode = "EV-CAP-2026",
+            accessType = "Abierto",
+            estado = "Activo"
+        });
+
+        var createdEvent = await ReadJsonAsync(eventResponse);
+        var eventId = createdEvent.RootElement.GetProperty("id").GetString();
+
+        var categoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Open Capacidad",
+            descripcion = "Categoria para validar capacidad",
+            gender = "Ambos",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo"
+        });
+
+        var category = await ReadJsonAsync(categoryResponse);
+        var categoryId = category.RootElement.GetProperty("id").GetString();
+
+        var updateResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[]
+            {
+                new
+                {
+                    categoryId,
+                    customTariffUsd = 85,
+                    capacidad = 40
+                }
+            }
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
+        var body = await updateResponse.Content.ReadAsStringAsync();
+        Assert.Contains("capacidad total del evento", body, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -327,7 +400,7 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                     categoryId,
                     stars = 5,
                     customTariffUsd = (decimal?)null,
-                    capacidad = (int?)null
+                    capacidad = 120
                 }
             }
         });
@@ -355,7 +428,7 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
                     categoryId,
                     stars = (int?)null,
                     customTariffUsd = (decimal?)null,
-                    capacidad = (int?)null
+                    capacidad = 120
                 }
             }
         });
@@ -484,9 +557,9 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
             useCircuitTariffs = false,
             categories = new[]
             {
-                new { categoryId = femaleCategoryId, customTariffUsd = 90, capacidad = 20 },
-                new { categoryId = mixedCategoryId, customTariffUsd = 90, capacidad = 20 },
-                new { categoryId = maleCategoryId, customTariffUsd = 90, capacidad = 20 }
+                new { categoryId = femaleCategoryId, customTariffUsd = 90, capacidad = 40 },
+                new { categoryId = mixedCategoryId, customTariffUsd = 90, capacidad = 40 },
+                new { categoryId = maleCategoryId, customTariffUsd = 90, capacidad = 40 }
             }
         });
 
