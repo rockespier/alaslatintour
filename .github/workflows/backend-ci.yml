@@ -1,0 +1,83 @@
+name: Backend CI
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test backend
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    env:
+      ALASAPP_TEST_SQLSERVER_CONNECTION: >-
+        Server=localhost,1433;Initial Catalog=master;User ID=sa;
+        Password=AlasApp_CI_2026!;Encrypt=True;TrustServerCertificate=True;
+        MultipleActiveResultSets=True
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: AlasApp_CI_2026!
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd
+          -S localhost -U sa -P 'AlasApp_CI_2026!' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 20s
+
+    steps:
+      - name: Checkout approved commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('backend/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore AlasApp.slnx
+
+      - name: Build
+        run: dotnet build AlasApp.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: >-
+          dotnet test AlasApp.slnx
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=backend-tests.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/**/TestResults/*.trx
+          if-no-files-found: warn
+          retention-days: 7
