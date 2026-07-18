@@ -156,7 +156,7 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
             ciudad = "Lima",
             playa = "Punta Rocas",
             stars,
-            capacidadMaxima = 150,
+            capacidadMaxima = 20,
             prizeAmountUsd,
             surfScoresCode = $"EV-{Guid.NewGuid():N}".Substring(0, 12),
             accessType = "Abierto",

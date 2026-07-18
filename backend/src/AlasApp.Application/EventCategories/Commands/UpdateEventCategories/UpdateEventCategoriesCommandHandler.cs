@@ -23,6 +23,8 @@ public sealed class UpdateEventCategoriesCommandHandler(
             request.Categories,
             cancellationToken);
 
+        ValidateCategoryCapacityMatchesEventCapacity(@event.CapacidadMaxima, request.Categories);
+
         @event.ReplaceCategories(assignments, request.UseCircuitTariffs);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -47,6 +49,40 @@ public sealed class UpdateEventCategoriesCommandHandler(
         if (errors.Count > 0)
         {
             throw new ValidationException("La solicitud contiene errores de validacion.", errors);
+        }
+    }
+
+    private static void ValidateCategoryCapacityMatchesEventCapacity(
+        int eventCapacity,
+        IReadOnlyCollection<EventCategoryUpsertItem> categories)
+    {
+        if (categories.Count == 0)
+        {
+            return;
+        }
+
+        var capacityErrors = categories
+            .Where(x => !x.Capacidad.HasValue)
+            .Select(x => new ValidationError(
+                "categories.capacidad",
+                $"La capacidad de la categoria {x.CategoryId} es obligatoria para calcular la capacidad total del evento."))
+            .ToList();
+
+        if (capacityErrors.Count > 0)
+        {
+            throw new ValidationException("La solicitud contiene errores de validacion.", capacityErrors);
+        }
+
+        var categoryCapacityTotal = categories.Sum(x => x.Capacidad!.Value);
+        if (categoryCapacityTotal != eventCapacity)
+        {
+            throw new ValidationException(
+                "La capacidad total del evento debe ser igual a la suma de las capacidades por categoria.",
+                [
+                    new ValidationError(
+                        "categories.capacidad",
+                        $"La suma de capacidades por categoria ({categoryCapacityTotal}) debe ser igual a la capacidad maxima del evento ({eventCapacity}).")
+                ]);
         }
     }
 }
