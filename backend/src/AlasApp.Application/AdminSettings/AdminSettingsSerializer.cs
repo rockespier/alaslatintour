@@ -43,6 +43,11 @@ public static class AdminSettingsSerializer
             Live = settings.Live ?? defaults.Live
         };
 
+        settings = settings with
+        {
+            Live = settings.Live with { SchedulePdfUrl = settings.Live.SchedulePdfUrl ?? string.Empty }
+        };
+
         if (settings.Ranking.PointsMatrix is null)
         {
             settings = settings with

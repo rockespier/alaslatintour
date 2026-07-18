@@ -605,6 +605,48 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
             </div>
           </div>
 
+          <!-- Programación del evento (PDF) -->
+          <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-12 h-12 rounded-lg bg-orange-brand/15 flex items-center justify-center flex-shrink-0">
+                <svg class="h-6 w-6 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <div>
+                <h2 class="font-heading text-xl text-white">Programación del Evento — PDF</h2>
+                <p class="text-xs text-text-muted">Documento con el itinerario de heats que verán los espectadores en la página del evento en vivo.</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <input #scheduleInput type="file" accept="application/pdf" class="hidden" (change)="onScheduleFileSelected($event)">
+              <button type="button" (click)="scheduleInput.click()" [disabled]="uploadingSchedule() || !canEdit()"
+                      class="px-3 py-2 rounded-md border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light font-accent uppercase text-xs tracking-wider transition disabled:opacity-50">
+                {{ uploadingSchedule() ? 'Subiendo...' : 'Subir PDF' }}
+              </button>
+              <input type="url" [class]="CLASS_INPUT" [(ngModel)]="schedulePdfUrl" placeholder="https://cdn.ejemplo.com/programacion-evento.pdf">
+            </div>
+            <p class="text-text-muted/70 text-[11px] mt-1.5">Formato permitido: PDF.</p>
+            @if (scheduleUploadError()) {
+              <p class="text-error-brand text-xs mt-1">{{ scheduleUploadError() }}</p>
+            }
+            @if (schedulePdfUrl) {
+              <div class="mt-3 flex items-center justify-between bg-navy-deepest border border-navy-mid rounded-lg px-4 py-2.5">
+                <a [href]="schedulePdfUrl" target="_blank" class="text-cyan-brand hover:underline text-sm truncate">{{ schedulePdfUrl }}</a>
+                <button type="button" (click)="schedulePdfUrl = ''" [disabled]="!canEdit()"
+                        class="text-text-muted hover:text-error-brand ml-3 flex-shrink-0" title="Quitar PDF">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+
+            <div class="flex mt-6 pt-5 border-t border-navy-mid">
+              <button type="button" (click)="saveSettings('Programación del evento guardada')" [disabled]="saving() || !canEdit()"
+                      class="px-5 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+                Guardar programación
+              </button>
+            </div>
+          </div>
+
           <!-- SurfScores Live -->
           <div class="bg-navy-dark rounded-xl border border-cyan-brand/30 p-6">
             <div class="flex items-start justify-between mb-5 flex-col sm:flex-row gap-3">
@@ -835,8 +877,32 @@ export class ConfiguracionComponent implements OnInit {
   ssRefresh = 5;
   ssUsoLocal = true;
 
+  schedulePdfUrl = '';
+  uploadingSchedule = signal(false);
+  scheduleUploadError = signal<string | null>(null);
+
   ytEventoLabel(): string {
     return this.eventos().find(e => e.id === this.ytEvento)?.label ?? '';
+  }
+
+  async onScheduleFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.scheduleUploadError.set(null);
+    this.uploadingSchedule.set(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploaded = await this.api.upload<{ url: string }>('/uploads/live-schedule', formData);
+      this.schedulePdfUrl = uploaded.url;
+    } catch (err: any) {
+      this.scheduleUploadError.set(err?.message ?? 'No se pudo subir el PDF.');
+    } finally {
+      this.uploadingSchedule.set(false);
+      input.value = '';
+    }
   }
 
   async ngOnInit(): Promise<void> {
@@ -917,6 +983,7 @@ export class ConfiguracionComponent implements OnInit {
     this.ssHeight = l.surfScores?.height ?? 600;
     this.ssRefresh = l.surfScores?.refreshMinutes ?? 5;
     this.ssUsoLocal = l.surfScores?.localDisplaysOnly ?? true;
+    this.schedulePdfUrl = l.schedulePdfUrl ?? '';
   }
 
   private buildPayload(): any {
@@ -973,6 +1040,7 @@ export class ConfiguracionComponent implements OnInit {
           active: this.ssActive(), eventId: this.ssEvento || null, embedUrl: this.ssUrl,
           width: this.ssWidth, height: this.ssHeight, refreshMinutes: this.ssRefresh, localDisplaysOnly: this.ssUsoLocal,
         },
+        schedulePdfUrl: this.schedulePdfUrl,
       },
     };
   }
