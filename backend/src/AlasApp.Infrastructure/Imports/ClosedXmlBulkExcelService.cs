@@ -1,5 +1,6 @@
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.BulkImports.Models;
+using AlasApp.Application.Inscriptions.Models;
 using ClosedXML.Excel;
 
 namespace AlasApp.Infrastructure.Imports;
@@ -118,6 +119,94 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["MembresiaAnualUsd"],
             values["MembresiaPorEventoUsd"],
             values["BestResultsCount"]));
+
+    private static readonly string[] InscriptionExportHeaders =
+    [
+        "Numero",
+        "Competidor",
+        "Pais",
+        "Categoria",
+        "Evento",
+        "Fecha Inscripcion",
+        "Metodo de Pago",
+        "Monto USD",
+        "Estado",
+        "Federacion",
+        "Licencia",
+        "Transaccion"
+    ];
+
+    public byte[] BuildInscriptionsExport(IReadOnlyCollection<AdminInscriptionRowDto> rows)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Inscritos");
+
+        for (var index = 0; index < InscriptionExportHeaders.Length; index++)
+        {
+            worksheet.Cell(1, index + 1).Value = InscriptionExportHeaders[index];
+            worksheet.Cell(1, index + 1).Style.Font.Bold = true;
+        }
+
+        var rowNumber = 2;
+        foreach (var row in rows)
+        {
+            worksheet.Cell(rowNumber, 1).Value = row.SequentialNumber;
+            worksheet.Cell(rowNumber, 2).Value = row.FullName;
+            worksheet.Cell(rowNumber, 3).Value = row.Country;
+            worksheet.Cell(rowNumber, 4).Value = row.Categoria;
+            worksheet.Cell(rowNumber, 5).Value = row.EventoNombre;
+            worksheet.Cell(rowNumber, 6).Value = row.InscripcionDate.ToString("yyyy-MM-dd HH:mm");
+            worksheet.Cell(rowNumber, 7).Value = row.PaymentMethod.ToString();
+            worksheet.Cell(rowNumber, 8).Value = (double)row.MontoUsd;
+            worksheet.Cell(rowNumber, 9).Value = row.EstadoAdmin.ToString();
+            worksheet.Cell(rowNumber, 10).Value = row.Federacion;
+            worksheet.Cell(rowNumber, 11).Value = row.LicenciaNumber;
+            worksheet.Cell(rowNumber, 12).Value = row.TransaccionId ?? string.Empty;
+            rowNumber++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    public byte[] BuildInscriptionFicha(InscriptionDto inscription)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Ficha");
+
+        var fields = new (string Label, string Value)[]
+        {
+            ("Competidor", inscription.Competitor.FullName),
+            ("Pais", inscription.Competitor.Country),
+            ("Evento", inscription.Event.Nombre),
+            ("Lugar", inscription.Event.Lugar),
+            ("Categoria", inscription.Category.Nombre),
+            ("Circuito", inscription.Circuit.Nombre),
+            ("Metodo de Pago", inscription.PaymentMethod.ToString()),
+            ("Monto USD", inscription.MontoUsd.ToString("0.00")),
+            ("Estado Administrativo", inscription.EstadoAdmin.ToString()),
+            ("Estado del Competidor", inscription.EstadoCompetidor.ToString()),
+            ("Transaccion", inscription.TransaccionId ?? string.Empty),
+            ("Fecha de Inscripcion", inscription.InscripcionAt.ToString("yyyy-MM-dd HH:mm")),
+            ("Notas", inscription.Notes ?? string.Empty)
+        };
+
+        for (var index = 0; index < fields.Length; index++)
+        {
+            worksheet.Cell(index + 1, 1).Value = fields[index].Label;
+            worksheet.Cell(index + 1, 1).Style.Font.Bold = true;
+            worksheet.Cell(index + 1, 2).Value = fields[index].Value;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
 
     private static byte[] BuildWorkbook(string sheetName, IReadOnlyList<string> headers, IReadOnlyList<string> sampleRow)
     {

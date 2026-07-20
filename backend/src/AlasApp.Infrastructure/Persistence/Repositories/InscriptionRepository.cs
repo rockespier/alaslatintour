@@ -36,12 +36,14 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         var mapped = items
             .Select((x, index) => new AdminInscriptionRowDto(
                 x.Id,
+                x.CompetitorId,
                 ((page - 1) * limit + index + 1).ToString("000"),
                 $"{x.Competitor!.Nombre} {x.Competitor.Apellido}",
                 x.Competitor.Pais,
                 null,
                 null,
                 x.Category!.Nombre,
+                x.Event!.Nombre,
                 x.InscripcionAt,
                 x.PaymentMethod,
                 x.MontoUsd,

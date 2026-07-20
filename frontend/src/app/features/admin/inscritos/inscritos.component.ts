@@ -15,6 +15,7 @@ interface InscritoRow {
   rank2025: string;
   rank2026: string;
   categoria: string;
+  evento: string;
   fechaInscripcion: string;
   metodo: 'paypal' | 'beach';
   montoUsd: number;
@@ -25,11 +26,13 @@ interface InscritoRow {
   notas: string;
 }
 
-interface EventoOption { id: string; nombre: string; }
+interface EventoOption { id: string; nombre: string; circuitId: string; }
+interface CircuitoOption { id: string; nombre: string; }
 interface CategoriaOption { id: string; nombre: string; }
 
 interface ResultadoRow {
   id: string;
+  competitorId: string;
   place: string;
   competidor: string;
   pais: string;
@@ -38,7 +41,24 @@ interface ResultadoRow {
   heatScoreTotal: number | null;
 }
 
+interface FilaResultado {
+  competitorId: string;
+  nombre: string;
+  pais: string;
+  place: string;
+  ligaPoints: number | null;
+  prizeUsd: number | null;
+  heatScoreTotal: number | null;
+}
+
+interface PremioConfigRow {
+  label: string;
+  p1: number; p2: number; p3: number; p4: number; p5: number; p6: number; p7: number;
+}
+
 const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition';
+const PREMIO_CELL_CLASS = 'w-14 bg-navy-mid/40 border border-navy-mid rounded px-1 py-1 text-right text-sm text-text-light focus:outline-none focus:border-cyan-brand transition disabled:opacity-50';
+const PLACE_INPUT_CLASS = 'w-16 bg-navy-mid/40 border border-navy-mid rounded px-2 py-1 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition';
 
 function fmtDateTime(dt: string): string {
   return new Date(dt).toLocaleString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -58,9 +78,9 @@ function fmtDateTime(dt: string): string {
       <!-- Tabs -->
       <div class="border-b border-navy-mid mb-6 overflow-x-auto">
         <nav class="flex gap-2 min-w-max">
-          <button (click)="tab.set('inscritos')" [class]="tabClass('inscritos')">Inscritos</button>
-          <button (click)="tab.set('premios')" [class]="tabClass('premios')">Puntajes de Premios</button>
-          <button (click)="tab.set('puestos')" [class]="tabClass('puestos')">Puestos por Evento</button>
+          <button (click)="selectTab('inscritos')" [class]="tabClass('inscritos')">Inscritos</button>
+          <button (click)="selectTab('premios')" [class]="tabClass('premios')">Puntajes de Premios</button>
+          <button (click)="selectTab('puestos')" [class]="tabClass('puestos')">Puestos por Evento</button>
         </nav>
       </div>
 
@@ -89,6 +109,10 @@ function fmtDateTime(dt: string): string {
               <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               <input type="text" placeholder="Buscar competidor..." [(ngModel)]="searchTerm" [class]="CLASS_INPUT + ' pl-9'">
             </div>
+            <button (click)="exportarInscritos()" [disabled]="exportando()" class="px-4 py-2 border border-orange-brand/50 hover:border-orange-brand text-orange-brand font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap disabled:opacity-50">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              {{ exportando() ? 'Exportando...' : 'Exportar XLSX' }}
+            </button>
           </div>
 
           @if (filterEvento) {
@@ -126,6 +150,7 @@ function fmtDateTime(dt: string): string {
                     <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2025</th>
                     <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2026</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
+                    <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Inscripción</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Pago</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
@@ -141,6 +166,7 @@ function fmtDateTime(dt: string): string {
                       <td class="px-3 py-3 text-center font-mono text-sm text-text-light">{{ row.rank2025 }}</td>
                       <td class="px-3 py-3 text-center font-mono text-sm text-cyan-brand">{{ row.rank2026 }}</td>
                       <td class="px-3 py-3 text-text-muted">{{ row.categoria }}</td>
+                      <td class="px-3 py-3 text-text-muted">{{ row.evento }}</td>
                       <td class="px-3 py-3 text-xs text-text-muted">{{ row.fechaInscripcion }}</td>
                       <td class="px-3 py-3 text-text-muted text-xs">{{ row.metodo === 'paypal' ? 'PayPal' : 'Playa' }} \${{ row.montoUsd }}</td>
                       <td class="px-3 py-3">
@@ -153,13 +179,14 @@ function fmtDateTime(dt: string): string {
                       <td class="px-3 py-3 text-right whitespace-nowrap">
                         <button (click)="toggleExpand(row.id)" class="text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2">Ver detalle</button>
                         @if (row.estado === 'Pendiente' && canEdit()) {
-                          <button (click)="validarPago(row)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400">Validar pago</button>
+                          <button (click)="validarPago(row)" class="text-xs font-accent uppercase tracking-wider text-success-brand hover:text-green-400 mr-2">Validar pago</button>
                         }
+                        <button (click)="exportarFicha(row)" class="text-xs font-accent uppercase tracking-wider text-text-muted hover:text-text-light">Exportar ficha</button>
                       </td>
                     </tr>
                     @if (expanded() === row.id) {
                       <tr>
-                        <td [attr.colspan]="10" class="p-0">
+                        <td [attr.colspan]="11" class="p-0">
                           <div [class]="row.estado === 'Pendiente'
                             ? 'bg-navy-deepest border-y-2 border-warning-brand/30 p-5'
                             : 'bg-navy-deepest border-y-2 border-cyan-brand/30 p-5'">
@@ -202,50 +229,106 @@ function fmtDateTime(dt: string): string {
 
       <!-- ═══ TAB: PUNTAJES DE PREMIOS ═══ -->
       @if (tab() === 'premios') {
-        <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-          <div class="mb-6">
-            <h2 class="font-heading text-xl text-white mb-1">Distribución de premios por evento</h2>
-            <p class="text-sm text-text-muted">Monto en USD que corresponde a cada puesto, calculado desde el pozo total del evento (<code>prizeAmountUsd</code>) según sus estrellas y los porcentajes definidos en Configuración → Ranking.</p>
-          </div>
+        <div class="space-y-6">
+          <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
+            <div class="mb-6">
+              <h2 class="font-heading text-xl text-white mb-1">Distribución de premios por puesto y estrellas del evento</h2>
+              <p class="text-sm text-text-muted">Porcentaje del pozo total del evento (<code>prizeAmountUsd</code>) que corresponde a cada puesto según el nivel de estrellas. Haz clic en una celda para editar — esta es la misma configuración de Configuración → Ranking.</p>
+            </div>
 
-          <div class="flex flex-col sm:flex-row gap-3 mb-6">
-            <select [class]="CLASS_INPUT + ' sm:max-w-[320px]'" [(ngModel)]="premiosEventoId" (ngModelChange)="loadPrizeDistribution()">
-              <option value="">— Selecciona un evento —</option>
-              @for (e of eventos(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
-            </select>
-            @if (premiosStars() > 0) {
-              <p class="flex items-center text-xs text-text-muted">Evento de <span class="text-warning-brand mx-1">{{ '★'.repeat(premiosStars()) }}</span></p>
+            @if (!canViewPremiosConfig()) {
+              <p class="text-sm text-text-muted">No tienes permiso para ver la configuración de premios. Contacta a un administrador.</p>
+            } @else if (premiosConfigLoading()) {
+              <app-loading-spinner />
+            } @else {
+              <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="border-b border-navy-mid bg-navy-dark/50">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-navy-mid/40">
+                      @for (row of premiosConfigRows(); track row.label) {
+                        <tr class="hover:bg-cyan-brand/5 transition">
+                          <td class="px-4 py-3 font-heading text-text-light">{{ row.label }}</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p1" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p2" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p3" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p4" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p5" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p6" [disabled]="!canEditPremiosConfig()">%</td>
+                          <td class="px-4 py-3 text-right"><input type="number" min="0" [class]="PREMIO_CELL_CLASS" [(ngModel)]="row.p7" [disabled]="!canEditPremiosConfig()">%</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              @if (canEditPremiosConfig()) {
+                <div class="mt-6 flex justify-end">
+                  <button (click)="savePremiosConfig()" [disabled]="premiosConfigSaving()" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+                    {{ premiosConfigSaving() ? 'Guardando...' : 'Guardar Distribución' }}
+                  </button>
+                </div>
+              }
             }
           </div>
 
-          @if (!premiosEventoId) {
-            <p class="text-sm text-text-muted">Selecciona un evento para ver su distribución de premios.</p>
-          } @else if (premiosLoading()) {
-            <app-loading-spinner />
-          } @else if (premiosRows().length === 0) {
-            <p class="text-sm text-text-muted">Este evento no tiene premio configurado (prizeAmountUsd = 0) o no hay distribución definida.</p>
-          } @else {
-            <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden max-w-md">
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead class="border-b border-navy-mid bg-navy-dark/50">
-                    <tr>
-                      <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Premio USD</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-navy-mid/40">
-                    @for (row of premiosRows(); track row.placeLabel) {
-                      <tr class="hover:bg-cyan-brand/5 transition">
-                        <td class="px-4 py-3 font-heading text-text-light">{{ row.placeLabel }}</td>
-                        <td class="px-4 py-3 text-right text-success-brand">\${{ row.prizeUsd | number:'1.0-2' }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+          <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
+            <div class="mb-6">
+              <h2 class="font-heading text-lg text-white mb-1">Vista previa en USD por evento</h2>
+              <p class="text-sm text-text-muted">Monto en USD que corresponde a cada puesto, calculado desde el pozo total del evento seleccionado (<code>prizeAmountUsd</code>) según la distribución anterior.</p>
             </div>
-          }
+
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+              <select [class]="CLASS_INPUT + ' sm:max-w-[320px]'" [(ngModel)]="premiosEventoId" (ngModelChange)="loadPrizeDistribution()">
+                <option value="">— Selecciona un evento —</option>
+                @for (e of eventos(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
+              </select>
+              @if (premiosStars() > 0) {
+                <p class="flex items-center text-xs text-text-muted">Evento de <span class="text-warning-brand mx-1">{{ '★'.repeat(premiosStars()) }}</span></p>
+              }
+            </div>
+
+            @if (!premiosEventoId) {
+              <p class="text-sm text-text-muted">Selecciona un evento para ver su distribución de premios.</p>
+            } @else if (premiosLoading()) {
+              <app-loading-spinner />
+            } @else if (premiosRows().length === 0) {
+              <p class="text-sm text-text-muted">Este evento no tiene premio configurado (prizeAmountUsd = 0) o no hay distribución definida.</p>
+            } @else {
+              <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden max-w-md">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="border-b border-navy-mid bg-navy-dark/50">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Premio USD</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-navy-mid/40">
+                      @for (row of premiosRows(); track row.placeLabel) {
+                        <tr class="hover:bg-cyan-brand/5 transition">
+                          <td class="px-4 py-3 font-heading text-text-light">{{ row.placeLabel }}</td>
+                          <td class="px-4 py-3 text-right text-success-brand">\${{ row.prizeUsd | number:'1.0-2' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          </div>
         </div>
       }
 
@@ -254,11 +337,15 @@ function fmtDateTime(dt: string): string {
         <div>
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
             <div class="flex flex-col sm:flex-row gap-3">
+              <select [class]="CLASS_INPUT + ' sm:max-w-[220px]'" [(ngModel)]="puestosCircuitoId" (ngModelChange)="onPuestosCircuitoChange()">
+                <option value="">Todos los circuitos</option>
+                @for (c of circuitos(); track c.id) { <option [value]="c.id">{{ c.nombre }}</option> }
+              </select>
               <select [class]="CLASS_INPUT + ' sm:max-w-[280px]'" [(ngModel)]="puestosEventoId" (ngModelChange)="onPuestosEventoChange()">
                 <option value="">— Selecciona un evento —</option>
-                @for (e of eventos(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
+                @for (e of puestosEventosFiltrados(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
               </select>
-              <select [class]="CLASS_INPUT + ' sm:max-w-[220px]'" [(ngModel)]="puestosCategoriaId" (ngModelChange)="loadResultados()">
+              <select [class]="CLASS_INPUT + ' sm:max-w-[220px]'" [(ngModel)]="puestosCategoriaId" (ngModelChange)="onPuestosCategoriaChange()">
                 <option value="">Todas las categorías</option>
                 @for (c of puestosCategorias(); track c.id) { <option [value]="c.id">{{ c.nombre }}</option> }
               </select>
@@ -269,62 +356,111 @@ function fmtDateTime(dt: string): string {
             <p class="text-sm text-text-muted">Selecciona un evento para ver sus resultados.</p>
           } @else if (puestosLoading()) {
             <app-loading-spinner />
-          } @else if (resultados().length === 0) {
-            <p class="text-sm text-text-muted">Aún no hay resultados cargados para este evento/categoría.</p>
           } @else {
-            <!-- Podium -->
-            <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
-              <h3 class="font-heading text-lg text-white mb-6 text-center">Podio</h3>
-              <div class="grid grid-cols-3 items-end gap-3 max-w-2xl mx-auto">
-                @for (p of podio(); track p.place) {
-                  <div class="text-center">
-                    <div [class]="'mx-auto mb-3 rounded-full flex items-center justify-center font-heading text-white ' + p.avatarClass">{{ p.iniciales }}</div>
-                    <p class="font-medium text-sm text-text-light">{{ p.competidor }}</p>
-                    <p class="text-xs text-text-muted mb-3">{{ p.pais }}</p>
-                    <div [class]="p.podiumClass">
-                      <p [class]="p.numberClass">{{ p.place }}</p>
-                      <p class="text-xs font-accent uppercase tracking-wider" [class]="p.place === '1' ? 'text-white/80' : 'text-text-muted'">{{ p.heatScoreTotal ?? '—' }} pts</p>
+            @if (resultados().length > 0) {
+              <!-- Podium -->
+              <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
+                <h3 class="font-heading text-lg text-white mb-6 text-center">Podio</h3>
+                <div class="grid grid-cols-3 items-end gap-3 max-w-2xl mx-auto">
+                  @for (p of podio(); track p.slot) {
+                    <div class="text-center">
+                      <div [class]="'mx-auto mb-3 rounded-full flex items-center justify-center font-heading text-white ' + p.avatarClass">{{ p.iniciales }}</div>
+                      <p class="font-medium text-sm text-text-light">{{ p.competidor }}</p>
+                      <p class="text-xs text-text-muted mb-3">{{ p.pais }}</p>
+                      <div [class]="p.podiumClass">
+                        <p [class]="p.numberClass">{{ p.slot }}</p>
+                        <p class="text-xs font-accent uppercase tracking-wider" [class]="p.slot === '1' ? 'text-white/80' : 'text-text-muted'">{{ p.heatScoreTotal ?? '—' }} pts</p>
+                      </div>
                     </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (puestosCategoriaId && canEdit()) {
+              <!-- Editable results (full roster) -->
+              <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
+                  <h3 class="font-heading text-lg text-white">Resultados completos</h3>
+                  <button (click)="guardarResultados()" [disabled]="guardandoResultados() || filasResultados().length === 0" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50 whitespace-nowrap">
+                    {{ guardandoResultados() ? 'Guardando...' : 'Guardar resultados' }}
+                  </button>
+                </div>
+                @if (filasResultados().length === 0) {
+                  <p class="px-6 py-4 text-sm text-text-muted">No hay competidores inscritos en este evento/categoría.</p>
+                } @else {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="border-b border-navy-mid">
+                        <tr>
+                          <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
+                          <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
+                          <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
+                          <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Puntos de Liga</th>
+                          <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Premio</th>
+                          <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Heat Score Total</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-navy-mid/50">
+                        @for (f of filasResultados(); track f.competitorId) {
+                          <tr class="hover:bg-cyan-brand/5 transition">
+                            <td [class]="puestoClass(f.place)">
+                              <input type="text" placeholder="—" [(ngModel)]="f.place" [class]="PLACE_INPUT_CLASS">
+                            </td>
+                            <td class="px-4 py-3 font-medium text-text-light">{{ f.nombre }}</td>
+                            <td class="px-4 py-3 text-text-muted">{{ f.pais }}</td>
+                            <td class="px-4 py-3 text-right text-text-light">{{ f.ligaPoints ?? '—' }}</td>
+                            <td class="px-4 py-3 text-right text-success-brand">{{ f.prizeUsd !== null ? '$' + f.prizeUsd : '—' }}</td>
+                            <td class="px-4 py-3 text-right font-mono text-text-light">{{ f.heatScoreTotal ?? '—' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
                   </div>
                 }
+                <div class="px-6 py-3 border-t border-navy-mid text-xs text-text-muted">
+                  <a href="https://surfscores.com" target="_blank" rel="noopener" class="text-cyan-brand hover:underline">{{ attribution() }}</a>
+                </div>
               </div>
-            </div>
-
-            <!-- Results table -->
-            <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
-              <div class="px-6 py-4 border-b border-navy-mid">
-                <h3 class="font-heading text-lg text-white">Resultados completos</h3>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead class="border-b border-navy-mid">
-                    <tr>
-                      <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
-                      <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
-                      <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Puntos de Liga</th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Premio</th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Heat Score Total</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-navy-mid/50">
-                    @for (r of resultados(); track r.id) {
-                      <tr class="hover:bg-cyan-brand/5 transition">
-                        <td [class]="puestoClass(r.place)">{{ r.place }}</td>
-                        <td class="px-4 py-3 font-medium text-text-light">{{ r.competidor }}</td>
-                        <td class="px-4 py-3 text-text-muted">{{ r.pais }}</td>
-                        <td class="px-4 py-3 text-right text-text-light">{{ r.ligaPoints }}</td>
-                        <td class="px-4 py-3 text-right text-success-brand">{{ r.prizeUsd !== null ? '$' + r.prizeUsd : '—' }}</td>
-                        <td class="px-4 py-3 text-right font-mono text-text-light">{{ r.heatScoreTotal ?? '—' }}</td>
+            } @else if (resultados().length === 0) {
+              <p class="text-sm text-text-muted">Aún no hay resultados cargados para este evento/categoría.</p>
+            } @else {
+              <!-- Read-only results table -->
+              <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
+                <div class="px-6 py-4 border-b border-navy-mid">
+                  <h3 class="font-heading text-lg text-white">Resultados completos</h3>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="border-b border-navy-mid">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
+                        <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Puntos de Liga</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Premio</th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Heat Score Total</th>
                       </tr>
-                    }
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody class="divide-y divide-navy-mid/50">
+                      @for (r of resultados(); track r.id) {
+                        <tr class="hover:bg-cyan-brand/5 transition">
+                          <td [class]="puestoClass(r.place)">{{ r.place }}</td>
+                          <td class="px-4 py-3 font-medium text-text-light">{{ r.competidor }}</td>
+                          <td class="px-4 py-3 text-text-muted">{{ r.pais }}</td>
+                          <td class="px-4 py-3 text-right text-text-light">{{ r.ligaPoints }}</td>
+                          <td class="px-4 py-3 text-right text-success-brand">{{ r.prizeUsd !== null ? '$' + r.prizeUsd : '—' }}</td>
+                          <td class="px-4 py-3 text-right font-mono text-text-light">{{ r.heatScoreTotal ?? '—' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <div class="px-6 py-3 border-t border-navy-mid text-xs text-text-muted">
+                  <a href="https://surfscores.com" target="_blank" rel="noopener" class="text-cyan-brand hover:underline">{{ attribution() }}</a>
+                </div>
               </div>
-              <div class="px-6 py-3 border-t border-navy-mid text-xs text-text-muted">
-                <a href="https://surfscores.com" target="_blank" rel="noopener" class="text-cyan-brand hover:underline">{{ attribution() }}</a>
-              </div>
-            </div>
+            }
           }
         </div>
       }
@@ -344,8 +480,12 @@ export class InscritosComponent implements OnInit {
   private permissions = inject(PermissionsService);
 
   canEdit = computed(() => this.permissions.canEdit('Inscripciones'));
+  canViewPremiosConfig = computed(() => this.permissions.canView('Configuracion'));
+  canEditPremiosConfig = computed(() => this.permissions.canEdit('Configuracion'));
 
   CLASS_INPUT = CLASS_INPUT;
+  PREMIO_CELL_CLASS = PREMIO_CELL_CLASS;
+  PLACE_INPUT_CLASS = PLACE_INPUT_CLASS;
 
   tab = signal<InscritosTab>('inscritos');
   tabClass(t: InscritosTab): string {
@@ -354,9 +494,18 @@ export class InscritosComponent implements OnInit {
       : 'px-4 py-3 font-accent uppercase tracking-wider text-sm text-text-muted border-b-2 border-transparent hover:text-text-light transition whitespace-nowrap';
   }
 
+  selectTab(t: InscritosTab): void {
+    this.tab.set(t);
+    if (t === 'premios' && !this.premiosConfigLoaded && this.canViewPremiosConfig()) {
+      this.premiosConfigLoaded = true;
+      void this.loadPremiosConfig();
+    }
+  }
+
   loading = signal(true);
 
   eventos = signal<EventoOption[]>([]);
+  circuitos = signal<CircuitoOption[]>([]);
   categorias = signal<CategoriaOption[]>([]);
 
   searchTerm = '';
@@ -396,18 +545,37 @@ export class InscritosComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      const [eventsRes, categoriesRes] = await Promise.all([
-        this.api.get<any>('/events?limit=100'),
+      const [eventos, categoriesRes, circuitsRes] = await Promise.all([
+        this.fetchAllEvents(),
         this.api.get<any>('/categories'),
+        this.api.get<any>('/circuits'),
       ]);
-      this.eventos.set((eventsRes?.data ?? []).map((e: any) => ({ id: e.id, nombre: e.nombre })));
+      this.eventos.set(eventos);
       this.categorias.set((categoriesRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre })));
+      this.circuitos.set((circuitsRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre })));
       await this.loadInscritos();
     } catch {
       this.showToast('Error al cargar los inscritos');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  // Recorre todas las páginas para que los selectores de evento no omitan
+  // eventos cuando hay más de una página de resultados.
+  private async fetchAllEvents(): Promise<EventoOption[]> {
+    const limit = 100;
+    let page = 1;
+    const all: EventoOption[] = [];
+    for (;;) {
+      const res = await this.api.get<any>(`/events?limit=${limit}&page=${page}`);
+      const data: any[] = res?.data ?? [];
+      all.push(...data.map((e: any) => ({ id: e.id, nombre: e.nombre, circuitId: e.circuitId })));
+      const totalItems: number = res?.pagination?.totalItems ?? all.length;
+      if (data.length === 0 || all.length >= totalItems) break;
+      page += 1;
+    }
+    return all;
   }
 
   async loadInscritos(): Promise<void> {
@@ -430,6 +598,7 @@ export class InscritosComponent implements OnInit {
       rank2025: r.ranking2025 ?? '—',
       rank2026: r.ranking2026 ?? '—',
       categoria: r.categoria,
+      evento: r.eventoNombre,
       fechaInscripcion: fmtDateTime(r.inscripcionDate),
       metodo: r.paymentMethod,
       montoUsd: r.montoUsd,
@@ -452,11 +621,84 @@ export class InscritosComponent implements OnInit {
     }
   }
 
-  // ─── Puntajes de Premios (por evento, calculado por el backend) ──
+  exportando = signal(false);
+  async exportarInscritos(): Promise<void> {
+    this.exportando.set(true);
+    try {
+      const params = new URLSearchParams();
+      if (this.filterEvento) params.set('eventId', this.filterEvento);
+      if (this.filterCategoria) params.set('categoryId', this.filterCategoria);
+      if (this.filterEstado) params.set('status', this.filterEstado);
+      const query = params.toString();
+      await this.api.downloadFile(`/inscriptions/export${query ? `?${query}` : ''}`, 'inscritos.xlsx');
+    } catch {
+      this.showToast('Error al exportar los inscritos');
+    } finally {
+      this.exportando.set(false);
+    }
+  }
+
+  async exportarFicha(row: InscritoRow): Promise<void> {
+    try {
+      await this.api.downloadFile(`/inscriptions/${row.id}/export`, `ficha-${row.numero}.xlsx`);
+    } catch {
+      this.showToast('Error al exportar la ficha');
+    }
+  }
+
+  // ─── Puntajes de Premios ──────────────────────────────────────────
   premiosEventoId = '';
   premiosLoading = signal(false);
   premiosStars = signal(0);
   premiosRows = signal<{ placeLabel: string; prizeUsd: number }[]>([]);
+
+  premiosConfigLoaded = false;
+  premiosConfigLoading = signal(false);
+  premiosConfigSaving = signal(false);
+  premiosConfigRows = signal<PremioConfigRow[]>([]);
+  private premiosConfigRaw: any = null;
+
+  async loadPremiosConfig(): Promise<void> {
+    this.premiosConfigLoading.set(true);
+    try {
+      const raw = await this.api.get<any>('/admin/settings');
+      this.premiosConfigRaw = raw;
+      this.premiosConfigRows.set((raw?.ranking?.prizeDistribution ?? []).map((row: any) => ({
+        label: row.placeLabel,
+        p1: row.star1Percent, p2: row.star2Percent, p3: row.star3Percent, p4: row.star4Percent,
+        p5: row.star5Percent, p6: row.star6Percent, p7: row.star7Percent,
+      })));
+    } catch {
+      this.showToast('Error al cargar la configuración de premios');
+    } finally {
+      this.premiosConfigLoading.set(false);
+    }
+  }
+
+  async savePremiosConfig(): Promise<void> {
+    if (!this.premiosConfigRaw) return;
+    this.premiosConfigSaving.set(true);
+    try {
+      const payload = {
+        ...this.premiosConfigRaw,
+        ranking: {
+          ...this.premiosConfigRaw.ranking,
+          prizeDistribution: this.premiosConfigRows().map(row => ({
+            placeLabel: row.label,
+            star1Percent: row.p1, star2Percent: row.p2, star3Percent: row.p3, star4Percent: row.p4,
+            star5Percent: row.p5, star6Percent: row.p6, star7Percent: row.p7,
+          })),
+        },
+      };
+      const res = await this.api.put<any>('/admin/settings', payload);
+      this.premiosConfigRaw = res;
+      this.showToast('Distribución de premios guardada correctamente');
+    } catch {
+      this.showToast('Error al guardar la distribución de premios');
+    } finally {
+      this.premiosConfigSaving.set(false);
+    }
+  }
 
   async loadPrizeDistribution(): Promise<void> {
     if (!this.premiosEventoId) {
@@ -477,7 +719,8 @@ export class InscritosComponent implements OnInit {
     }
   }
 
-  // ─── Puestos por evento (resultados reales, vía SurfScores) ─────
+  // ─── Puestos por evento ───────────────────────────────────────────
+  puestosCircuitoId = '';
   puestosEventoId = '';
   puestosCategoriaId = '';
   puestosCategorias = signal<CategoriaOption[]>([]);
@@ -485,9 +728,31 @@ export class InscritosComponent implements OnInit {
   resultados = signal<ResultadoRow[]>([]);
   attribution = signal('Results by SurfScores.com');
 
+  rosterCompetidores = signal<{ competitorId: string; nombre: string; pais: string }[]>([]);
+  filasResultados = signal<FilaResultado[]>([]);
+  guardandoResultados = signal(false);
+
+  puestosEventosFiltrados = computed(() => {
+    const circuitoId = this.puestosCircuitoId;
+    return circuitoId ? this.eventos().filter(e => e.circuitId === circuitoId) : this.eventos();
+  });
+
+  onPuestosCircuitoChange(): void {
+    if (this.puestosEventoId && !this.puestosEventosFiltrados().some(e => e.id === this.puestosEventoId)) {
+      this.puestosEventoId = '';
+      this.puestosCategoriaId = '';
+      this.puestosCategorias.set([]);
+      this.resultados.set([]);
+      this.rosterCompetidores.set([]);
+      this.filasResultados.set([]);
+    }
+  }
+
   async onPuestosEventoChange(): Promise<void> {
     this.puestosCategoriaId = '';
     this.resultados.set([]);
+    this.rosterCompetidores.set([]);
+    this.filasResultados.set([]);
     if (!this.puestosEventoId) {
       this.puestosCategorias.set([]);
       return;
@@ -498,18 +763,29 @@ export class InscritosComponent implements OnInit {
     } catch {
       this.puestosCategorias.set([]);
     }
-    await this.loadResultados();
+    await this.onPuestosCategoriaChange();
+  }
+
+  async onPuestosCategoriaChange(): Promise<void> {
+    if (!this.puestosEventoId) return;
+    this.puestosLoading.set(true);
+    try {
+      await Promise.all([this.loadResultados(), this.loadRoster()]);
+    } finally {
+      this.puestosLoading.set(false);
+    }
+    this.buildFilasResultados();
   }
 
   async loadResultados(): Promise<void> {
     if (!this.puestosEventoId) return;
-    this.puestosLoading.set(true);
     try {
       const params = this.puestosCategoriaId ? `?categoryId=${this.puestosCategoriaId}` : '';
       const res = await this.api.get<any>(`/events/${this.puestosEventoId}/results${params}`);
       this.attribution.set(res?.attribution ?? 'Results by SurfScores.com');
       this.resultados.set((res?.data ?? []).map((r: any) => ({
         id: r.id,
+        competitorId: r.competitorId,
         place: r.place,
         competidor: r.competitorName,
         pais: r.country,
@@ -520,13 +796,90 @@ export class InscritosComponent implements OnInit {
     } catch {
       this.showToast('Error al cargar los resultados');
       this.resultados.set([]);
-    } finally {
-      this.puestosLoading.set(false);
     }
   }
 
+  async loadRoster(): Promise<void> {
+    this.rosterCompetidores.set([]);
+    if (!this.puestosEventoId || !this.puestosCategoriaId) return;
+    try {
+      const res = await this.api.get<any>(`/inscriptions?eventId=${this.puestosEventoId}&categoryId=${this.puestosCategoriaId}&limit=200`);
+      const data: any[] = res?.data ?? [];
+      this.rosterCompetidores.set(data.map((r: any) => ({ competitorId: r.competitorId, nombre: r.fullName, pais: r.country })));
+    } catch {
+      this.rosterCompetidores.set([]);
+    }
+  }
+
+  private buildFilasResultados(): void {
+    const results = new Map(this.resultados().map(r => [r.competitorId, r]));
+    const filas: FilaResultado[] = this.rosterCompetidores().map(c => {
+      const r = results.get(c.competitorId);
+      return {
+        competitorId: c.competitorId,
+        nombre: c.nombre,
+        pais: c.pais,
+        place: r?.place ?? '',
+        ligaPoints: r?.ligaPoints ?? null,
+        prizeUsd: r?.prizeUsd ?? null,
+        heatScoreTotal: r?.heatScoreTotal ?? null,
+      };
+    });
+    filas.sort((a, b) => {
+      const pa = parseInt(this.normalizePlace(a.place), 10);
+      const pb = parseInt(this.normalizePlace(b.place), 10);
+      const va = Number.isNaN(pa) ? Number.MAX_SAFE_INTEGER : pa;
+      const vb = Number.isNaN(pb) ? Number.MAX_SAFE_INTEGER : pb;
+      if (va !== vb) return va - vb;
+      return a.nombre.localeCompare(b.nombre);
+    });
+    this.filasResultados.set(filas);
+  }
+
+  async guardarResultados(): Promise<void> {
+    if (!this.puestosEventoId || !this.puestosCategoriaId) return;
+
+    const results = this.filasResultados()
+      .filter(f => f.place.trim().length > 0)
+      .map(f => ({ competitorId: f.competitorId, place: f.place.trim(), ligaPoints: 0, prizeUsd: null, heatOla1: null, heatOla2: null }));
+
+    if (results.length === 0) {
+      this.showToast('Ingresa al menos un puesto antes de guardar');
+      return;
+    }
+
+    const seenPlaces = new Set<string>();
+    for (const r of results) {
+      const key = r.place.toLowerCase();
+      if (seenPlaces.has(key)) {
+        this.showToast(`El puesto "${r.place}" está repetido, corrígelo antes de guardar`);
+        return;
+      }
+      seenPlaces.add(key);
+    }
+
+    this.guardandoResultados.set(true);
+    try {
+      await this.api.post<any>(`/events/${this.puestosEventoId}/results`, {
+        categoryId: this.puestosCategoriaId,
+        results,
+      });
+      this.showToast('Resultados guardados correctamente');
+      await Promise.all([this.loadResultados(), this.loadRoster()]);
+      this.buildFilasResultados();
+    } catch (err: any) {
+      this.showToast(err?.message ?? 'Error al guardar los resultados');
+    } finally {
+      this.guardandoResultados.set(false);
+    }
+  }
+
+  private normalizePlace(place: string): string {
+    return (place ?? '').replace(/[^0-9]/g, '');
+  }
+
   podio = computed(() => {
-    const byPlace = new Map(this.resultados().map(r => [r.place, r]));
+    const byNormalizedPlace = new Map(this.resultados().map(r => [this.normalizePlace(r.place), r]));
     const configs: Record<string, { avatarClass: string; podiumClass: string; numberClass: string }> = {
       '1': {
         avatarClass: 'w-20 h-20 text-3xl shadow-lg shadow-warning-brand/30 bg-gradient-to-br from-warning-brand to-yellow-600',
@@ -545,24 +898,25 @@ export class InscritosComponent implements OnInit {
       },
     };
     return ['2', '1', '3']
-      .filter(place => byPlace.has(place))
-      .map(place => {
-        const r = byPlace.get(place)!;
+      .filter(slot => byNormalizedPlace.has(slot))
+      .map(slot => {
+        const r = byNormalizedPlace.get(slot)!;
         return {
-          place: r.place,
+          slot,
           competidor: r.competidor,
           pais: r.pais,
           heatScoreTotal: r.heatScoreTotal,
           iniciales: r.competidor.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join(''),
-          ...configs[place],
+          ...configs[slot],
         };
       });
   });
 
   puestoClass(puesto: string): string {
-    if (puesto === '1') return 'px-4 py-3 font-heading text-warning-brand text-lg';
-    if (puesto === '2') return 'px-4 py-3 font-heading text-text-light text-lg';
-    if (puesto === '3') return 'px-4 py-3 font-heading text-orange-brand text-lg';
+    const normalized = this.normalizePlace(puesto);
+    if (normalized === '1') return 'px-4 py-3 font-heading text-warning-brand text-lg';
+    if (normalized === '2') return 'px-4 py-3 font-heading text-text-light text-lg';
+    if (normalized === '3') return 'px-4 py-3 font-heading text-orange-brand text-lg';
     return 'px-4 py-3 font-heading text-text-muted';
   }
 
