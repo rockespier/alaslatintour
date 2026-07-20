@@ -277,3 +277,10 @@ Revisar:
 - Mantener `WordPressConfig` por variables de entorno en producción.
 - Ejecutar migraciones antes de abrir tráfico al frontend.
 - Verificar manualmente `auth`, `admin`, `articles` y `galleries` después de cada deploy.
+
+### *DEPLOY PARA STAGE*
+
+api   --> https://AlasAppApi.gestionaminegocio.com
+front --> https://Alasglobaltour.gestionaminegocio.com
+wp	  --> https://alasglobaltour.rtres.net
+
