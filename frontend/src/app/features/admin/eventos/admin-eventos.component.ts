@@ -225,8 +225,8 @@ const PAGE_SIZE = 20;
                       </div>
                     </td>
                     <td class="px-4 py-4">
-                      <span [class]="estadoClass(ev.statusPublic ?? ev.estado ?? '')">
-                        {{ ev.statusPublic ?? ev.estado }}
+                      <span [class]="estadoClass(ev.estado ?? '')">
+                        {{ ev.estado }}
                       </span>
                     </td>
                     <td class="px-4 py-4 text-right whitespace-nowrap">
@@ -623,7 +623,7 @@ const PAGE_SIZE = 20;
                       class="px-4 py-2 rounded-md border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light font-accent uppercase tracking-wider text-sm transition">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="saving() || form.invalid"
+              <button type="submit" [disabled]="saving()"
                       class="px-5 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-sm hover:bg-cyan-dark transition disabled:opacity-50">
                 {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear evento') }}
               </button>
@@ -867,8 +867,20 @@ export class AdminEventosComponent implements OnInit {
   private async loadEvents(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.api.get<any>('/events?limit=100');
-      this.events.set(res?.data ?? res ?? []);
+      const limit = 100;
+      const maxPages = 50; // salvaguarda: hasta 5000 eventos
+      const all: EventItem[] = [];
+      let page = 1;
+      let totalItems = Infinity;
+      while (all.length < totalItems && page <= maxPages) {
+        const res = await this.api.get<any>(`/events?limit=${limit}&page=${page}`);
+        const data: EventItem[] = res?.data ?? [];
+        all.push(...data);
+        totalItems = res?.pagination?.totalItems ?? all.length;
+        if (data.length < limit) break;
+        page++;
+      }
+      this.events.set(all);
     } catch {
       this.events.set([]);
     } finally {
@@ -1111,6 +1123,14 @@ export class AdminEventosComponent implements OnInit {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.saveError.set('Completa todos los campos obligatorios (*) antes de guardar.');
+      this.modalTab.set('general');
+      return;
+    }
+    if (this.eventCategories().length > 0 && this.categoryCapacityTotal() !== this.eventCapacity()) {
+      this.saveError.set(
+        `El cupo por categorías (${this.categoryCapacityTotal()}) debe coincidir con el cupo total del evento (${this.eventCapacity()}).`,
+      );
+      this.modalTab.set('categorias');
       return;
     }
     this.saving.set(true);
