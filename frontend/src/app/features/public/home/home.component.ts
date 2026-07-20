@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { AfterViewInit, Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -10,6 +10,16 @@ import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { environment } from '../../../../environments/environment';
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string, options: Record<string, unknown>) => string;
+      reset: (widgetId?: string) => void;
+    };
+  }
+}
 
 interface EventCard {
   id: string;
@@ -410,9 +420,16 @@ const COUNTRY_FLAGS: Record<string, string> = {
               }
             </div>
 
-            <p class="text-xs text-text-muted">Todos los campos son obligatorios. No incluyas código ni etiquetas HTML.</p>
+            <div>
+              <div id="contact-turnstile" class="min-h-[65px]"></div>
+              @if (captchaError()) {
+                <p class="mt-1 text-xs text-error-brand">{{ captchaError() }}</p>
+              }
+            </div>
 
-            <button type="submit" [disabled]="contactLoading()"
+            <p class="text-xs text-text-muted">Todos los campos son obligatorios. La verificación anti-spam es requerida.</p>
+
+            <button type="submit" [disabled]="contactLoading() || !turnstileToken()"
               class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
               @if (contactLoading()) {
                 <span class="inline-flex items-center justify-center gap-2">
@@ -433,7 +450,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
     </section>
   `,
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit {
   private api = inject(ApiService);
   private rankingService = inject(RankingService);
   private fb = inject(FormBuilder);
@@ -470,6 +487,9 @@ export class HomeComponent implements OnInit {
   contactLoading = signal(false);
   contactSuccess = signal(false);
   contactError = signal('');
+  turnstileToken = signal('');
+  captchaError = signal('');
+  private turnstileWidgetId: string | null = null;
 
   ngOnInit(): void {
     this.title.setTitle('ALAS Latin Tour 2026 — Circuito Continental de Surf Profesional');
@@ -480,6 +500,51 @@ export class HomeComponent implements OnInit {
     this.loadArticles();
     this.loadRanking();
     this.loadLiveStatus();
+  }
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    void this.renderTurnstile();
+  }
+
+  private async renderTurnstile(): Promise<void> {
+    try {
+      await this.loadTurnstileScript();
+      this.turnstileWidgetId = window.turnstile!.render('#contact-turnstile', {
+        sitekey: environment.turnstileSiteKey,
+        theme: 'dark',
+        callback: (token: string) => {
+          this.turnstileToken.set(token);
+          this.captchaError.set('');
+        },
+        'expired-callback': () => this.turnstileToken.set(''),
+        'error-callback': () => this.captchaError.set('No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo nuevamente.'),
+      });
+    } catch {
+      this.captchaError.set('No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo nuevamente.');
+    }
+  }
+
+  private loadTurnstileScript(): Promise<void> {
+    if (window.turnstile) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      const existing = document.getElementById('turnstile-api') as HTMLScriptElement | null;
+      if (existing) {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => reject(), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'turnstile-api';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject();
+      document.head.appendChild(script);
+    });
   }
 
   private async loadLiveStatus(): Promise<void> {
@@ -574,12 +639,18 @@ export class HomeComponent implements OnInit {
 
   async submitContact(): Promise<void> {
     if (this.contactForm.invalid) { this.contactForm.markAllAsTouched(); return; }
+    if (!this.turnstileToken()) {
+      this.captchaError.set('Completa la verificación anti-spam antes de enviar el mensaje.');
+      return;
+    }
     this.contactLoading.set(true);
     this.contactError.set('');
     try {
-      await this.api.post('/contact', this.contactForm.value);
+      await this.api.post('/contact', { ...this.contactForm.value, turnstileToken: this.turnstileToken() });
       this.contactSuccess.set(true);
       this.contactForm.reset();
+      this.turnstileToken.set('');
+      if (this.turnstileWidgetId) window.turnstile?.reset(this.turnstileWidgetId);
     } catch (err: any) {
       this.contactError.set(err.body?.message ?? 'No se pudo enviar el mensaje. Intenta de nuevo.');
     } finally {
