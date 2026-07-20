@@ -16,10 +16,12 @@ namespace AlasApp.Api.Tests;
 
 public sealed class MembershipsEndpointsTests : IClassFixture<MembershipsWebApplicationFactory>
 {
+    private readonly MembershipsWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public MembershipsEndpointsTests(MembershipsWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -81,6 +83,8 @@ public sealed class MembershipsEndpointsTests : IClassFixture<MembershipsWebAppl
     [Fact]
     public async Task Memberships_ShouldPopulateAffiliatedCompetitors()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         await CreateCompetitorAsync(
             "Lucia",
             "Ramos",

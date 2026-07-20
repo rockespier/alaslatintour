@@ -513,7 +513,9 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         });
 
         var body = JObject.Parse(await response.Content.ReadAsStringAsync());
-        return body["id"]!.Value<string>()!;
+        var competitorId = body["id"]!.Value<string>()!;
+        await TestCompetitorLicense.ActivateAsync(_factory.Services, competitorId);
+        return competitorId;
     }
 
     private async Task<string> CreateInscriptionAsync(string competitorId, string eventId, string categoryId, string paymentMethod)

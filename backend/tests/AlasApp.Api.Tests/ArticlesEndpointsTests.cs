@@ -123,6 +123,8 @@ public sealed class ArticlesEndpointsTests : IClassFixture<ArticlesWebApplicatio
 
 public sealed class ArticlesWebApplicationFactory : CustomWebApplicationFactory
 {
+    private readonly string _databaseName = $"ArticlesTests-{Guid.NewGuid():N}";
+
     protected override bool UseRelationalDatabaseInitialization => false;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -131,8 +133,8 @@ public sealed class ArticlesWebApplicationFactory : CustomWebApplicationFactory
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices((_, services) =>
         {
-            services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
-            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase("ArticlesTests"));
+            RemoveDbContextRegistrations(services);
+            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
             ConfigureTestServices(services);
         });
     }

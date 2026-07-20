@@ -63,6 +63,8 @@ public sealed class UploadsEndpointsTests : IClassFixture<UploadsWebApplicationF
 
 public sealed class UploadsWebApplicationFactory : CustomWebApplicationFactory
 {
+    private readonly string _databaseName = $"UploadsTests-{Guid.NewGuid():N}";
+
     protected override bool UseRelationalDatabaseInitialization => false;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -71,8 +73,8 @@ public sealed class UploadsWebApplicationFactory : CustomWebApplicationFactory
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices((_, services) =>
         {
-            services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
-            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase("UploadsTests"));
+            RemoveDbContextRegistrations(services);
+            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
             ConfigureTestServices(services);
         });
     }

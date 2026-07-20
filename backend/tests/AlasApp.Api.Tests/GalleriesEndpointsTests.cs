@@ -69,6 +69,8 @@ public sealed class GalleriesEndpointsTests : IClassFixture<GalleriesWebApplicat
 
 public sealed class GalleriesWebApplicationFactory : CustomWebApplicationFactory
 {
+    private readonly string _databaseName = $"GalleriesTests-{Guid.NewGuid():N}";
+
     protected override bool UseRelationalDatabaseInitialization => false;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -77,8 +79,8 @@ public sealed class GalleriesWebApplicationFactory : CustomWebApplicationFactory
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices((_, services) =>
         {
-            services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
-            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase("GalleriesTests"));
+            RemoveDbContextRegistrations(services);
+            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
             ConfigureTestServices(services);
         });
     }

@@ -39,7 +39,7 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JObject.Parse(await response.Content.ReadAsStringAsync());
         Assert.False(json["isLive"]!.Value<bool>());
-        Assert.Null(json["event"]?.Value<object>());
+        Assert.True(json["event"] is null || json["event"]!.Type == JTokenType.Null);
     }
 
     [Fact]
@@ -66,8 +66,8 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
         {
             nombre = "Roca Bruja Classic",
             circuitId,
-            fechaInicio = "2026-07-12",
-            fechaFin = "2026-07-15",
+            fechaInicio = "2026-08-12",
+            fechaFin = "2026-08-15",
             pais = "Perú",
             ciudad = "Chicama",
             playa = "Roca Bruja",
@@ -76,9 +76,12 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
             prizeAmountUsd = 5000,
             eventType = "Prime",
             accessType = "Abierto",
-            estado = "Activo"
+            estado = "Activo",
+            surfScoresCode = "LIVE-ROCA-BRUJA-2026"
         });
-        Assert.Equal(HttpStatusCode.Created, eventResponse.StatusCode);
+        Assert.True(
+            eventResponse.StatusCode == HttpStatusCode.Created,
+            await eventResponse.Content.ReadAsStringAsync());
         var createdEvent = JObject.Parse(await eventResponse.Content.ReadAsStringAsync());
         var eventId = createdEvent["id"]!.Value<string>();
 
@@ -161,6 +164,8 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
 
 public sealed class LiveEndpointsWebApplicationFactory : CustomWebApplicationFactory
 {
+    private readonly string _databaseName = $"LiveEndpointsTests-{Guid.NewGuid():N}";
+
     protected override bool UseRelationalDatabaseInitialization => false;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -169,8 +174,8 @@ public sealed class LiveEndpointsWebApplicationFactory : CustomWebApplicationFac
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices((_, services) =>
         {
-            services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
-            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase("LiveEndpointsTests"));
+            RemoveDbContextRegistrations(services);
+            services.AddDbContext<AlasAppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
             ConfigureTestServices(services);
         });
     }

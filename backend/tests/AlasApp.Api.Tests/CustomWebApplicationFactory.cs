@@ -4,18 +4,19 @@ using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AlasApp.Api.Tests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private const string TestDatabaseName = "AlasAppTests";
-    private const string DefaultAdminConnectionString = "Server=.\\SQLEXPRESS;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True;Max Pool Size=200;";
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -39,35 +40,39 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureLogging(logging => logging.ClearProviders());
-        builder.ConfigureAppConfiguration((_, configBuilder) =>
+        builder.ConfigureAppConfiguration((_, configuration) =>
         {
-            configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Persistence:Provider"] = "SqlServer",
-                ["ConnectionStrings:AlasAppAdmin"] = DefaultAdminConnectionString
-            });
+            configuration.AddJsonFile(
+                Path.Combine(AppContext.BaseDirectory, "appsettings.Testing.json"),
+                optional: false,
+                reloadOnChange: false);
         });
-        builder.ConfigureServices((_, services) =>
+        builder.ConfigureServices((context, services) =>
         {
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["ConnectionStrings:AlasAppAdmin"] = DefaultAdminConnectionString
-                })
-                .Build();
-
-            var connectionString = BuildTestDatabaseConnectionString(configuration);
+            var connectionString = BuildTestDatabaseConnectionString(context.Configuration);
 
             services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
             services.RemoveAll<IEmailSender>();
+            services.RemoveAll<IIdentityDocumentStorage>();
             services.AddDbContext<AlasAppDbContext>(options => options.UseSqlServer(connectionString));
             services.AddSingleton<IEmailSender, NoOpEmailSender>();
+            services.AddSingleton<IIdentityDocumentStorage, NoOpIdentityDocumentStorage>();
             ConfigureTestServices(services);
         });
     }
 
     protected virtual void ConfigureTestServices(IServiceCollection services)
     {
+    }
+
+    protected static void RemoveDbContextRegistrations(IServiceCollection services)
+    {
+        services.RemoveAll<AlasAppDbContext>();
+        services.RemoveAll<DbContextOptions<AlasAppDbContext>>();
+        services.RemoveAll<DbContextOptions>();
+        services.RemoveAll<IConfigureOptions<DbContextOptions<AlasAppDbContext>>>();
+        services.RemoveAll<IConfigureOptions<DbContextOptions>>();
+        services.RemoveAll<IDbContextOptionsConfiguration<AlasAppDbContext>>();
     }
 
     private static string BuildTestDatabaseConnectionString(IConfiguration configuration)
@@ -144,5 +149,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class NoOpIdentityDocumentStorage : IIdentityDocumentStorage
+    {
+        public Task<string> UploadAsync(
+            Guid competitorId,
+            AlasApp.Application.IdentityDocuments.IdentityDocumentUpload document,
+            CancellationToken cancellationToken)
+            => Task.FromResult($"tests/{competitorId:N}/{document.FileName}");
     }
 }

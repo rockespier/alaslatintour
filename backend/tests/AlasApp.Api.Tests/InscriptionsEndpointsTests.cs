@@ -55,7 +55,9 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
             }
         });
 
-        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+        Assert.True(
+            assignCategoryResponse.StatusCode == HttpStatusCode.OK,
+            await assignCategoryResponse.Content.ReadAsStringAsync());
 
         var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
         {
@@ -182,12 +184,14 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
                 {
                     categoryId,
                     customTariffUsd = 80,
-                    capacidad = 2
+                    capacidad = 4
                 }
             }
         });
 
-        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+        Assert.True(
+            assignCategoryResponse.StatusCode == HttpStatusCode.OK,
+            await assignCategoryResponse.Content.ReadAsStringAsync());
 
         var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
         {
@@ -228,12 +232,14 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
                 {
                     categoryId,
                     customTariffUsd = 80,
-                    capacidad = 2
+                    capacidad = 4
                 }
             }
         });
 
-        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+        Assert.True(
+            assignCategoryResponse.StatusCode == HttpStatusCode.OK,
+            await assignCategoryResponse.Content.ReadAsStringAsync());
 
         var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
         {
@@ -270,7 +276,7 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
                 {
                     categoryId,
                     customTariffUsd = 80,
-                    capacidad = 2
+                    capacidad = 4
                 }
             }
         });
@@ -362,27 +368,8 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
     {
         var email = $"competidor-{Guid.NewGuid():N}@test.com";
 
-        var registerResponse = await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password = "Password1",
-            nombre = "Carlos",
-            apellido = "Diaz",
-            tipo = "competidor",
-            pais = "Perú",
-            idiomaPreferido = "Español",
-            newsletter = true,
-            terminos = true,
-            reglamento = true,
-            fechaNacimiento = "1997-02-05",
-            genero = "Masculino",
-            telefono = "+51 900 123 456",
-            club = "Club Ola",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            patrocinadores = "Marca E",
-            federacion = "FENTA"
-        });
+        var registerResponse = await TestCompetitorRegistration.PostAsync(
+            _client, email, "Password1", "Carlos", "Diaz");
 
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
 
@@ -396,8 +383,10 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
 
         var loginJson = JObject.Parse(await loginResponse.Content.ReadAsStringAsync());
+        var competitorId = loginJson["user"]?["competitorId"]?.Value<string>()!;
+        await TestCompetitorLicense.ActivateAsync(_factory.Services, competitorId);
         return (
-            loginJson["user"]?["competitorId"]?.Value<string>()!,
+            competitorId,
             loginJson["accessToken"]?.Value<string>()!);
     }
 

@@ -311,27 +311,8 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
 
     private async Task<string> RegisterCompetitorAsync(string email, string password)
     {
-        var registerResponse = await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password,
-            nombre = "Competidor",
-            apellido = "Test",
-            tipo = "competidor",
-            pais = "Perú",
-            idiomaPreferido = "Español",
-            newsletter = true,
-            terminos = true,
-            reglamento = true,
-            fechaNacimiento = "1998-04-22",
-            genero = "Masculino",
-            telefono = "+51 999 000 111",
-            club = "Praia Club",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            federacion = "FENTA",
-            patrocinadores = "Marca Z"
-        });
+        var registerResponse = await TestCompetitorRegistration.PostAsync(
+            _client, email, password, "Competidor", "Test");
 
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
 

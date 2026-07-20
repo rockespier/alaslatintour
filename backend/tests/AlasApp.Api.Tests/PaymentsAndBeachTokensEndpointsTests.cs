@@ -231,7 +231,9 @@ public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomW
         });
 
         var body = await ReadJsonAsync(response);
-        return body.RootElement.GetProperty("id").GetString()!;
+        var competitorId = body.RootElement.GetProperty("id").GetString()!;
+        await TestCompetitorLicense.ActivateAsync(_factory.Services, competitorId);
+        return competitorId;
     }
 
     private async Task<string> CreateInscriptionAsync(string competitorId, string eventId, string categoryId, string paymentMethod)

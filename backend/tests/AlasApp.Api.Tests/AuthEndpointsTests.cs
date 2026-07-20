@@ -25,27 +25,8 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
     {
         var email = $"competidor-{Guid.NewGuid():N}@test.com";
 
-        var registerResponse = await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password = "Password1",
-            nombre = "Gabriel",
-            apellido = "Villani",
-            tipo = "competidor",
-            pais = "Brasil",
-            idiomaPreferido = "Español",
-            newsletter = true,
-            terminos = true,
-            reglamento = true,
-            fechaNacimiento = "1998-04-22",
-            genero = "Masculino",
-            telefono = "+55 11 98765-4321",
-            club = "ALAS Club",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            federacion = "CBSurf",
-            patrocinadores = "Marca X"
-        });
+        var registerResponse = await TestCompetitorRegistration.PostAsync(
+            _client, email, "Password1", "Gabriel", "Villani");
 
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
 
@@ -253,27 +234,8 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
 
     private async Task RegisterCompetitorAsync(string email, string password)
     {
-        var response = await _client.PostAsJsonAsync("/v1/auth/register", new
-        {
-            email,
-            password,
-            nombre = "Ana",
-            apellido = "Ruiz",
-            tipo = "competidor",
-            pais = "Perú",
-            idiomaPreferido = "Español",
-            newsletter = false,
-            terminos = true,
-            reglamento = true,
-            fechaNacimiento = "1998-04-22",
-            genero = "Femenino",
-            telefono = "+51 999 111 222",
-            club = "ALAS Club",
-            postura = "Regular",
-            tallaCamiseta = "M",
-            federacion = "FENTA",
-            patrocinadores = "Marca X"
-        });
+        var response = await TestCompetitorRegistration.PostAsync(
+            _client, email, password, "Ana", "Ruiz");
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }

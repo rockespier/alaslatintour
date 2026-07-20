@@ -72,6 +72,17 @@ Definition of Done (DoD): Una tarea o User Story estará terminada cuando:
 3) Se verifique que el contenido cuenta con SEO dinámico (SSR). 
 4) Los tokens y secretos de API nunca se expongan en el entorno de Angular.
 
+### Ejecución local de tests del backend
+
+Los tests de integración usan exclusivamente la base local `AlasAppTests` en el contenedor Docker `alas-sql`; nunca deben apuntar a la base del VPS. Antes de validar cambios, iniciar el contenedor si fuera necesario y ejecutar la solución:
+
+```bash
+docker start alas-sql
+dotnet test AlasApp.slnx
+```
+
+La conexión local está definida en `backend/tests/AlasApp.Api.Tests/appsettings.Testing.json`. La fábrica crea `AlasAppTests`, aplica las migraciones y limpia sus datos. Para CI u otro servidor se puede reemplazar solo para ese proceso mediante `ALASAPP_TEST_SQLSERVER_CONNECTION`; no se debe usar `ConnectionStrings__AlasApp` para los tests.
+
 ## 9. Reglas de Negocio
 
 Capacidad de eventos: Cada evento y categoría tendrá un número máximo de inscritos configurable. El sistema debe bloquear nuevas inscripciones al alcanzar el cupo y notificar al competidor que el evento está lleno. El administrador puede ajustar el cupo desde el CMS.

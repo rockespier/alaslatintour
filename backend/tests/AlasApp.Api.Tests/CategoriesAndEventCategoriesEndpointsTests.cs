@@ -599,7 +599,7 @@ public sealed class CategoriesAndEventCategoriesEndpointsTests : IClassFixture<C
         var listResponse = await _client.GetAsync("/v1/categories?status=Activo");
         using var listJson = await ReadJsonAsync(listResponse);
         var imported = listJson.RootElement.GetProperty("data").EnumerateArray()
-            .First(x => x.GetProperty("surfScoresCode").GetString() == "SUB18-XLSX");
+            .First(x => x.TryGetProperty("surfScoresCode", out var code) && code.GetString() == "SUB18-XLSX");
 
         Assert.Equal("Masculino", imported.GetProperty("gender").GetString());
         Assert.Equal(4, imported.GetProperty("bestResultsCount").GetInt32());

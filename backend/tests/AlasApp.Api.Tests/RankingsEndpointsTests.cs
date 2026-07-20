@@ -7,16 +7,20 @@ namespace AlasApp.Api.Tests;
 
 public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    private readonly CustomWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
     public RankingsEndpointsTests(CustomWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task SyncAndReadRankings_Works_EndToEnd()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync();
         var categoryId = await CreateCategoryAsync();
         var eventId = await CreateEventAsync(circuitId);
@@ -65,6 +69,8 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
     [Fact]
     public async Task GetRanking_ShouldUseCurrentSeasonCircuitOnly()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var currentCircuitId = await CreateCircuitAsync("Ranking Current", "ALAS-RANK-CURRENT-26", "Activo");
         var archivedCircuitId = await CreateCircuitAsync("Ranking Archived", "ALAS-RANK-ARCHIVE-26", "Archivado");
         var categoryId = await CreateCategoryAsync();
@@ -101,6 +107,8 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
     [Fact]
     public async Task GetRanking_ShouldRespectCategoryBestResultsCount()
     {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
         var circuitId = await CreateCircuitAsync("Ranking Best Results", "ALAS-RANK-BEST-26", "Activo");
         var categoryId = await CreateCategoryAsync(bestResultsCount: 1);
         var firstEventId = await CreateEventAsync(circuitId, "Best Event 1", "BEST-EV-1-26");
@@ -237,7 +245,9 @@ public sealed class RankingsEndpointsTests : IClassFixture<CustomWebApplicationF
             numeroCamiseta = "10"
         });
 
-        return await ReadIdAsync(response);
+        var competitorId = await ReadIdAsync(response);
+        await TestCompetitorLicense.ActivateAsync(_factory.Services, competitorId);
+        return competitorId;
     }
 
     private async Task CreatePaidInscriptionAsync(string competitorId, string eventId, string categoryId)
