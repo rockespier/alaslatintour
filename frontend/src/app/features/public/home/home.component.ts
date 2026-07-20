@@ -367,7 +367,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre</label>
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre *</label>
                 <input formControlName="nombre" type="text" placeholder="Tu nombre"
                   class="input-field"
                   [class.field-error]="contactForm.controls.nombre.invalid && contactForm.controls.nombre.touched" />
@@ -376,7 +376,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
                 }
               </div>
               <div>
-                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico</label>
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico *</label>
                 <input formControlName="email" type="email" placeholder="tu@correo.com"
                   class="input-field"
                   [class.field-error]="contactForm.controls.email.invalid && contactForm.controls.email.touched" />
@@ -390,7 +390,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
             </div>
 
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Asunto</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Asunto *</label>
               <input formControlName="asunto" type="text" placeholder="¿En qué podemos ayudarte?"
                 class="input-field"
                 [class.field-error]="contactForm.controls.asunto.invalid && contactForm.controls.asunto.touched" />
@@ -400,7 +400,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
             </div>
 
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Mensaje</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Mensaje *</label>
               <textarea formControlName="mensaje" rows="5" placeholder="Escribe tu mensaje aquí..."
                 class="input-field resize-none"
                 [class.field-error]="contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched">
@@ -409,6 +409,8 @@ const COUNTRY_FLAGS: Record<string, string> = {
                 <p class="mt-1 text-xs text-error-brand">Mínimo 10 caracteres</p>
               }
             </div>
+
+            <p class="text-xs text-text-muted">Todos los campos son obligatorios. No incluyas código ni etiquetas HTML.</p>
 
             <button type="submit" [disabled]="contactLoading()"
               class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
@@ -460,10 +462,10 @@ export class HomeComponent implements OnInit {
   });
 
   contactForm = this.fb.group({
-    nombre:  ['', Validators.required],
+    nombre:  ['', [Validators.required, Validators.maxLength(120), Validators.pattern(/^[^<>]*$/)]],
     email:   ['', [Validators.required, Validators.email]],
-    asunto:  ['', Validators.required],
-    mensaje: ['', [Validators.required, Validators.minLength(10)]],
+    asunto:  ['', [Validators.required, Validators.maxLength(160), Validators.pattern(/^[^<>]*$/)]],
+    mensaje: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(4000), Validators.pattern(/^[^<>]*$/)]],
   });
   contactLoading = signal(false);
   contactSuccess = signal(false);
