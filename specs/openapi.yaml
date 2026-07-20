@@ -2764,6 +2764,8 @@ components:
       properties:
         id:
           type: string
+        competitorId:
+          type: string
         sequentialNumber:
           type: string
           description: Número secuencial de 3 dígitos (e.g., "001")
@@ -2780,6 +2782,8 @@ components:
           type: string
           nullable: true
         categoria:
+          type: string
+        eventoNombre:
           type: string
         inscripcionDate:
           type: string

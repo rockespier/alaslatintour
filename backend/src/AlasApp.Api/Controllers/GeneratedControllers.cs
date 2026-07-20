@@ -2357,15 +2357,17 @@ namespace AlasApp.AlasApi.Api.Controllers
     public partial class AdminInscriptionRow
     {
         [Newtonsoft.Json.JsonConstructor]
-        public AdminInscriptionRow(string @categoria, string @country, InscriptionStatusAdmin @estadoAdmin, string @federacion, string @fullName, string @id, System.DateTimeOffset @inscripcionDate, string @licenciaNumber, float @montoUsd, string? @notas, PaymentMethodEnum @paymentMethod, string? @ranking2025, string? @ranking2026, string @sequentialNumber, string? @transaccionId)
+        public AdminInscriptionRow(string @categoria, string @competitorId, string @country, InscriptionStatusAdmin @estadoAdmin, string @eventoNombre, string @federacion, string @fullName, string @id, System.DateTimeOffset @inscripcionDate, string @licenciaNumber, float @montoUsd, string? @notas, PaymentMethodEnum @paymentMethod, string? @ranking2025, string? @ranking2026, string @sequentialNumber, string? @transaccionId)
         {
             this.Id = @id;
+            this.CompetitorId = @competitorId;
             this.SequentialNumber = @sequentialNumber;
             this.FullName = @fullName;
             this.Country = @country;
             this.Ranking2025 = @ranking2025;
             this.Ranking2026 = @ranking2026;
             this.Categoria = @categoria;
+            this.EventoNombre = @eventoNombre;
             this.InscripcionDate = @inscripcionDate;
             this.PaymentMethod = @paymentMethod;
             this.MontoUsd = @montoUsd;
@@ -2378,6 +2380,9 @@ namespace AlasApp.AlasApi.Api.Controllers
 
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Id { get; }
+
+        [Newtonsoft.Json.JsonProperty("competitorId", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CompetitorId { get; }
 
         /// <summary>
         /// Número secuencial de 3 dígitos (e.g., "001")
@@ -2399,6 +2404,9 @@ namespace AlasApp.AlasApi.Api.Controllers
 
         [Newtonsoft.Json.JsonProperty("categoria", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Categoria { get; }
+
+        [Newtonsoft.Json.JsonProperty("eventoNombre", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string EventoNombre { get; }
 
         [Newtonsoft.Json.JsonProperty("inscripcionDate", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(DateFormatConverter))]
