@@ -5,6 +5,7 @@ using AlasApp.Application.AdminSettings;
 using AlasApp.Application.AdminSettings.Models;
 using AlasApp.Application.Common;
 using AlasApp.Application.EventResults.Models;
+using AlasApp.Application.Rankings;
 using AlasApp.Domain.Entities;
 
 namespace AlasApp.Application.EventResults.Commands.UpsertEventResults;
@@ -14,6 +15,8 @@ public sealed class UpsertEventResultsCommandHandler(
     IEventResultRepository eventResultRepository,
     IInscriptionRepository inscriptionRepository,
     IAdminSettingsRepository settingsRepository,
+    IRankingRepository rankingRepository,
+    ISurfScoresGateway surfScoresGateway,
     IUnitOfWork unitOfWork,
     IClock clock)
     : IRequestHandler<UpsertEventResultsCommand, IReadOnlyCollection<EventResultDto>>
@@ -107,6 +110,12 @@ public sealed class UpsertEventResultsCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var externalSnapshots = await surfScoresGateway.BuildCircuitRankingCacheAsync(@event.CircuitId, cancellationToken);
+        var snapshots = RankingSnapshotFactory.Build(@event.CircuitId, externalSnapshots, timestamp);
+        await rankingRepository.ReplaceCircuitSnapshotsAsync(@event.CircuitId, snapshots, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
         return await eventResultRepository.ListAsync(request.EventId, request.CategoryId, cancellationToken);
     }
 
@@ -160,7 +169,7 @@ public sealed class UpsertEventResultsCommandHandler(
         var ligaPoints = item.LigaPoints > 0
             ? item.LigaPoints
             : ResolvePoints(place, stars, settings);
-        var prizeUsd = item.PrizeUsd ?? (prizeDistribution.TryGetValue(place, out var configuredPrize) ? configuredPrize : null);
+        var prizeUsd = item.PrizeUsd ?? (prizeDistribution.TryGetValue(NormalizePlace(place), out var configuredPrize) ? configuredPrize : null);
 
         return item with
         {
@@ -197,7 +206,7 @@ public sealed class UpsertEventResultsCommandHandler(
     private static Dictionary<string, decimal> BuildPrizeDistribution(decimal totalPrizeUsd, int stars, AdminSettingsDto settings)
     {
         return settings.Ranking.PrizeDistribution.ToDictionary(
-            row => row.PlaceLabel,
+            row => NormalizePlace(row.PlaceLabel),
             row => Math.Round(totalPrizeUsd * GetPrizePercent(row, stars) / 100m, 2),
             StringComparer.OrdinalIgnoreCase);
     }

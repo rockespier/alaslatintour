@@ -59,6 +59,7 @@ interface PremioConfigRow {
 const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition';
 const PREMIO_CELL_CLASS = 'w-14 bg-navy-mid/40 border border-navy-mid rounded px-1 py-1 text-right text-sm text-text-light focus:outline-none focus:border-cyan-brand transition disabled:opacity-50';
 const PLACE_INPUT_CLASS = 'w-16 bg-navy-mid/40 border border-navy-mid rounded px-2 py-1 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition';
+const HEAT_SCORE_INPUT_CLASS = 'w-20 bg-navy-mid/40 border border-navy-mid rounded px-2 py-1 text-sm text-right font-mono text-text-light focus:outline-none focus:border-cyan-brand transition';
 
 function fmtDateTime(dt: string): string {
   return new Date(dt).toLocaleString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -411,7 +412,9 @@ function fmtDateTime(dt: string): string {
                             <td class="px-4 py-3 text-text-muted">{{ f.pais }}</td>
                             <td class="px-4 py-3 text-right text-text-light">{{ f.ligaPoints ?? '—' }}</td>
                             <td class="px-4 py-3 text-right text-success-brand">{{ f.prizeUsd !== null ? '$' + f.prizeUsd : '—' }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-text-light">{{ f.heatScoreTotal ?? '—' }}</td>
+                            <td class="px-4 py-3 text-right">
+                              <input type="number" step="0.01" placeholder="—" [(ngModel)]="f.heatScoreTotal" [class]="HEAT_SCORE_INPUT_CLASS">
+                            </td>
                           </tr>
                         }
                       </tbody>
@@ -486,6 +489,7 @@ export class InscritosComponent implements OnInit {
   CLASS_INPUT = CLASS_INPUT;
   PREMIO_CELL_CLASS = PREMIO_CELL_CLASS;
   PLACE_INPUT_CLASS = PLACE_INPUT_CLASS;
+  HEAT_SCORE_INPUT_CLASS = HEAT_SCORE_INPUT_CLASS;
 
   tab = signal<InscritosTab>('inscritos');
   tabClass(t: InscritosTab): string {
@@ -841,7 +845,7 @@ export class InscritosComponent implements OnInit {
 
     const results = this.filasResultados()
       .filter(f => f.place.trim().length > 0)
-      .map(f => ({ competitorId: f.competitorId, place: f.place.trim(), ligaPoints: 0, prizeUsd: null, heatOla1: null, heatOla2: null }));
+      .map(f => ({ competitorId: f.competitorId, place: f.place.trim(), ligaPoints: 0, prizeUsd: null, heatOla1: f.heatScoreTotal, heatOla2: null }));
 
     if (results.length === 0) {
       this.showToast('Ingresa al menos un puesto antes de guardar');
