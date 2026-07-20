@@ -413,23 +413,24 @@ const COUNTRY_FLAGS: Record<string, string> = {
               <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Mensaje *</label>
               <textarea formControlName="mensaje" rows="5" placeholder="Escribe tu mensaje aquí..."
                 class="input-field resize-none"
-                [class.field-error]="contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched">
-              </textarea>
+                [class.field-error]="contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched"></textarea>
               @if (contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched) {
                 <p class="mt-1 text-xs text-error-brand">Mínimo 10 caracteres</p>
               }
             </div>
 
-            <div>
-              <div id="contact-turnstile" class="min-h-[65px]"></div>
-              @if (captchaError()) {
-                <p class="mt-1 text-xs text-error-brand">{{ captchaError() }}</p>
-              }
-            </div>
+            @if (captchaRequired) {
+              <div>
+                <div id="contact-turnstile" class="min-h-[65px]"></div>
+                @if (captchaError()) {
+                  <p class="mt-1 text-xs text-error-brand">{{ captchaError() }}</p>
+                }
+              </div>
+            }
 
-            <p class="text-xs text-text-muted">Todos los campos son obligatorios. La verificación anti-spam es requerida.</p>
+            <p class="text-xs text-text-muted">Todos los campos son obligatorios. @if (captchaRequired) { La verificación anti-spam es requerida. }</p>
 
-            <button type="submit" [disabled]="contactLoading() || !turnstileToken()"
+            <button type="submit" [disabled]="contactLoading() || (captchaRequired && !turnstileToken())"
               class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
               @if (contactLoading()) {
                 <span class="inline-flex items-center justify-center gap-2">
@@ -489,6 +490,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   contactError = signal('');
   turnstileToken = signal('');
   captchaError = signal('');
+  readonly captchaRequired = environment.turnstileEnabled;
   private turnstileWidgetId: string | null = null;
 
   ngOnInit(): void {
@@ -503,7 +505,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.captchaRequired || !isPlatformBrowser(this.platformId)) return;
     void this.renderTurnstile();
   }
 
@@ -639,7 +641,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   async submitContact(): Promise<void> {
     if (this.contactForm.invalid) { this.contactForm.markAllAsTouched(); return; }
-    if (!this.turnstileToken()) {
+    if (this.captchaRequired && !this.turnstileToken()) {
       this.captchaError.set('Completa la verificación anti-spam antes de enviar el mensaje.');
       return;
     }
