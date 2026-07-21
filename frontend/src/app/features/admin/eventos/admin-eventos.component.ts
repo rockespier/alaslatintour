@@ -225,8 +225,8 @@ const PAGE_SIZE = 20;
                       </div>
                     </td>
                     <td class="px-4 py-4">
-                      <span [class]="estadoClass(ev.statusPublic ?? ev.estado ?? '')">
-                        {{ ev.statusPublic ?? ev.estado }}
+                      <span [class]="estadoClass(ev.estado ?? '')">
+                        {{ ev.estado }}
                       </span>
                     </td>
                     <td class="px-4 py-4 text-right whitespace-nowrap">
@@ -508,15 +508,24 @@ const PAGE_SIZE = 20;
                       }
                     </label>
                     @if (isCategoryEnabled(cat.id)) {
-                      <div class="mt-3 pl-7">
-                        <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Nivel de estrellas para esta categoría</label>
-                        <select (change)="onCategoryStarsChange(cat.id, $event)"
-                                class="w-full max-w-xs bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
-                          <option value="" [selected]="isCategoryStarSelected(cat.id, null)">Usar nivel del evento ({{ '★'.repeat(form.get('stars')?.value ?? 0) }})</option>
-                          @for (s of starsOptions; track s) {
-                            <option [value]="s" [selected]="isCategoryStarSelected(cat.id, s)">{{ '★'.repeat(s) }} ({{ s }})</option>
-                          }
-                        </select>
+                      <div class="mt-3 pl-7 grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Nivel de estrellas</label>
+                          <select (change)="onCategoryStarsChange(cat.id, $event)"
+                                  class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
+                            <option value="" [selected]="isCategoryStarSelected(cat.id, null)">Usar nivel del evento ({{ '★'.repeat(form.get('stars')?.value ?? 0) }})</option>
+                            @for (s of starsOptions; track s) {
+                              <option [value]="s" [selected]="isCategoryStarSelected(cat.id, s)">{{ '★'.repeat(s) }} ({{ s }})</option>
+                            }
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Cupo máximo *</label>
+                          <input type="number" min="0" [value]="categoryCapacity(cat.id) ?? ''"
+                                 (input)="onCategoryCapacityChange(cat.id, $event)"
+                                 placeholder="Ej: 32"
+                                 class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+                        </div>
                       </div>
                     }
                   </div>
@@ -603,12 +612,18 @@ const PAGE_SIZE = 20;
               <p class="text-error-brand text-xs px-6 -mt-2">{{ saveError() }}</p>
             }
 
+            @if (eventCategories().length > 0 && categoryCapacityTotal() !== eventCapacity()) {
+              <p class="text-warning-brand text-xs px-6 -mt-2">
+                El cupo por categorías suma {{ categoryCapacityTotal() }}; debe coincidir con el cupo total del evento ({{ eventCapacity() }}).
+              </p>
+            }
+
             <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
               <button type="button" (click)="closeModal()"
                       class="px-4 py-2 rounded-md border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light font-accent uppercase tracking-wider text-sm transition">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="saving() || form.invalid"
+              <button type="submit" [disabled]="saving()"
                       class="px-5 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-sm hover:bg-cyan-dark transition disabled:opacity-50">
                 {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear evento') }}
               </button>
@@ -818,6 +833,10 @@ export class AdminEventosComponent implements OnInit {
     Array.from(new Set(this.events().map(e => e.pais).filter(Boolean))).sort(),
   );
 
+  categoryCapacityTotal = computed(() =>
+    this.eventCategories().reduce((total, category) => total + (category.capacidad ?? 0), 0),
+  );
+
   filtered = computed(() => {
     const search = this.searchTerm().trim().toLowerCase();
     const circuitId = this.filterCircuitId();
@@ -827,7 +846,7 @@ export class AdminEventosComponent implements OnInit {
     return this.events().filter(e => {
       if (search && !e.nombre.toLowerCase().includes(search)) return false;
       if (circuitId && e.circuitId !== circuitId) return false;
-      if (estado !== 'todos' && (e.statusPublic ?? e.estado) !== estado) return false;
+      if (estado !== 'todos' && e.estado !== estado) return false;
       if (country && e.pais !== country) return false;
       return true;
     });
@@ -848,8 +867,20 @@ export class AdminEventosComponent implements OnInit {
   private async loadEvents(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.api.get<any>('/events?limit=100');
-      this.events.set(res?.data ?? res ?? []);
+      const limit = 100;
+      const maxPages = 50; // salvaguarda: hasta 5000 eventos
+      const all: EventItem[] = [];
+      let page = 1;
+      let totalItems = Infinity;
+      while (all.length < totalItems && page <= maxPages) {
+        const res = await this.api.get<any>(`/events?limit=${limit}&page=${page}`);
+        const data: EventItem[] = res?.data ?? [];
+        all.push(...data);
+        totalItems = res?.pagination?.totalItems ?? all.length;
+        if (data.length < limit) break;
+        page++;
+      }
+      this.events.set(all);
     } catch {
       this.events.set([]);
     } finally {
@@ -958,13 +989,21 @@ export class AdminEventosComponent implements OnInit {
     return this.eventCategories().find(c => c.categoryId === categoryId)?.gender ?? null;
   }
 
+  categoryCapacity(categoryId: string): number | null {
+    return this.eventCategories().find(c => c.categoryId === categoryId)?.capacidad ?? null;
+  }
+
+  eventCapacity(): number {
+    return Number(this.form.get('capacidadMaxima')?.value ?? 0);
+  }
+
   toggleCategory(categoryId: string, categoryName: string): void {
     if (this.isCategoryEnabled(categoryId)) {
       this.eventCategories.update(list => list.filter(c => c.categoryId !== categoryId));
     } else {
       this.eventCategories.update(list => [...list, {
         categoryId, categoryName, stars: null,
-        customTariffUsd: null, capacidad: null,
+        customTariffUsd: null, capacidad: 0,
       }]);
     }
   }
@@ -974,6 +1013,14 @@ export class AdminEventosComponent implements OnInit {
     const stars = value ? Number(value) : null;
     this.eventCategories.update(list =>
       list.map(c => c.categoryId === categoryId ? { ...c, stars } : c),
+    );
+  }
+
+  onCategoryCapacityChange(categoryId: string, event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    const capacidad = raw === '' ? null : Number(raw);
+    this.eventCategories.update(list =>
+      list.map(c => c.categoryId === categoryId ? { ...c, capacidad } : c),
     );
   }
 
@@ -1076,6 +1123,14 @@ export class AdminEventosComponent implements OnInit {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.saveError.set('Completa todos los campos obligatorios (*) antes de guardar.');
+      this.modalTab.set('general');
+      return;
+    }
+    if (this.eventCategories().length > 0 && this.categoryCapacityTotal() !== this.eventCapacity()) {
+      this.saveError.set(
+        `El cupo por categorías (${this.categoryCapacityTotal()}) debe coincidir con el cupo total del evento (${this.eventCapacity()}).`,
+      );
+      this.modalTab.set('categorias');
       return;
     }
     this.saving.set(true);

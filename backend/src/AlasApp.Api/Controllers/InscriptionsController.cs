@@ -1,6 +1,7 @@
 using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
+using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
 using AlasApp.Application.Inscriptions.Queries.GetInscriptionById;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
@@ -14,8 +15,48 @@ namespace AlasApp.Api.Controllers;
 
 [ApiController]
 [Route("v1/inscriptions")]
-public sealed class InscriptionsController(IRequestDispatcher dispatcher) : ControllerBase
+public sealed class InscriptionsController(IRequestDispatcher dispatcher, IBulkExcelService bulkExcelService) : ControllerBase
 {
+    private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private const int MaxExportRows = 5000;
+
+    [HttpGet("export")]
+    [Authorize(Policy = AdminPolicies.InscriptionsRead)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? eventId,
+        [FromQuery] string? categoryId,
+        [FromQuery] string? status,
+        CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(
+            new ListInscriptionsQuery(
+                new AdminInscriptionListFilter(
+                    1,
+                    MaxExportRows,
+                    ApiContractMapper.ParseOptionalGuid(eventId, "eventId"),
+                    ApiContractMapper.ParseOptionalGuid(categoryId, "categoryId"),
+                    ApiContractMapper.ParseInscriptionStatusAdmin(status))),
+            cancellationToken);
+
+        var content = bulkExcelService.BuildInscriptionsExport(result.Items);
+        return File(content, ExcelContentType, "inscritos.xlsx");
+    }
+
+    [HttpGet("{inscriptionId}/export")]
+    [Authorize(Policy = AdminPolicies.InscriptionsRead)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportFicha(string inscriptionId, CancellationToken cancellationToken)
+    {
+        var inscription = await dispatcher.Send(
+            new GetInscriptionByIdQuery(ApiContractMapper.ParseGuid(inscriptionId, "inscriptionId")),
+            cancellationToken);
+
+        var content = bulkExcelService.BuildInscriptionFicha(inscription);
+        return File(content, ExcelContentType, $"ficha-{inscription.Id}.xlsx");
+    }
+
     [HttpGet]
     [Authorize(Policy = AdminPolicies.InscriptionsRead)]
     [ProducesResponseType(typeof(Generated.AdminInscriptionListResponse), StatusCodes.Status200OK)]

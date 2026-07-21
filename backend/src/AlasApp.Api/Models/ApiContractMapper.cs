@@ -540,8 +540,10 @@ public static class ApiContractMapper
     {
         return new Generated.AdminInscriptionRow(
             dto.Categoria,
+            dto.CompetitorId.ToString(),
             dto.Country,
             ToGeneratedInscriptionStatusAdmin(dto.EstadoAdmin),
+            dto.EventoNombre,
             dto.Federacion,
             dto.FullName,
             dto.Id.ToString(),

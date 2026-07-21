@@ -37,4 +37,8 @@
     17. Esta pendiente crear la pagina del evento "en Vivo" que incluye los datos  ingresados en configuracion. Esta pagina debe reemplazar a la pagina de inicio, cuando exista un evento marcado como "en vivo"
     18. En la pantalla de configuración del evento "en Vivo" se debe poder adjuntar un PDF con la programación del evento. Este documento se pondrá en la pagina para que los competidores lo puedan descargar.
     19. La cantidad de participantes máxima para un evento se debe definir por categoría. cuando se llegue a cumplir la cantidad se debe cerrar las inscripciones para esa categoría automáticamente.
+    20. En admin/eventos 
+        1. Los estados del filtro no coinciden con los estados que se le pueden asignar a un evento. 
+        2. Tampoco figuran todos los eventos por ejemplo: Copa Toyota...
+        3. No permite indicar la cantidad por categoria habilitada, ademas no se activa el boton para grabar el evento. No es visible que cosa falta para que se habilite el boton de guardar cambios.
 

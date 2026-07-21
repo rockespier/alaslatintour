@@ -39,6 +39,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<ContactCaptchaOptions>(builder.Configuration.GetSection(ContactCaptchaOptions.SectionName));
 builder.Services.AddSingleton<AlasApp.Application.Abstractions.Services.IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminPermissionAuthorizationHandler>();
 builder.Services

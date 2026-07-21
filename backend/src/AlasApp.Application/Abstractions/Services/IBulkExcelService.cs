@@ -1,4 +1,5 @@
 using AlasApp.Application.BulkImports.Models;
+using AlasApp.Application.Inscriptions.Models;
 
 namespace AlasApp.Application.Abstractions.Services;
 
@@ -15,4 +16,8 @@ public interface IBulkExcelService
     IReadOnlyCollection<EventImportRow> ReadEvents(byte[] content);
 
     IReadOnlyCollection<CategoryImportRow> ReadCategories(byte[] content);
+
+    byte[] BuildInscriptionsExport(IReadOnlyCollection<AdminInscriptionRowDto> rows);
+
+    byte[] BuildInscriptionFicha(InscriptionDto inscription);
 }

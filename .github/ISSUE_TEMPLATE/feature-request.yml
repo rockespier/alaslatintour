@@ -6,6 +6,15 @@ labels:
   - needs-analysis
 body:
   - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Describe cual es la nueva funcionalida.
+      placeholder: Describe la nueva funcionalidad...
+    validations:
+      required: true
+
+  - type: textarea
     id: objective
     attributes:
       label: Objetivo
@@ -73,7 +82,7 @@ body:
   - type: dropdown
     id: priority
     attributes:
-      label: Prioridad propuesta
+      label: Prioridad 
       options:
         - Baja
         - Media
@@ -81,7 +90,22 @@ body:
         - Crítica
     validations:
       required: true
-          
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencias o contexto
+      description: Incluye logs, capturas, mensajes de error o respuestas HTTP.
+      placeholder: Arrastra capturas aquí o pega los mensajes de error.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencias identificadas
+      description: Indica otros issues, servicios o decisiones relacionadas.
+      placeholder: Escribe "Ninguna" cuando no existan dependencias.
+    validations:
+      required: true      
   - type: textarea
     id: agent-instructions
     attributes:

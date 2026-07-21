@@ -3,7 +3,6 @@ using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Common;
 using AlasApp.Application.Rankings.Models;
-using AlasApp.Domain.Entities;
 
 namespace AlasApp.Application.Rankings.Commands.SyncSurfScoresCircuit;
 
@@ -23,9 +22,7 @@ public sealed class SyncSurfScoresCircuitCommandHandler(
         var syncedAt = clock.UtcNow;
         var externalSnapshots = await surfScoresGateway.BuildCircuitRankingCacheAsync(request.CircuitId, cancellationToken);
 
-        var snapshots = externalSnapshots
-            .Select(snapshot => ToDomainSnapshot(request.CircuitId, snapshot, syncedAt))
-            .ToList();
+        var snapshots = RankingSnapshotFactory.Build(request.CircuitId, externalSnapshots, syncedAt);
 
         await rankingRepository.ReplaceCircuitSnapshotsAsync(request.CircuitId, snapshots, cancellationToken);
 
@@ -37,18 +34,5 @@ public sealed class SyncSurfScoresCircuitCommandHandler(
             string.IsNullOrWhiteSpace(circuit.SurfScoresCode) ? circuit.Id.ToString() : circuit.SurfScoresCode,
             snapshots.Sum(x => x.Entries.Count),
             syncedAt);
-    }
-
-    private static RankingSnapshot ToDomainSnapshot(Guid circuitId, SurfScoresRankingSnapshotDto dto, DateTimeOffset syncedAt)
-    {
-        var snapshot = RankingSnapshot.Create(circuitId, dto.CategoryId, dto.CategoryName, dto.Year, syncedAt);
-        snapshot.SetCreated(syncedAt);
-
-        foreach (var entry in dto.Entries)
-        {
-            snapshot.AddEntry(entry.Name, entry.Country, entry.Pos, entry.Points, entry.Events, entry.Variation);
-        }
-
-        return snapshot;
     }
 }
