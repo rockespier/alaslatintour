@@ -1,7 +1,7 @@
 ## Documento SDD: Plataforma ALAS Latin Tour PWA
 ## 1. Visión: Qué hace el producto y qué problema resuelve
-El producto es la nueva plataforma web oficial del ALAS Latin Tour (Asociación Latinoamericana de Surfistas Profesionales). Se trata de una solución integral web y móvil (PWA) que centraliza el contenido corporativo, las noticias, la gestión de eventos, el ranking de surfistas y los procesos de inscripción de competencias.
-Resuelve tres problemas principales: reemplaza la plataforma obsoleta escrita en ASP clásico por un stack moderno, simplifica los dolores y fricciones durante los procesos de pago e inscripción de los deportistas, y elimina la doble digitación de resultados al enlazarse automatizadamente con el sistema de jueces (API Refresh SurfScores).
+El producto es la nueva plataforma web oficial del ALAS Global Tour (Asociación Latinoamericana de Surfistas Profesionales). Se trata de una solución integral web y móvil (PWA) que centraliza el contenido corporativo, las noticias, la gestión de eventos, el ranking de surfistas y los procesos de inscripción de competencias.
+Resuelve tres problemas principales: reemplaza la plataforma obsoleta escrita en ASP clásico por un stack moderno, simplifica los dolores y fricciones durante los procesos de pago e inscripción de los deportistas, y elimina la doble digitación de resultados al enlazarse automatizadamente con el sistema de jueces (API Refresh SurfScores) o permitir la importación de datos desde plantillas Excel.
 
 ## 2. Usuarios y Casos de Uso
 El sistema contará con tres perfiles principales de interacción:
@@ -19,7 +19,7 @@ Flujo General: El competidor o espectador accede a la plataforma por web. El sis
 Manejo de errores generales: Si el backend pierde contacto temporal con la API externa de resultados, el sistema utilizará la caché del servidor en .NET para servir el último ranking extraído, evitando un quiebre de la interfaz. Si un token de inscripción física expira (pasados los 20 minutos estipulados), la interfaz de Angular invitará amigablemente a solicitar otro.
 
 ## 4. Visión del producto (Resumen Ejecutivo)
-La plataforma ALAS Latin Tour es una Progressive Web App (PWA) de última generación que unifica la gestión de contenidos, pagos de inscripción e integración de puntajes en tiempo real. Su propósito es elevar la experiencia digital de deportistas y fans, optimizando la labor administrativa del circuito latinoamericano de surf.
+La plataforma ALAS Global Tour es una Progressive Web App (PWA) de última generación que unifica la gestión de contenidos, pagos de inscripción e integración de puntajes en tiempo real. Su propósito es elevar la experiencia digital de deportistas y fans, optimizando la labor administrativa del circuito continental de surf.
 
 ## 5. Funcionalidades (Módulos de Alto Nivel)
 
@@ -46,7 +46,7 @@ El sistema genera un token aleatorio de uso único con una validez de 24 horas y
 
 El competidor introduce el token en la PWA; su inscripción se habilita pero el sistema marca internamente el estado financiero como "pendiente".
 
-Escenario de error: Si el competidor introduce el código después de 24 horas de su emisión, el BFF de .NET rechaza el token devolviendo un estado HTTP 400. Angular le notifica el error y le da un botón de "Re-solicitar token".
+Escenario de error: Si el competidor introduce el código después de 24 horas de su emisión, el BFF (Backend for Frontend) de .NET rechaza el token devolviendo un estado HTTP 400. Angular le notifica el error y le da un botón de "Re-solicitar token".
 
 ## 7. Arquitectura Técnica
 
@@ -60,9 +60,9 @@ El Backend .NET utilizará credenciales seguras (correo, contraseña y confirmac
 
 ## 8. Requisitos no funcionales
 
-Políticas de Consumo y Rate Limiting (Refresh API): El sistema no debe usarse en ningún caso como un "marcador en tiempo real" (Live Heatboard), pues SurfScores lo prohíbe explícitamente y puede bloquear las direcciones IP de la plataforma si se detecta polling excesivo. Se debe implementar un sistema de caché de al menos unos minutos en .NET.
+Políticas de Consumo y Rate Limiting (Refresh API): El sistema debe usarse como un "marcador en tiempo real" (Live Heatboard) Solo para un evento en Vivo, el cual se configura desde la pestaña de configuración destinada para ello, pero no puede usarse para mostrar el ranking en la web abierta al publico pues SurfScores lo prohíbe explícitamente y puede bloquear las direcciones IP de la plataforma si se detecta polling excesivo. Se debe leer los datos de la base de datos.
 
-Aspectos Legales UI: Por estricto mandato de la API externa, cualquier pantalla de la PWA que muestre puntajes deberá tener visible la leyenda "Results by SurfScores.com" enlazada a su portal.
+Aspectos Legales UI: Por estricto mandato de la API externa, cualquier pantalla de la PWA que muestre puntajes en un evento '"En Vivo"' deberá tener visible la leyenda "Results by SurfScores.com" enlazada a su portal.
 
 Rendimiento y SEO: Todas las vistas públicas deben ser pre-renderizadas con SSR para permitir la indexación por parte de los motores de búsqueda.
 
@@ -74,7 +74,7 @@ Definition of Done (DoD): Una tarea o User Story estará terminada cuando:
 
 ### Ejecución local de tests del backend
 
-Los tests de integración usan exclusivamente la base local `AlasAppTests` en el contenedor Docker `alas-sql`; nunca deben apuntar a la base del VPS. Antes de validar cambios, iniciar el contenedor si fuera necesario y ejecutar la solución:
+Los tests de integración usan exclusivamente la base local `AlasAppTests` para SO Windows y para macOs en el contenedor Docker `alas-sql`; nunca deben apuntar a la base del VPS. Antes de validar cambios, iniciar el contenedor si fuera necesario y ejecutar la solución en macOS:
 
 ```bash
 docker start alas-sql
@@ -139,4 +139,4 @@ Suite de skills de terceros (garrytan/gstack) instalada globalmente en `~/.claud
 - `/gstack-upgrade` — actualiza gstack a la última versión.
 - `/ios-*` (`ios-qa`, `ios-fix`, `ios-clean`, `ios-sync`, `ios-design-review`) — QA/fix/limpieza para apps iOS (no aplica a este proyecto Angular/.NET).
 
-**Nota de seguridad**: gstack envía telemetría de uso (`bin/gstack-telemetry-log`) a un backend externo por defecto. No se desactivó al instalar.
+**Nota de seguridad**: gstack envía telemetría de uso (`bin/gstack-telemetry-log`) a un backend externo por defecto. No se desactivó al instalar. Lo desactivaremos en la siguiente interacción.
