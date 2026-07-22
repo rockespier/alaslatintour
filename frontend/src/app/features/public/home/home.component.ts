@@ -111,13 +111,13 @@ const COUNTRY_FLAGS: Record<string, string> = {
 
     <!-- ═══ HERO ═══ -->
     <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden">
+      <video autoplay muted loop class="bg-video absolute inset-0 w-full h-full object-cover z-0" poster="https://www.alaslatintour.com/content/dist/images/fallback.jpg" preload="auto" playsinline>
+        <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
+        <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
+        Tu navegador no soporta video HTML5.
+      </video>
       <div class="absolute inset-0 opacity-30 pointer-events-none"
            style="background-image: radial-gradient(rgba(0,129,198,0.15) 1px, transparent 1px); background-size: 32px 32px;">
-           <video autoplay muted loop class="bg-video" poster="https://www.alaslatintour.com/content/dist/images/fallback.jpg" preload="auto" playsinline>
-            <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
-            <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
-            Tu navegador no soporta video HTML5.
-        </video>	
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
