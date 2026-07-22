@@ -96,13 +96,13 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
             <div class="flex flex-col sm:flex-row gap-3 flex-1">
               <div class="relative flex-1 max-w-md">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" placeholder="Buscar por nombre o email..." [(ngModel)]="searchTerm" [class]="CLASS_INPUT + ' pl-9'">
+                <input type="text" placeholder="Buscar por nombre o email..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" [class]="CLASS_INPUT + ' pl-9'">
               </div>
-              <select [class]="CLASS_INPUT + ' sm:max-w-[180px]'" [(ngModel)]="filterRol">
+              <select [class]="CLASS_INPUT + ' sm:max-w-[180px]'" [ngModel]="filterRol()" (ngModelChange)="filterRol.set($event)">
                 <option value="">Todos los roles</option>
                 @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
               </select>
-              <select [class]="CLASS_INPUT + ' sm:max-w-[180px]'" [(ngModel)]="filterEstado">
+              <select [class]="CLASS_INPUT + ' sm:max-w-[180px]'" [ngModel]="filterEstado()" (ngModelChange)="filterEstado.set($event)">
                 <option value="">Todos los estados</option>
                 <option value="Activo">Activo</option>
                 <option value="Bloqueado">Bloqueado</option>
@@ -369,9 +369,9 @@ export class UsuariosComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
 
-  searchTerm = '';
-  filterRol = '';
-  filterEstado = '';
+  searchTerm = signal('');
+  filterRol = signal('');
+  filterEstado = signal('');
 
   usuarios = signal<UsuarioAdmin[]>([]);
   apiRoles = signal<ApiRole[]>([]);
@@ -382,11 +382,13 @@ export class UsuariosComponent implements OnInit {
   });
 
   filteredUsuarios = computed(() => {
-    const term = this.searchTerm.trim().toLowerCase();
+    const term = this.searchTerm().trim().toLowerCase();
+    const rol = this.filterRol();
+    const estado = this.filterEstado();
     return this.usuarios().filter(u => {
       if (term && !u.nombreCompleto.toLowerCase().includes(term) && !u.email.toLowerCase().includes(term)) return false;
-      if (this.filterRol && u.rol !== this.filterRol) return false;
-      if (this.filterEstado && u.estado !== this.filterEstado) return false;
+      if (rol && u.rol !== rol) return false;
+      if (estado && u.estado !== estado) return false;
       return true;
     });
   });

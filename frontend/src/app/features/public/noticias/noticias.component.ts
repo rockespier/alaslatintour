@@ -294,17 +294,18 @@ export class NoticiasComponent implements OnInit {
     this.loadArticles();
   }
 
-  private async loadGalleries(): Promise<void> {
+  private async loadGalleries(retriesLeft = 1): Promise<void> {
     this.loadingGalleries.set(true);
     try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 6000),
-      );
-      const res = await Promise.race([this.api.get<any>('/galleries'), timeout]);
+      const res = await this.api.get<any>('/galleries');
       this.galleries.set((res as any)?.data ?? []);
+      this.loadingGalleries.set(false);
     } catch {
+      if (retriesLeft > 0) {
+        this.loadGalleries(retriesLeft - 1);
+        return;
+      }
       this.galleries.set([]);
-    } finally {
       this.loadingGalleries.set(false);
     }
   }
