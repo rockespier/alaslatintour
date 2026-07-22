@@ -94,3 +94,49 @@ Categoría sucesiva: Cada categoría con restricción de edad debe tener configu
 Dominio de correos institucionales: Todas las comunicaciones del sistema (notificaciones, tokens, confirmaciones) deben enviarse desde direcciones con el dominio @alasglobaltour.com.
 
 Reporte de inscritos: El reporte de inscritos por evento debe incluir la posición del ranking del año anterior (temporada pasada) y la posición del ranking del año en curso, por cada competidor y categoría.
+
+## 10. gstack (skills instaladas)
+
+Suite de skills de terceros (garrytan/gstack) instalada globalmente en `~/.claude/skills/gstack`. Comandos disponibles vía `/`:
+
+- `/spec` — convierte intención vaga en spec ejecutable (5 fases).
+- `/autoplan` — pipeline de auto-review (CEO, design, eng, DX) secuencial.
+- `/plan-ceo-review`, `/plan-design-review`, `/plan-devex-review`, `/plan-eng-review` — revisiones interactivas de un plan desde distintos roles.
+- `/plan-tune` — ajusta sensibilidad de preguntas del planning.
+- `/review` — revisión de PR previa a merge.
+- `/ship` — flujo de ship: merge base, tests, review de diff, bump de VERSION, CHANGELOG, commit, push, PR.
+- `/land-and-deploy` — flujo de land + deploy.
+- `/canary` — monitoreo post-deploy.
+- `/qa`, `/qa-only` — QA sistemático de la app web (con o sin fixes automáticos).
+- `/health` — dashboard de calidad de código.
+- `/investigate` — debugging sistemático con root cause analysis.
+- `/devex-review` — auditoría en vivo de developer experience.
+- `/retro` — retro semanal de ingeniería.
+- `/document-generate` — genera documentación faltante.
+- `/document-release` — actualiza documentación post-ship.
+- `/design-consultation` — propone sistema de diseño completo (estética, tipografía, color, layout, motion).
+- `/design-html` — genera HTML/CSS de producción a partir del diseño.
+- `/design-review` — QA visual (inconsistencias, spacing, jerarquía, "AI slop").
+- `/design-shotgun` — genera variantes de diseño y arma tablero comparativo.
+- `/diagram` — genera diagramas (mermaid + .excalidraw) desde descripción.
+- `/make-pdf` — convierte markdown a PDF de publicación.
+- `/browse` — navegador headless rápido para QA/dogfooding.
+- `/scrape` — extrae datos de una página web.
+- `/skillify` — convierte un flujo de `/scrape` exitoso en skill permanente.
+- `/setup-browser-cookies` — importa cookies del navegador real a la sesión headless.
+- `/open-gstack-browser` — abre GStack Browser (Chromium con extensión sidebar).
+- `/pair-agent` — empareja un agente remoto con tu navegador.
+- `/context-save`, `/context-restore` — guarda/restaura contexto de trabajo.
+- `/freeze`, `/unfreeze` — restringe/libera ediciones a un directorio específico en la sesión.
+- `/careful`, `/guard` — guardrails de seguridad para comandos destructivos (guard suma scope de directorio).
+- `/cso` — modo Chief Security Officer (auditoría de seguridad).
+- `/benchmark`, `/benchmark-models` — regresión de performance / benchmark cruzado de modelos.
+- `/codex` — wrapper del CLI de OpenAI Codex.
+- `/office-hours` — modo YC Office Hours.
+- `/landing-report` — dashboard read-only de cola de ship.
+- `/learn` — administra aprendizajes del proyecto.
+- `/setup-gbrain`, `/sync-gbrain` — instala/sincroniza "gbrain" (memoria persistente) para el agente.
+- `/gstack-upgrade` — actualiza gstack a la última versión.
+- `/ios-*` (`ios-qa`, `ios-fix`, `ios-clean`, `ios-sync`, `ios-design-review`) — QA/fix/limpieza para apps iOS (no aplica a este proyecto Angular/.NET).
+
+**Nota de seguridad**: gstack envía telemetría de uso (`bin/gstack-telemetry-log`) a un backend externo por defecto. No se desactivó al instalar.
