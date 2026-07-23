@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
+import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 
 interface Circuit {
   id: string;
@@ -418,8 +419,10 @@ export class EventosComponent implements OnInit {
   filteredEvents = computed(() => {
     const filter = this.circuitFilter();
     const evts = this.events();
-    if (filter === 'all') return evts;
-    return evts.filter(e => e.circuitoId === filter || e.circuito === this.circuits().find(c => c.id === filter)?.nombre);
+    const list = filter === 'all'
+      ? evts
+      : evts.filter(e => e.circuitoId === filter || e.circuito === this.circuits().find(c => c.id === filter)?.nombre);
+    return sortEventsForDisplay(list);
   });
 
   userInitial = computed(() => (this.auth.currentUser()?.fullName ?? '?')[0].toUpperCase());
@@ -437,7 +440,7 @@ export class EventosComponent implements OnInit {
 
   private async loadEvents(): Promise<void> {
     try {
-      const res = await this.api.get<any>('/events?limit=20&page=1&includeCategories=true');
+      const res = await this.api.get<any>('/events?limit=100&page=1&includeCategories=true');
       this.events.set(res?.data ?? []);
     } catch {
       this.events.set([]);
@@ -449,7 +452,11 @@ export class EventosComponent implements OnInit {
   private async loadCircuits(): Promise<void> {
     try {
       const res = await this.api.get<any>(`/circuits?status=Activo&year=${this.currentYear}&limit=20`);
-      this.circuits.set(res?.data ?? []);
+      const currentCircuits: Circuit[] = res?.data ?? [];
+      this.circuits.set(currentCircuits);
+      if (currentCircuits.length > 0) {
+        this.circuitFilter.set(currentCircuits[0].id);
+      }
     } catch {
       this.circuits.set([]);
     }
