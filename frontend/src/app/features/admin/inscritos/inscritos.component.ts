@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 type InscritosTab = 'inscritos' | 'premios' | 'puestos';
 
@@ -68,7 +69,7 @@ function fmtDateTime(dt: string): string {
 @Component({
   selector: 'app-inscritos',
   standalone: true,
-  imports: [FormsModule, LoadingSpinnerComponent, DecimalPipe],
+  imports: [FormsModule, LoadingSpinnerComponent, DecimalPipe, ImportExcelModalComponent],
   template: `
     <div class="py-8">
       <div class="mb-6">
@@ -350,8 +351,23 @@ function fmtDateTime(dt: string): string {
                 <option value="">Todas las categorías</option>
                 @for (c of puestosCategorias(); track c.id) { <option [value]="c.id">{{ c.nombre }}</option> }
               </select>
+              @if (puestosEventoId && puestosCategoriaId && canEdit()) {
+                <div class="flex gap-2 sm:ml-auto">
+                  <button (click)="descargarPlantillaResultados()" [disabled]="descargandoPlantilla()"
+                          class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition whitespace-nowrap disabled:opacity-50">
+                    {{ descargandoPlantilla() ? 'Descargando...' : 'Descargar plantilla' }}
+                  </button>
+                  <button (click)="puestosImportOpen.set(true)"
+                          class="px-4 py-2 border border-orange-brand/50 hover:border-orange-brand text-orange-brand font-accent uppercase tracking-wider text-sm rounded-md transition whitespace-nowrap">
+                    Importar Excel
+                  </button>
+                </div>
+              }
             </div>
           </div>
+
+          <app-import-excel-modal [open]="puestosImportOpen()" [importPath]="puestosImportPath()" entityLabel="resultados"
+                                   (close)="puestosImportOpen.set(false)" (imported)="onResultadosImported()" />
 
           @if (!puestosEventoId) {
             <p class="text-sm text-text-muted">Selecciona un evento para ver sus resultados.</p>
@@ -735,6 +751,30 @@ export class InscritosComponent implements OnInit {
   rosterCompetidores = signal<{ competitorId: string; nombre: string; pais: string }[]>([]);
   filasResultados = signal<FilaResultado[]>([]);
   guardandoResultados = signal(false);
+
+  descargandoPlantilla = signal(false);
+  puestosImportOpen = signal(false);
+  puestosImportPath = computed(() => `/events/${this.puestosEventoId}/results/import?categoryId=${this.puestosCategoriaId}`);
+
+  async descargarPlantillaResultados(): Promise<void> {
+    if (!this.puestosEventoId || !this.puestosCategoriaId) return;
+    this.descargandoPlantilla.set(true);
+    try {
+      await this.api.downloadFile(
+        `/events/${this.puestosEventoId}/results/template?categoryId=${this.puestosCategoriaId}`,
+        'resultados-template.xlsx',
+      );
+    } catch {
+      this.showToast('Error al descargar la plantilla de resultados');
+    } finally {
+      this.descargandoPlantilla.set(false);
+    }
+  }
+
+  async onResultadosImported(): Promise<void> {
+    await this.onPuestosCategoriaChange();
+    this.showToast('Resultados importados correctamente');
+  }
 
   puestosEventosFiltrados = computed(() => {
     const circuitoId = this.puestosCircuitoId;

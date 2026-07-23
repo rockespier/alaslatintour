@@ -1,4 +1,5 @@
 using AlasApp.Infrastructure.Persistence;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Xunit;
 
@@ -125,6 +127,76 @@ public sealed class EventResultsEndpointsTests : IClassFixture<EventResultsWebAp
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ResultsTemplate_AndImportXlsx_Work()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId, prizeAmountUsd: 8000, stars: 4);
+        var categoryId = await CreateCategoryAsync();
+        await AssignCategoryAsync(eventId, categoryId);
+        var competitorOneId = await CreateCompetitorAsync("Ana", "Torres", $"import-one-{Guid.NewGuid():N}@test.com");
+        var competitorTwoId = await CreateCompetitorAsync("Luis", "Rivas", $"import-two-{Guid.NewGuid():N}@test.com");
+        await CreateInscriptionAsync(competitorOneId, eventId, categoryId);
+        await CreateInscriptionAsync(competitorTwoId, eventId, categoryId);
+
+        var templateResponse = await _client.GetAsync($"/v1/events/{eventId}/results/template?categoryId={categoryId}");
+        Assert.Equal(HttpStatusCode.OK, templateResponse.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", templateResponse.Content.Headers.ContentType?.MediaType);
+
+        var templateBytes = await templateResponse.Content.ReadAsByteArrayAsync();
+        using var templateWorkbook = new XLWorkbook(new MemoryStream(templateBytes));
+        var templateSheet = templateWorkbook.Worksheet("Resultados");
+        var lastTemplateRow = templateSheet.LastRowUsed()!.RowNumber();
+        Assert.Equal(3, lastTemplateRow);
+
+        using var importWorkbook = new XLWorkbook();
+        var worksheet = importWorkbook.Worksheets.Add("Resultados");
+        WriteRow(worksheet, 1, "CompetidorId", "Competidor", "Pais", "Puesto", "PuntosLiga", "PremioUsd", "HeatOla1", "HeatOla2");
+
+        for (var row = 2; row <= lastTemplateRow; row++)
+        {
+            var competitorId = templateSheet.Cell(row, 1).GetString();
+            var place = competitorId == competitorOneId ? "1°" : "2°";
+            WriteRow(worksheet, row, competitorId, "", "", place, "", "", "", "");
+        }
+
+        var response = await _client.PostAsync($"/v1/events/{eventId}/results/import?categoryId={categoryId}", CreateExcelForm(importWorkbook, "resultados-import.xlsx"));
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.OK, body);
+
+        var payload = JObject.Parse(body);
+        Assert.Equal(2, payload["processedRows"]?.Value<int>());
+        Assert.Equal(2, payload["createdCount"]?.Value<int>());
+        Assert.Equal(0, payload["errors"]?.Count());
+
+        var getResponse = await _client.GetAsync($"/v1/events/{eventId}/results?categoryId={categoryId}");
+        var listed = JObject.Parse(await getResponse.Content.ReadAsStringAsync());
+        Assert.Equal(2, listed["data"]?.Count());
+        Assert.Contains(listed["data"]!, x => x["competitorId"]?.Value<string>() == competitorOneId && x["place"]?.Value<string>() == "1°");
+    }
+
+    private static MultipartFormDataContent CreateExcelForm(XLWorkbook workbook, string fileName)
+    {
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(stream.ToArray());
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        form.Add(fileContent, "file", fileName);
+        return form;
+    }
+
+    private static void WriteRow(IXLWorksheet worksheet, int rowNumber, params string[] values)
+    {
+        for (var index = 0; index < values.Length; index++)
+        {
+            worksheet.Cell(rowNumber, index + 1).Value = values[index];
+        }
     }
 
     private async Task<string> CreateCircuitAsync()
