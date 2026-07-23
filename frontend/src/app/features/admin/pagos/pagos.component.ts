@@ -37,6 +37,12 @@ interface Transaccion {
   estado: 'Confirmado' | 'Pendiente';
 }
 
+interface MonthlyRevenue {
+  label: string;
+  total: number;
+  isCurrent: boolean;
+}
+
 interface Membresia {
   id: string;
   nombre: string;
@@ -66,6 +72,13 @@ function initialsOf(name: string): string {
 }
 function fmtDate(dt: string): string {
   return new Date(dt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function monthKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+function monthLabel(key: string): string {
+  const [year, month] = key.split('-').map(Number);
+  return new Date(year, month, 1).toLocaleDateString('es', { month: 'short' }).replace('.', '');
 }
 
 @Component({
@@ -123,6 +136,48 @@ function fmtDate(dt: string): string {
             </div>
           </div>
 
+          <!-- Revenue chart -->
+          <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <div>
+                <h2 class="font-heading text-xl text-white">Recaudación mensual</h2>
+                <p class="text-sm text-text-muted">En USD · Total periodo: \${{ monthlyRevenueTotal() | number:'1.0-0' }}</p>
+              </div>
+              <div class="flex items-center gap-3 text-xs">
+                <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-cyan-brand/60 border-t-2 border-cyan-brand"></span><span class="text-text-muted">Histórico</span></span>
+                <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-success-brand/60 border-t-2 border-success-brand"></span><span class="text-text-muted">Mes actual</span></span>
+              </div>
+            </div>
+
+            @if (monthlyRevenue().length === 0) {
+              <p class="text-sm text-text-muted">Sin datos suficientes para mostrar el gráfico.</p>
+            } @else {
+              <div class="flex items-end justify-around gap-3 h-64 border-l border-b border-navy-mid pl-3 pb-2">
+                @for (m of monthlyRevenue(); track m.label + $index) {
+                  <div class="flex flex-col items-center flex-1 max-w-[70px] h-full justify-end">
+                    <p [class]="m.isCurrent ? 'text-[11px] text-success-brand mb-1 font-medium' : 'text-[11px] text-text-muted mb-1'">
+                      \${{ m.total | number:'1.0-0' }}
+                    </p>
+                    <div [class]="m.isCurrent
+                        ? 'w-full rounded-t bg-gradient-to-t from-success-brand/20 to-success-brand/70 border-t-2 border-success-brand transition-all'
+                        : 'w-full rounded-t bg-gradient-to-t from-cyan-brand/20 to-cyan-brand/60 border-t-2 border-cyan-brand transition-all'"
+                        [style.height.%]="barHeightPercent(m.total)">
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="flex justify-around gap-3 mt-2 pl-3">
+                @for (m of monthlyRevenue(); track m.label + $index) {
+                  <span [class]="m.isCurrent
+                      ? 'flex-1 max-w-[70px] text-center text-[11px] font-accent uppercase tracking-wider text-success-brand'
+                      : 'flex-1 max-w-[70px] text-center text-[11px] font-accent uppercase tracking-wider text-text-muted'">
+                    {{ m.label }}
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
           <!-- Recent transactions -->
           <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
             <div class="px-6 py-4 border-b border-navy-mid">
@@ -175,6 +230,18 @@ function fmtDate(dt: string): string {
       @if (tab() === 'inscripciones') {
         <div>
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-4 mb-6 flex flex-col xl:flex-row gap-3">
+            <select [class]="CLASS_INPUT + ' xl:max-w-[200px]'" [(ngModel)]="filterEvento">
+              <option value="">Todos los eventos</option>
+              @for (e of eventoOptions(); track e) {
+                <option [value]="e">{{ e }}</option>
+              }
+            </select>
+            <select [class]="CLASS_INPUT + ' xl:max-w-[180px]'" [(ngModel)]="filterCategoria">
+              <option value="">Todas las categorías</option>
+              @for (c of categoriaOptions(); track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
             <select [class]="CLASS_INPUT + ' xl:max-w-[180px]'" [(ngModel)]="filterMetodo">
               <option value="">Todos los métodos</option>
               <option value="PayPal">PayPal</option>
@@ -185,6 +252,8 @@ function fmtDate(dt: string): string {
               <option value="Confirmado">Confirmado</option>
               <option value="Pendiente">Pendiente</option>
             </select>
+            <input type="date" [class]="CLASS_INPUT + ' xl:max-w-[160px] [color-scheme:dark]'" [(ngModel)]="filterFromDate" (ngModelChange)="loadTransacciones()">
+            <input type="date" [class]="CLASS_INPUT + ' xl:max-w-[160px] [color-scheme:dark]'" [(ngModel)]="filterToDate" (ngModelChange)="loadTransacciones()">
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -598,13 +667,31 @@ export class PagosComponent implements OnInit {
   transacciones = signal<Transaccion[]>([]);
   filterMetodo = '';
   filterEstado = '';
+  filterEvento = '';
+  filterCategoria = '';
+  filterFromDate = '';
+  filterToDate = '';
+
+  eventoOptions = computed(() => Array.from(new Set(this.transacciones().map(t => t.evento))).sort());
+  categoriaOptions = computed(() => Array.from(new Set(this.transacciones().map(t => t.categoria))).sort());
 
   transaccionesFiltradas = computed(() => {
     return this.transacciones().filter(t => {
       if (this.filterMetodo && t.metodo !== this.filterMetodo) return false;
+      if (this.filterEvento && t.evento !== this.filterEvento) return false;
+      if (this.filterCategoria && t.categoria !== this.filterCategoria) return false;
       return true;
     });
   });
+
+  monthlyRevenue = signal<MonthlyRevenue[]>([]);
+  monthlyRevenueMax = computed(() => Math.max(1, ...this.monthlyRevenue().map(m => m.total)));
+  monthlyRevenueTotal = computed(() => this.monthlyRevenue().reduce((acc, m) => acc + m.total, 0));
+
+  barHeightPercent(total: number): number {
+    if (total <= 0) return 0;
+    return Math.max(4, Math.round((total / this.monthlyRevenueMax()) * 100));
+  }
 
   resumenInscripciones = computed(() => {
     const list = this.transacciones();
@@ -631,7 +718,7 @@ export class PagosComponent implements OnInit {
   private async loadAll(): Promise<void> {
     this.loading.set(true);
     try {
-      await Promise.all([this.loadKpis(), this.loadTransacciones(), this.loadMembresias()]);
+      await Promise.all([this.loadKpis(), this.loadTransacciones(), this.loadMembresias(), this.loadMonthlyRevenue()]);
     } catch {
       this.showToast('Error al cargar los datos de pagos');
     } finally {
@@ -653,9 +740,39 @@ export class PagosComponent implements OnInit {
   async loadTransacciones(): Promise<void> {
     const params = new URLSearchParams({ limit: '50' });
     if (this.filterEstado) params.set('status', this.filterEstado);
+    if (this.filterFromDate) params.set('fromDate', new Date(this.filterFromDate).toISOString());
+    if (this.filterToDate) params.set('toDate', new Date(this.filterToDate).toISOString());
     const res = await this.api.get<any>(`/payments?${params.toString()}`);
     const data: any[] = res?.data ?? [];
     this.transacciones.set(data.map(p => this.mapPayment(p)));
+  }
+
+  private async loadMonthlyRevenue(): Promise<void> {
+    const monthsBack = 5;
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+    const params = new URLSearchParams({ limit: '500', status: 'Confirmado', fromDate: from.toISOString() });
+    const res = await this.api.get<any>(`/payments?${params.toString()}`);
+    const data: any[] = res?.data ?? [];
+
+    const buckets = new Map<string, number>();
+    for (let i = monthsBack; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.set(monthKey(d), 0);
+    }
+    for (const p of data) {
+      const key = monthKey(new Date(p.fecha));
+      if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + Number(p.montoUsd ?? 0));
+    }
+
+    const currentKey = monthKey(now);
+    this.monthlyRevenue.set(
+      Array.from(buckets.entries()).map(([key, total]) => ({
+        label: monthLabel(key),
+        total,
+        isCurrent: key === currentKey,
+      })),
+    );
   }
 
   private mapPayment(p: any): Transaccion {
