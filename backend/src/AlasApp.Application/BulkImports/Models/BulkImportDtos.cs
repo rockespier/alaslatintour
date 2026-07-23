@@ -58,3 +58,13 @@ public sealed record CategoryImportRow(
     string? MembresiaAnualUsd,
     string? MembresiaPorEventoUsd,
     string? BestResultsCount);
+
+public sealed record EventResultImportRow(
+    int RowNumber,
+    string? CompetitorId,
+    string? Competidor,
+    string? Puesto,
+    string? PuntosLiga,
+    string? PremioUsd,
+    string? HeatOla1,
+    string? HeatOla2);

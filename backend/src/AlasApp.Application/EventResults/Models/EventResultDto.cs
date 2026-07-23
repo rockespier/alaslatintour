@@ -29,3 +29,13 @@ public sealed record PrizeDistributionDto(
 public sealed record PrizeDistributionRowDto(
     string PlaceLabel,
     decimal PrizeUsd);
+
+public sealed record EventResultRosterRowDto(
+    Guid CompetitorId,
+    string CompetitorName,
+    string Country,
+    string? Place,
+    int? LigaPoints,
+    decimal? PrizeUsd,
+    decimal? HeatOla1,
+    decimal? HeatOla2);

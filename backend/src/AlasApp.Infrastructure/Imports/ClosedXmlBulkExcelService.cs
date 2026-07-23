@@ -1,5 +1,6 @@
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.BulkImports.Models;
+using AlasApp.Application.EventResults.Models;
 using AlasApp.Application.Inscriptions.Models;
 using ClosedXML.Excel;
 
@@ -207,6 +208,61 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         workbook.SaveAs(stream);
         return stream.ToArray();
     }
+
+    private static readonly string[] EventResultHeaders =
+    [
+        "CompetidorId",
+        "Competidor",
+        "Pais",
+        "Puesto",
+        "PuntosLiga",
+        "PremioUsd",
+        "HeatOla1",
+        "HeatOla2"
+    ];
+
+    public byte[] BuildEventResultsTemplate(IReadOnlyCollection<EventResultRosterRowDto> roster)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Resultados");
+
+        for (var index = 0; index < EventResultHeaders.Length; index++)
+        {
+            worksheet.Cell(1, index + 1).Value = EventResultHeaders[index];
+            worksheet.Cell(1, index + 1).Style.Font.Bold = true;
+        }
+
+        var rowNumber = 2;
+        foreach (var row in roster)
+        {
+            worksheet.Cell(rowNumber, 1).Value = row.CompetitorId.ToString();
+            worksheet.Cell(rowNumber, 2).Value = row.CompetitorName;
+            worksheet.Cell(rowNumber, 3).Value = row.Country;
+            worksheet.Cell(rowNumber, 4).Value = row.Place ?? string.Empty;
+            worksheet.Cell(rowNumber, 5).Value = row.LigaPoints?.ToString() ?? string.Empty;
+            worksheet.Cell(rowNumber, 6).Value = row.PrizeUsd?.ToString("0.00") ?? string.Empty;
+            worksheet.Cell(rowNumber, 7).Value = row.HeatOla1?.ToString("0.00") ?? string.Empty;
+            worksheet.Cell(rowNumber, 8).Value = row.HeatOla2?.ToString("0.00") ?? string.Empty;
+            rowNumber++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    public IReadOnlyCollection<EventResultImportRow> ReadEventResults(byte[] content)
+        => ReadRows(content, "Resultados", EventResultHeaders, values => new EventResultImportRow(
+            values.RowNumber,
+            values["CompetidorId"],
+            values["Competidor"],
+            values["Puesto"],
+            values["PuntosLiga"],
+            values["PremioUsd"],
+            values["HeatOla1"],
+            values["HeatOla2"]));
 
     private static byte[] BuildWorkbook(string sheetName, IReadOnlyList<string> headers, IReadOnlyList<string> sampleRow)
     {

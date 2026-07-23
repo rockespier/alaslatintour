@@ -1,4 +1,5 @@
 using AlasApp.Application.BulkImports.Models;
+using AlasApp.Application.EventResults.Models;
 using AlasApp.Application.Inscriptions.Models;
 
 namespace AlasApp.Application.Abstractions.Services;
@@ -20,4 +21,8 @@ public interface IBulkExcelService
     byte[] BuildInscriptionsExport(IReadOnlyCollection<AdminInscriptionRowDto> rows);
 
     byte[] BuildInscriptionFicha(InscriptionDto inscription);
+
+    byte[] BuildEventResultsTemplate(IReadOnlyCollection<EventResultRosterRowDto> roster);
+
+    IReadOnlyCollection<EventResultImportRow> ReadEventResults(byte[] content);
 }

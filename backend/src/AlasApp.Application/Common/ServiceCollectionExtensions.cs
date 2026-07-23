@@ -51,8 +51,11 @@ using AlasApp.Application.CompetitorFines.Commands.UpdateCompetitorFine;
 using AlasApp.Application.CompetitorFines.Queries.ListCompetitorFines;
 using AlasApp.Application.EventCategories.Commands.UpdateEventCategories;
 using AlasApp.Application.EventCategories.Queries.GetEventCategories;
+using AlasApp.Application.EventResults;
+using AlasApp.Application.EventResults.Commands.ImportEventResults;
 using AlasApp.Application.EventResults.Commands.UpsertEventResults;
 using AlasApp.Application.EventResults.Queries.GetEventResults;
+using AlasApp.Application.EventResults.Queries.GetEventResultsRoster;
 using AlasApp.Application.EventResults.Queries.GetPrizeDistribution;
 using AlasApp.Application.Galleries.Queries.GetGalleryBySlug;
 using AlasApp.Application.Galleries.Queries.ListGalleries;
@@ -153,8 +156,11 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IRequestHandler<GetEventCategoriesQuery, EventCategories.Models.EventCategoryListDto>, GetEventCategoriesQueryHandler>();
         services.AddScoped<IRequestHandler<UpdateEventCategoriesCommand, EventCategories.Models.EventCategoryListDto>, UpdateEventCategoriesCommandHandler>();
+        services.AddScoped<EventResultsWriter>();
         services.AddScoped<IRequestHandler<GetEventResultsQuery, IReadOnlyCollection<EventResults.Models.EventResultDto>>, GetEventResultsQueryHandler>();
         services.AddScoped<IRequestHandler<UpsertEventResultsCommand, IReadOnlyCollection<EventResults.Models.EventResultDto>>, UpsertEventResultsCommandHandler>();
+        services.AddScoped<IRequestHandler<GetEventResultsRosterQuery, IReadOnlyCollection<EventResults.Models.EventResultRosterRowDto>>, GetEventResultsRosterQueryHandler>();
+        services.AddScoped<IRequestHandler<ImportEventResultsCommand, BulkImports.Models.BulkImportResultDto>, ImportEventResultsCommandHandler>();
         services.AddScoped<IRequestHandler<GetPrizeDistributionQuery, EventResults.Models.PrizeDistributionDto>, GetPrizeDistributionQueryHandler>();
         services.AddScoped<IRequestHandler<ListCompetitorsQuery, PagedResult<Competitors.Models.CompetitorDto>>, ListCompetitorsQueryHandler>();
         services.AddScoped<IRequestHandler<GetCompetitorByIdQuery, Competitors.Models.CompetitorDto>, GetCompetitorByIdQueryHandler>();
