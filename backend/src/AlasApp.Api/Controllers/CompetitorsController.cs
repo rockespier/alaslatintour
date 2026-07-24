@@ -9,6 +9,7 @@ using AlasApp.Application.Competitors.Commands.UpdateCompetitorLicense;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitorNotifications;
 using AlasApp.Application.Competitors.Queries.GetCompetitorCalendar;
 using AlasApp.Application.Competitors.Queries.GetCompetitorById;
+using AlasApp.Application.Competitors.Queries.GetCompetitorIdentityDocument;
 using AlasApp.Application.Competitors.Queries.GetCompetitorInscriptions;
 using AlasApp.Application.Competitors.Queries.GetCompetitorNotifications;
 using AlasApp.Application.Competitors.Queries.GetCompetitorPointsHistory;
@@ -122,6 +123,19 @@ public sealed class CompetitorsController(IRequestDispatcher dispatcher, IUserAc
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));
+    }
+
+    [HttpGet("{competitorId}/identity-document")]
+    [Authorize(Policy = AdminPolicies.UsersRead)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetIdentityDocument(string competitorId, CancellationToken cancellationToken)
+    {
+        var document = await dispatcher.Send(
+            new GetCompetitorIdentityDocumentQuery(ApiContractMapper.ParseGuid(competitorId, "competitorId")),
+            cancellationToken);
+
+        return File(document.Content, document.ContentType, document.FileName);
     }
 
     [HttpPost("{competitorId}/password")]

@@ -468,7 +468,7 @@ public static class ApiContractMapper
 
     public static Generated.CompetitorResponse ToContract(CompetitorDto dto)
     {
-        return new Generated.CompetitorResponse(
+        var contract = new Generated.CompetitorResponse(
             dto.Apellido,
             dto.Club,
             dto.CreatedAtUtc,
@@ -486,6 +486,10 @@ public static class ApiContractMapper
             dto.SurfScoresCode,
             ToGeneratedCompetitorShirtSize(dto.TallaCamiseta),
             dto.Telefono);
+
+        contract.AdditionalProperties["hasIdentityDocument"] = dto.HasIdentityDocument;
+
+        return contract;
     }
 
     public static Generated.LicenseInfo ToContract(CompetitorLicenseDto dto)

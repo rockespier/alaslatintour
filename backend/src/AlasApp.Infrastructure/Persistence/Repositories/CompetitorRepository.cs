@@ -122,6 +122,7 @@ public sealed class CompetitorRepository(AlasAppDbContext dbContext) : ICompetit
                 competitor.LicenseStatus,
                 competitor.LicenseExpirationDate,
                 competitor.EnabledLicenseCategories.Select(x => x.CategoryId).ToList()),
+            !string.IsNullOrWhiteSpace(competitor.IdentityDocumentBlobName),
             competitor.NotificationEmail,
             competitor.NotificationPush,
             competitor.NotificationResultados,

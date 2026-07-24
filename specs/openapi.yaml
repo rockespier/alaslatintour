@@ -891,6 +891,25 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /competitors/{competitorId}/identity-document:
+    parameters:
+      - $ref: '#/components/parameters/CompetitorId'
+    get:
+      tags: [Competitors]
+      summary: Descargar/visualizar el documento de identidad adjuntado en el registro (sólo admin)
+      responses:
+        '200':
+          description: Documento de identidad (imagen o PDF)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /competitors/{competitorId}/notifications:
     parameters:
       - $ref: '#/components/parameters/CompetitorId'
@@ -2560,6 +2579,9 @@ components:
               description: Asignado por el sistema; no editable por el usuario
             license:
               $ref: '#/components/schemas/LicenseInfo'
+            hasIdentityDocument:
+              type: boolean
+              description: Indica si el competidor adjuntó un documento de identidad durante el registro
             createdAt:
               type: string
               format: date-time

@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
@@ -23,7 +24,14 @@ interface Competitor {
   licenseNumber?: string | null;
   expirationDate?: string | null;
   enabledCategories?: string[];
+  hasIdentityDocument?: boolean;
   createdAt?: string;
+}
+
+interface DocumentViewerState {
+  url: string;
+  type: 'image' | 'pdf' | 'other';
+  filename: string;
 }
 
 interface CategoryOption { id: string; nombre: string; }
@@ -341,6 +349,21 @@ const PAGE_SIZE = 20;
               </div>
             </div>
 
+            <div>
+              <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Documento de identidad</label>
+              @if (licenseTarget()!.hasIdentityDocument) {
+                <button type="button" (click)="viewIdentityDocument(licenseTarget()!)" [disabled]="loadingDocument()"
+                        class="px-3 py-1.5 rounded-md border border-navy-mid text-cyan-brand text-xs font-accent uppercase tracking-wider hover:border-cyan-brand transition disabled:opacity-50">
+                  {{ loadingDocument() ? 'Cargando...' : 'Ver documento' }}
+                </button>
+              } @else {
+                <p class="text-xs text-text-muted">El competidor no adjuntó un documento de identidad.</p>
+              }
+              @if (documentViewerError()) {
+                <p class="text-error-brand text-xs mt-1">{{ documentViewerError() }}</p>
+              }
+            </div>
+
             @if (licenseError()) {
               <p class="text-error-brand text-xs">{{ licenseError() }}</p>
             }
@@ -356,6 +379,39 @@ const PAGE_SIZE = 20;
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal: Visor de documento de identidad -->
+    @if (documentViewer()) {
+      <div class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+           style="background:rgba(0,35,89,0.85)" (click)="closeDocumentViewer()">
+        <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+             (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between p-4 border-b border-navy-mid">
+            <h3 class="font-heading text-lg text-white">Documento de identidad</h3>
+            <button (click)="closeDocumentViewer()" class="text-text-muted hover:text-white transition">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            @if (documentViewer()!.type === 'image') {
+              <img [src]="documentViewer()!.url" alt="Documento de identidad" class="w-full rounded-md border border-navy-mid">
+            } @else if (documentViewer()!.type === 'pdf') {
+              <iframe [src]="documentViewerSafeUrl()" class="w-full h-[70vh] rounded-md border border-navy-mid"></iframe>
+            } @else {
+              <p class="text-text-muted text-sm">Formato no compatible con vista previa. Descárgalo para verlo.</p>
+            }
+          </div>
+          <div class="flex justify-end gap-3 p-4 border-t border-navy-mid">
+            <button (click)="downloadDocument()"
+                    class="px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-xs tracking-wider hover:bg-cyan-dark transition">
+              Descargar
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -415,6 +471,7 @@ export class CompetidoresComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
   private permissions = inject(PermissionsService);
+  private sanitizer = inject(DomSanitizer);
 
   canEdit = computed(() => this.permissions.canEdit('Usuarios'));
 
@@ -439,6 +496,14 @@ export class CompetidoresComponent implements OnInit {
   savingLicense = signal(false);
   licenseError = signal<string | null>(null);
   licenseCategories = signal<string[]>([]);
+
+  documentViewer = signal<DocumentViewerState | null>(null);
+  documentViewerSafeUrl = computed<SafeResourceUrl | null>(() => {
+    const viewer = this.documentViewer();
+    return viewer ? this.sanitizer.bypassSecurityTrustResourceUrl(viewer.url) : null;
+  });
+  loadingDocument = signal(false);
+  documentViewerError = signal<string | null>(null);
 
   passwordTarget = signal<Competitor | null>(null);
   newPasswordValue = '';
@@ -638,6 +703,43 @@ export class CompetidoresComponent implements OnInit {
 
   closeLicense(): void {
     this.licenseTarget.set(null);
+    this.closeDocumentViewer();
+  }
+
+  async viewIdentityDocument(c: Competitor): Promise<void> {
+    this.documentViewerError.set(null);
+    this.loadingDocument.set(true);
+    try {
+      const blob = await this.api.getBlob(`/competitors/${c.id}/identity-document`);
+      const type = blob.type.startsWith('image/') ? 'image' : blob.type === 'application/pdf' ? 'pdf' : 'other';
+      const extension = type === 'pdf' ? 'pdf' : (blob.type.split('/')[1] ?? 'bin');
+      const url = URL.createObjectURL(blob);
+      this.documentViewer.set({
+        url,
+        type,
+        filename: `documento-identidad-${c.nombre}-${c.apellido}.${extension}`,
+      });
+    } catch (err: any) {
+      this.documentViewerError.set(err?.body?.message ?? err?.message ?? 'No se pudo cargar el documento.');
+    } finally {
+      this.loadingDocument.set(false);
+    }
+  }
+
+  closeDocumentViewer(): void {
+    const current = this.documentViewer();
+    if (current) URL.revokeObjectURL(current.url);
+    this.documentViewer.set(null);
+    this.documentViewerError.set(null);
+  }
+
+  downloadDocument(): void {
+    const current = this.documentViewer();
+    if (!current) return;
+    const anchor = document.createElement('a');
+    anchor.href = current.url;
+    anchor.download = current.filename;
+    anchor.click();
   }
 
   isCategoryChecked(categoryId: string): boolean {

@@ -50,4 +50,27 @@ public sealed class AzureBlobIdentityDocumentStorage(IOptions<AzureBlobIdentityD
 
         return blobName;
     }
+
+    public async Task<IdentityDocumentDownload?> DownloadAsync(string blobName, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(options.Value.ConnectionString))
+        {
+            throw new InvalidOperationException("Azure Blob Storage no está configurado para documentos de identidad.");
+        }
+
+        var container = new BlobContainerClient(options.Value.ConnectionString, options.Value.ContainerName);
+        var blob = container.GetBlobClient(blobName);
+
+        if (!await blob.ExistsAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var download = await blob.DownloadStreamingAsync(cancellationToken: cancellationToken);
+        var fileName = download.Value.Details.Metadata.TryGetValue("originalFileName", out var originalFileName)
+            ? originalFileName
+            : blobName.Split('/')[^1];
+
+        return new IdentityDocumentDownload(download.Value.Content, download.Value.Details.ContentType, fileName);
+    }
 }

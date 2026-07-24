@@ -158,5 +158,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             AlasApp.Application.IdentityDocuments.IdentityDocumentUpload document,
             CancellationToken cancellationToken)
             => Task.FromResult($"tests/{competitorId:N}/{document.FileName}");
+
+        public Task<AlasApp.Application.IdentityDocuments.IdentityDocumentDownload?> DownloadAsync(
+            string blobName,
+            CancellationToken cancellationToken)
+            => Task.FromResult<AlasApp.Application.IdentityDocuments.IdentityDocumentDownload?>(
+                new AlasApp.Application.IdentityDocuments.IdentityDocumentDownload(
+                    new MemoryStream("test-identity-document"u8.ToArray()),
+                    "application/pdf",
+                    blobName.Split('/')[^1]));
     }
 }
