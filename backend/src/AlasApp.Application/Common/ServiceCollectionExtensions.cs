@@ -66,6 +66,7 @@ using AlasApp.Application.Events.Commands.UpdateEvent;
 using AlasApp.Application.Events.Queries.GetEventById;
 using AlasApp.Application.Events.Queries.ListEvents;
 using AlasApp.Application.Live.Queries.GetPublicLiveStatus;
+using AlasApp.Application.PublicSiteSettings.Queries.GetPublicSiteSettings;
 using AlasApp.Application.Inscriptions.Commands.CreateInscription;
 using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
 using AlasApp.Application.Inscriptions.Commands.UpdateInscription;
@@ -198,6 +199,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<SyncSurfScoresCircuitCommand, Rankings.Models.SurfScoresSyncResultDto>, SyncSurfScoresCircuitCommandHandler>();
         services.AddScoped<IRequestHandler<ImportSurfScoresEventsCommand, SurfScoresImport.Models.SurfScoresImportResultDto>, ImportSurfScoresEventsCommandHandler>();
         services.AddScoped<IRequestHandler<GetPublicLiveStatusQuery, Live.Models.PublicLiveStatusDto>, GetPublicLiveStatusQueryHandler>();
+        services.AddScoped<IRequestHandler<GetPublicSiteSettingsQuery, PublicSiteSettings.Models.PublicSiteSettingsDto>, GetPublicSiteSettingsQueryHandler>();
 
         return services;
     }
