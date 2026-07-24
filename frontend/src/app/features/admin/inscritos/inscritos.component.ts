@@ -94,9 +94,13 @@ function fmtDateTime(dt: string): string {
           } @else {
           <!-- Filter bar -->
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-4 mb-6 flex flex-col lg:flex-row gap-3">
-            <select [class]="CLASS_INPUT + ' lg:max-w-[220px]'" [(ngModel)]="filterEvento" (ngModelChange)="loadInscritos()">
+            <select [class]="CLASS_INPUT + ' lg:max-w-[180px]'" [(ngModel)]="filterCircuito" (ngModelChange)="onFilterCircuitoChange()">
+              <option value="">Todos los circuitos</option>
+              @for (c of circuitos(); track c.id) { <option [value]="c.id">{{ c.nombre }}</option> }
+            </select>
+            <select [class]="CLASS_INPUT + ' lg:max-w-[220px]'" [(ngModel)]="filterEvento" (ngModelChange)="onFilterEventoChange()">
               <option value="">Todos los eventos</option>
-              @for (e of eventos(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
+              @for (e of eventosFiltrados(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
             </select>
             <select [class]="CLASS_INPUT + ' lg:max-w-[180px]'" [(ngModel)]="filterCategoria" (ngModelChange)="loadInscritos()">
               <option value="">Todas las categorías</option>
@@ -529,9 +533,17 @@ export class InscritosComponent implements OnInit {
   categorias = signal<CategoriaOption[]>([]);
 
   searchTerm = '';
+  filterCircuito = '';
   filterEvento = '';
   filterCategoria = '';
   filterEstado = '';
+
+  private categoriasGlobal: CategoriaOption[] = [];
+
+  eventosFiltrados = computed(() => {
+    const circuitoId = this.filterCircuito;
+    return circuitoId ? this.eventos().filter(e => e.circuitId === circuitoId) : this.eventos();
+  });
 
   expanded = signal<string | null>(null);
   toggleExpand(id: string): void {
@@ -571,7 +583,8 @@ export class InscritosComponent implements OnInit {
         this.api.get<any>('/circuits'),
       ]);
       this.eventos.set(eventos);
-      this.categorias.set((categoriesRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre })));
+      this.categoriasGlobal = (categoriesRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre }));
+      this.categorias.set(this.categoriasGlobal);
       this.circuitos.set((circuitsRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre })));
       await this.loadInscritos();
     } catch {
@@ -596,6 +609,34 @@ export class InscritosComponent implements OnInit {
       page += 1;
     }
     return all;
+  }
+
+  async onFilterCircuitoChange(): Promise<void> {
+    if (this.filterEvento && !this.eventosFiltrados().some(e => e.id === this.filterEvento)) {
+      this.filterEvento = '';
+      this.filterCategoria = '';
+      this.categorias.set(this.categoriasGlobal);
+    }
+    await this.loadInscritos();
+  }
+
+  async onFilterEventoChange(): Promise<void> {
+    this.filterCategoria = '';
+    await this.loadCategoriasForEvento();
+    await this.loadInscritos();
+  }
+
+  private async loadCategoriasForEvento(): Promise<void> {
+    if (!this.filterEvento) {
+      this.categorias.set(this.categoriasGlobal);
+      return;
+    }
+    try {
+      const res = await this.api.get<any>(`/events/${this.filterEvento}/categories`);
+      this.categorias.set((res?.data ?? []).map((c: any) => ({ id: c.categoryId ?? c.id, nombre: c.categoryName ?? c.nombre })));
+    } catch {
+      this.categorias.set(this.categoriasGlobal);
+    }
   }
 
   async loadInscritos(): Promise<void> {
