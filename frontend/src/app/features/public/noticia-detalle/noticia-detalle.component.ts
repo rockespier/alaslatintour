@@ -1,4 +1,5 @@
-import { Component, inject, signal, input, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, input, OnInit, effect, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
@@ -67,12 +68,44 @@ type RelatedArticle = ArticleSummary;
             }
             <!-- Share buttons -->
             <div class="ml-auto flex items-center gap-2">
-              <button class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center text-text-muted"
-                      aria-label="Compartir">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-2.684 0m0-11.052a3 3 0 102.684 0M6.316 10.658L13 7m0 10l-6.684-3.658"/>
+              <button type="button"
+                      class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center text-text-muted"
+                      aria-label="Compartir en Facebook"
+                      (click)="shareOn('facebook')">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 12.06C22 6.505 17.523 2 12 2S2 6.505 2 12.06c0 5.02 3.657 9.184 8.438 9.94v-7.03H7.898v-2.91h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.876h2.773l-.443 2.91h-2.33V22c4.78-.756 8.438-4.92 8.438-9.94z"/>
                 </svg>
+              </button>
+              <button type="button"
+                      class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center text-text-muted"
+                      aria-label="Compartir en X"
+                      (click)="shareOn('x')">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </button>
+              <button type="button"
+                      class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center text-text-muted"
+                      aria-label="Compartir en WhatsApp"
+                      (click)="shareOn('whatsapp')">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.29-1.39a9.87 9.87 0 0 0 4.7 1.2h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.14.82.84-3.06-.2-.32a8.2 8.2 0 0 1-1.27-4.37c0-4.55 3.71-8.26 8.27-8.26a8.22 8.22 0 0 1 5.85 2.43 8.19 8.19 0 0 1 2.42 5.83c0 4.56-3.71 8.25-8.28 8.25zm4.53-6.18c-.25-.12-1.47-.72-1.7-.8-.23-.09-.39-.12-.56.12-.17.25-.64.8-.78.96-.15.17-.29.19-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.4 1.4.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
+                </svg>
+              </button>
+              <button type="button"
+                      class="w-9 h-9 rounded-md bg-navy-dark border border-navy-mid hover:border-cyan-brand hover:text-cyan-brand transition flex items-center justify-center text-text-muted"
+                      [attr.aria-label]="linkCopied() ? 'Enlace copiado' : 'Copiar enlace'"
+                      (click)="copyLink()">
+                @if (linkCopied()) {
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                } @else {
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 01-5.656-5.656l1.5-1.5M10.172 13.828a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5"/>
+                  </svg>
+                }
               </button>
             </div>
           </div>
@@ -146,11 +179,13 @@ export class NoticiaDetalleComponent implements OnInit {
   private titleSvc = inject(Title);
   private meta = inject(Meta);
   private sanitizer = inject(DomSanitizer);
+  private platformId = inject(PLATFORM_ID);
 
   loading = signal(true);
   notFound = signal(false);
   article = signal<ArticleDetail | null>(null);
   related = signal<RelatedArticle[]>([]);
+  linkCopied = signal(false);
 
   constructor() {
     effect(() => {
@@ -215,6 +250,29 @@ export class NoticiaDetalleComponent implements OnInit {
     // header (hotlink protection), so strip it for embedded content images too.
     const withReferrerPolicy = html.replace(/<img /gi, '<img referrerpolicy="no-referrer" ');
     return this.sanitizer.bypassSecurityTrustHtml(withReferrerPolicy);
+  }
+
+  shareOn(network: 'facebook' | 'x' | 'whatsapp'): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(this.article()?.title ?? '');
+    const shareUrls: Record<typeof network, string> = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      x: `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${text}%20${url}`,
+    };
+    window.open(shareUrls[network], '_blank', 'noopener,noreferrer,width=600,height=500');
+  }
+
+  async copyLink(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    } catch {
+      // navigator.clipboard puede fallar por permisos del navegador; se ignora silenciosamente.
+    }
   }
 
   categoryClass(cat: string): string {
