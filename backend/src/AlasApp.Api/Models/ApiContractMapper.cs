@@ -1820,6 +1820,38 @@ public static class ApiContractMapper
         };
     }
 
+    public static AdminModule ToDomainAdminModule(Generated.AdminModule value)
+    {
+        return value switch
+        {
+            Generated.AdminModule.Dashboard => AdminModule.Dashboard,
+            Generated.AdminModule.Usuarios => AdminModule.Usuarios,
+            Generated.AdminModule.Circuitos => AdminModule.Circuitos,
+            Generated.AdminModule.Eventos => AdminModule.Eventos,
+            Generated.AdminModule.Categorías => AdminModule.Categorias,
+            Generated.AdminModule.Inscritos => AdminModule.Inscritos,
+            Generated.AdminModule.Pagos => AdminModule.Pagos,
+            Generated.AdminModule.Tokens => AdminModule.Tokens,
+            Generated.AdminModule.Configuración => AdminModule.Configuracion,
+            _ => throw new ValidationException(
+                "El modulo especificado no es valido.",
+                [new ValidationError("module", "El modulo especificado no es valido.")])
+        };
+    }
+
+    public static PermissionLevel ToDomainPermissionLevel(Generated.PermissionLevel value)
+    {
+        return value switch
+        {
+            Generated.PermissionLevel.Full => PermissionLevel.Full,
+            Generated.PermissionLevel.ReadOnly => PermissionLevel.ReadOnly,
+            Generated.PermissionLevel.None => PermissionLevel.None,
+            _ => throw new ValidationException(
+                "El nivel de permiso especificado no es valido.",
+                [new ValidationError("level", "El nivel de permiso especificado no es valido.")])
+        };
+    }
+
     private static Generated.InscriptionStatusCompetitor ParseInscriptionStatusCompetitor(string value)
     {
         return NormalizeEnumText(value) switch

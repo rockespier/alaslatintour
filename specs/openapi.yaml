@@ -1691,6 +1691,34 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /admin/roles/{role}/permissions:
+    parameters:
+      - name: role
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/AdminRole'
+    put:
+      tags: [Admin Users]
+      summary: Editar la matriz de permisos de un rol (SuperAdmin no se puede modificar)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolePermissionsUpdateRequest'
+      responses:
+        '200':
+          description: Rol actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   # ═══════════════════════════ MEMBERSHIPS ═══════════════════════════
 
   /memberships:
@@ -3345,6 +3373,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RoleResponse'
+
+    RolePermissionsUpdateRequest:
+      type: object
+      required: [permissions]
+      properties:
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolePermission'
 
     # ── MEMBERSHIPS ───────────────────────────────────────────────
 

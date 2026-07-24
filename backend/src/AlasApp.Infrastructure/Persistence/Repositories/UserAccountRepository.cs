@@ -1,4 +1,5 @@
 using AlasApp.Application.Abstractions.Persistence;
+using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.AdminUsers.Models;
 using AlasApp.Application.Auth.Models;
 using AlasApp.Domain.Entities;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AlasApp.Infrastructure.Persistence.Repositories;
 
-public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAccountRepository
+public sealed class UserAccountRepository(AlasAppDbContext dbContext, IAdminRolePermissionProvider permissionProvider) : IUserAccountRepository
 {
     public Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken)
     {
@@ -141,9 +142,20 @@ public sealed class UserAccountRepository(AlasAppDbContext dbContext) : IUserAcc
             })
             .ToListAsync(cancellationToken);
 
-        return items
-            .Where(x => AdminRolePermissionMatrix.HasPermission(x.Role, module, minimumLevel))
-            .Select(x => x.Email)
+        var allowedEmails = new List<string>();
+
+        foreach (var role in items.Select(x => x.Role).Distinct())
+        {
+            var level = await permissionProvider.GetPermissionAsync(role, module, cancellationToken);
+            if (!AdminRolePermissionMatrix.Satisfies(level, minimumLevel))
+            {
+                continue;
+            }
+
+            allowedEmails.AddRange(items.Where(x => x.Role == role).Select(x => x.Email));
+        }
+
+        return allowedEmails
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }

@@ -1,5 +1,6 @@
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Abstractions.Services;
+using AlasApp.Application.AdminUsers.Commands.UpdateRolePermissions;
 using AlasApp.Application.Articles.Commands.CreateArticle;
 using AlasApp.Application.Articles.Commands.DeleteArticle;
 using AlasApp.Application.Articles.Commands.UpdateArticle;
@@ -102,6 +103,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IClock, SystemClock>();
         services.AddScoped<IRequestDispatcher, RequestDispatcher>();
+        services.AddSingleton<IAdminRolePermissionProvider, AdminRolePermissionProvider>();
         services.AddScoped<IRequestHandler<ListArticlesQuery, PagedResult<Articles.Models.ArticleSummaryDto>>, ListArticlesQueryHandler>();
         services.AddScoped<IRequestHandler<GetAdminSettingsQuery, AdminSettings.Models.AdminSettingsDto>, GetAdminSettingsQueryHandler>();
         services.AddScoped<IRequestHandler<UpdateAdminSettingsCommand, AdminSettings.Models.AdminSettingsDto>, UpdateAdminSettingsCommandHandler>();
@@ -116,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<UpdateAdminUserCommand, AdminUsers.Models.AdminUserDto>, UpdateAdminUserCommandHandler>();
         services.AddScoped<IRequestHandler<DeleteAdminUserCommand, bool>, DeleteAdminUserCommandHandler>();
         services.AddScoped<IRequestHandler<ListAdminRolesQuery, IReadOnlyCollection<AdminUsers.Models.RoleDto>>, ListAdminRolesQueryHandler>();
+        services.AddScoped<IRequestHandler<UpdateRolePermissionsCommand, AdminUsers.Models.RoleDto>, UpdateRolePermissionsCommandHandler>();
         services.AddScoped<IRequestHandler<GetDashboardQuery, Dashboard.Models.DashboardDto>, GetDashboardQueryHandler>();
         services.AddScoped<IRequestHandler<ListGalleriesQuery, IReadOnlyCollection<Galleries.Models.GallerySummaryDto>>, ListGalleriesQueryHandler>();
         services.AddScoped<IRequestHandler<GetGalleryBySlugQuery, Galleries.Models.GalleryDetailDto>, GetGalleryBySlugQueryHandler>();

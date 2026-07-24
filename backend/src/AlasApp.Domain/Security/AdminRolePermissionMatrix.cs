@@ -58,8 +58,11 @@ public static class AdminRolePermissionMatrix
 
     public static bool HasPermission(AdminRole role, AdminModule module, PermissionLevel requiredLevel)
     {
-        var actualLevel = GetPermission(role, module);
+        return Satisfies(GetPermission(role, module), requiredLevel);
+    }
 
+    public static bool Satisfies(PermissionLevel actualLevel, PermissionLevel requiredLevel)
+    {
         return requiredLevel switch
         {
             PermissionLevel.ReadOnly => actualLevel is PermissionLevel.ReadOnly or PermissionLevel.Full,

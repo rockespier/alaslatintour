@@ -89,6 +89,81 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
     }
 
     [Fact]
+    public async Task UpdateRolePermissions_ShouldPersistAndReflectOnListAndAuthorization()
+    {
+        await AuthenticateAsAsync(AdminRole.SuperAdmin, $"superadmin-perms-{Guid.NewGuid():N}@test.com");
+
+        // Only "Eventos" is changed from its default (ReadOnly) so this does not disturb the
+        // Revisor default-permission assertions exercised by other tests in this shared fixture.
+        var updateResponse = await _client.PutAsJsonAsync("/v1/admin/roles/Revisor/permissions", new
+        {
+            permissions = new[]
+            {
+                new { module = "Dashboard", level = "read-only" },
+                new { module = "Usuarios", level = "read-only" },
+                new { module = "Circuitos", level = "read-only" },
+                new { module = "Eventos", level = "full" },
+                new { module = "Categorías", level = "read-only" },
+                new { module = "Inscritos", level = "read-only" },
+                new { module = "Pagos", level = "read-only" },
+                new { module = "Tokens", level = "read-only" },
+                new { module = "Configuración", level = "none" }
+            }
+        });
+
+        var updateBody = await updateResponse.Content.ReadAsStringAsync();
+        Assert.True(updateResponse.StatusCode == HttpStatusCode.OK, updateBody);
+
+        var updated = JObject.Parse(updateBody);
+        Assert.Contains(updated["permissions"]!, p => p?["module"]?.Value<string>() == "Eventos" && p?["level"]?.Value<string>() == "full");
+
+        var rolesResponse = await _client.GetAsync("/v1/admin/roles");
+        var rolesJson = JObject.Parse(await rolesResponse.Content.ReadAsStringAsync());
+        var revisorRole = rolesJson["data"]!.Single(x => x?["name"]?.Value<string>() == "Revisor");
+        Assert.Contains(revisorRole["permissions"]!, p => p?["module"]?.Value<string>() == "Eventos" && p?["level"]?.Value<string>() == "full");
+
+        _client.DefaultRequestHeaders.Authorization = null;
+        await AuthenticateAsAsync(AdminRole.Revisor, $"revisor-perms-{Guid.NewGuid():N}@test.com");
+
+        var eventWriteResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Evento Revisor Full",
+            circuitId = Guid.NewGuid().ToString(),
+            fechaInicio = "2026-10-02",
+            fechaFin = "2026-10-04",
+            pais = "Perú",
+            ciudad = "Lima",
+            playa = "Punta Rocas",
+            stars = 4,
+            capacidadMaxima = 20,
+            prizeAmountUsd = 20000,
+            surfScoresCode = $"RV-{Guid.NewGuid():N}".Substring(0, 12),
+            accessType = "Abierto",
+            estado = "Activo"
+        });
+
+        Assert.NotEqual(HttpStatusCode.Forbidden, eventWriteResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateRolePermissions_ShouldRejectSuperAdminAndIncompleteModuleList()
+    {
+        await AuthenticateAsAsync(AdminRole.SuperAdmin, $"superadmin-guard-{Guid.NewGuid():N}@test.com");
+
+        var superAdminResponse = await _client.PutAsJsonAsync("/v1/admin/roles/SuperAdmin/permissions", new
+        {
+            permissions = new[] { new { module = "Dashboard", level = "read-only" } }
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, superAdminResponse.StatusCode);
+
+        var incompleteResponse = await _client.PutAsJsonAsync("/v1/admin/roles/Admin/permissions", new
+        {
+            permissions = new[] { new { module = "Dashboard", level = "read-only" } }
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, incompleteResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateAdminUser_WithDuplicateEmail_ShouldReturnConflict()
     {
         await AuthenticateAsAsync(AdminRole.SuperAdmin, $"dup-super-{Guid.NewGuid():N}@test.com");
