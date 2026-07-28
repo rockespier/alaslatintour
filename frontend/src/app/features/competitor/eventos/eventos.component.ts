@@ -28,11 +28,10 @@ interface EventItem {
   statusPublic: string;
   fechaInicio: string;
   fechaFin: string;
-  circuito?: string;
-  circuitoId?: string;
-  capacidadTotal?: number;
-  inscritosTotal?: number;
-  premioUSD?: number;
+  circuitId?: string;
+  capacidadMaxima?: number;
+  enrolledCount?: number;
+  prizeAmountUsd?: number;
   categorias?: EventCategory[];
   inscripcionCierre?: string;
   isInvitational?: boolean;
@@ -215,36 +214,36 @@ const STATUS_CLASS: Record<string, string> = {
                               <p class="font-heading text-lg">{{ event.ganador }}</p>
                             </div>
                           }
-                          @if (event.inscritosTotal) {
+                          @if (event.enrolledCount) {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Participantes</p>
-                              <p class="font-heading text-lg">{{ event.inscritosTotal }}</p>
+                              <p class="font-heading text-lg">{{ event.enrolledCount }}</p>
                             </div>
                           }
                         </div>
                       } @else {
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
-                          @if (event.premioUSD) {
+                          @if (event.prizeAmountUsd) {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Premio</p>
-                              <p class="font-heading text-lg text-cyan-brand">{{ formatUSD(event.premioUSD) }} USD</p>
+                              <p class="font-heading text-lg text-cyan-brand">{{ formatUSD(event.prizeAmountUsd) }} USD</p>
                             </div>
                           }
-                          @if (event.inscritosTotal !== undefined && event.capacidadTotal) {
+                          @if (event.enrolledCount !== undefined && event.capacidadMaxima) {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Inscritos</p>
-                              <p class="font-heading text-lg">{{ event.inscritosTotal }}<span class="text-text-muted text-sm">/{{ event.capacidadTotal }}</span></p>
+                              <p class="font-heading text-lg">{{ event.enrolledCount }}<span class="text-text-muted text-sm">/{{ event.capacidadMaxima }}</span></p>
                               <div class="w-full h-1.5 bg-navy-mid rounded-full mt-1 overflow-hidden">
                                 <div class="h-full rounded-full transition-all"
-                                     [class]="capacityColor(event.inscritosTotal, event.capacidadTotal)"
-                                     [style.width.%]="capacityPct(event.inscritosTotal, event.capacidadTotal)"></div>
+                                     [class]="capacityColor(event.enrolledCount, event.capacidadMaxima)"
+                                     [style.width.%]="capacityPct(event.enrolledCount, event.capacidadMaxima)"></div>
                               </div>
                             </div>
                           }
-                          @if (event.circuito) {
+                          @if (circuitNombre(event); as nombreCircuito) {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Circuito</p>
-                              <p class="font-heading text-lg">{{ event.circuito }}</p>
+                              <p class="font-heading text-lg">{{ nombreCircuito }}</p>
                             </div>
                           }
                         </div>
@@ -421,7 +420,7 @@ export class EventosComponent implements OnInit {
     const evts = this.events();
     const list = filter === 'all'
       ? evts
-      : evts.filter(e => e.circuitoId === filter || e.circuito === this.circuits().find(c => c.id === filter)?.nombre);
+      : evts.filter(e => e.circuitId === filter);
     return sortEventsForDisplay(list);
   });
 
@@ -512,9 +511,13 @@ export class EventosComponent implements OnInit {
   }
 
   isFull(event: EventItem): boolean {
-    return event.inscritosTotal !== undefined
-      && event.capacidadTotal !== undefined
-      && event.inscritosTotal >= event.capacidadTotal;
+    return event.enrolledCount !== undefined
+      && event.capacidadMaxima !== undefined
+      && event.enrolledCount >= event.capacidadMaxima;
+  }
+
+  circuitNombre(event: EventItem): string | undefined {
+    return this.circuits().find(c => c.id === event.circuitId)?.nombre;
   }
 
   toggleExpand(id: string): void {
