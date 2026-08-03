@@ -56,6 +56,22 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
         }
       </div>
 
+      <!-- Stat cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-navy-dark rounded-xl border border-navy-mid p-5">
+          <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Circuitos Activos</p>
+          <p class="font-heading text-4xl text-cyan-brand">{{ statActivos() }}</p>
+        </div>
+        <div class="bg-navy-dark rounded-xl border border-navy-mid p-5">
+          <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Total Eventos en Circuitos</p>
+          <p class="font-heading text-4xl text-text-light">{{ statTotalEventos() }}</p>
+        </div>
+        <div class="bg-navy-dark rounded-xl border border-navy-mid p-5">
+          <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-1">Competidores Inscritos</p>
+          <p class="font-heading text-4xl text-success-brand">{{ statTotalCompetidores() }}</p>
+        </div>
+      </div>
+
       <!-- Filters -->
       <div class="flex gap-2 mb-5">
         @for (f of estadoFilters; track f.value) {
@@ -302,6 +318,10 @@ export class CircuitosComponent implements OnInit {
     const list = this.circuits();
     return f === 'todos' ? list : list.filter(c => c.estado === f);
   });
+
+  statActivos = computed(() => this.circuits().filter(c => c.estado === 'Activo').length);
+  statTotalEventos = computed(() => this.circuits().reduce((sum, c) => sum + (c.eventsCount ?? 0), 0));
+  statTotalCompetidores = computed(() => this.circuits().reduce((sum, c) => sum + (c.competidoresCount ?? 0), 0));
 
   async ngOnInit(): Promise<void> {
     await this.load();
