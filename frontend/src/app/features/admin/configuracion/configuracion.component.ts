@@ -437,42 +437,48 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               </div>
 
               <div class="space-y-3">
-                <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-deepest border border-navy-mid">
+                <label class="flex items-center justify-between gap-4 cursor-pointer p-4 rounded-lg bg-navy-deepest border border-navy-mid hover:border-cyan-brand/40 transition">
                   <div>
                     <p class="font-medium text-sm text-text-light">Notificar nuevas inscripciones al admin</p>
                     <p class="text-xs text-text-muted">Envía email cada vez que un competidor se inscribe a un evento.</p>
                   </div>
-                  <button type="button" (click)="notifNewInscription.set(!notifNewInscription())" [disabled]="!canEdit()"
+                  <button type="button" role="switch" [attr.aria-checked]="notifNewInscription()"
+                          aria-label="Notificar nuevas inscripciones al admin"
+                          (click)="notifNewInscription.set(!notifNewInscription())" [disabled]="!canEdit()"
                           [class]="notifNewInscription() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
                     <span [class]="notifNewInscription() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
 
-                <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-deepest border border-navy-mid">
+                <label class="flex items-center justify-between gap-4 cursor-pointer p-4 rounded-lg bg-navy-deepest border border-navy-mid hover:border-cyan-brand/40 transition">
                   <div>
                     <p class="font-medium text-sm text-text-light">Notificar pagos confirmados</p>
                     <p class="text-xs text-text-muted">Email al competidor cuando su pago es validado.</p>
                   </div>
-                  <button type="button" (click)="notifPaymentConfirmed.set(!notifPaymentConfirmed())" [disabled]="!canEdit()"
+                  <button type="button" role="switch" [attr.aria-checked]="notifPaymentConfirmed()"
+                          aria-label="Notificar pagos confirmados"
+                          (click)="notifPaymentConfirmed.set(!notifPaymentConfirmed())" [disabled]="!canEdit()"
                           [class]="notifPaymentConfirmed() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
                     <span [class]="notifPaymentConfirmed() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
 
-                <label class="flex items-center justify-between cursor-pointer p-3 rounded-lg bg-navy-deepest border border-navy-mid">
+                <label class="flex items-center justify-between gap-4 cursor-pointer p-4 rounded-lg bg-navy-deepest border border-navy-mid hover:border-cyan-brand/40 transition">
                   <div>
                     <p class="font-medium text-sm text-text-light">Notificar tokens expirados</p>
                     <p class="text-xs text-text-muted">Avisa al competidor y admin cuando un token caduca sin ser canjeado.</p>
                   </div>
-                  <button type="button" (click)="notifTokenExpired.set(!notifTokenExpired())" [disabled]="!canEdit()"
+                  <button type="button" role="switch" [attr.aria-checked]="notifTokenExpired()"
+                          aria-label="Notificar tokens expirados"
+                          (click)="notifTokenExpired.set(!notifTokenExpired())" [disabled]="!canEdit()"
                           [class]="notifTokenExpired() ? 'bg-cyan-brand' : 'bg-navy-mid'"
-                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50">
+                          class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
                     <span [class]="notifTokenExpired() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"></span>
+                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
               </div>
