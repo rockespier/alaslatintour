@@ -191,10 +191,21 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               </div>
               <h3 class="font-heading text-xl text-white mb-2">{{ r.nombre }}</h3>
               <p class="text-sm text-text-muted leading-relaxed mb-4">{{ r.descripcion }}</p>
-              <button (click)="showToast('Edición de rol no disponible todavía')"
-                      class="w-full px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition">
-                Editar Rol
-              </button>
+              @if (r.nombre === 'Super Admin') {
+                <div class="w-full px-4 py-2 border border-navy-mid text-text-muted/50 font-accent uppercase tracking-wider text-sm rounded-md text-center cursor-not-allowed"
+                     title="El rol Super Admin mantiene acceso total y no puede modificarse.">
+                  Protegido
+                </div>
+              } @else if (canEdit()) {
+                <button (click)="openEditRole(r.original)"
+                        class="w-full px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase tracking-wider text-sm rounded-md transition">
+                  Editar Rol
+                </button>
+              } @else {
+                <div class="w-full px-4 py-2 border border-navy-mid text-text-muted/50 font-accent uppercase tracking-wider text-sm rounded-md text-center cursor-not-allowed">
+                  Sin permiso de edición
+                </div>
+              }
             </div>
           }
         </div>
@@ -206,7 +217,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           <div class="flex items-start justify-between mb-6 flex-col sm:flex-row gap-3">
             <div>
               <h2 class="font-heading text-xl text-white mb-1">Matriz de Permisos</h2>
-              <p class="text-sm text-text-muted">Accesos por rol y módulo del sistema (definidos en el backend).</p>
+              <p class="text-sm text-text-muted">Accesos por rol y módulo del sistema. Editable desde "Roles y Perfiles".</p>
             </div>
             <div class="flex items-center gap-4 text-xs">
               <span class="flex items-center gap-1.5"><svg class="h-4 w-4 text-success-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg><span class="text-text-muted">Acceso total</span></span>
@@ -339,6 +350,42 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       </div>
     }
 
+    <!-- Modal Editar Permisos de Rol -->
+    @if (editingRole()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closeRoleModal()">
+        <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
+            <h3 class="font-heading text-xl text-white">Editar permisos — {{ editingRole()!.name }}</h3>
+            <button (click)="closeRoleModal()" class="text-text-muted hover:text-white transition">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 space-y-3">
+            <p class="text-xs text-text-muted mb-2">Define el nivel de acceso de este rol para cada módulo del sistema.</p>
+            @for (perm of editingPermissions; track perm.module) {
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-text-light">{{ perm.module }}</span>
+                <select [class]="CLASS_INPUT + ' max-w-[170px]'" [(ngModel)]="perm.level">
+                  <option value="full">Acceso total</option>
+                  <option value="read-only">Solo lectura</option>
+                  <option value="none">Sin acceso</option>
+                </select>
+              </div>
+            }
+            @if (roleError()) {
+              <p class="text-error-brand text-xs">{{ roleError() }}</p>
+            }
+          </div>
+          <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <button (click)="closeRoleModal()" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
+            <button (click)="saveRolePermissions()" [disabled]="savingRole()" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+              {{ savingRole() ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Toast -->
     @if (toast().show) {
       <div class="fixed bottom-6 right-6 z-50 bg-navy-dark border border-success-brand/50 rounded-lg shadow-2xl px-5 py-3 flex items-center gap-3">
@@ -400,6 +447,7 @@ export class UsuariosComponent implements OnInit {
       nombre: r.name,
       descripcion: ROL_DESCRIPCIONES[r.name] ?? '',
       usuarios: conteo.get(r.name) ?? 0,
+      original: r,
       ...ROL_ESTILOS[r.name],
     }));
   });
@@ -595,6 +643,42 @@ export class UsuariosComponent implements OnInit {
       this.passwordError.set(err?.body?.message ?? 'No se pudo actualizar la contraseña.');
     } finally {
       this.savingPassword.set(false);
+    }
+  }
+
+  // ─── Editar permisos de rol ─────────────────────────────────────
+
+  editingRole = signal<ApiRole | null>(null);
+  editingPermissions: ApiRolePermission[] = [];
+  savingRole = signal(false);
+  roleError = signal<string | null>(null);
+
+  openEditRole(r: ApiRole): void {
+    this.editingRole.set(r);
+    this.editingPermissions = r.permissions.map(p => ({ ...p }));
+    this.roleError.set(null);
+  }
+
+  closeRoleModal(): void {
+    this.editingRole.set(null);
+  }
+
+  async saveRolePermissions(): Promise<void> {
+    const role = this.editingRole();
+    if (!role) return;
+    this.savingRole.set(true);
+    this.roleError.set(null);
+    try {
+      const res = await this.api.put<ApiRole>(`/admin/roles/${encodeURIComponent(role.name)}/permissions`, {
+        permissions: this.editingPermissions,
+      });
+      this.apiRoles.update(list => list.map(x => x.name === role.name ? res : x));
+      this.closeRoleModal();
+      this.showToast('Permisos del rol actualizados');
+    } catch (err: any) {
+      this.roleError.set(err?.body?.message ?? 'No se pudo actualizar los permisos del rol.');
+    } finally {
+      this.savingRole.set(false);
     }
   }
 }

@@ -1,30 +1,37 @@
 using AlasApp.Application.Abstractions.Messaging;
+using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.AdminUsers.Models;
 using AlasApp.Domain.Enums;
 using AlasApp.Domain.Security;
 
 namespace AlasApp.Application.AdminUsers.Queries.ListAdminRoles;
 
-public sealed class ListAdminRolesQueryHandler : IRequestHandler<ListAdminRolesQuery, IReadOnlyCollection<RoleDto>>
+public sealed class ListAdminRolesQueryHandler(IAdminRolePermissionProvider provider)
+    : IRequestHandler<ListAdminRolesQuery, IReadOnlyCollection<RoleDto>>
 {
-    public Task<IReadOnlyCollection<RoleDto>> Handle(ListAdminRolesQuery request, CancellationToken cancellationToken)
-    {
-        IReadOnlyCollection<RoleDto> roles =
-        [
-            new RoleDto(AdminRole.SuperAdmin, BuildPermissions(AdminRole.SuperAdmin)),
-            new RoleDto(AdminRole.Admin, BuildPermissions(AdminRole.Admin)),
-            new RoleDto(AdminRole.Arbitro, BuildPermissions(AdminRole.Arbitro)),
-            new RoleDto(AdminRole.Revisor, BuildPermissions(AdminRole.Revisor))
-        ];
+    private static readonly AdminRole[] AllRoles =
+    [
+        AdminRole.SuperAdmin,
+        AdminRole.Admin,
+        AdminRole.Arbitro,
+        AdminRole.Revisor
+    ];
 
-        return Task.FromResult(roles);
+    public async Task<IReadOnlyCollection<RoleDto>> Handle(ListAdminRolesQuery request, CancellationToken cancellationToken)
+    {
+        var snapshot = await provider.GetSnapshotAsync(cancellationToken);
+
+        return AllRoles
+            .Select(role => new RoleDto(role, BuildPermissions(role, snapshot)))
+            .ToList();
     }
 
-    private static IReadOnlyCollection<RolePermissionDto> BuildPermissions(AdminRole role)
+    private static IReadOnlyCollection<RolePermissionDto> BuildPermissions(
+        AdminRole role,
+        IReadOnlyDictionary<(AdminRole Role, AdminModule Module), PermissionLevel> snapshot)
     {
-        return AdminRolePermissionMatrix
-            .GetPermissions(role)
-            .Select(permission => new RolePermissionDto(permission.Key, permission.Value))
+        return AdminRolePermissionMatrix.Modules
+            .Select(module => new RolePermissionDto(module, snapshot[(role, module)]))
             .ToList();
     }
 }
