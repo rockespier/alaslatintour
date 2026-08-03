@@ -453,9 +453,6 @@ export class EventosComponent implements OnInit {
       const res = await this.api.get<any>(`/circuits?status=Activo&year=${this.currentYear}&limit=20`);
       const currentCircuits: Circuit[] = res?.data ?? [];
       this.circuits.set(currentCircuits);
-      if (currentCircuits.length > 0) {
-        this.circuitFilter.set(currentCircuits[0].id);
-      }
     } catch {
       this.circuits.set([]);
     }
