@@ -19,6 +19,7 @@ public sealed record CompetitorDto(
     string Federacion,
     string SurfScoresCode,
     CompetitorLicenseDto License,
+    bool HasIdentityDocument,
     bool NotificationEmail,
     bool NotificationPush,
     bool NotificationResultados,

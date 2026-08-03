@@ -52,6 +52,21 @@ export class ApiService {
     }
   }
 
+  async getBlob(path: string): Promise<Blob> {
+    const url = `${this.baseUrl}${path}`;
+    try {
+      return await firstValueFrom(
+        this.http.get(url, { headers: this.buildHeaders(null), responseType: 'blob' }),
+      );
+    } catch (err) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401) this.auth.logout();
+        throw Object.assign(new Error(err.error?.message ?? err.statusText), { status: err.status, body: err.error });
+      }
+      throw err;
+    }
+  }
+
   async downloadFile(path: string, filename: string): Promise<void> {
     const url = `${this.baseUrl}${path}`;
     let blob: Blob;

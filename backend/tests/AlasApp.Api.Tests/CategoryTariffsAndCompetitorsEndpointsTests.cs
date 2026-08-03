@@ -309,6 +309,60 @@ public sealed class CategoryTariffsAndCompetitorsEndpointsTests : IClassFixture<
         Assert.Equal("Paid at venue", updatedFine.RootElement.GetProperty("notes").GetString());
     }
 
+    [Fact]
+    public async Task CompetitorIdentityDocument_CanBeViewedByAdmin()
+    {
+        var competitorEmail = $"identity-competitor-{Guid.NewGuid():N}@test.com";
+        var competitorId = await RegisterCompetitorAsync(competitorEmail, "Password1");
+
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var getResponse = await _client.GetAsync($"/v1/competitors/{competitorId}");
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+        var competitor = await ReadJsonAsync(getResponse);
+        Assert.True(competitor.RootElement.GetProperty("hasIdentityDocument").GetBoolean());
+
+        var documentResponse = await _client.GetAsync($"/v1/competitors/{competitorId}/identity-document");
+        Assert.Equal(HttpStatusCode.OK, documentResponse.StatusCode);
+        Assert.Equal("application/pdf", documentResponse.Content.Headers.ContentType?.MediaType);
+
+        var documentBytes = await documentResponse.Content.ReadAsByteArrayAsync();
+        Assert.Equal("test-identity-document", System.Text.Encoding.UTF8.GetString(documentBytes));
+    }
+
+    [Fact]
+    public async Task CompetitorIdentityDocument_ReturnsNotFound_WhenNoDocumentAttached()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var createResponse = await _client.PostAsJsonAsync("/v1/competitors", new
+        {
+            nombre = "Sin",
+            apellido = "Documento",
+            email = "sin.documento@example.com",
+            fechaNacimiento = "1998-04-22",
+            genero = "Masculino",
+            pais = "Brasil",
+            telefono = "+55 11 9 8765-4321",
+            club = "Praia Club",
+            postura = "Regular",
+            tallaCamiseta = "M",
+            numeroCamiseta = "#23",
+            patrocinadores = "Marca A",
+            federacion = "CBSurf"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await ReadJsonAsync(createResponse);
+        var competitorId = created.RootElement.GetProperty("id").GetString();
+
+        Assert.False(created.RootElement.GetProperty("hasIdentityDocument").GetBoolean());
+
+        var documentResponse = await _client.GetAsync($"/v1/competitors/{competitorId}/identity-document");
+        Assert.Equal(HttpStatusCode.NotFound, documentResponse.StatusCode);
+    }
+
     private async Task<string> RegisterCompetitorAsync(string email, string password)
     {
         var registerResponse = await TestCompetitorRegistration.PostAsync(
