@@ -447,8 +447,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                           (click)="notifNewInscription.set(!notifNewInscription())" [disabled]="!canEdit()"
                           [class]="notifNewInscription() ? 'bg-cyan-brand' : 'bg-navy-mid'"
                           class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
-                    <span [class]="notifNewInscription() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
+                    <span [class]="notifNewInscription() ? 'translate-x-6' : 'translate-x-0'"
+                          class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
 
@@ -462,8 +462,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                           (click)="notifPaymentConfirmed.set(!notifPaymentConfirmed())" [disabled]="!canEdit()"
                           [class]="notifPaymentConfirmed() ? 'bg-cyan-brand' : 'bg-navy-mid'"
                           class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
-                    <span [class]="notifPaymentConfirmed() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
+                    <span [class]="notifPaymentConfirmed() ? 'translate-x-6' : 'translate-x-0'"
+                          class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
 
@@ -477,8 +477,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                           (click)="notifTokenExpired.set(!notifTokenExpired())" [disabled]="!canEdit()"
                           [class]="notifTokenExpired() ? 'bg-cyan-brand' : 'bg-navy-mid'"
                           class="relative w-12 h-6 rounded-full transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-brand focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deepest">
-                    <span [class]="notifTokenExpired() ? 'translate-x-6' : 'translate-x-0.5'"
-                          class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
+                    <span [class]="notifTokenExpired() ? 'translate-x-6' : 'translate-x-0'"
+                          class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"></span>
                   </button>
                 </label>
               </div>

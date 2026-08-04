@@ -81,7 +81,7 @@ const STATUS_CLASS: Record<string, string> = {
                 {{ userInitial() }}
               </div>
               <div>
-                <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">Temporada ALAS Latin Tour 2026</p>
+                <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">Temporada ALAS Global Tour 2026</p>
                 <h1 class="font-heading text-2xl md:text-3xl">Hola, {{ firstName() }}</h1>
                 <p class="text-sm text-text-muted mt-1">Listo para tu próxima parada en el circuito.</p>
               </div>
@@ -107,7 +107,7 @@ const STATUS_CLASS: Record<string, string> = {
       <section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
         <div class="max-w-7xl mx-auto">
           <h1 class="font-heading text-4xl md:text-6xl">Eventos y Calendario 2026</h1>
-          <p class="mt-3 text-text-muted max-w-2xl">Todas las paradas del circuito latinoamericano de surf profesional.</p>
+          <p class="mt-3 text-text-muted max-w-2xl">Todas las paradas del circuito continental de surf profesional.</p>
         </div>
       </section>
     }
@@ -119,13 +119,13 @@ const STATUS_CLASS: Record<string, string> = {
         </div>
 
         <div class="flex flex-wrap gap-1 border-b border-navy-mid mb-8">
-          <button (click)="circuitFilter.set('all')"
+          <button (click)="selectCircuit('all')"
                   class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
                   [class]="circuitFilter() === 'all' ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
             Todos los Circuitos
           </button>
           @for (circuit of circuits(); track circuit.id) {
-            <button (click)="circuitFilter.set(circuit.id)"
+            <button (click)="selectCircuit(circuit.id)"
                     class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
                     [class]="circuitFilter() === circuit.id ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
               {{ circuit.nombre }}
@@ -437,7 +437,14 @@ export class EventosComponent implements OnInit {
     if (this.auth.isCompetitor()) this.loadCompetitorStats();
   }
 
+  selectCircuit(circuitId: string): void {
+    if (circuitId === this.circuitFilter()) return;
+    this.circuitFilter.set(circuitId);
+    this.expanded.set(new Set());
+  }
+
   private async loadEvents(): Promise<void> {
+    this.loading.set(true);
     try {
       const res = await this.api.get<any>('/events?limit=100&page=1&includeCategories=true');
       this.events.set(res?.data ?? []);

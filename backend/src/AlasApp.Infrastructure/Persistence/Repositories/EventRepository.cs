@@ -50,7 +50,7 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
         }
 
         filteredEvents = filteredEvents
-            .OrderBy(x => x.FechaInicio)
+            .OrderByDescending(x => x.FechaInicio)
             .ThenBy(x => x.Nombre)
             .ToList();
 

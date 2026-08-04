@@ -540,10 +540,10 @@ export class InscritosComponent implements OnInit {
 
   private categoriasGlobal: CategoriaOption[] = [];
 
-  eventosFiltrados = computed(() => {
+  eventosFiltrados(): EventoOption[] {
     const circuitoId = this.filterCircuito;
     return circuitoId ? this.eventos().filter(e => e.circuitId === circuitoId) : this.eventos();
-  });
+  }
 
   expanded = signal<string | null>(null);
   toggleExpand(id: string): void {
@@ -817,10 +817,10 @@ export class InscritosComponent implements OnInit {
     this.showToast('Resultados importados correctamente');
   }
 
-  puestosEventosFiltrados = computed(() => {
+  puestosEventosFiltrados(): EventoOption[] {
     const circuitoId = this.puestosCircuitoId;
     return circuitoId ? this.eventos().filter(e => e.circuitId === circuitoId) : this.eventos();
-  });
+  }
 
   onPuestosCircuitoChange(): void {
     if (this.puestosEventoId && !this.puestosEventosFiltrados().some(e => e.id === this.puestosEventoId)) {
