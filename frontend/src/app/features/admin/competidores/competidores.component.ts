@@ -5,6 +5,14 @@ import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
+interface CompetitorLicense {
+  number?: string | null;
+  numberLong?: string | null;
+  status?: string;
+  expirationDate?: string | null;
+  enabledCategories?: string[];
+}
+
 interface Competitor {
   id: string;
   nombre: string;
@@ -20,10 +28,7 @@ interface Competitor {
   numeroCamiseta?: string;
   patrocinadores?: string;
   federacion?: string;
-  licenseStatus?: string;
-  licenseNumber?: string | null;
-  expirationDate?: string | null;
-  enabledCategories?: string[];
+  license?: CompetitorLicense | null;
   hasIdentityDocument?: boolean;
   createdAt?: string;
 }
@@ -129,7 +134,7 @@ const PAGE_SIZE = 20;
                     <td class="px-4 py-4 text-text-muted text-xs">{{ c.pais }}</td>
                     <td class="px-4 py-4 text-text-muted text-xs">{{ c.genero }}</td>
                     <td class="px-4 py-4">
-                      <span [class]="licenseClass(c.licenseStatus)">{{ c.licenseStatus ?? '—' }}</span>
+                      <span [class]="licenseClass(c.license?.status)">{{ c.license?.status ?? '—' }}</span>
                     </td>
                     <td class="px-4 py-4 text-right whitespace-nowrap">
                       @if (canEdit()) {
@@ -324,9 +329,14 @@ const PAGE_SIZE = 20;
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Número de licencia</label>
+                <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">
+                  Número de licencia @if (isLicenseNumberRequired()) { * }
+                </label>
                 <input formControlName="licenseNumber" type="text" placeholder="ALAS-2026-001"
                        class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+                @if (licenseForm.get('licenseNumber')?.invalid && licenseForm.get('licenseNumber')?.touched) {
+                  <p class="text-error-brand text-xs mt-1">El número de licencia es obligatorio cuando el estado es "Activa".</p>
+                }
               </div>
             </div>
 
@@ -544,6 +554,17 @@ export class CompetidoresComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.load(), this.loadCategories()]);
+    this.licenseForm.get('status')!.valueChanges.subscribe(() => this.syncLicenseNumberValidator());
+  }
+
+  isLicenseNumberRequired(): boolean {
+    return this.licenseForm.get('status')?.value === 'Activa';
+  }
+
+  private syncLicenseNumberValidator(): void {
+    const numberControl = this.licenseForm.get('licenseNumber')!;
+    numberControl.setValidators(this.isLicenseNumberRequired() ? [Validators.required] : []);
+    numberControl.updateValueAndValidity();
   }
 
   private async load(): Promise<void> {
@@ -693,12 +714,13 @@ export class CompetidoresComponent implements OnInit {
   openLicense(c: Competitor): void {
     this.licenseTarget.set(c);
     this.licenseError.set(null);
-    this.licenseCategories.set(c.enabledCategories ?? []);
+    this.licenseCategories.set(c.license?.enabledCategories ?? []);
     this.licenseForm.reset({
-      status: c.licenseStatus ?? 'Pendiente de validación',
-      licenseNumber: c.licenseNumber ?? '',
-      expirationDate: c.expirationDate?.substring(0, 10) ?? '',
+      status: c.license?.status ?? 'Pendiente de validación',
+      licenseNumber: c.license?.number ?? '',
+      expirationDate: c.license?.expirationDate?.substring(0, 10) ?? '',
     });
+    this.syncLicenseNumberValidator();
   }
 
   closeLicense(): void {
