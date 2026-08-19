@@ -209,7 +209,7 @@ function fmt(dt: string | null | undefined): string {
       </div>
 
       <footer class="pt-6 border-t border-navy-mid flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
-        <p>© 2026 ALAS Latin Tour — Panel administrativo</p>
+        <p>© 2026 ALAS Global Tour — Panel administrativo</p>
       </footer>
       }
     </div>

@@ -24,7 +24,7 @@ public sealed class AdminDashboardRepository(AlasAppDbContext dbContext) : IAdmi
         var activeEvents = await dbContext.Events
             .AsNoTracking()
             .Where(x => activeStatuses.Contains(x.Estado))
-            .OrderBy(x => x.FechaInicio)
+            .OrderByDescending(x => x.FechaInicio)
             .Select(x => new DashboardActiveEventDto(
                 x.Id,
                 x.Nombre,

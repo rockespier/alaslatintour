@@ -33,7 +33,7 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-3xl font-heading text-white">Circuitos</h1>
-          <p class="text-text-muted text-sm mt-1">Gestión de circuitos del ALAS Latin Tour.</p>
+          <p class="text-text-muted text-sm mt-1">Gestión de circuitos del ALAS Global Tour.</p>
         </div>
         @if (canEdit()) {
           <div class="flex items-center gap-2">
@@ -184,7 +184,7 @@ const ESTADOS = ['Activo', 'Borrador', 'Archivado', 'Próximo'];
 
             <div>
               <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Nombre *</label>
-              <input formControlName="nombre" type="text" placeholder="Ej: ALAS Latin Tour 2026"
+              <input formControlName="nombre" type="text" placeholder="Ej: ALAS Global Tour 2026"
                      class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
               @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
                 <p class="text-error-brand text-xs mt-1">El nombre es obligatorio.</p>

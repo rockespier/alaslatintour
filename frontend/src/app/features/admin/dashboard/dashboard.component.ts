@@ -271,7 +271,7 @@ function rangoFechas(inicio: string, fin: string): string {
       </section>
 
       <footer class="pt-6 border-t border-navy-mid flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-text-muted">
-        <p>© 2026 ALAS Latin Tour — Panel administrativo</p>
+        <p>© 2026 ALAS Global Tour — Panel administrativo</p>
       </footer>
       }
     </div>

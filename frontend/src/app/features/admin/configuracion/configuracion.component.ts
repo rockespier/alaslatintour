@@ -41,7 +41,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
     <div class="py-8">
       <div class="mb-6">
         <h1 class="text-3xl font-heading text-white">Configuración del Sistema</h1>
-        <p class="text-text-muted text-sm mt-1">Parámetros generales de la plataforma ALAS Latin Tour.</p>
+        <p class="text-text-muted text-sm mt-1">Parámetros generales de la plataforma ALAS Global Tour.</p>
         @if (!canEdit()) {
           <p class="text-warning-brand text-xs mt-2 font-accent uppercase tracking-wider">Tu rol tiene acceso de solo lectura a esta sección.</p>
         }
@@ -690,7 +690,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
               <svg class="h-5 w-5 text-warning-brand flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a1 1 0 011 1v3a1 1 0 11-2 0V7a1 1 0 011-1zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
               <div>
                 <p class="text-sm text-warning-brand font-semibold mb-1">Restricción contractual — Live Heatboard</p>
-                <p class="text-xs text-text-light leading-relaxed">SurfScores prohíbe explícitamente usar su API como marcador en tiempo real. Este iframe sirve para pantallas de exhibición locales del evento (TVs en la playa, backstage), <strong>no para el sitio público</strong>. El BFF .NET aplica un caché mínimo configurado.</p>
+                <p class="text-xs text-text-light leading-relaxed">SurfScores prohíbe explícitamente usar su API como marcador en tiempo real. Solo este iframe sirve para un evento "en Vivo".</p>
               </div>
             </div>
 
