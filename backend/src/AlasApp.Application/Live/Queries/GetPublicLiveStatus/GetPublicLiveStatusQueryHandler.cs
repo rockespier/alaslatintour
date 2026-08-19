@@ -30,6 +30,11 @@ public sealed partial class GetPublicLiveStatusQueryHandler(
             return notLive;
         }
 
+        var surfScores = settings.Live.SurfScores;
+        var showSurfScores = surfScores.Active
+            && surfScores.EventId == youTube.EventId
+            && !string.IsNullOrWhiteSpace(surfScores.EmbedUrl);
+
         return new PublicLiveStatusDto(
             true,
             new PublicLiveEventDto(
@@ -44,7 +49,10 @@ public sealed partial class GetPublicLiveStatusQueryHandler(
             ExtractYouTubeVideoId(youTube.VideoIdOrUrl),
             youTube.Width,
             youTube.Height,
-            schedulePdfUrl);
+            schedulePdfUrl,
+            showSurfScores ? surfScores.EmbedUrl : null,
+            surfScores.Width,
+            surfScores.Height);
     }
 
     private static string? ExtractYouTubeVideoId(string videoIdOrUrl)
