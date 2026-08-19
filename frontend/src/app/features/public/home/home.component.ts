@@ -53,6 +53,9 @@ interface LiveStatus {
   youTubeWidth: number;
   youTubeHeight: number;
   schedulePdfUrl?: string | null;
+  surfScoresEmbedUrl?: string | null;
+  surfScoresWidth: number;
+  surfScoresHeight: number;
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -105,6 +108,14 @@ const COUNTRY_FLAGS: Record<string, string> = {
               }
             </div>
           </div>
+          @if (liveScoreboardUrl()) {
+            <div class="mt-6 rounded-xl overflow-hidden border border-navy-mid bg-navy-dark p-2">
+              <iframe class="w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
+                      [src]="liveScoreboardUrl()"
+                      title="Marcador en vivo — SurfScores" frameborder="0"></iframe>
+              <app-surfscores-credit />
+            </div>
+          }
         </div>
       </section>
     }
@@ -477,6 +488,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (!status?.isLive || !status.youTubeVideoId) return null;
     const url = `https://www.youtube.com/embed/${status.youTubeVideoId}?autoplay=1&rel=0&modestbranding=1`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  });
+  liveScoreboardUrl = computed<SafeResourceUrl | null>(() => {
+    const status = this.liveStatus();
+    if (!status?.isLive || !status.surfScoresEmbedUrl) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(status.surfScoresEmbedUrl);
   });
 
   contactForm = this.fb.group({

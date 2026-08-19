@@ -91,6 +91,12 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
         settings["live"]!["youTube"]!["eventId"] = eventId;
         settings["live"]!["youTube"]!["videoIdOrUrl"] = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
         settings["live"]!["schedulePdfUrl"] = "https://cdn.test/wp/programacion.pdf";
+        settings["live"]!["surfScores"]!["active"] = true;
+        settings["live"]!["surfScores"]!["eventId"] = eventId;
+        settings["live"]!["surfScores"]!["embedUrl"] = "https://surfscores.com/embed/event/LIVE-ROCA-BRUJA-2026";
+        settings["live"]!["surfScores"]!["width"] = 100;
+        settings["live"]!["surfScores"]!["height"] = 700;
+        settings["live"]!["surfScores"]!["localDisplaysOnly"] = true;
 
         using var content = new StringContent(settings.ToString(), Encoding.UTF8, "application/json");
         var updateResponse = await _client.PutAsync("/v1/admin/settings", content);
@@ -104,6 +110,74 @@ public sealed class LiveEndpointsTests : IClassFixture<LiveEndpointsWebApplicati
         Assert.Equal("Roca Bruja Classic", live["event"]?["nombre"]?.Value<string>());
         Assert.Equal("dQw4w9WgXcQ", live["youTubeVideoId"]?.Value<string>());
         Assert.Equal("https://cdn.test/wp/programacion.pdf", live["schedulePdfUrl"]?.Value<string>());
+
+        // El marcador debe mostrarse aunque "localDisplaysOnly" esté marcado: esa restricción
+        // solo aplica a pantallas físicas del evento, no al home público.
+        Assert.Equal("https://surfscores.com/embed/event/LIVE-ROCA-BRUJA-2026", live["surfScoresEmbedUrl"]?.Value<string>());
+        Assert.Equal(700, live["surfScoresHeight"]?.Value<int>());
+    }
+
+    [Fact]
+    public async Task GetLive_WithSurfScoresInactive_ShouldNotExposeScoreboard()
+    {
+        await ResetStoredSettingsAsync();
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitResponse = await _client.PostAsJsonAsync("/v1/circuits", new
+        {
+            nombre = "Circuito En Vivo Sin Marcador",
+            temporada = 2026,
+            descripcion = "Circuito de prueba",
+            region = "Latinoamérica",
+            modalidad = "Shortboard",
+            estado = "Activo",
+            surfScoresCode = "CIR-LIVE-2027"
+        });
+        Assert.Equal(HttpStatusCode.Created, circuitResponse.StatusCode);
+        var circuit = JObject.Parse(await circuitResponse.Content.ReadAsStringAsync());
+        var circuitId = circuit["id"]!.Value<string>();
+
+        var eventResponse = await _client.PostAsJsonAsync("/v1/events", new
+        {
+            nombre = "Punta Rocas Classic",
+            circuitId,
+            fechaInicio = "2026-09-12",
+            fechaFin = "2026-09-15",
+            pais = "Perú",
+            ciudad = "Lima",
+            playa = "Punta Rocas",
+            stars = 5,
+            capacidadMaxima = 60,
+            prizeAmountUsd = 4000,
+            eventType = "Prime",
+            accessType = "Abierto",
+            estado = "Activo",
+            surfScoresCode = "LIVE-PUNTA-ROCAS-2026"
+        });
+        Assert.True(
+            eventResponse.StatusCode == HttpStatusCode.Created,
+            await eventResponse.Content.ReadAsStringAsync());
+        var createdEvent = JObject.Parse(await eventResponse.Content.ReadAsStringAsync());
+        var eventId = createdEvent["id"]!.Value<string>();
+
+        var settingsResponse = await _client.GetAsync("/v1/admin/settings");
+        var settings = JObject.Parse(await settingsResponse.Content.ReadAsStringAsync());
+        settings["live"]!["youTube"]!["active"] = true;
+        settings["live"]!["youTube"]!["eventId"] = eventId;
+        settings["live"]!["youTube"]!["videoIdOrUrl"] = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+        settings["live"]!["surfScores"]!["active"] = false;
+        settings["live"]!["surfScores"]!["eventId"] = eventId;
+        settings["live"]!["surfScores"]!["embedUrl"] = "https://surfscores.com/embed/event/LIVE-PUNTA-ROCAS-2026";
+
+        using var content = new StringContent(settings.ToString(), Encoding.UTF8, "application/json");
+        var updateResponse = await _client.PutAsync("/v1/admin/settings", content);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var liveResponse = await _client.GetAsync("/v1/live");
+        var live = JObject.Parse(await liveResponse.Content.ReadAsStringAsync());
+
+        Assert.True(live["isLive"]!.Value<bool>());
+        Assert.True(live["surfScoresEmbedUrl"] is null || live["surfScoresEmbedUrl"]!.Type == JTokenType.Null);
     }
 
     [Fact]

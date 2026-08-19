@@ -6,7 +6,10 @@ public sealed record PublicLiveStatusDto(
     string? YouTubeVideoId,
     int YouTubeWidth,
     int YouTubeHeight,
-    string? SchedulePdfUrl);
+    string? SchedulePdfUrl,
+    string? SurfScoresEmbedUrl = null,
+    int SurfScoresWidth = 100,
+    int SurfScoresHeight = 600);
 
 public sealed record PublicLiveEventDto(
     Guid Id,
