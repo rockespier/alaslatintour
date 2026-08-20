@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LiveStatusService } from '../../../core/services/live-status.service';
 
 @Component({
   selector: 'app-navbar',
@@ -53,20 +54,42 @@ import { AuthService } from '../../../core/services/auth.service';
                 Registrarse
               </a>
             }
+            @if (live.isLive()) {
+              <a routerLink="/" fragment="en-vivo"
+                class="inline-flex items-center gap-2 bg-error-brand hover:bg-[#dc2626] text-white px-4 py-1.5 rounded-full font-accent uppercase tracking-wider text-xs font-semibold shadow-lg shadow-error-brand/30 transition">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                </span>
+                En Vivo
+              </a>
+            }
           </div>
 
-          <!-- Hamburger mobile -->
-          <button (click)="menuOpen.set(!menuOpen())" class="lg:hidden p-2 rounded text-[#EEEEEE]">
-            @if (menuOpen()) {
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            } @else {
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
+          <!-- Live badge + Hamburger mobile -->
+          <div class="flex items-center gap-2 lg:hidden">
+            @if (live.isLive()) {
+              <a routerLink="/" fragment="en-vivo" (click)="menuOpen.set(false)"
+                class="inline-flex items-center gap-1.5 bg-error-brand text-white px-3 py-1 rounded-full font-accent uppercase tracking-wider text-[11px] font-semibold shadow-lg shadow-error-brand/30">
+                <span class="relative flex h-1.5 w-1.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                </span>
+                En Vivo
+              </a>
             }
-          </button>
+            <button (click)="menuOpen.set(!menuOpen())" class="p-2 rounded text-[#EEEEEE]">
+              @if (menuOpen()) {
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              } @else {
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+              }
+            </button>
+          </div>
         </div>
 
         <!-- Mobile menu -->
@@ -95,7 +118,12 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent {
   auth = inject(AuthService);
+  live = inject(LiveStatusService);
   menuOpen = signal(false);
 
   profileRoute = () => this.auth.isAdmin() ? '/admin' : '/mi-panel';
+
+  constructor() {
+    this.live.ensureLoaded();
+  }
 }

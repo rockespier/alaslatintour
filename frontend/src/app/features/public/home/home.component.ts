@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Meta, Title, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
+import { LiveStatusService } from '../../../core/services/live-status.service';
 import { RankingService, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
@@ -35,29 +36,6 @@ interface EventCard {
 
 type ArticleCard = ArticleSummary;
 
-interface LiveEvent {
-  id: string;
-  nombre: string;
-  pais: string;
-  ciudad: string;
-  playa: string;
-  fechaInicio: string;
-  fechaFin: string;
-  imagenUrl?: string | null;
-}
-
-interface LiveStatus {
-  isLive: boolean;
-  event?: LiveEvent | null;
-  youTubeVideoId?: string | null;
-  youTubeWidth: number;
-  youTubeHeight: number;
-  schedulePdfUrl?: string | null;
-  surfScoresEmbedUrl?: string | null;
-  surfScoresWidth: number;
-  surfScoresHeight: number;
-}
-
 const COUNTRY_FLAGS: Record<string, string> = {
   PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
   CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
@@ -71,51 +49,95 @@ const COUNTRY_FLAGS: Record<string, string> = {
   template: `
     <!-- ═══ EVENTO EN VIVO ═══ -->
     @if (liveStatus()?.isLive) {
-      <section class="py-10 px-4 sm:px-6 lg:px-8 bg-navy-deepest border-b border-error-brand/30">
+      <section id="en-vivo" class="py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-navy-deepest to-navy-dark">
         <div class="max-w-7xl mx-auto">
-          <div class="flex items-center gap-2 mb-5">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error-brand opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error-brand"></span>
-            </span>
-            <span class="font-accent uppercase text-error-brand tracking-[0.2em] text-sm">En Vivo Ahora</span>
-          </div>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 rounded-xl overflow-hidden border border-navy-mid bg-black">
-              @if (liveEmbedUrl()) {
-                <div class="relative" style="padding-top: 56.25%">
-                  <iframe class="absolute inset-0 w-full h-full" [src]="liveEmbedUrl()"
-                          title="Streaming en vivo — ALAS Latin Tour" frameborder="0"
-                          allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-                </div>
-              }
-            </div>
-            <div class="flex flex-col justify-center gap-4">
+          <div class="relative rounded-2xl overflow-hidden border border-error-brand/30 bg-navy-dark shadow-2xl shadow-error-brand/10">
+            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-error-brand via-orange-brand to-error-brand"></div>
+
+            <!-- Header -->
+            <header class="p-6 md:p-8 border-b border-navy-mid flex flex-col md:flex-row md:items-start md:justify-between gap-5">
               <div>
+                <span class="inline-flex items-center gap-2 bg-error-brand text-white px-3 py-1 rounded-full mb-4">
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                  </span>
+                  <span class="font-accent uppercase tracking-[0.15em] text-xs font-semibold">En Vivo Ahora</span>
+                </span>
                 <h2 class="font-heading text-3xl md:text-4xl leading-tight">{{ liveStatus()?.event?.nombre }}</h2>
-                <p class="text-text-muted mt-1">
+                <p class="text-text-muted mt-1.5 flex items-center gap-1.5 text-sm">
+                  <span>{{ flagOf(liveStatus()?.event?.pais ?? '') }}</span>
                   {{ liveStatus()?.event?.playa }}, {{ liveStatus()?.event?.ciudad }}, {{ liveStatus()?.event?.pais }}
                 </p>
               </div>
               @if (liveStatus()?.schedulePdfUrl) {
                 <a [href]="liveStatus()?.schedulePdfUrl" target="_blank" rel="noopener"
-                   class="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider rounded-md transition w-fit">
+                   class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold w-fit shrink-0">
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  Ver programación del evento
+                  Ver programación
                 </a>
               }
+            </header>
+
+            <!-- Video + detalles -->
+            <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="lg:col-span-2 rounded-xl overflow-hidden border border-navy-mid bg-black ring-1 ring-error-brand/20">
+                @if (liveEmbedUrl()) {
+                  <div class="relative" style="padding-top: 56.25%">
+                    <iframe class="absolute inset-0 w-full h-full" [src]="liveEmbedUrl()"
+                            title="Streaming en vivo — ALAS Latin Tour" frameborder="0"
+                            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                  </div>
+                }
+              </div>
+
+              <div class="flex flex-col gap-4">
+                <div class="stat-card rounded-xl p-5 border border-navy-mid">
+                  <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-4">Detalles del evento</p>
+                  <dl class="space-y-3.5 text-sm">
+                    <div class="flex items-start justify-between gap-3">
+                      <dt class="text-text-muted shrink-0">Sede</dt>
+                      <dd class="font-medium text-right">{{ liveStatus()?.event?.playa }}</dd>
+                    </div>
+                    <div class="flex items-start justify-between gap-3">
+                      <dt class="text-text-muted shrink-0">Ciudad</dt>
+                      <dd class="font-medium text-right">{{ liveStatus()?.event?.ciudad }}</dd>
+                    </div>
+                    <div class="flex items-start justify-between gap-3">
+                      <dt class="text-text-muted shrink-0">País</dt>
+                      <dd class="font-medium text-right">{{ flagOf(liveStatus()?.event?.pais ?? '') }} {{ liveStatus()?.event?.pais }}</dd>
+                    </div>
+                    <div class="flex items-start justify-between gap-3 pt-3.5 border-t border-navy-mid/70">
+                      <dt class="text-text-muted shrink-0">Fechas</dt>
+                      <dd class="font-medium text-right">
+                        {{ formatDateRange(liveStatus()?.event?.fechaInicio ?? '', liveStatus()?.event?.fechaFin ?? '') }}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                @if (liveScoreboardUrl()) {
+                  <div class="flex items-center gap-2 px-1">
+                    <span class="live-dot"></span>
+                    <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">Marcador en vivo</span>
+                  </div>
+                }
+              </div>
             </div>
+
+            <!-- Marcador SurfScores -->
+            @if (liveScoreboardUrl()) {
+              <div class="border-t border-navy-mid bg-navy-deepest/40 p-6 md:p-8 pt-6">
+                <div class="rounded-xl overflow-hidden border border-navy-mid bg-navy-dark p-2">
+                  <iframe class="w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
+                          [src]="liveScoreboardUrl()"
+                          title="Marcador en vivo — SurfScores" frameborder="0"></iframe>
+                  <app-surfscores-credit />
+                </div>
+              </div>
+            }
           </div>
-          @if (liveScoreboardUrl()) {
-            <div class="mt-6 rounded-xl overflow-hidden border border-navy-mid bg-navy-dark p-2">
-              <iframe class="w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
-                      [src]="liveScoreboardUrl()"
-                      title="Marcador en vivo — SurfScores" frameborder="0"></iframe>
-              <app-surfscores-credit />
-            </div>
-          }
         </div>
       </section>
     }
@@ -464,6 +486,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   private api = inject(ApiService);
+  private liveStatusService = inject(LiveStatusService);
   private rankingService = inject(RankingService);
   private fb = inject(FormBuilder);
   private title = inject(Title);
@@ -482,7 +505,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   rankingCategoryName = signal('Open Hombres');
   rankingCachedAgo = signal('');
 
-  liveStatus = signal<LiveStatus | null>(null);
+  liveStatus = this.liveStatusService.status;
   liveEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const status = this.liveStatus();
     if (!status?.isLive || !status.youTubeVideoId) return null;
@@ -517,7 +540,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loadEvents();
     this.loadArticles();
     this.loadRanking();
-    this.loadLiveStatus();
+    this.liveStatusService.ensureLoaded();
   }
 
   ngAfterViewInit(): void {
@@ -563,15 +586,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       script.onerror = () => reject();
       document.head.appendChild(script);
     });
-  }
-
-  private async loadLiveStatus(): Promise<void> {
-    try {
-      const status = await this.api.get<LiveStatus>('/live');
-      this.liveStatus.set(status ?? null);
-    } catch {
-      this.liveStatus.set(null);
-    }
   }
 
   private async loadEvents(): Promise<void> {
