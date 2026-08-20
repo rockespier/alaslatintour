@@ -47,7 +47,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
   standalone: true,
   imports: [RouterLink, DecimalPipe, ReactiveFormsModule, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent],
   template: `
-    <!-- ═══ EVENTO EN VIVO ═══ -->
+   <!-- ═══ EVENTO EN VIVO ═══ -->
     @if (liveStatus()?.isLive) {
       <section id="en-vivo" class="py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-navy-deepest to-navy-dark">
         <div class="max-w-7xl mx-auto">
@@ -93,50 +93,51 @@ const COUNTRY_FLAGS: Record<string, string> = {
                 }
               </div>
 
-              <div class="flex flex-col gap-4">
-                <div class="stat-card rounded-xl p-5 border border-navy-mid">
-                  <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-4">Detalles del evento</p>
-                  <dl class="space-y-3.5 text-sm">
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="text-text-muted shrink-0">Sede</dt>
-                      <dd class="font-medium text-right">{{ liveStatus()?.event?.playa }}</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="text-text-muted shrink-0">Ciudad</dt>
-                      <dd class="font-medium text-right">{{ liveStatus()?.event?.ciudad }}</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3">
-                      <dt class="text-text-muted shrink-0">País</dt>
-                      <dd class="font-medium text-right">{{ flagOf(liveStatus()?.event?.pais ?? '') }} {{ liveStatus()?.event?.pais }}</dd>
-                    </div>
-                    <div class="flex items-start justify-between gap-3 pt-3.5 border-t border-navy-mid/70">
-                      <dt class="text-text-muted shrink-0">Fechas</dt>
-                      <dd class="font-medium text-right">
-                        {{ formatDateRange(liveStatus()?.event?.fechaInicio ?? '', liveStatus()?.event?.fechaFin ?? '') }}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-                @if (liveScoreboardUrl()) {
-                  <div class="flex items-center gap-2 px-1">
-                    <span class="live-dot"></span>
-                    <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">Marcador en vivo</span>
-                  </div>
-                }
-              </div>
-            </div>
-
+              <div class="flex flex-col gap-1">
+              
             <!-- Marcador SurfScores -->
             @if (liveScoreboardUrl()) {
-              <div class="border-t border-navy-mid bg-navy-deepest/40 p-6 md:p-8 pt-6">
-                <div class="rounded-xl overflow-hidden border border-navy-mid bg-navy-dark p-2">
-                  <iframe class="w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
+              <div class="rounded-xl border-t border-navy-mid bg-navy-deepest/40">
+                
+                  <iframe class="rounded-xl overflow-hidden w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
                           [src]="liveScoreboardUrl()"
                           title="Marcador en vivo — SurfScores" frameborder="0"></iframe>
-                  <app-surfscores-credit />
-                </div>
+                  <!--<app-surfscores-credit /> -->
+                
               </div>
             }
+              </div>
+            </div>
+            
+          </div>
+          <div class="relative rounded-2xl overflow-hidden border border-error-brand/30 bg-navy-dark shadow-2xl shadow-error-brand/10">
+		  
+                <div class="stat-card border border-navy-mid p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+					<div class="lg:col-span-2 overflow-hidden gap-6 ring-1 ring-error-brand/20">
+				
+					  <p class="font-heading text-1xl uppercase tracking-wider mb-4">Detalles del evento</p>
+					  <dl class="space-y-3.5 text-sm">
+						<div class="flex items-start justify-between gap-3">
+						  <dt class="text-text-muted shrink-0">Sede</dt>
+						  <dd class="font-medium text-right">{{ liveStatus()?.event?.playa }}</dd>
+						</div>
+						<div class="flex items-start justify-between gap-3">
+						  <dt class="text-text-muted shrink-0">Ciudad</dt>
+						  <dd class="font-medium text-right">{{ liveStatus()?.event?.ciudad }}</dd>
+						</div>
+						<div class="flex items-start justify-between gap-3">
+						  <dt class="text-text-muted shrink-0">País</dt>
+						  <dd class="font-medium text-right">{{ flagOf(liveStatus()?.event?.pais ?? '') }} {{ liveStatus()?.event?.pais }}</dd>
+						</div>
+						<div class="flex items-start justify-between gap-3 pt-3.5 border-t border-navy-mid/70">
+						  <dt class="text-text-muted shrink-0">Fechas</dt>
+						  <dd class="font-medium text-right">
+							{{ formatDateRange(liveStatus()?.event?.fechaInicio ?? '', liveStatus()?.event?.fechaFin ?? '') }}
+						  </dd>
+						</div>
+					  </dl>
+					</div>
+                </div>
           </div>
         </div>
       </section>
