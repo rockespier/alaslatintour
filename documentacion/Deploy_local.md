@@ -6,7 +6,8 @@
     -FrontendAppPool "alasglobaltour.gestionaminegocio.com" `
     -FrontendService "AlasfrontendSSR"
 	
-	//Para generar y revisar los artefactos locales
+	//Para generar y revisar los artefactos locales en powershell 7
+	cd c:\repo\rtres-net\alas
 	
 	.\scripts\Deploy-Stage.ps1 `
     -StageComputerName "x" `
