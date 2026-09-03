@@ -31,6 +31,7 @@ using AlasApp.Application.CategoryTariffs.Commands.UpsertCategoryTariff;
 using AlasApp.Application.CategoryTariffs.Queries.GetCategoryTariffs;
 using AlasApp.Application.Competitors.Commands.CreateCompetitor;
 using AlasApp.Application.Competitors.Commands.DeleteCompetitor;
+using AlasApp.Application.Competitors.Commands.ImportCompetitors;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitorLicense;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitorNotifications;
 using AlasApp.Application.Competitors.Commands.UpdateCompetitor;
@@ -172,6 +173,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateCompetitorCommand, Competitors.Models.CompetitorDto>, CreateCompetitorCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateCompetitorCommand, Competitors.Models.CompetitorDto>, UpdateCompetitorCommandHandler>();
         services.AddScoped<IRequestHandler<DeleteCompetitorCommand, bool>, DeleteCompetitorCommandHandler>();
+        services.AddScoped<IRequestHandler<ImportCompetitorsCommand, BulkImports.Models.BulkImportResultDto>, ImportCompetitorsCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateCompetitorLicenseCommand, Competitors.Models.CompetitorDto>, UpdateCompetitorLicenseCommandHandler>();
         services.AddScoped<IRequestHandler<GetCompetitorIdentityDocumentQuery, IdentityDocuments.IdentityDocumentDownload>, GetCompetitorIdentityDocumentQueryHandler>();
         services.AddScoped<IRequestHandler<GetCompetitorNotificationsQuery, Competitors.Models.NotificationPreferencesDto>, GetCompetitorNotificationsQueryHandler>();

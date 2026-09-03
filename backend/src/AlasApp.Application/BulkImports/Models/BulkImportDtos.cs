@@ -59,6 +59,24 @@ public sealed record CategoryImportRow(
     string? MembresiaPorEventoUsd,
     string? BestResultsCount);
 
+public sealed record CompetitorImportRow(
+    int RowNumber,
+    string? Id,
+    string? SurfScoresCode,
+    string? Nombre,
+    string? Apellido,
+    string? Email,
+    string? FechaNacimiento,
+    string? Genero,
+    string? Pais,
+    string? Telefono,
+    string? Club,
+    string? Postura,
+    string? TallaCamiseta,
+    string? NumeroCamiseta,
+    string? Patrocinadores,
+    string? Federacion);
+
 public sealed record EventResultImportRow(
     int RowNumber,
     string? CompetitorId,

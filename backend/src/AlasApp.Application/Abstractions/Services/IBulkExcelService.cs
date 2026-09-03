@@ -12,11 +12,15 @@ public interface IBulkExcelService
 
     byte[] BuildCategoriesTemplate();
 
+    byte[] BuildCompetitorsTemplate();
+
     IReadOnlyCollection<CircuitImportRow> ReadCircuits(byte[] content);
 
     IReadOnlyCollection<EventImportRow> ReadEvents(byte[] content);
 
     IReadOnlyCollection<CategoryImportRow> ReadCategories(byte[] content);
+
+    IReadOnlyCollection<CompetitorImportRow> ReadCompetitors(byte[] content);
 
     byte[] BuildInscriptionsExport(IReadOnlyCollection<AdminInscriptionRowDto> rows);
 

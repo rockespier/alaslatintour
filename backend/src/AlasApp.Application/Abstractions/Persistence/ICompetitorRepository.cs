@@ -12,6 +12,10 @@ public interface ICompetitorRepository
 
     Task<Competitor?> GetEntityByIdAsync(Guid competitorId, CancellationToken cancellationToken);
 
+    Task<Competitor?> GetEntityByEmailAsync(string email, CancellationToken cancellationToken);
+
+    Task<Competitor?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken);
+
     Task<bool> EmailExistsAsync(string email, Guid? excludedCompetitorId, CancellationToken cancellationToken);
 
     Task AddAsync(Competitor competitor, CancellationToken cancellationToken);

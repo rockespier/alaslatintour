@@ -79,6 +79,24 @@ public sealed class CompetitorRepository(AlasAppDbContext dbContext) : ICompetit
             .FirstOrDefaultAsync(x => x.Id == competitorId, cancellationToken);
     }
 
+    public Task<Competitor?> GetEntityByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = email.Trim();
+
+        return dbContext.Competitors
+            .Include(x => x.EnabledLicenseCategories)
+            .FirstOrDefaultAsync(x => x.Email == normalizedEmail, cancellationToken);
+    }
+
+    public Task<Competitor?> GetEntityBySurfScoresCodeAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        var normalizedCode = surfScoresCode.Trim();
+
+        return dbContext.Competitors
+            .Include(x => x.EnabledLicenseCategories)
+            .FirstOrDefaultAsync(x => x.SurfScoresCode == normalizedCode, cancellationToken);
+    }
+
     public Task<bool> EmailExistsAsync(string email, Guid? excludedCompetitorId, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim();

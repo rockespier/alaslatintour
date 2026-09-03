@@ -73,6 +73,8 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Competitors | `GET` | `/v1/competitors/{competitorId}/fines` | nuevo |
 | Competitors | `POST` | `/v1/competitors/{competitorId}/fines` | nuevo |
 | Competitors | `PUT` | `/v1/competitors/{competitorId}/fines/{fineId}` | nuevo |
+| Competitors | `GET` | `/v1/competitors/template` | nuevo |
+| Competitors | `POST` | `/v1/competitors/import` | nuevo |
 
 ### Cambios importantes de contrato
 
@@ -86,6 +88,7 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - La importación masiva hace `upsert`: si llega `Id` o existe `SurfScoresCode`, actualiza; si no, crea.
 - En `events/import`, frontend/backoffice puede referenciar el circuito por `CircuitId` o por `CircuitSurfScoresCode`.
 - En `categories/import`, la sucesora puede enviarse por `SuccessorCategoryId` o `SuccessorSurfScoresCode`.
+- `GET /v1/competitors/template` y `POST /v1/competitors/import` permiten cargar competidores masivamente desde Excel; el upsert resuelve por `Id`, luego `SurfScoresCode`, y por último `Email`.
 - Issue 9: el backoffice ya soporta cambio controlado de contraseña para competidores vía `POST /v1/competitors/{competitorId}/password`.
 - Issue 9: el admin autenticado puede usar `POST /v1/admin/users/me/password` para su propia contraseña, y `POST /v1/admin/users/{userId}/password` para otros admins cuando tiene permisos.
 - Issue 9: al cambiar la contraseña de una cuenta administrada, la API invalida las sesiones activas mediante incremento de `tokenVersion`.
@@ -140,6 +143,8 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | `POST/PUT/DELETE` | `/v1/competitors` y `/v1/competitors/{id}` | `Usuarios: Full` |
 | `PUT` | `/v1/competitors/{id}/license` | `Usuarios: Full` |
 | `POST` | `/v1/competitors/{id}/password` | `Usuarios: Full` |
+| `GET` | `/v1/competitors/template` | `Usuarios: Full` |
+| `POST` | `/v1/competitors/import` | `Usuarios: Full` |
 | `GET` | `/v1/categories/{categoryId}/tariffs` | `Categorias: Read` |
 | `PUT` | `/v1/categories/{categoryId}/tariffs/{starLevel}` | `Categorias: Full` |
 | `PUT` | `/v1/events/{eventId}/categories` | `Eventos: Full` |
@@ -1833,6 +1838,74 @@ Content-Type: application/json
 ```
 
 **Response:** `200 OK`
+
+---
+
+### GET /v1/competitors/template — Descargar plantilla XLSX
+
+```http
+GET {{base_url}}/v1/competitors/template
+Authorization: Bearer {{access_token}}
+```
+
+**Auth:** requiere `Usuarios: Full`.
+
+**Archivo:** `competitors-template.xlsx`
+
+**Columnas de la hoja `Competitors`:**
+- `Id`
+- `SurfScoresCode`
+- `Nombre`
+- `Apellido`
+- `Email`
+- `FechaNacimiento`
+- `Genero`
+- `Pais`
+- `Telefono`
+- `Club`
+- `Postura`
+- `TallaCamiseta`
+- `NumeroCamiseta`
+- `Patrocinadores`
+- `Federacion`
+
+**Notas para frontend/admin:**
+- `Genero` acepta `Masculino`, `Femenino` o `PrefieroNoIndicar`,
+- `Postura` acepta `Regular` o `Goofy`,
+- `TallaCamiseta` acepta `XS`, `S`, `M`, `L`, `XL` o `XXL`,
+- `FechaNacimiento` en formato `yyyy-MM-dd`.
+
+---
+
+### POST /v1/competitors/import — Importar competidores XLSX
+
+```http
+POST {{base_url}}/v1/competitors/import
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+- `file`: archivo `.xlsx`
+
+**Auth:** requiere `Usuarios: Full`.
+
+**Response:** `200 OK`
+
+```json
+{
+  "processedRows": 2,
+  "createdCount": 2,
+  "updatedCount": 0,
+  "errors": []
+}
+```
+
+**Reglas del upsert:**
+- si la fila trae `Id` válido, actualiza ese competidor,
+- si no hay `Id` pero hay `SurfScoresCode` que coincide con uno existente, actualiza ese competidor,
+- si no coincide ninguno de los anteriores, busca por `Email`; si tampoco existe, crea uno nuevo,
+- el `Email` debe ser único: si la fila intenta usar un email ya asignado a otro competidor, esa fila se reporta como error y no afecta el resto de la importación.
 
 ---
 

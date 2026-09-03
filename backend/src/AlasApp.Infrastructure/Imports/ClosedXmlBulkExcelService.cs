@@ -60,6 +60,25 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         "BestResultsCount"
     ];
 
+    private static readonly string[] CompetitorHeaders =
+    [
+        "Id",
+        "SurfScoresCode",
+        "Nombre",
+        "Apellido",
+        "Email",
+        "FechaNacimiento",
+        "Genero",
+        "Pais",
+        "Telefono",
+        "Club",
+        "Postura",
+        "TallaCamiseta",
+        "NumeroCamiseta",
+        "Patrocinadores",
+        "Federacion"
+    ];
+
     public byte[] BuildCircuitsTemplate()
         => BuildWorkbook("Circuits", CircuitHeaders, ["", "ALAS-2026", "ALAS Global Tour", "2026", "Circuito principal", "Latinoamerica", "Shortboard", "Activo"]);
 
@@ -68,6 +87,9 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
 
     public byte[] BuildCategoriesTemplate()
         => BuildWorkbook("Categories", CategoryHeaders, ["", "OPEN-MEN", "Open Masculino", "Categoria principal", "Masculino", "false", "", "", "", "", "Activo", "35.00", "12.00", "5"]);
+
+    public byte[] BuildCompetitorsTemplate()
+        => BuildWorkbook("Competitors", CompetitorHeaders, ["", "", "Juan", "Perez", "juan.perez@example.com", "1998-03-20", "Masculino", "Perú", "+51 999 111 222", "Club Local", "Regular", "M", "#12", "Marca X", "FENTA"]);
 
     public IReadOnlyCollection<CircuitImportRow> ReadCircuits(byte[] content)
         => ReadRows(content, "Circuits", CircuitHeaders, values => new CircuitImportRow(
@@ -120,6 +142,25 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["MembresiaAnualUsd"],
             values["MembresiaPorEventoUsd"],
             values["BestResultsCount"]));
+
+    public IReadOnlyCollection<CompetitorImportRow> ReadCompetitors(byte[] content)
+        => ReadRows(content, "Competitors", CompetitorHeaders, values => new CompetitorImportRow(
+            values.RowNumber,
+            values["Id"],
+            values["SurfScoresCode"],
+            values["Nombre"],
+            values["Apellido"],
+            values["Email"],
+            values["FechaNacimiento"],
+            values["Genero"],
+            values["Pais"],
+            values["Telefono"],
+            values["Club"],
+            values["Postura"],
+            values["TallaCamiseta"],
+            values["NumeroCamiseta"],
+            values["Patrocinadores"],
+            values["Federacion"]));
 
     private static readonly string[] InscriptionExportHeaders =
     [

@@ -4,6 +4,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 interface CompetitorLicense {
   number?: string | null;
@@ -54,7 +55,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-competidores',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, PaginationComponent],
+  imports: [ReactiveFormsModule, FormsModule, PaginationComponent, ImportExcelModalComponent],
   template: `
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
@@ -63,13 +64,23 @@ const PAGE_SIZE = 20;
           <p class="text-text-muted text-sm mt-1">Gestión de perfiles y licencias de competidores.</p>
         </div>
         @if (canEdit()) {
-          <button (click)="openCreate()"
-                  class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo competidor
-          </button>
+          <div class="flex items-center gap-2">
+            <button (click)="downloadTemplate()"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Descargar plantilla
+            </button>
+            <button (click)="importOpen.set(true)"
+                    class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-cyan-brand font-accent uppercase text-xs tracking-wider rounded-md transition">
+              Importar Excel
+            </button>
+            <button (click)="openCreate()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-md bg-cyan-brand text-navy-deepest font-accent uppercase text-sm tracking-wider hover:bg-cyan-dark transition">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nuevo competidor
+            </button>
+          </div>
         }
       </div>
 
@@ -453,6 +464,9 @@ const PAGE_SIZE = 20;
       </div>
     }
 
+    <app-import-excel-modal [open]="importOpen()" importPath="/competitors/import" entityLabel="competidores"
+                             (close)="importOpen.set(false)" (imported)="onImported()" />
+
     <!-- Confirm Delete -->
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
@@ -501,6 +515,7 @@ export class CompetidoresComponent implements OnInit {
   modalOpen = signal(false);
   editingId = signal<string | null>(null);
   deleteTarget = signal<Competitor | null>(null);
+  importOpen = signal(false);
 
   licenseTarget = signal<Competitor | null>(null);
   savingLicense = signal(false);
@@ -694,6 +709,14 @@ export class CompetidoresComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  async downloadTemplate(): Promise<void> {
+    await this.api.downloadFile('/competitors/template', 'competitors-template.xlsx');
+  }
+
+  async onImported(): Promise<void> {
+    await this.load();
   }
 
   confirmDelete(c: Competitor): void { this.deleteTarget.set(c); }
