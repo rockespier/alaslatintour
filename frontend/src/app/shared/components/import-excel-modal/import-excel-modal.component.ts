@@ -11,6 +11,7 @@ export interface ImportResult {
   createdCount: number;
   updatedCount: number;
   errors: ImportErrorItem[];
+  errorLogFile?: string | null;
 }
 
 @Component({
@@ -63,6 +64,11 @@ export interface ImportResult {
                         </li>
                       }
                     </ul>
+                    @if (result()!.errorLogFile) {
+                      <p class="text-text-muted mt-2">
+                        Detalle guardado en el servidor: <code class="text-cyan-brand">{{ result()!.errorLogFile }}</code>
+                      </p>
+                    }
                   </div>
                 }
               </div>
@@ -126,6 +132,7 @@ export class ImportExcelModalComponent {
                   message: String(item?.message ?? item),
                 })
           : [],
+        errorLogFile: res?.errorLogFile ?? null,
       };
       this.result.set(normalized);
       this.imported.emit(normalized);

@@ -209,3 +209,71 @@ public async Task<List<NewsArticleDto>> GetNewsForAngularAsync(CancellationToken
     
     return cleanNews;
 }
+
+## Multi-idioma con Polylang (REST API)
+
+Configuración para que WordPress sirva Noticias (`post`) y Fotos (`gallery`) en español/inglés/portugués y la API pueda filtrar por idioma con `?lang=xx`. Relacionado con el punto 7 de `documentacion/plan-internacionalizacion-i18n.md` (aún no ejecutado del lado .NET).
+
+### A. Instalar y configurar Polylang
+1. wp-admin → Plugins → Añadir nuevo → "Polylang" (gratuito, WPSyntex) → Instalar y activar.
+2. Seguir el asistente que aparece al activar (o Idiomas → Configuración si no aparece) y agregar:
+   - Español (es) — marcarlo como idioma predeterminado del sitio.
+   - Inglés (en_US).
+   - Portugués (pt_BR — Brasil, para consistencia con el formato de fecha/moneda que usará el frontend).
+3. Idiomas → Configuración → "Tipos de contenido personalizados y taxonomías" → marcar `post` y el custom post type `gallery` (confirmado en `documentacion/gallery.md`, REST base `/wp-json/wp/v2/gallery`). Sin este paso Polylang no traduce las Galerías.
+
+### B. Asignar idioma al contenido existente (hoy todo en español)
+1. El asistente de activación ofrece asignar automáticamente todo el contenido existente al idioma por defecto — aceptarlo.
+2. Verificar en Entradas y en Galerías (`/wp-admin/edit.php?post_type=gallery`) que cada fila muestra la bandera 🇪🇸 y ninguna quedó con el ícono "+" (sin idioma asignado).
+
+### C. Crear una traducción
+1. Abrir el post en español → metabox lateral "Idiomas" → clic en "+" junto a English (o Português).
+2. Esto crea un **post nuevo** (ID distinto) pre-enlazado como traducción — completar título/contenido/extracto y Publicar.
+3. Los posts es/en/pt quedan agrupados internamente por Polylang como una "traducción".
+
+### D. Sincronizar los custom fields entre traducciones
+Los campos `author_role`, `read_time_minutes`, `show_ranking` (registrados en `rtres_register_post_meta_fields`, arriba en este doc) no se copian solos a las traducciones. En Idiomas → Configuración → pestaña "Sincronización" → sección "Campos personalizados", agregar los 3 campos para que se copien automáticamente desde el post en español. `read_time_minutes` conviene revisarlo igual por idioma ya que el conteo de palabras cambia.
+
+### E. Filtro `?lang=` explícito en la REST API
+Agregar en el mismo `functions.php`/snippet donde está el resto de las customizaciones REST de este documento:
+
+```php
+// Fuerza el filtro por idioma en la REST API para 'post' (Noticias) y 'gallery' (Fotos)
+add_filter('rest_post_query', 'alas_apply_lang_filter', 10, 2);
+add_filter('rest_gallery_query', 'alas_apply_lang_filter', 10, 2);
+
+function alas_apply_lang_filter($args, $request) {
+    $lang = $request->get_param('lang');
+    if (!empty($lang) && function_exists('pll_languages_list')) {
+        $available = pll_languages_list(); // ej: ['es','en','pt']
+        if (in_array($lang, $available, true)) {
+            $args['lang'] = sanitize_text_field($lang);
+        }
+    }
+    return $args;
+}
+
+// Expone el idioma de cada post en el JSON, útil para verificar desde el backend .NET
+add_action('rest_api_init', function () {
+    foreach (['post', 'gallery'] as $post_type) {
+        register_rest_field($post_type, 'lang', [
+            'get_callback' => function ($post_arr) {
+                return function_exists('pll_get_post_language')
+                    ? pll_get_post_language($post_arr['id'], 'slug')
+                    : null;
+            },
+        ]);
+    }
+});
+```
+
+### F. Probar directo contra WordPress (antes de tocar el backend .NET)
+```
+https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=es&_embed=1
+https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_embed=1
+https://alasglobaltour.rtres.net/wp-json/wp/v2/gallery?lang=pt&_embed=1
+```
+Cada llamada debe devolver solo el contenido de ese idioma, y el campo `"lang"` del JSON debe coincidir. `lang=en`/`lang=pt` devolverán vacío hasta que existan traducciones reales (paso C).
+
+### G. Lado .NET (pendiente, cubierto en el plan de i18n)
+Cuando se ejecute el punto 7 de `documentacion/plan-internacionalizacion-i18n.md`: `ArticleListFilter` gana `string? Lang`, y en `WordPressService.cs` (`BuildRelativeUri`, usado en `ListArticlesAsync`/`GetBySlugAsync`/`GetRawBySlugAsync`) se agrega `query.Add($"lang={filter.Lang}")` igual que ya se hace con `search`. Mismo patrón para `WordPressMediaService.cs` (galerías).

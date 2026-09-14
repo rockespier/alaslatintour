@@ -1897,7 +1897,8 @@ Content-Type: multipart/form-data
   "processedRows": 2,
   "createdCount": 2,
   "updatedCount": 0,
-  "errors": []
+  "errors": [],
+  "errorLogFile": null
 }
 ```
 
@@ -1906,6 +1907,8 @@ Content-Type: multipart/form-data
 - si no hay `Id` pero hay `SurfScoresCode` que coincide con uno existente, actualiza ese competidor,
 - si no coincide ninguno de los anteriores, busca por `Email`; si tampoco existe, crea uno nuevo,
 - el `Email` debe ser único: si la fila intenta usar un email ya asignado a otro competidor, esa fila se reporta como error y no afecta el resto de la importación.
+- en `Competitors` la plantilla marca como obligatorios (`*` en el encabezado): `Nombre`, `Apellido`, `Email`, `FechaNacimiento`, `Genero`, `Pais`, `Postura`, `TallaCamiseta`.
+- si hubo al menos un error, el servidor además escribe un `.txt` con el detalle en la carpeta `logs` (junto al ejecutable de la API) y devuelve su ruta en `errorLogFile`; si no hubo errores, `errorLogFile` es `null`.
 
 ---
 

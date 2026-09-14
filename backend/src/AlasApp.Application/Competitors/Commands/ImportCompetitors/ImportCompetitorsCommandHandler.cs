@@ -12,7 +12,8 @@ public sealed class ImportCompetitorsCommandHandler(
     IBulkExcelService bulkExcelService,
     ICompetitorRepository competitorRepository,
     IUnitOfWork unitOfWork,
-    IClock clock)
+    IClock clock,
+    IImportErrorLogWriter errorLogWriter)
     : IRequestHandler<ImportCompetitorsCommand, BulkImportResultDto>
 {
     public async Task<BulkImportResultDto> Handle(ImportCompetitorsCommand request, CancellationToken cancellationToken)
@@ -103,7 +104,9 @@ public sealed class ImportCompetitorsCommandHandler(
             }
         }
 
-        return new BulkImportResultDto(rows.Count, created, updated, errors);
+        var errorLogFile = errorLogWriter.Write("competidores", errors);
+
+        return new BulkImportResultDto(rows.Count, created, updated, errors, errorLogFile);
     }
 
     private async Task<Competitor?> ResolveEntityAsync(CompetitorImportRow row, string email, CancellationToken cancellationToken)

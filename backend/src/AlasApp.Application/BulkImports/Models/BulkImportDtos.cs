@@ -4,7 +4,8 @@ public sealed record BulkImportResultDto(
     int ProcessedRows,
     int CreatedCount,
     int UpdatedCount,
-    IReadOnlyCollection<BulkImportErrorDto> Errors);
+    IReadOnlyCollection<BulkImportErrorDto> Errors,
+    string? ErrorLogFile = null);
 
 public sealed record BulkImportErrorDto(
     int RowNumber,

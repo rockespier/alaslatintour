@@ -88,8 +88,17 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
     public byte[] BuildCategoriesTemplate()
         => BuildWorkbook("Categories", CategoryHeaders, ["", "OPEN-MEN", "Open Masculino", "Categoria principal", "Masculino", "false", "", "", "", "", "Activo", "35.00", "12.00", "5"]);
 
+    private static readonly HashSet<string> CompetitorRequiredHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Nombre", "Apellido", "Email", "FechaNacimiento", "Genero", "Pais", "Postura", "TallaCamiseta"
+    };
+
     public byte[] BuildCompetitorsTemplate()
-        => BuildWorkbook("Competitors", CompetitorHeaders, ["", "", "Juan", "Perez", "juan.perez@example.com", "1998-03-20", "Masculino", "Perú", "+51 999 111 222", "Club Local", "Regular", "M", "#12", "Marca X", "FENTA"]);
+        => BuildWorkbook(
+            "Competitors",
+            CompetitorHeaders,
+            ["", "", "Juan", "Perez", "juan.perez@example.com", "1998-03-20", "Masculino", "Perú", "+51 999 111 222", "Club Local", "Regular", "M", "#12", "Marca X", "FENTA"],
+            CompetitorRequiredHeaders);
 
     public IReadOnlyCollection<CircuitImportRow> ReadCircuits(byte[] content)
         => ReadRows(content, "Circuits", CircuitHeaders, values => new CircuitImportRow(
@@ -305,16 +314,35 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["HeatOla1"],
             values["HeatOla2"]));
 
-    private static byte[] BuildWorkbook(string sheetName, IReadOnlyList<string> headers, IReadOnlyList<string> sampleRow)
+    private static byte[] BuildWorkbook(
+        string sheetName,
+        IReadOnlyList<string> headers,
+        IReadOnlyList<string> sampleRow,
+        IReadOnlySet<string>? requiredHeaders = null)
     {
         using var workbook = new XLWorkbook();
         var worksheet = workbook.Worksheets.Add(sheetName);
 
         for (var index = 0; index < headers.Count; index++)
         {
-            worksheet.Cell(1, index + 1).Value = headers[index];
-            worksheet.Cell(1, index + 1).Style.Font.Bold = true;
+            var isRequired = requiredHeaders?.Contains(headers[index]) == true;
+            var headerCell = worksheet.Cell(1, index + 1);
+            headerCell.Value = isRequired ? $"{headers[index]} *" : headers[index];
+            headerCell.Style.Font.Bold = true;
+            if (isRequired)
+            {
+                headerCell.Style.Font.FontColor = XLColor.DarkRed;
+            }
+
             worksheet.Cell(2, index + 1).Value = sampleRow[index];
+        }
+
+        if (requiredHeaders is { Count: > 0 })
+        {
+            var noteCell = worksheet.Cell(4, 1);
+            noteCell.Value = "* Campo obligatorio";
+            noteCell.Style.Font.Italic = true;
+            noteCell.Style.Font.FontColor = XLColor.DarkRed;
         }
 
         worksheet.Columns().AdjustToContents();

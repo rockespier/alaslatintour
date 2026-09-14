@@ -1923,7 +1923,8 @@ public static class ApiContractMapper
             dto.ProcessedRows,
             dto.CreatedCount,
             dto.UpdatedCount,
-            dto.Errors.Select(x => new BulkImportErrorResponse(x.RowNumber, x.Message)).ToList());
+            dto.Errors.Select(x => new BulkImportErrorResponse(x.RowNumber, x.Message)).ToList(),
+            dto.ErrorLogFile);
     }
 
     private static string NormalizeEnumText(string value)

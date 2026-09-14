@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<IBulkExcelService, ClosedXmlBulkExcelService>();
+        services.AddSingleton<IImportErrorLogWriter, FileImportErrorLogWriter>();
         services.AddScoped<ISurfScoresGateway, SurfScoresGateway>();
         services.AddScoped<IIdentityDocumentStorage, AzureBlobIdentityDocumentStorage>();
         services.AddSingleton<SurfScoresTokenCache>();
