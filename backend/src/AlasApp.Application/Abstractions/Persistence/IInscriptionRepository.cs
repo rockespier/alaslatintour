@@ -8,6 +8,8 @@ public interface IInscriptionRepository
 {
     Task<PagedResult<AdminInscriptionRowDto>> ListAdminAsync(AdminInscriptionListFilter filter, CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<ConfirmedInscriptionRowDto>> ListConfirmedPublicAsync(Guid eventId, CancellationToken cancellationToken);
+
     Task<InscriptionDto?> GetByIdAsync(Guid inscriptionId, CancellationToken cancellationToken);
 
     Task<Inscription?> GetEntityByIdAsync(Guid inscriptionId, CancellationToken cancellationToken);

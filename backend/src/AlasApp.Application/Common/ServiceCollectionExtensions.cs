@@ -72,6 +72,7 @@ using AlasApp.Application.Live.Queries.GetPublicLiveStatus;
 using AlasApp.Application.PublicSiteSettings.Queries.GetPublicSiteSettings;
 using AlasApp.Application.Inscriptions.Commands.CreateInscription;
 using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
+using AlasApp.Application.Inscriptions.Commands.ImportInscriptions;
 using AlasApp.Application.Inscriptions.Commands.UpdateInscription;
 using AlasApp.Application.Inscriptions.Queries.GetInscriptionById;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
@@ -189,6 +190,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateInscriptionCommand, Inscriptions.Models.InscriptionDto>, CreateInscriptionCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateInscriptionCommand, Inscriptions.Models.InscriptionDto>, UpdateInscriptionCommandHandler>();
         services.AddScoped<IRequestHandler<DeleteInscriptionCommand, bool>, DeleteInscriptionCommandHandler>();
+        services.AddScoped<IRequestHandler<ImportInscriptionsCommand, BulkImports.Models.BulkImportResultDto>, ImportInscriptionsCommandHandler>();
         services.AddScoped<IRequestHandler<ListPaymentsQuery, PagedResult<Payments.Models.PaymentDto>>, ListPaymentsQueryHandler>();
         services.AddScoped<IRequestHandler<GetPaymentByIdQuery, Payments.Models.PaymentDto>, GetPaymentByIdQueryHandler>();
         services.AddScoped<IRequestHandler<CreatePaymentCommand, Payments.Models.PaymentDto>, CreatePaymentCommandHandler>();

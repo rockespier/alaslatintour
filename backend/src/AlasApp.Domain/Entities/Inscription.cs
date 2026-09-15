@@ -19,6 +19,8 @@ public sealed class Inscription : AuditableEntity
         PaymentMethod paymentMethod,
         decimal baseAmountUsd,
         decimal administrativeFeeUsd,
+        MembershipPlanOption? membershipPlan,
+        decimal membershipFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado,
         bool riesgosAceptados,
@@ -32,6 +34,8 @@ public sealed class Inscription : AuditableEntity
         PaymentMethod = paymentMethod;
         BaseAmountUsd = baseAmountUsd;
         AdministrativeFeeUsd = administrativeFeeUsd;
+        MembershipPlan = membershipPlan;
+        MembershipFeeUsd = membershipFeeUsd;
         MontoUsd = montoUsd;
         ReglamentoAceptado = reglamentoAceptado;
         RiesgosAceptados = riesgosAceptados;
@@ -61,6 +65,10 @@ public sealed class Inscription : AuditableEntity
 
     public decimal AdministrativeFeeUsd { get; private set; }
 
+    public MembershipPlanOption? MembershipPlan { get; private set; }
+
+    public decimal MembershipFeeUsd { get; private set; }
+
     public decimal MontoUsd { get; private set; }
 
     public InscriptionStatusAdmin EstadoAdmin { get; private set; }
@@ -89,13 +97,15 @@ public sealed class Inscription : AuditableEntity
         PaymentMethod paymentMethod,
         decimal baseAmountUsd,
         decimal administrativeFeeUsd,
+        MembershipPlanOption? membershipPlan,
+        decimal membershipFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado,
         bool riesgosAceptados,
         bool usoImagenAceptado,
         DateTimeOffset inscripcionAt)
     {
-        Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, montoUsd, reglamentoAceptado, riesgosAceptados, usoImagenAceptado);
+        Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, membershipPlan, membershipFeeUsd, montoUsd, reglamentoAceptado, riesgosAceptados, usoImagenAceptado);
 
         var inscription = new Inscription(
             Guid.NewGuid(),
@@ -106,6 +116,8 @@ public sealed class Inscription : AuditableEntity
             paymentMethod,
             baseAmountUsd,
             administrativeFeeUsd,
+            membershipPlan,
+            membershipFeeUsd,
             montoUsd,
             reglamentoAceptado,
             riesgosAceptados,
@@ -191,6 +203,8 @@ public sealed class Inscription : AuditableEntity
         string? shirtNumber,
         decimal baseAmountUsd,
         decimal administrativeFeeUsd,
+        MembershipPlanOption? membershipPlan,
+        decimal membershipFeeUsd,
         decimal montoUsd,
         bool reglamentoAceptado,
         bool riesgosAceptados,
@@ -226,12 +240,22 @@ public sealed class Inscription : AuditableEntity
             throw new DomainRuleException("La cuota administrativa no puede ser negativa.");
         }
 
+        if (membershipFeeUsd < 0)
+        {
+            throw new DomainRuleException("El monto de membresia no puede ser negativo.");
+        }
+
+        if (!membershipPlan.HasValue && membershipFeeUsd != 0)
+        {
+            throw new DomainRuleException("No puede haber un monto de membresia sin un plan de membresia seleccionado.");
+        }
+
         if (montoUsd < 0)
         {
             throw new DomainRuleException("El monto de la inscripcion no puede ser negativo.");
         }
 
-        if (decimal.Round(baseAmountUsd + administrativeFeeUsd, 2) != decimal.Round(montoUsd, 2))
+        if (decimal.Round(baseAmountUsd + administrativeFeeUsd + membershipFeeUsd, 2) != decimal.Round(montoUsd, 2))
         {
             throw new DomainRuleException("El monto total de la inscripcion no coincide con el desglose configurado.");
         }

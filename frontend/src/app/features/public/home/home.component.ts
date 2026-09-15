@@ -8,6 +8,7 @@ import { LiveStatusService } from '../../../core/services/live-status.service';
 import { RankingService, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
+import { flagForCountryCode } from '../../../core/utils/country-flag.util';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -35,12 +36,6 @@ interface EventCard {
 }
 
 type ArticleCard = ArticleSummary;
-
-const COUNTRY_FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-  VE: '🇻🇪', BO: '🇧🇴',
-};
 
 @Component({
   selector: 'app-home',
@@ -70,15 +65,26 @@ const COUNTRY_FLAGS: Record<string, string> = {
                   {{ liveStatus()?.event?.playa }}, {{ liveStatus()?.event?.ciudad }}, {{ liveStatus()?.event?.pais }}
                 </p>
               </div>
-              @if (liveStatus()?.schedulePdfUrl) {
-                <a [href]="liveStatus()?.schedulePdfUrl" target="_blank" rel="noopener"
-                   class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold w-fit shrink-0">
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                  Ver programación
-                </a>
-              }
+              <div class="flex flex-wrap items-center gap-3 w-fit shrink-0">
+                @if (liveStatus()?.surfScoresEmbedUrl) {
+                  <a [href]="liveStatus()?.surfScoresEmbedUrl" target="_blank" rel="noopener"
+                     class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Ver LiveScore
+                  </a>
+                }
+                @if (liveStatus()?.schedulePdfUrl) {
+                  <a [href]="liveStatus()?.schedulePdfUrl" target="_blank" rel="noopener"
+                     class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Ver programación
+                  </a>
+                }
+              </div>
             </header>
 
             <!-- Video + detalles -->
@@ -633,7 +639,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   flagOf(countryCode: string): string {
-    return COUNTRY_FLAGS[countryCode] ?? '🏄';
+    return flagForCountryCode(countryCode);
   }
 
   statusClass(status: string): string {
@@ -655,12 +661,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
     return map[category] ?? 'bg-navy-mid text-text-light';
   }
 
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
+  // anterior si se usan getters locales).
   formatDateRange(start: string, end: string): string {
     if (!start) return '';
     const s = new Date(start);
     const e = new Date(end);
     const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `Del ${s.getDate()} al ${e.getDate()} de ${months[s.getMonth()]}`;
+    return `Del ${s.getUTCDate()} al ${e.getUTCDate()} de ${months[s.getUTCMonth()]}`;
   }
 
   formatDate(dateStr: string): string {

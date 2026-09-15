@@ -23,3 +23,20 @@
   --font-body: Inter, system-ui, sans-serif;
   --font-accent: 'Barlow Condensed', sans-serif;
 }
+
+/*
+ * Modo claro del panel Administrador.
+ * Sobrescribe las variables de color de @theme dentro del área de contenido
+ * del admin (marcada con [data-theme="light"]); como las utilidades de Tailwind
+ * usan var(--color-*), todas las pantallas admin (bg-navy-*, text-text-*)
+ * se re-tematizan automáticamente sin tocar cada componente.
+ * El sidebar admin no usa estas variables (colores fijos) y permanece oscuro
+ * en ambos modos.
+ */
+[data-theme='light'] {
+  --color-navy-deepest: #F1F5F9;
+  --color-navy-dark: #FFFFFF;
+  --color-navy-mid: #E2E8F0;
+  --color-text-light: #0F1E33;
+  --color-text-muted: #5B6472;
+}

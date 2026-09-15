@@ -68,7 +68,15 @@ public sealed class CreateInscriptionCommandHandler(
         var settingsJson = await adminSettingsRepository.GetJsonAsync(AdminSettingsDefaults.SettingsKey, cancellationToken);
         var settings = AdminSettingsSerializer.DeserializeOrDefault(settingsJson);
         var administrativeFeeUsd = settings.General.AdministrativeFeeUsd;
-        var totalMontoUsd = montoUsd + administrativeFeeUsd;
+
+        var membershipFeeUsd = request.MembershipPlan switch
+        {
+            MembershipPlanOption.Anual => pricingContext.MembresiaAnualUsd,
+            MembershipPlanOption.PorEvento => pricingContext.MembresiaPorEventoUsd,
+            _ => 0m
+        };
+
+        var totalMontoUsd = montoUsd + administrativeFeeUsd + membershipFeeUsd;
 
         try
         {
@@ -80,6 +88,8 @@ public sealed class CreateInscriptionCommandHandler(
                 request.PaymentMethod,
                 montoUsd,
                 administrativeFeeUsd,
+                request.MembershipPlan,
+                membershipFeeUsd,
                 totalMontoUsd,
                 request.Reglamento,
                 request.RiesgosAceptados,

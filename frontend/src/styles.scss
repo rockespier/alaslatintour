@@ -196,6 +196,9 @@ h1, h2, h3, h4, h5, h6 {
 .payment-card { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
 .payment-card:hover { border-color: rgba(0,129,198,0.5); }
 .payment-card.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.1), rgba(0,129,198,0.02)); }
+.membership-option { cursor: pointer; transition: all .25s ease; border: 1.5px solid #004F8E; background: #003873; }
+.membership-option:hover { border-color: rgba(0,129,198,0.5); }
+.membership-option.selected { border-color: #0081C6; background: linear-gradient(160deg, rgba(0,129,198,0.12), rgba(0,129,198,0.02)); box-shadow: 0 0 0 4px rgba(0,129,198,0.1); }
 
 /* ── Tabs underline ── */
 .tab-btn { position: relative; padding-bottom: 12px; }

@@ -75,6 +75,8 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | Competitors | `PUT` | `/v1/competitors/{competitorId}/fines/{fineId}` | nuevo |
 | Competitors | `GET` | `/v1/competitors/template` | nuevo |
 | Competitors | `POST` | `/v1/competitors/import` | nuevo |
+| Inscriptions | `GET` | `/v1/events/{eventId}/inscriptions/template` | nuevo |
+| Inscriptions | `POST` | `/v1/events/{eventId}/inscriptions/import` | nuevo |
 
 ### Cambios importantes de contrato
 
@@ -89,6 +91,7 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - En `events/import`, frontend/backoffice puede referenciar el circuito por `CircuitId` o por `CircuitSurfScoresCode`.
 - En `categories/import`, la sucesora puede enviarse por `SuccessorCategoryId` o `SuccessorSurfScoresCode`.
 - `GET /v1/competitors/template` y `POST /v1/competitors/import` permiten cargar competidores masivamente desde Excel; el upsert resuelve por `Id`, luego `SurfScoresCode`, y por último `Email`.
+- `GET /v1/events/{eventId}/inscriptions/template` y `POST /v1/events/{eventId}/inscriptions/import?categoryId={categoryId}` permiten cargar inscripciones masivamente desde Excel para un evento/categoría específicos. A diferencia de los demás imports, este **no hace upsert**: cada fila crea una inscripción nueva (si ya existe, la fila se reporta como error). El competidor se resuelve por `CompetidorId`, luego `SurfScoresCode`, y por último `Email`; debe existir previamente y tener licencia `Activa`. El monto (`baseAmountUsd`, `administrativeFeeUsd`, `membershipFeeUsd`, `montoUsd`) se calcula siempre en el servidor igual que en `POST /v1/inscriptions`; el Excel no permite forzar montos. Se validan género, cupo de la categoría y duplicados igual que en la inscripción manual. Se asume `reglamento`/`riesgosAceptados`/`usoImagenAceptado = true` (el admin certifica la inscripción registrada offline).
 - Issue 9: el backoffice ya soporta cambio controlado de contraseña para competidores vía `POST /v1/competitors/{competitorId}/password`.
 - Issue 9: el admin autenticado puede usar `POST /v1/admin/users/me/password` para su propia contraseña, y `POST /v1/admin/users/{userId}/password` para otros admins cuando tiene permisos.
 - Issue 9: al cambiar la contraseña de una cuenta administrada, la API invalida las sesiones activas mediante incremento de `tokenVersion`.
@@ -152,6 +155,8 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 | `GET` | `/v1/inscriptions` | `Inscritos: Read` |
 | `PUT` | `/v1/inscriptions/{id}` | `Inscritos: Full` |
 | `GET` | `/v1/events/{eventId}/inscriptions` | `Inscritos: Read` |
+| `GET` | `/v1/events/{eventId}/inscriptions/template` | `Inscritos: Full` |
+| `POST` | `/v1/events/{eventId}/inscriptions/import` | `Inscritos: Full` |
 | `GET` | `/v1/payments`, `/v1/payments/{id}`, `/v1/payments/kpis` | `Pagos: Read` |
 | `PUT` | `/v1/payments/{id}` | `Pagos: Full` |
 | `GET` | `/v1/competitors/{competitorId}/fines` | `Pagos: Read` |
@@ -1588,7 +1593,9 @@ GET {{base_url}}/v1/events/3fa85f64-5717-4562-b3fc-2c963f66afa6/categories
       "customTariffUsd": null,
       "effectiveTariffUsd": 150.0,
       "capacidad": 30,
-      "enrolledCount": 12
+      "enrolledCount": 12,
+      "membresiaAnualUsd": 35.0,
+      "membresiaPorEventoUsd": 12.0
     }
   ],
   "useCircuitTariffs": true
@@ -1598,6 +1605,7 @@ GET {{base_url}}/v1/events/3fa85f64-5717-4562-b3fc-2c963f66afa6/categories
 > Si `customTariffUsd` es `null`, la tarifa efectiva se hereda del circuito según el nivel de estrellas del evento.
 > `stars` permite sobrescribir el nivel competitivo por categoría; si llega `null`, la categoría usa las estrellas del evento.
 > En este endpoint ya no existe `customTariffCop` ni `effectiveTariffCop`.
+> `membresiaAnualUsd` y `membresiaPorEventoUsd` vienen de la categoría (ver `GET /v1/categories`) y se usan en el flujo de inscripción para ofrecer el pago opcional de membresía (`POST /v1/inscriptions` con `membershipPlan`). `0` significa que esa opción no está disponible para la categoría.
 
 ---
 
@@ -1990,11 +1998,16 @@ Content-Type: application/json
   "categoryId": "guid",
   "shirtNumber": "7",
   "paymentMethod": "beach",
+  "membershipPlan": "Anual",
   "reglamento": true
 }
 ```
 
+**`membershipPlan`** (opcional): `"Anual"` · `"PorEvento"`. Si se envía, el backend suma a `montoUsd` el importe `membresiaAnualUsd` o `membresiaPorEventoUsd` configurado en la categoría (ver `GET /v1/events/{eventId}/categories`, que ahora expone ambos campos). Omitir el campo (o no enviarlo) si el competidor no quiere sumar membresía.
+
 **Response:** `201 Created`
+
+Además del desglose ya documentado (`baseAmountUsd`, `administrativeFeeUsd`, `montoUsd`), la respuesta ahora puede incluir `membershipPlan` y `membershipFeeUsd` cuando se seleccionó una membresía. Igual que `administrativeFeeUsd`, `membershipFeeUsd` no viene en el payload si es `0`/no aplica — la UI debe ocultar esa línea del resumen en ese caso.
 
 **Ejemplo de response:**
 ```json
@@ -2080,6 +2093,77 @@ GET {{base_url}}/v1/events/{eventId}/inscriptions?page=1&limit=20&categoryId={ca
 ```
 
 **Auth:** requiere `Authorization: Bearer {{access_token}}` con permiso `Inscritos: Read`.
+
+---
+
+### GET /v1/events/{eventId}/inscriptions/confirmed — Roster público de inscritos confirmados
+
+```
+GET {{base_url}}/v1/events/{eventId}/inscriptions/confirmed
+```
+
+**Auth:** ninguna (endpoint público, para la página pública de Eventos). Sin datos sensibles: no expone montos, ids de competidor ni ids de inscripción.
+
+**Response:** `200 OK` · `404 Not Found` si el evento no existe.
+
+```json
+[
+  { "fullName": "Juan Pérez", "country": "PE", "categoryName": "Open Masculino" },
+  { "fullName": "Ana Gómez", "country": "BR", "categoryName": "Open Femenino" }
+]
+```
+
+Solo incluye inscripciones con `estadoAdmin = Pagado` (confirmadas). Ordenado por categoría y luego por nombre.
+
+---
+
+### GET /v1/events/{eventId}/inscriptions/template — Plantilla de importación de inscripciones
+
+```
+GET {{base_url}}/v1/events/{eventId}/inscriptions/template
+Authorization: Bearer {{access_token}}
+```
+
+**Auth:** requiere `Inscritos: Full`.
+
+Devuelve un `.xlsx` con las columnas: `CompetidorId`, `SurfScoresCode`, `Email`, `NumeroCamiseta`, `MetodoPago *`, `MembershipPlan`, `EstadoAdmin *`, `TransaccionId`, `Notas`. La plantilla es genérica (no depende del evento en la URL); debes completar al menos uno de `CompetidorId`/`SurfScoresCode`/`Email` por fila para identificar al competidor.
+
+### POST /v1/events/{eventId}/inscriptions/import — Importar inscripciones XLSX
+
+```http
+POST {{base_url}}/v1/events/{eventId}/inscriptions/import?categoryId={categoryId}
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+```
+
+**Form-data:**
+- `file`: archivo `.xlsx`
+
+**Auth:** requiere `Inscritos: Full`.
+
+**Response:** `200 OK`
+
+```json
+{
+  "processedRows": 3,
+  "createdCount": 2,
+  "updatedCount": 0,
+  "errors": [
+    { "rowNumber": 3, "message": "Fila 3: el competidor ya esta inscrito en esta categoria del evento." }
+  ],
+  "errorLogFile": null
+}
+```
+
+**Reglas de la importación:**
+- No hace upsert: cada fila crea una inscripción nueva. Si el competidor ya está inscrito en ese evento/categoría, la fila se reporta como error y no afecta el resto.
+- El competidor se resuelve por `CompetidorId` (GUID), luego por `SurfScoresCode`, y por último por `Email`. Debe existir previamente (ver `POST /v1/competitors/import`) y tener `LicenseStatus = Activa`.
+- Se valida que el género del competidor sea compatible con la categoría y que haya cupo disponible (`capacidadMaxima` de la categoría en el evento).
+- `MetodoPago` (obligatorio): `Paypal` o `Beach`. `EstadoAdmin` (obligatorio): `Pagado` o `Pendiente`. `MembershipPlan` (opcional): `Anual` o `PorEvento`.
+- El monto (`baseAmountUsd`, `administrativeFeeUsd`, `membershipFeeUsd`, `montoUsd`) se calcula siempre en el servidor con la misma lógica que `POST /v1/inscriptions` (tarifa del circuito o tarifa personalizada del evento, más cuota administrativa, más membresía si aplica). El Excel no admite forzar montos.
+- `TransaccionId` es opcional; si se completa, queda registrado como el pago ya aplicado.
+- Se asume que el admin certifica que el competidor aceptó el reglamento, los riesgos y el uso de imagen (inscripción registrada offline/histórica), por lo que estos tres campos se marcan `true` automáticamente.
+- Si hubo al menos un error, el servidor escribe un `.txt` con el detalle en la carpeta `logs` y devuelve su ruta en `errorLogFile`.
 
 ## 15. Admin Settings — `/v1/admin/settings`
 

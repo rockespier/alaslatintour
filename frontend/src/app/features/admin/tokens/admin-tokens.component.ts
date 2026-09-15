@@ -46,7 +46,7 @@ function fmt(dt: string | null | undefined): string {
     <div class="space-y-10">
       <div>
         <p class="text-xs text-text-muted font-accent uppercase tracking-wider">Admin / Pagos / Tokens</p>
-        <h1 class="font-heading text-2xl text-white leading-tight">Autorización de tokens de pago en playa</h1>
+        <h1 class="font-heading text-2xl text-text-light leading-tight">Autorización de tokens de pago en playa</h1>
         <p class="text-sm text-text-muted mt-2">Solicitudes de pago en efectivo que requieren tu aprobación. Cada token aprobado se envía automáticamente al correo del competidor y tiene una validez de 24 horas.</p>
       </div>
 
@@ -78,7 +78,7 @@ function fmt(dt: string | null | undefined): string {
         <div class="flex items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-orange-brand text-xs mb-1">Cola de aprobación</p>
-            <h2 class="font-heading text-2xl text-white">Solicitudes pendientes</h2>
+            <h2 class="font-heading text-2xl text-text-light">Solicitudes pendientes</h2>
           </div>
           <button (click)="refresh()" class="text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider flex items-center gap-1">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -150,7 +150,7 @@ function fmt(dt: string | null | undefined): string {
         <div class="flex items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-1">Historial</p>
-            <h2 class="font-heading text-2xl text-white">Últimos tokens procesados</h2>
+            <h2 class="font-heading text-2xl text-text-light">Últimos tokens procesados</h2>
           </div>
           <div class="flex items-center gap-3">
             <select [class]="CLASS_INPUT" [(ngModel)]="historyFilter" (ngModelChange)="onFilterChange()">
@@ -203,7 +203,7 @@ function fmt(dt: string | null | undefined): string {
           <svg class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div class="flex-1">
-          <h3 class="font-heading text-lg text-white mb-1">Política de pagos en playa</h3>
+          <h3 class="font-heading text-lg text-text-light mb-1">Política de pagos en playa</h3>
           <p class="text-sm text-text-muted leading-relaxed">Cada token aprobado genera un código alfanumérico válido por 24 horas. La inscripción se reserva con estado "pago pendiente" y debe regularizarse con efectivo al llegar al evento.</p>
         </div>
       </div>
@@ -223,7 +223,7 @@ function fmt(dt: string | null | undefined): string {
               <svg class="h-6 w-6 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-              <h3 class="font-heading text-xl text-white">Generar token de pago</h3>
+              <h3 class="font-heading text-xl text-text-light">Generar token de pago</h3>
               <p class="text-xs text-text-muted">Confirma los datos antes de enviar</p>
             </div>
           </div>
@@ -268,7 +268,7 @@ function fmt(dt: string | null | undefined): string {
               <svg class="h-6 w-6 text-error-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </div>
             <div>
-              <h3 class="font-heading text-xl text-white">Rechazar solicitud</h3>
+              <h3 class="font-heading text-xl text-text-light">Rechazar solicitud</h3>
               <p class="text-xs text-text-muted">Notifica al competidor del motivo</p>
             </div>
           </div>

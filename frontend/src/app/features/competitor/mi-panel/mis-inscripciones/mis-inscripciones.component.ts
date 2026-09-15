@@ -296,10 +296,13 @@ export class MisInscripcionesComponent implements OnInit {
 
   pagoClass(status: PaymentStatus): string { return PAGO_CLASS[status] ?? ''; }
 
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
+  // anterior si se usan getters locales).
   dateRange(start: string, end: string): string {
     if (!start || !end) return 'Por confirmar';
     const s = new Date(start), e = new Date(end);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${s.getDate()} - ${e.getDate()} ${months[s.getMonth()]} ${s.getFullYear()}`;
+    return `${s.getUTCDate()} - ${e.getUTCDate()} ${months[s.getUTCMonth()]} ${s.getUTCFullYear()}`;
   }
 }

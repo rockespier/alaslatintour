@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
+import { flagForCountryCode } from '../../../core/utils/country-flag.util';
 
 interface EventDetail {
   id: string;
@@ -25,11 +26,11 @@ interface EventCategory {
   inscritos: number;
   capacidad: number | null;
   descripcion?: string;
+  membresiaAnualUsd: number;
+  membresiaPorEventoUsd: number;
 }
 
-const FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽', CR: '🇨🇷',
-};
+type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
 
 @Component({
   selector: 'app-inscripcion',
@@ -249,6 +250,9 @@ const FLAGS: Record<string, string> = {
                   <div class="flex justify-between"><span class="text-text-muted">Camiseta solicitada</span><span>#{{ shirtNumber }}</span></div>
                 }
                 <div class="flex justify-between"><span class="text-text-muted">Tarifa de categoría</span><span>{{ formatUSD(selectedCategory()?.tarifa ?? 0) }}</span></div>
+                @if (membershipFeeUsd() > 0) {
+                  <div class="flex justify-between"><span class="text-text-muted">Membresía ({{ membershipPlanLabel() }})</span><span>{{ formatUSD(membershipFeeUsd()) }}</span></div>
+                }
                 <div class="pt-3 border-t border-navy-mid flex justify-between items-baseline">
                   <span class="font-heading text-lg">Total</span>
                   <span class="font-heading text-3xl text-cyan-brand">{{ formatUSD(totalAmount()) }}<span class="text-base ml-1">USD</span></span>
@@ -256,6 +260,36 @@ const FLAGS: Record<string, string> = {
               </div>
               <p class="text-[11px] text-text-muted mt-3">Si aplica una cuota administrativa, se sumará al total y quedará reflejada en la confirmación de tu inscripción.</p>
             </div>
+
+            @if (hasMembershipOptions()) {
+              <div class="bg-navy-deepest border border-navy-mid rounded-xl p-5 mb-6">
+                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-1">Membresía ALAS (opcional)</p>
+                <p class="text-sm text-text-muted mb-4">Súmala a tu inscripción si aún no cuentas con una membresía vigente.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button type="button" (click)="membershipPlan.set('')"
+                          class="membership-option rounded-lg p-4 text-left" [class.selected]="membershipPlan() === ''">
+                    <p class="font-heading text-base">Sin membresía</p>
+                    <p class="text-xs text-text-muted mt-1">No incluir membresía ahora.</p>
+                  </button>
+                  @if ((selectedCategory()?.membresiaAnualUsd ?? 0) > 0) {
+                    <button type="button" (click)="membershipPlan.set('Anual')"
+                            class="membership-option rounded-lg p-4 text-left" [class.selected]="membershipPlan() === 'Anual'">
+                      <p class="font-heading text-base">Anual</p>
+                      <p class="text-xs text-text-muted mt-1">Válida todo el año.</p>
+                      <p class="font-heading text-xl text-cyan-brand mt-2">{{ formatUSD(selectedCategory()!.membresiaAnualUsd) }}</p>
+                    </button>
+                  }
+                  @if ((selectedCategory()?.membresiaPorEventoUsd ?? 0) > 0) {
+                    <button type="button" (click)="membershipPlan.set('PorEvento')"
+                            class="membership-option rounded-lg p-4 text-left" [class.selected]="membershipPlan() === 'PorEvento'">
+                      <p class="font-heading text-base">Por evento</p>
+                      <p class="text-xs text-text-muted mt-1">Válida solo para este evento.</p>
+                      <p class="font-heading text-xl text-cyan-brand mt-2">{{ formatUSD(selectedCategory()!.membresiaPorEventoUsd) }}</p>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div class="payment-card rounded-xl p-5" [class.selected]="paymentMethod() === 'paypal'" (click)="paymentMethod.set('paypal')">
@@ -358,6 +392,7 @@ export class InscripcionComponent implements OnInit {
   submitting = signal(false);
   errorMessage = signal('');
   selectedCategoryId = signal('');
+  membershipPlan = signal<MembershipPlanChoice>('');
   paymentMethod = signal<'paypal' | 'beach' | ''>('');
   reglamentoAccepted = false;
   riesgosAccepted = false;
@@ -375,7 +410,15 @@ export class InscripcionComponent implements OnInit {
     this.categories().find(c => c.id === this.selectedCategoryId()) ?? null
   );
 
-  totalAmount = computed(() => this.selectedCategory()?.tarifa ?? 0);
+  membershipFeeUsd = computed(() => {
+    const cat = this.selectedCategory();
+    if (!cat) return 0;
+    if (this.membershipPlan() === 'Anual') return cat.membresiaAnualUsd;
+    if (this.membershipPlan() === 'PorEvento') return cat.membresiaPorEventoUsd;
+    return 0;
+  });
+
+  totalAmount = computed(() => (this.selectedCategory()?.tarifa ?? 0) + this.membershipFeeUsd());
 
   constructor() {
     effect(() => {
@@ -418,6 +461,8 @@ export class InscripcionComponent implements OnInit {
         inscritos: c.enrolledCount ?? 0,
         capacidad: c.capacidad ?? null,
         descripcion: c.descripcion,
+        membresiaAnualUsd: c.membresiaAnualUsd ?? 0,
+        membresiaPorEventoUsd: c.membresiaPorEventoUsd ?? 0,
       }));
 
       this.categories.set(mapped.filter(c => this.isCategoryGenderCompatible(c)));
@@ -475,11 +520,21 @@ export class InscripcionComponent implements OnInit {
   selectCategory(cat: EventCategory): void {
     if (!this.isFull(cat)) {
       this.selectedCategoryId.set(cat.id);
+      this.membershipPlan.set('');
     }
   }
 
   isFull(cat: EventCategory): boolean {
     return cat.capacidad !== null && cat.inscritos >= cat.capacidad;
+  }
+
+  hasMembershipOptions(): boolean {
+    const cat = this.selectedCategory();
+    return !!cat && (cat.membresiaAnualUsd > 0 || cat.membresiaPorEventoUsd > 0);
+  }
+
+  membershipPlanLabel(): string {
+    return this.membershipPlan() === 'Anual' ? 'Anual' : this.membershipPlan() === 'PorEvento' ? 'Por evento' : '';
   }
 
   goToStep2(): void {
@@ -508,6 +563,7 @@ export class InscripcionComponent implements OnInit {
         categoryId: this.selectedCategoryId(),
         paymentMethod: this.paymentMethod() === 'beach' ? 'beach' : 'Paypal',
         shirtNumber: this.shirtNumber != null ? String(this.shirtNumber) : undefined,
+        membershipPlan: this.membershipPlan() || undefined,
         reglamento: this.reglamentoAccepted,
         riesgosAceptados: this.riesgosAccepted,
         usoImagenAceptado: this.usoImagenAccepted,
@@ -541,13 +597,15 @@ export class InscripcionComponent implements OnInit {
     }
   }
 
-  flagOf(code: string): string { return FLAGS[code] ?? '🏄'; }
+  flagOf(code: string): string { return flagForCountryCode(code); }
   formatUSD(n: number): string { return '$' + n.toLocaleString('en-US'); }
 
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador.
   dateRange(start: string, end: string): string {
     if (!start || !end) return '';
     const s = new Date(start), e = new Date(end);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${s.getDate()} - ${e.getDate()} de ${months[s.getMonth()]}`;
+    return `${s.getUTCDate()} - ${e.getUTCDate()} de ${months[s.getUTCMonth()]}`;
   }
 }

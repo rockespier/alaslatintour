@@ -46,6 +46,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
                 x.Event!.Nombre,
                 x.InscripcionAt,
                 x.PaymentMethod,
+                x.MembershipPlan,
+                x.MembershipFeeUsd > 0 ? x.MembershipFeeUsd : null,
                 x.MontoUsd,
                 x.EstadoAdmin,
                 x.Competitor.Federacion,
@@ -55,6 +57,22 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             .ToList();
 
         return new PagedResult<AdminInscriptionRowDto>(mapped, page, limit, totalItems);
+    }
+
+    public async Task<IReadOnlyCollection<ConfirmedInscriptionRowDto>> ListConfirmedPublicAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        var items = await BuildInscriptionBaseQuery()
+            .Where(x => x.EventId == eventId && x.EstadoAdmin == InscriptionStatusAdmin.Pagado)
+            .OrderBy(x => x.Category!.Nombre)
+            .ThenBy(x => x.Competitor!.Nombre)
+            .ToListAsync(cancellationToken);
+
+        return items
+            .Select(x => new ConfirmedInscriptionRowDto(
+                $"{x.Competitor!.Nombre} {x.Competitor.Apellido}",
+                x.Competitor.Pais,
+                x.Category!.Nombre))
+            .ToList();
     }
 
     public async Task<InscriptionDto?> GetByIdAsync(Guid inscriptionId, CancellationToken cancellationToken)
@@ -118,6 +136,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             x.PaymentMethod,
             x.BaseAmountUsd,
             x.AdministrativeFeeUsd > 0 ? x.AdministrativeFeeUsd : null,
+            x.MembershipPlan,
+            x.MembershipFeeUsd > 0 ? x.MembershipFeeUsd : null,
             x.MontoUsd,
             x.EstadoAdmin,
             x.EstadoCompetidor,
@@ -200,7 +220,9 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             assignment.Category!.Gender,
             assignment.Capacidad,
             assignment.CustomTariffUsd,
-            circuitTariff);
+            circuitTariff,
+            assignment.Category.MembresiaAnualUsd,
+            assignment.Category.MembresiaPorEventoUsd);
     }
 
     public Task AddAsync(Inscription inscription, CancellationToken cancellationToken)
@@ -234,6 +256,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             x.PaymentMethod,
             x.BaseAmountUsd,
             x.AdministrativeFeeUsd > 0 ? x.AdministrativeFeeUsd : null,
+            x.MembershipPlan,
+            x.MembershipFeeUsd > 0 ? x.MembershipFeeUsd : null,
             x.MontoUsd,
             x.EstadoAdmin,
             x.EstadoCompetidor,

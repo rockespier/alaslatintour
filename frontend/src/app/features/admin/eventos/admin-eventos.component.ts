@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
+import { flagForCountryCode } from '../../../core/utils/country-flag.util';
 
 interface EventItem {
   id: string;
@@ -82,7 +83,7 @@ const PAGE_SIZE = 20;
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-3xl font-heading text-white">Eventos</h1>
+          <h1 class="text-3xl font-heading text-text-light">Eventos</h1>
           <p class="text-text-muted text-sm mt-1">Gestión de eventos del circuito.</p>
         </div>
       </div>
@@ -213,7 +214,7 @@ const PAGE_SIZE = 20;
                     </td>
                     <td class="px-4 py-4 text-center">
                       <span class="text-warning-brand font-accent tracking-wider text-xs">
-                        {{ '★'.repeat(ev.stars) }}
+                        {{ ev.stars === 7 ? 'Prime' : '★'.repeat(ev.stars) }}
                       </span>
                     </td>
                     <td class="px-4 py-4">
@@ -276,10 +277,10 @@ const PAGE_SIZE = 20;
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-6 border-b border-navy-mid">
-            <h2 class="font-heading text-xl text-white">
+            <h2 class="font-heading text-xl text-text-light">
               {{ editingId() ? 'Editar evento' : 'Nuevo evento' }}
             </h2>
-            <button (click)="closeModal()" class="text-text-muted hover:text-white transition">
+            <button (click)="closeModal()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -357,11 +358,11 @@ const PAGE_SIZE = 20;
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">País (código) *</label>
-                    <input formControlName="pais" type="text" placeholder="PE" maxlength="4"
+                    <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">País (código IOC) *</label>
+                    <input formControlName="pais" type="text" placeholder="PER" maxlength="3"
                            class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition uppercase">
                     @if (form.get('pais')?.invalid && form.get('pais')?.touched) {
-                      <p class="text-error-brand text-xs mt-1">El país es obligatorio.</p>
+                      <p class="text-error-brand text-xs mt-1">Ingresá el código IOC de 3 letras del país (ej. PER, BRA, CHI).</p>
                     }
                   </div>
                   <div>
@@ -394,7 +395,7 @@ const PAGE_SIZE = 20;
                     <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Estrellas *</label>
                     <select formControlName="stars"
                             class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
-                      @for (s of starsOptions; track s) { <option [value]="s">{{ '★'.repeat(s) }} ({{ s }})</option> }
+                      @for (s of starsOptions; track s) { <option [value]="s">{{ starsLabel(s) }}</option> }
                     </select>
                   </div>
                   <div>
@@ -459,7 +460,7 @@ const PAGE_SIZE = 20;
                            (error)="form.get('imagenUrl')!.setValue('')">
                       <button type="button"
                               (click)="form.get('imagenUrl')!.setValue('')"
-                              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-navy-deepest/80 text-text-muted hover:text-white flex items-center justify-center transition">
+                              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-navy-deepest/80 text-text-muted hover:text-text-light flex items-center justify-center transition">
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -513,9 +514,9 @@ const PAGE_SIZE = 20;
                           <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Nivel de estrellas</label>
                           <select (change)="onCategoryStarsChange(cat.id, $event)"
                                   class="w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light focus:outline-none focus:border-cyan-brand transition">
-                            <option value="" [selected]="isCategoryStarSelected(cat.id, null)">Usar nivel del evento ({{ '★'.repeat(form.get('stars')?.value ?? 0) }})</option>
+                            <option value="" [selected]="isCategoryStarSelected(cat.id, null)">Usar nivel del evento ({{ starsLabel(form.get('stars')?.value ?? 0) }})</option>
                             @for (s of starsOptions; track s) {
-                              <option [value]="s" [selected]="isCategoryStarSelected(cat.id, s)">{{ '★'.repeat(s) }} ({{ s }})</option>
+                              <option [value]="s" [selected]="isCategoryStarSelected(cat.id, s)">{{ starsLabel(s) }}</option>
                             }
                           </select>
                         </div>
@@ -561,7 +562,7 @@ const PAGE_SIZE = 20;
                         <ul class="text-sm space-y-1">
                           @for (c of eventCategories(); track c.categoryId) {
                             <li class="flex justify-between">
-                              <span class="text-text-muted">{{ c.categoryName }} ({{ c.stars ? '★'.repeat(c.stars) : 'nivel del evento' }}):</span>
+                              <span class="text-text-muted">{{ c.categoryName }} ({{ c.stars ? starsLabel(c.stars) : 'nivel del evento' }}):</span>
                               <span class="font-mono">USD {{ c.effectiveTariffUsd ?? 0 }}</span>
                             </li>
                           }
@@ -640,8 +641,8 @@ const PAGE_SIZE = 20;
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-6 border-b border-navy-mid">
-            <h2 class="font-heading text-xl text-white">Importar eventos de SurfScores</h2>
-            <button (click)="closeImport()" class="text-text-muted hover:text-white transition">
+            <h2 class="font-heading text-xl text-text-light">Importar eventos de SurfScores</h2>
+            <button (click)="closeImport()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -736,7 +737,7 @@ const PAGE_SIZE = 20;
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
         <div class="bg-navy-dark border border-error-brand/40 rounded-xl w-full max-w-sm p-6">
-          <h3 class="font-heading text-lg text-white mb-2">Eliminar evento</h3>
+          <h3 class="font-heading text-lg text-text-light mb-2">Eliminar evento</h3>
           <p class="text-text-muted text-sm mb-5">
             ¿Eliminar <strong class="text-text-light">{{ deleteTarget()!.nombre }}</strong>?
             Esta acción no se puede deshacer.
@@ -802,12 +803,16 @@ export class AdminEventosComponent implements OnInit {
   estadosEvento = ESTADOS_EVENTO;
   eventTypes = EVENT_TYPES;
 
+  starsLabel(s: number): string {
+    return s === 7 ? 'Prime' : `${'★'.repeat(s)} (${s})`;
+  }
+
   form = this.fb.group({
     nombre: ['', Validators.required],
     circuitId: ['', Validators.required],
     fechaInicio: ['', Validators.required],
     fechaFin: ['', Validators.required],
-    pais: ['', Validators.required],
+    pais: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{3}$/)]],
     ciudad: ['', Validators.required],
     playa: ['', Validators.required],
     auspiciador: [''],
@@ -934,12 +939,7 @@ export class AdminEventosComponent implements OnInit {
   }
 
   flagOf(pais: string): string {
-    const flags: Record<string, string> = {
-      PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-      CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-      VE: '🇻🇪', BO: '🇧🇴',
-    };
-    return flags[pais?.toUpperCase()] ?? '🏳️';
+    return flagForCountryCode(pais);
   }
 
   onSearchChange(event: Event): void {
@@ -1246,11 +1246,14 @@ export class AdminEventosComponent implements OnInit {
     }
   }
 
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el
+  // día anterior si se usan getters locales).
   fmtDate(d: string): string {
     if (!d) return '';
     const dt = new Date(d);
     const m = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${dt.getDate()} ${m[dt.getMonth()]} ${dt.getFullYear()}`;
+    return `${dt.getUTCDate()} ${m[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`;
   }
 
   estadoClass(estado: string): string {

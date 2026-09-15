@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { flagForCountryCode } from '../../../core/utils/country-flag.util';
 
 type EstadoEvento = 'Activo' | 'Próximamente' | 'Borrador' | 'Completado' | 'Cancelado';
 
@@ -41,18 +42,15 @@ interface DashboardAlert {
   count?: number;
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-  VE: '🇻🇪', BO: '🇧🇴',
-};
-
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
+// fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+// getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
+// anterior si se usan getters locales).
 function rangoFechas(inicio: string, fin: string): string {
   const di = new Date(inicio), df = new Date(fin);
-  const mi = MESES[di.getMonth()], mf = MESES[df.getMonth()];
-  return mi === mf ? `${di.getDate()} – ${df.getDate()} ${mi}` : `${di.getDate()} ${mi} – ${df.getDate()} ${mf}`;
+  const mi = MESES[di.getUTCMonth()], mf = MESES[df.getUTCMonth()];
+  return mi === mf ? `${di.getUTCDate()} – ${df.getUTCDate()} ${mi}` : `${di.getUTCDate()} ${mi} – ${df.getUTCDate()} ${mf}`;
 }
 
 @Component({
@@ -63,7 +61,7 @@ function rangoFechas(inicio: string, fin: string): string {
     <div class="space-y-10">
       <div>
         <p class="text-xs text-text-muted font-accent uppercase tracking-wider">Admin / Dashboard</p>
-        <h1 class="font-heading text-2xl text-white leading-tight">Panel de Administración</h1>
+        <h1 class="font-heading text-2xl text-text-light leading-tight">Panel de Administración</h1>
       </div>
 
       @if (loading()) {
@@ -145,7 +143,7 @@ function rangoFechas(inicio: string, fin: string): string {
         <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-1">Gestión</p>
-            <h2 class="font-heading text-2xl text-white">Eventos del circuito</h2>
+            <h2 class="font-heading text-2xl text-text-light">Eventos del circuito</h2>
           </div>
           <button (click)="goTo('/admin/eventos')"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
@@ -174,7 +172,7 @@ function rangoFechas(inicio: string, fin: string): string {
                     <td class="px-5 py-4 font-heading text-text-light">{{ ev.nombre }}</td>
                     <td class="px-3 py-4">{{ ev.pais }}</td>
                     <td class="px-3 py-4 text-text-muted">{{ ev.fechas }}</td>
-                    <td class="px-3 py-4 text-cyan-brand">{{ '★'.repeat(ev.stars) }}</td>
+                    <td class="px-3 py-4 text-cyan-brand">{{ ev.stars === 7 ? 'Prime' : '★'.repeat(ev.stars) }}</td>
                     <td class="px-3 py-4">{{ ev.inscritos }}<span class="text-text-muted">/{{ ev.capacidad }}</span></td>
                     <td class="px-3 py-4"><span [class]="estadoEventoClass(ev.estado)">{{ ev.estado }}</span></td>
                     <td class="px-5 py-4 text-right">
@@ -200,7 +198,7 @@ function rangoFechas(inicio: string, fin: string): string {
         <div class="flex items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-1">Estructura</p>
-            <h2 class="font-heading text-2xl text-white">Circuitos de la temporada</h2>
+            <h2 class="font-heading text-2xl text-text-light">Circuitos de la temporada</h2>
           </div>
           <button (click)="goTo('/admin/circuitos')"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
@@ -222,7 +220,7 @@ function rangoFechas(inicio: string, fin: string): string {
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/></svg>
                 </button>
               </div>
-              <h3 class="font-heading text-xl text-white mb-1">{{ c.nombre }}</h3>
+              <h3 class="font-heading text-xl text-text-light mb-1">{{ c.nombre }}</h3>
               <p class="text-xs text-text-muted mb-4">{{ c.subtitulo }}</p>
               <dl class="space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-text-muted">Eventos</dt><dd class="font-heading text-text-light">{{ c.eventos }}</dd></div>
@@ -239,7 +237,7 @@ function rangoFechas(inicio: string, fin: string): string {
         <div class="flex items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-1">Actividad reciente</p>
-            <h2 class="font-heading text-2xl text-white">Últimos inscritos</h2>
+            <h2 class="font-heading text-2xl text-text-light">Últimos inscritos</h2>
           </div>
           <button (click)="goTo('/admin/inscritos')" class="text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">Ver todos los inscritos →</button>
         </div>
@@ -314,8 +312,8 @@ export class AdminDashboardComponent implements OnInit {
         return {
           id: ae.id,
           nombre: ae.nombre,
-          pais: full ? (COUNTRY_FLAGS[full.pais?.toUpperCase()] ?? '🏳️') + ' ' + full.pais : '—',
-          fechas: full ? rangoFechas(full.fechaInicio, full.fechaFin) : new Date(ae.fechaInicio).toLocaleDateString('es'),
+          pais: full ? flagForCountryCode(full.pais) + ' ' + full.pais : '—',
+          fechas: full ? rangoFechas(full.fechaInicio, full.fechaFin) : new Date(ae.fechaInicio).toLocaleDateString('es', { timeZone: 'UTC' }),
           stars: full?.stars ?? 0,
           inscritos: ae.inscritosCount,
           capacidad: full?.capacidadMaxima ?? 0,

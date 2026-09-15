@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService, AdminModule } from '../../../core/services/permissions.service';
+import { AdminThemeService } from '../../../core/services/admin-theme.service';
 
 interface NavItem {
   label: string;
@@ -52,6 +53,23 @@ interface NavItem {
         }
       </nav>
 
+      <!-- Modo oscuro / claro -->
+      <div class="border-t border-white/10 px-5 py-3">
+        <button (click)="theme.toggle()"
+                class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-md text-xs text-[#AAAAAA] hover:text-white hover:bg-white/5 transition"
+                title="Cambiar modo oscuro / claro">
+          <span class="flex items-center gap-2">
+            <span class="text-base">{{ theme.theme() === 'dark' ? '🌙' : '☀️' }}</span>
+            <span>{{ theme.theme() === 'dark' ? 'Modo oscuro' : 'Modo claro' }}</span>
+          </span>
+          <span class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0"
+                [class]="theme.theme() === 'dark' ? 'bg-white/15' : 'bg-[#0081C6]'">
+            <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                  [class]="theme.theme() === 'dark' ? 'translate-x-0.5' : 'translate-x-4'"></span>
+          </span>
+        </button>
+      </div>
+
       <!-- User info -->
       <div class="border-t border-white/10 px-5 py-4 flex items-center gap-3">
         <a routerLink="/admin/perfil" (click)="open.set(false)" class="flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition">
@@ -83,6 +101,7 @@ interface NavItem {
 })
 export class AdminSidebarComponent implements OnInit {
   auth = inject(AuthService);
+  theme = inject(AdminThemeService);
   private api = inject(ApiService);
   private permissions = inject(PermissionsService);
   private platformId = inject(PLATFORM_ID);

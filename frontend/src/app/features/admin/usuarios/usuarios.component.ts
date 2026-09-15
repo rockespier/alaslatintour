@@ -72,7 +72,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
     <div class="py-8">
       <div class="mb-6">
         <p class="text-xs text-text-muted font-accent uppercase tracking-wider">Admin / Usuarios</p>
-        <h1 class="font-heading text-2xl text-white leading-tight">Gestión de Usuarios</h1>
+        <h1 class="font-heading text-2xl text-text-light leading-tight">Gestión de Usuarios</h1>
       </div>
 
       <!-- Tabs -->
@@ -189,7 +189,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                 </div>
                 <span [class]="'text-xs font-accent uppercase tracking-wider px-2 py-1 rounded-full ' + r.colorClass + ' ' + r.bgClass">{{ r.usuarios }} usuario{{ r.usuarios === 1 ? '' : 's' }}</span>
               </div>
-              <h3 class="font-heading text-xl text-white mb-2">{{ r.nombre }}</h3>
+              <h3 class="font-heading text-xl text-text-light mb-2">{{ r.nombre }}</h3>
               <p class="text-sm text-text-muted leading-relaxed mb-4">{{ r.descripcion }}</p>
               @if (r.nombre === 'Super Admin') {
                 <div class="w-full px-4 py-2 border border-navy-mid text-text-muted/50 font-accent uppercase tracking-wider text-sm rounded-md text-center cursor-not-allowed"
@@ -216,7 +216,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
         <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
           <div class="flex items-start justify-between mb-6 flex-col sm:flex-row gap-3">
             <div>
-              <h2 class="font-heading text-xl text-white mb-1">Matriz de Permisos</h2>
+              <h2 class="font-heading text-xl text-text-light mb-1">Matriz de Permisos</h2>
               <p class="text-sm text-text-muted">Accesos por rol y módulo del sistema. Editable desde "Roles y Perfiles".</p>
             </div>
             <div class="flex items-center gap-4 text-xs">
@@ -266,8 +266,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closeModal()">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">{{ editingUser() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
-            <button (click)="closeModal()" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">{{ editingUser() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+            <button (click)="closeModal()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -324,8 +324,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closePassword()">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">Cambiar contraseña</h3>
-            <button (click)="closePassword()" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">Cambiar contraseña</h3>
+            <button (click)="closePassword()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -355,8 +355,8 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closeRoleModal()">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">Editar permisos — {{ editingRole()!.name }}</h3>
-            <button (click)="closeRoleModal()" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">Editar permisos — {{ editingRole()!.name }}</h3>
+            <button (click)="closeRoleModal()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>

@@ -87,3 +87,15 @@ public sealed record EventResultImportRow(
     string? PremioUsd,
     string? HeatOla1,
     string? HeatOla2);
+
+public sealed record InscriptionImportRow(
+    int RowNumber,
+    string? CompetidorId,
+    string? SurfScoresCode,
+    string? Email,
+    string? NumeroCamiseta,
+    string? MetodoPago,
+    string? MembershipPlan,
+    string? EstadoAdmin,
+    string? TransaccionId,
+    string? Notas);

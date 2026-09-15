@@ -6,19 +6,13 @@ import { StarRatingComponent } from '../../../../shared/components/star-rating/s
 
 interface PointEntry {
   eventoNombre: string;
-  eventoPais: string;
-  eventoPaisFlag: string;
-  eventStars: number;
+  ubicacion: string;
+  stars: number;
   categoria: string;
-  posicion: number;
+  puesto: string;
   puntos: number;
-  fecha: string;
+  fechaInicio: string;
 }
-
-const FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-};
 
 @Component({
   selector: 'app-historial-puntos',
@@ -76,27 +70,24 @@ const FLAGS: Record<string, string> = {
             </tr>
           </thead>
           <tbody class="divide-y divide-navy-mid/50">
-            @for (entry of history(); track entry.eventoNombre + entry.fecha) {
+            @for (entry of history(); track entry.eventoNombre + entry.fechaInicio) {
               <tr class="hover:bg-navy-mid/20 transition">
                 <td class="px-5 py-4">
-                  <div class="flex items-center gap-2">
-                    <span class="text-lg">{{ flagOf(entry.eventoPais) }}</span>
-                    <div>
-                      <p class="font-medium leading-tight">{{ entry.eventoNombre }}</p>
-                      <p class="text-xs text-text-muted">{{ formatDate(entry.fecha) }}</p>
-                    </div>
+                  <div>
+                    <p class="font-medium leading-tight">{{ entry.eventoNombre }}</p>
+                    <p class="text-xs text-text-muted">{{ entry.ubicacion }} · {{ formatDate(entry.fechaInicio) }}</p>
                   </div>
                 </td>
                 <td class="px-4 py-4 text-text-muted hidden sm:table-cell">{{ entry.categoria }}</td>
                 <td class="px-4 py-4 hidden md:table-cell">
                   <div class="flex justify-center">
-                    <app-star-rating [value]="entry.eventStars" />
+                    <app-star-rating [value]="entry.stars" />
                   </div>
                 </td>
                 <td class="px-4 py-4 text-center">
                   <span class="font-heading text-xl"
-                        [class]="entry.posicion <= 3 ? 'text-cyan-brand' : ''">
-                    #{{ entry.posicion }}
+                        [class]="isTopResult(entry.puesto) ? 'text-cyan-brand' : ''">
+                    #{{ entry.puesto }}
                   </span>
                 </td>
                 <td class="px-4 py-4 text-right font-heading text-lg text-cyan-brand">{{ entry.puntos | number }}</td>
@@ -143,12 +134,18 @@ export class HistorialPuntosComponent implements OnInit {
     }
   }
 
-  flagOf(code: string): string { return FLAGS[code] ?? '🏄'; }
+  isTopResult(puesto: string): boolean {
+    const n = parseInt(puesto, 10);
+    return !isNaN(n) && n >= 1 && n <= 3;
+  }
 
+  // fechaInicio es una fecha "solo fecha" (medianoche UTC en el backend); se lee con getters UTC
+  // para que el día no dependa del huso horario del navegador (Sudamérica ve el día anterior si
+  // se usan getters locales).
   formatDate(d: string): string {
     if (!d) return '';
     const date = new Date(d);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
   }
 }

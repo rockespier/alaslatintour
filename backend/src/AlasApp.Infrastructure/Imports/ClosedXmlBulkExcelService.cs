@@ -83,7 +83,7 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         => BuildWorkbook("Circuits", CircuitHeaders, ["", "ALAS-2026", "ALAS Global Tour", "2026", "Circuito principal", "Latinoamerica", "Shortboard", "Activo"]);
 
     public byte[] BuildEventsTemplate()
-        => BuildWorkbook("Events", EventHeaders, ["", "MANCORA-2026", "", "ALAS-2026", "Mancora Pro", "2026-08-10", "2026-08-13", "Peru", "Mancora", "Playa Pocitas", "Marca X", "https://cdn.test/event.png", "6", "120", "5000.00", "Prime", "Abierto", "Activo"]);
+        => BuildWorkbook("Events", EventHeaders, ["", "MANCORA-2026", "", "ALAS-2026", "Mancora Pro", "2026-08-10", "2026-08-13", "PER", "Mancora", "Playa Pocitas", "Marca X", "https://cdn.test/event.png", "6", "120", "5000.00", "Prime", "Abierto", "Activo"]);
 
     public byte[] BuildCategoriesTemplate()
         => BuildWorkbook("Categories", CategoryHeaders, ["", "OPEN-MEN", "Open Masculino", "Categoria principal", "Masculino", "false", "", "", "", "", "Activo", "35.00", "12.00", "5"]);
@@ -313,6 +313,78 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["PremioUsd"],
             values["HeatOla1"],
             values["HeatOla2"]));
+
+    private static readonly string[] InscriptionImportHeaders =
+    [
+        "CompetidorId",
+        "SurfScoresCode",
+        "Email",
+        "NumeroCamiseta",
+        "MetodoPago",
+        "MembershipPlan",
+        "EstadoAdmin",
+        "TransaccionId",
+        "Notas"
+    ];
+
+    private static readonly HashSet<string> InscriptionImportRequiredHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "MetodoPago", "EstadoAdmin"
+    };
+
+    public byte[] BuildInscriptionsTemplate()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Inscripciones");
+
+        for (var index = 0; index < InscriptionImportHeaders.Length; index++)
+        {
+            var header = InscriptionImportHeaders[index];
+            var isRequired = InscriptionImportRequiredHeaders.Contains(header);
+            var headerCell = worksheet.Cell(1, index + 1);
+            headerCell.Value = isRequired ? $"{header} *" : header;
+            headerCell.Style.Font.Bold = true;
+            if (isRequired)
+            {
+                headerCell.Style.Font.FontColor = XLColor.DarkRed;
+            }
+        }
+
+        var sample = new[] { "", "", "juan.perez@example.com", "#12", "Beach", "", "Pendiente", "", "" };
+        for (var index = 0; index < sample.Length; index++)
+        {
+            worksheet.Cell(2, index + 1).Value = sample[index];
+        }
+
+        worksheet.Cell(4, 1).Value = "* Campo obligatorio";
+        worksheet.Cell(4, 1).Style.Font.Italic = true;
+        worksheet.Cell(4, 1).Style.Font.FontColor = XLColor.DarkRed;
+
+        worksheet.Cell(5, 1).Value = "Debes completar CompetidorId, SurfScoresCode o Email para identificar al competidor.";
+        worksheet.Cell(5, 1).Style.Font.Italic = true;
+
+        worksheet.Cell(6, 1).Value = "MetodoPago: Paypal o Beach. MembershipPlan (opcional): Anual o PorEvento. EstadoAdmin: Pagado o Pendiente.";
+        worksheet.Cell(6, 1).Style.Font.Italic = true;
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    public IReadOnlyCollection<InscriptionImportRow> ReadInscriptions(byte[] content)
+        => ReadRows(content, "Inscripciones", InscriptionImportHeaders, values => new InscriptionImportRow(
+            values.RowNumber,
+            values["CompetidorId"],
+            values["SurfScoresCode"],
+            values["Email"],
+            values["NumeroCamiseta"],
+            values["MetodoPago"],
+            values["MembershipPlan"],
+            values["EstadoAdmin"],
+            values["TransaccionId"],
+            values["Notas"]));
 
     private static byte[] BuildWorkbook(
         string sheetName,

@@ -11,4 +11,6 @@ public sealed record InscriptionPricingContext(
     CategoryGender CategoryGender,
     int? CategoryCapacity,
     decimal? CustomTariffUsd,
-    decimal? CircuitTariffUsd);
+    decimal? CircuitTariffUsd,
+    decimal MembresiaAnualUsd,
+    decimal MembresiaPorEventoUsd);

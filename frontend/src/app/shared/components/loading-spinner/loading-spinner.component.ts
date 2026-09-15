@@ -5,9 +5,9 @@ import { Component, input } from '@angular/core';
   standalone: true,
   template: `
     <div class="flex items-center justify-center gap-3 py-12">
-      <div class="w-8 h-8 border-3 border-white/20 border-t-[#0081C6] rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-3 border-navy-mid/40 border-t-cyan-brand rounded-full animate-spin"></div>
       @if (label()) {
-        <span class="text-sm text-[#AAAAAA]">{{ label() }}</span>
+        <span class="text-sm text-text-muted">{{ label() }}</span>
       }
     </div>
   `,

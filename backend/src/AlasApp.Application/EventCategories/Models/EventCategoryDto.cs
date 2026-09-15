@@ -15,4 +15,6 @@ public sealed record EventCategoryDto(
     decimal? CustomTariffUsd,
     int? Capacidad,
     decimal EffectiveTariffUsd,
-    int EnrolledCount);
+    int EnrolledCount,
+    decimal MembresiaAnualUsd,
+    decimal MembresiaPorEventoUsd);

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { flagForCountryName } from '../../../core/utils/country-flag.util';
 
 type PagosTab = 'resumen' | 'inscripciones' | 'membresias' | 'multas';
 
@@ -73,6 +74,12 @@ function initialsOf(name: string): string {
 function fmtDate(dt: string): string {
   return new Date(dt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
 }
+// vencimiento es una fecha "solo fecha" (medianoche UTC en el backend), no un timestamp real.
+// Se formatea forzando timeZone: 'UTC' para que el día no dependa del huso horario del
+// navegador (con toLocaleDateString normal, Sudamérica ve el día anterior).
+function fmtDateOnly(dt: string): string {
+  return new Date(dt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
 function monthKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}`;
 }
@@ -89,7 +96,7 @@ function monthLabel(key: string): string {
     <div class="py-8">
       <div class="mb-6">
         <p class="text-xs text-text-muted font-accent uppercase tracking-wider">Admin / Pagos</p>
-        <h1 class="font-heading text-2xl text-white leading-tight">Pagos y Recaudación</h1>
+        <h1 class="font-heading text-2xl text-text-light leading-tight">Pagos y Recaudación</h1>
       </div>
 
       <!-- Tabs -->
@@ -140,7 +147,7 @@ function monthLabel(key: string): string {
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
             <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
               <div>
-                <h2 class="font-heading text-xl text-white">Recaudación mensual</h2>
+                <h2 class="font-heading text-xl text-text-light">Recaudación mensual</h2>
                 <p class="text-sm text-text-muted">En USD · Total periodo: \${{ monthlyRevenueTotal() | number:'1.0-0' }}</p>
               </div>
               <div class="flex items-center gap-3 text-xs">
@@ -181,7 +188,7 @@ function monthLabel(key: string): string {
           <!-- Recent transactions -->
           <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
             <div class="px-6 py-4 border-b border-navy-mid">
-              <h2 class="font-heading text-xl text-white">Transacciones recientes</h2>
+              <h2 class="font-heading text-xl text-text-light">Transacciones recientes</h2>
               <p class="text-sm text-text-muted">Últimas {{ transacciones().length }} transacciones registradas</p>
             </div>
             <div class="overflow-x-auto">
@@ -337,13 +344,13 @@ function monthLabel(key: string): string {
               <svg class="h-5 w-5 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div class="flex-1">
-              <h3 class="font-heading text-base text-white mb-1">¿Qué es una membresía?</h3>
+              <h3 class="font-heading text-base text-text-light mb-1">¿Qué es una membresía?</h3>
               <p class="text-sm text-text-muted">Las membresías permiten a clubes y federaciones afiliar a múltiples competidores bajo una tarifa especial. Pueden ser mensuales (acceso completo) o por evento (descuento específico).</p>
             </div>
           </div>
 
           <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
-            <h2 class="font-heading text-xl text-white">Membresías activas</h2>
+            <h2 class="font-heading text-xl text-text-light">Membresías activas</h2>
             @if (canEdit()) {
             <button (click)="openCreateMembresia()"
                     class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
@@ -377,7 +384,7 @@ function monthLabel(key: string): string {
                           <span class="font-medium text-text-light">{{ m.nombre }}</span>
                         </div>
                       </td>
-                      <td class="px-4 py-3 text-text-muted">{{ m.pais }}</td>
+                      <td class="px-4 py-3 text-text-muted">{{ flagForCountryName(m.pais) }} {{ m.pais }}</td>
                       <td class="px-4 py-3">
                         <span [class]="m.plan === 'Mensual'
                           ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider'
@@ -418,7 +425,7 @@ function monthLabel(key: string): string {
       @if (tab() === 'multas') {
         <div>
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
-            <h2 class="font-heading text-xl text-white mb-1">Buscar competidor</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Buscar competidor</h2>
             <p class="text-sm text-text-muted mb-4">Busca por nombre o email para ver y registrar multas.</p>
             <div class="relative max-w-md">
               <input type="text" placeholder="Buscar competidor..." [(ngModel)]="finesSearchTerm"
@@ -442,7 +449,7 @@ function monthLabel(key: string): string {
             <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
               <div class="px-6 py-4 border-b border-navy-mid flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h2 class="font-heading text-xl text-white">{{ sel.nombre }} {{ sel.apellido }}</h2>
+                  <h2 class="font-heading text-xl text-text-light">{{ sel.nombre }} {{ sel.apellido }}</h2>
                   <p class="text-xs text-text-muted">{{ sel.email }}</p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -508,8 +515,8 @@ function monthLabel(key: string): string {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="validateModalOpen.set(false)">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">Validar Pago en Playa</h3>
-            <button (click)="validateModalOpen.set(false)" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">Validar Pago en Playa</h3>
+            <button (click)="validateModalOpen.set(false)" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -544,8 +551,8 @@ function monthLabel(key: string): string {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="createMembresiaOpen.set(false)">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">Nueva Membresía</h3>
-            <button (click)="createMembresiaOpen.set(false)" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">Nueva Membresía</h3>
+            <button (click)="createMembresiaOpen.set(false)" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -599,8 +606,8 @@ function monthLabel(key: string): string {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="createFineOpen.set(false)">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-white">Nueva multa</h3>
-            <button (click)="createFineOpen.set(false)" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-xl text-text-light">Nueva multa</h3>
+            <button (click)="createFineOpen.set(false)" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -641,6 +648,8 @@ export class PagosComponent implements OnInit {
   private permissions = inject(PermissionsService);
 
   canEdit = computed(() => this.permissions.canEdit('Pagos'));
+
+  flagForCountryName = flagForCountryName;
 
   CLASS_INPUT = CLASS_INPUT;
   LABEL_INPUT = LABEL_INPUT;
@@ -805,7 +814,7 @@ export class PagosComponent implements OnInit {
       pais: m.pais,
       plan: m.plan,
       competidores: m.competidoresAfiliados,
-      vencimiento: m.plan === 'Por evento' ? '—' : fmtDate(m.vencimiento),
+      vencimiento: m.plan === 'Por evento' ? '—' : fmtDateOnly(m.vencimiento),
       vencimientoIso: vencimiento.toISOString().slice(0, 10),
       vencimientoWarning: m.estado === 'Vence pronto',
       estado: m.estado,

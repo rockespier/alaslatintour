@@ -161,18 +161,18 @@ public sealed class EventResultsWriter(
                     .ToList());
         }
 
-        var duplicatePlaces = results
-            .GroupBy(x => x.Place.Trim(), StringComparer.OrdinalIgnoreCase)
-            .Where(x => string.IsNullOrWhiteSpace(x.Key) || x.Count() > 1)
-            .Select(x => x.Key)
+        // Se permiten puestos duplicados (empates): dos o mas competidores pueden compartir
+        // el mismo puesto tanto al guardar manualmente como al importar desde Excel.
+        var invalidPlaces = results
+            .Where(x => string.IsNullOrWhiteSpace(x.Place))
             .ToList();
 
-        if (duplicatePlaces.Count > 0)
+        if (invalidPlaces.Count > 0)
         {
             throw new ValidationException(
-                "No se permiten puestos duplicados.",
-                duplicatePlaces
-                    .Select(place => new ValidationError("results.place", $"Puesto duplicado o invalido: {place}"))
+                "El puesto es obligatorio para todos los resultados.",
+                invalidPlaces
+                    .Select(x => new ValidationError("results.place", $"Puesto invalido para el competidor {x.CompetitorId}."))
                     .ToList());
         }
     }
@@ -187,7 +187,11 @@ public sealed class EventResultsWriter(
         var ligaPoints = item.LigaPoints > 0
             ? item.LigaPoints
             : ResolvePoints(place, stars, settings);
-        var prizeUsd = item.PrizeUsd ?? (prizeDistribution.TryGetValue(NormalizePlace(place), out var configuredPrize) ? configuredPrize : null);
+        // Igual que LigaPoints: 0 (o vacio) se interpreta como "no especificado" y dispara el
+        // calculo automatico segun la distribucion de premios del evento (prizeAmountUsd x stars).
+        var prizeUsd = item.PrizeUsd is > 0
+            ? item.PrizeUsd
+            : (prizeDistribution.TryGetValue(NormalizePlace(place), out var configuredPrize) ? configuredPrize : (decimal?)null);
 
         return item with
         {

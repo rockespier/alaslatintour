@@ -5,6 +5,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
+import { flagForCountryCode } from '../../../core/utils/country-flag.util';
 
 interface EventoApi {
   id: string;
@@ -22,6 +23,7 @@ interface EventoApi {
   statusPublic?: string;
   estado?: string;
   lugar?: string;
+  imagenUrl?: string;
 }
 
 interface CircuitoOption { id: string; nombre: string; }
@@ -31,12 +33,6 @@ interface CategoriaTarifa {
   cupos: string;
   tarifa: string;
 }
-
-const COUNTRY_FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-  VE: '🇻🇪', BO: '🇧🇴',
-};
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -86,6 +82,12 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
                         <p class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ mesAnio(ev) }}</p>
                         <p class="font-accent uppercase text-xs text-text-muted">{{ rangoFechas(ev) }}</p>
                       </div>
+                      @if (ev.imagenUrl) {
+                        <div class="w-24 aspect-[16/10] rounded-md border border-navy-mid mt-1">
+                          <img [src]="ev.imagenUrl" [alt]="'Afiche ' + ev.nombre" loading="lazy" referrerpolicy="no-referrer"
+                               class="w-full h-full object-cover">
+                        </div>
+                      }
                     </div>
                     <div class="flex-1">
                       <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
@@ -100,8 +102,12 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
 
                       <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-4">
                         <div class="flex items-center gap-1 text-lg">
-                          @for (s of [1,2,3,4,5,6,7]; track s) {
-                            <span [class]="s <= ev.stars ? 'text-cyan-brand' : 'text-navy-mid'">★</span>
+                          @if (ev.stars === 7) {
+                            <span class="text-cyan-brand font-accent uppercase tracking-wider text-sm">Prime</span>
+                          } @else {
+                            @for (s of [1,2,3,4,5,6,7]; track s) {
+                              <span [class]="s <= ev.stars ? 'text-cyan-brand' : 'text-navy-mid'">★</span>
+                            }
                           }
                         </div>
                       </div>
@@ -192,7 +198,7 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
                   <ul class="space-y-3 text-sm text-text-muted">
                     <li class="flex items-start gap-3">
                       <span class="text-cyan-brand text-lg leading-none mt-0.5">★</span>
-                      <span>Las estrellas indican el nivel del evento (1 a 5): a mayor número, más puntos otorga al ranking.</span>
+                      <span>Las estrellas indican el nivel del evento (1 a 7, el nivel máximo se llama "Prime"): a mayor número, más puntos otorga al ranking.</span>
                     </li>
                     <li class="flex items-start gap-3">
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-success-brand/15 text-success-brand border border-success-brand/30 whitespace-nowrap mt-0.5">Abiertas</span>
@@ -210,10 +216,15 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
                   <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-2">¿Necesitas ayuda?</p>
                   <h4 class="font-heading text-lg text-white mb-2 leading-tight">Reglamento y soporte</h4>
                   <p class="text-sm text-text-muted leading-relaxed mb-4">Consulta nuestro reglamento oficial o contacta a soporte para resolver dudas sobre inscripciones y pagos.</p>
-                  <a routerLink="/quienes-somos" class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                  <a href="/reglamento.pdf" target="_blank" class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
                     Ver reglamento
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                   </a>
+                  &nbsp;&nbsp;
+                <a href="mailto:soporte@alasglobaltour.com"
+                   class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider mt-2">
+                  Contactar soporte →
+                </a>
                 </div>
               </div>
             </aside>
@@ -295,23 +306,26 @@ export class CalendarioComponent implements OnInit {
   }
 
   flagOf(pais: string): string {
-    return COUNTRY_FLAGS[pais?.toUpperCase()] ?? '🏳️';
+    return flagForCountryCode(pais);
   }
 
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend). Se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador — con getters locales,
+  // un usuario en Sudamérica ve el día anterior.
   diaInicio(ev: EventoApi): string {
-    return new Date(ev.fechaInicio).getDate().toString().padStart(2, '0');
+    return new Date(ev.fechaInicio).getUTCDate().toString().padStart(2, '0');
   }
 
   mesAnio(ev: EventoApi): string {
     const d = new Date(ev.fechaInicio);
-    return `${MESES[d.getMonth()]} ${d.getFullYear()}`;
+    return `${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
   }
 
   rangoFechas(ev: EventoApi): string {
     const inicio = new Date(ev.fechaInicio);
     const fin = new Date(ev.fechaFin);
-    const mesInicio = MESES[inicio.getMonth()];
-    return `${inicio.getDate().toString().padStart(2, '0')} – ${fin.getDate().toString().padStart(2, '0')} ${mesInicio.charAt(0).toUpperCase() + mesInicio.slice(1)}`;
+    const mesInicio = MESES[inicio.getUTCMonth()];
+    return `${inicio.getUTCDate().toString().padStart(2, '0')} – ${fin.getUTCDate().toString().padStart(2, '0')} ${mesInicio.charAt(0).toUpperCase() + mesInicio.slice(1)}`;
   }
 
   capacidadPct(ev: EventoApi): number {

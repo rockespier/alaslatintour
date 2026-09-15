@@ -40,7 +40,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
   template: `
     <div class="py-8">
       <div class="mb-6">
-        <h1 class="text-3xl font-heading text-white">Configuración del Sistema</h1>
+        <h1 class="text-3xl font-heading text-text-light">Configuración del Sistema</h1>
         <p class="text-text-muted text-sm mt-1">Parámetros generales de la plataforma ALAS Global Tour.</p>
         @if (!canEdit()) {
           <p class="text-warning-brand text-xs mt-2 font-accent uppercase tracking-wider">Tu rol tiene acceso de solo lectura a esta sección.</p>
@@ -74,7 +74,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       @if (tab() === 'general') {
         <div class="space-y-6 max-w-4xl">
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Información de la Organización</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Información de la Organización</h2>
             <p class="text-sm text-text-muted mb-6">Datos generales que aparecen en el sitio público y comunicaciones.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -112,7 +112,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Redes Sociales</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Redes Sociales</h2>
             <p class="text-sm text-text-muted mb-6">Enlaces que se muestran en el footer del sitio público.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -135,7 +135,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Temporada activa</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Temporada activa</h2>
             <p class="text-sm text-text-muted mb-6">Define el período actual del circuito. Afecta cálculos de ranking y reportes.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -166,9 +166,9 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       @if (tab() === 'ranking') {
         <div class="space-y-6 max-w-5xl">
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Parámetros de distribución de puntos de ranking</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Parámetros de distribución de puntos de ranking</h2>
             <p class="text-sm text-text-muted mb-6">Define los puntos otorgados por puesto final según el nivel de estrellas del evento. Estos valores se sincronizan con el motor de ranking de SurfScores.</p>
-            <h3 class="font-heading text-lg text-white mb-3">Puntos por posición final (por nivel de evento)</h3>
+            <h3 class="font-heading text-lg text-text-light mb-3">Puntos por posición final (por nivel de evento)</h3>
             <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -181,7 +181,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">Prime</span></th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-navy-mid/40">
@@ -204,7 +204,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Distribución de premios (% del pozo por evento)</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Distribución de premios (% del pozo por evento)</h2>
             <p class="text-sm text-text-muted mb-6">Porcentaje del premio total del evento (según sus estrellas) que recibe cada puesto. Se usa para calcular el monto en USD mostrado en Inscritos → Puntajes de Premios de cada evento.</p>
             <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
               <div class="overflow-x-auto">
@@ -218,7 +218,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
-                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
+                      <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">Prime</span></th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-navy-mid/40">
@@ -241,7 +241,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Configuración de ranking</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Configuración de ranking</h2>
             <p class="text-sm text-text-muted mb-6">Reglas adicionales para el cálculo del ranking general. La cantidad de mejores resultados ahora se define por categoría desde el CRUD de Categorías.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -275,7 +275,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <svg class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <div>
-                  <h2 class="font-heading text-xl text-white">SurfScores API</h2>
+                  <h2 class="font-heading text-xl text-text-light">SurfScores API</h2>
                   <p class="text-xs text-text-muted">Integración para extracción de rankings, heats y olas.</p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <svg class="h-6 w-6 text-success-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </div>
                 <div>
-                  <h2 class="font-heading text-xl text-white">WordPress (Headless CMS)</h2>
+                  <h2 class="font-heading text-xl text-text-light">WordPress (Headless CMS)</h2>
                   <p class="text-xs text-text-muted">Origen de noticias y galerías de fotos.</p>
                 </div>
               </div>
@@ -376,7 +376,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
       @if (tab() === 'notificaciones') {
         <div class="space-y-6 max-w-4xl">
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Tokens de pago</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Tokens de pago</h2>
             <p class="text-sm text-text-muted mb-6">Configuración del flujo de pago en playa con códigos temporales.</p>
             <div class="space-y-4">
               <div>
@@ -428,7 +428,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           </div>
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-            <h2 class="font-heading text-xl text-white mb-1">Notificaciones generales</h2>
+            <h2 class="font-heading text-xl text-text-light mb-1">Notificaciones generales</h2>
             <p class="text-sm text-text-muted mb-6">Controla qué eventos del sistema disparan notificaciones por email.</p>
             <div class="space-y-4">
               <div>
@@ -506,7 +506,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <svg class="h-6 w-6 text-error-brand" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 </div>
                 <div>
-                  <h2 class="font-heading text-xl text-white">Streaming en Vivo — YouTube</h2>
+                  <h2 class="font-heading text-xl text-text-light">Streaming en Vivo — YouTube</h2>
                   <p class="text-xs text-text-muted">Configura la transmisión que se incrusta en la página pública del evento.</p>
                 </div>
               </div>
@@ -618,7 +618,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                 <svg class="h-6 w-6 text-orange-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               </div>
               <div>
-                <h2 class="font-heading text-xl text-white">Programación del Evento — PDF</h2>
+                <h2 class="font-heading text-xl text-text-light">Programación del Evento — PDF</h2>
                 <p class="text-xs text-text-muted">Documento con el itinerario de heats que verán los espectadores en la página del evento en vivo.</p>
               </div>
             </div>
@@ -661,7 +661,7 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <svg class="h-6 w-6 text-cyan-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
                 <div>
-                  <h2 class="font-heading text-xl text-white">Puntajes en Vivo — SurfScores</h2>
+                  <h2 class="font-heading text-xl text-text-light">Puntajes en Vivo — SurfScores</h2>
                   <p class="text-xs text-text-muted">Iframe de resultados de heat embebido en la página del evento.</p>
                 </div>
               </div>

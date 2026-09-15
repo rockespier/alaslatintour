@@ -10,12 +10,12 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
     <div class="py-8 max-w-lg">
       <div class="mb-6">
-        <h1 class="text-3xl font-heading text-white">Mi Perfil</h1>
+        <h1 class="text-3xl font-heading text-text-light">Mi Perfil</h1>
         <p class="text-text-muted text-sm mt-1">{{ auth.currentUser()?.fullName }} · {{ auth.currentUser()?.email }}</p>
       </div>
 
       <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
-        <h2 class="font-heading text-xl text-white mb-1">Cambiar contraseña</h2>
+        <h2 class="font-heading text-xl text-text-light mb-1">Cambiar contraseña</h2>
         <p class="text-sm text-text-muted mb-5">Actualiza la contraseña de tu propia cuenta.</p>
 
         <div class="space-y-4">

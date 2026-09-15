@@ -426,7 +426,7 @@ public static class ApiContractMapper
 
     public static Generated.EventCategoryResponse ToContract(EventCategoryDto dto)
     {
-        return new Generated.EventCategoryResponse(
+        var contract = new Generated.EventCategoryResponse(
             dto.Capacidad,
             dto.CategoryId.ToString(),
             dto.CategoryName,
@@ -435,6 +435,10 @@ public static class ApiContractMapper
             dto.EnrolledCount,
             ToGeneratedCategoryGender(dto.Gender),
             dto.Stars);
+
+        contract.AdditionalProperties["membresiaAnualUsd"] = (float)dto.MembresiaAnualUsd;
+        contract.AdditionalProperties["membresiaPorEventoUsd"] = (float)dto.MembresiaPorEventoUsd;
+        return contract;
     }
 
     public static Generated.CompetitorListResponse ToContract(PagedResult<CompetitorDto> result)
@@ -542,7 +546,7 @@ public static class ApiContractMapper
 
     public static Generated.AdminInscriptionRow ToContract(AdminInscriptionRowDto dto)
     {
-        return new Generated.AdminInscriptionRow(
+        var contract = new Generated.AdminInscriptionRow(
             dto.Categoria,
             dto.CompetitorId.ToString(),
             dto.Country,
@@ -560,11 +564,14 @@ public static class ApiContractMapper
             dto.Ranking2026,
             dto.SequentialNumber,
             dto.TransaccionId);
+
+        ApplyMembershipExtension(contract.AdditionalProperties, dto.MembershipPlan, dto.MembershipFeeUsd);
+        return contract;
     }
 
     public static Generated.InscriptionResponse ToContract(InscriptionDto dto)
     {
-        return new Generated.InscriptionResponse(
+        var contract = new Generated.InscriptionResponse(
             new Generated.Category(dto.Category.Id.ToString(), dto.Category.Nombre),
             new Generated.Circuit(dto.Circuit.Id.ToString(), dto.Circuit.Nombre),
             new Generated.Competitor(dto.Competitor.Country, dto.Competitor.FullName, dto.Competitor.Id.ToString()),
@@ -583,11 +590,27 @@ public static class ApiContractMapper
             dto.ShirtNumber,
             dto.TransaccionId,
             dto.UsoImagenAceptado);
+
+        ApplyMembershipExtension(contract.AdditionalProperties, dto.MembershipPlan, dto.MembershipFeeUsd);
+        return contract;
+    }
+
+    private static void ApplyMembershipExtension(IDictionary<string, object> additionalProperties, MembershipPlanOption? plan, decimal? feeUsd)
+    {
+        if (plan.HasValue)
+        {
+            additionalProperties["membershipPlan"] = plan.Value.ToString();
+        }
+
+        if (feeUsd.HasValue)
+        {
+            additionalProperties["membershipFeeUsd"] = (float)feeUsd.Value;
+        }
     }
 
     public static Generated.InscriptionResponse ToContract(CompetitorInscriptionDto dto)
     {
-        return new Generated.InscriptionResponse(
+        var contract = new Generated.InscriptionResponse(
             new Generated.Category(dto.CategoryId, dto.CategoryNombre),
             new Generated.Circuit(dto.CircuitId, dto.CircuitNombre),
             new Generated.Competitor(string.Empty, string.Empty, dto.CompetitorId),
@@ -606,6 +629,9 @@ public static class ApiContractMapper
             dto.ShirtNumber,
             dto.TransaccionId,
             dto.UsoImagenAceptado);
+
+        ApplyMembershipExtension(contract.AdditionalProperties, dto.MembershipPlan, dto.MembershipFeeUsd);
+        return contract;
     }
 
     public static Generated.PointsHistoryResponse ToContract(CompetitorPointsHistoryDto dto)
@@ -1006,9 +1032,27 @@ public static class ApiContractMapper
             ParseGuid(request.CategoryId, "categoryId"),
             NormalizeOptional(request.ShirtNumber),
             ToDomainPaymentMethod(request.PaymentMethod),
+            ToDomainMembershipPlanOption(ReadAdditionalString(request.AdditionalProperties, "membershipPlan")),
             request.Reglamento,
             request.RiesgosAceptados,
             request.UsoImagenAceptado);
+    }
+
+    private static MembershipPlanOption? ToDomainMembershipPlanOption(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return NormalizeEnumText(value) switch
+        {
+            "anual" => MembershipPlanOption.Anual,
+            "porevento" => MembershipPlanOption.PorEvento,
+            _ => throw new ValidationException(
+                "La solicitud contiene errores de validacion.",
+                [new ValidationError("membershipPlan", $"El plan de membresia '{value}' no es valido. Usa 'Anual' o 'PorEvento'.")])
+        };
     }
 
     public static UpdateInscriptionCommand ToCommand(Guid inscriptionId, Generated.InscriptionUpdateRequest request)

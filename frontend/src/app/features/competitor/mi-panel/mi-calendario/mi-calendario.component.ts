@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
+import { flagForCountryCode } from '../../../../core/utils/country-flag.util';
 
 interface CalendarEvent {
   id: string;
@@ -17,11 +18,6 @@ interface CalendarEvent {
   categoria: string;
   statusPago: 'confirmado' | 'pendiente';
 }
-
-const FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-};
 
 @Component({
   selector: 'app-mi-calendario',
@@ -144,15 +140,19 @@ export class MiCalendarioComponent implements OnInit {
     }
   }
 
-  flagOf(code: string): string { return FLAGS[code] ?? '🏄'; }
-  dayOf(d: string): string { return d ? String(new Date(d).getDate()).padStart(2, '0') : ''; }
-  monthOf(d: string): string { if (!d) return ''; const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return months[new Date(d).getMonth()]; }
-  yearOf(d: string): string { return d ? String(new Date(d).getFullYear()) : ''; }
+  flagOf(code: string): string { return flagForCountryCode(code); }
+
+  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
+  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
+  // anterior si se usan getters locales).
+  dayOf(d: string): string { return d ? String(new Date(d).getUTCDate()).padStart(2, '0') : ''; }
+  monthOf(d: string): string { if (!d) return ''; const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return months[new Date(d).getUTCMonth()]; }
+  yearOf(d: string): string { return d ? String(new Date(d).getUTCFullYear()) : ''; }
 
   dateRange(start: string, end: string): string {
     if (!start || !end) return '';
     const s = new Date(start), e = new Date(end);
     const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${s.getDate()} - ${e.getDate()} ${months[s.getMonth()]} ${s.getFullYear()}`;
+    return `${s.getUTCDate()} - ${e.getUTCDate()} ${months[s.getUTCMonth()]} ${s.getUTCFullYear()}`;
   }
 }

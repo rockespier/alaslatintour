@@ -29,6 +29,13 @@ public sealed class InscriptionConfiguration : IEntityTypeConfiguration<Inscript
         builder.Property(x => x.AdministrativeFeeUsd)
             .HasPrecision(18, 2);
 
+        builder.Property(x => x.MembershipPlan)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.Property(x => x.MembershipFeeUsd)
+            .HasPrecision(18, 2);
+
         builder.Property(x => x.EstadoAdmin)
             .HasConversion<string>()
             .HasMaxLength(20)

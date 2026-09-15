@@ -16,6 +16,8 @@ public sealed record CompetitorInscriptionDto(
     PaymentMethod PaymentMethod,
     decimal BaseAmountUsd,
     decimal? AdministrativeFeeUsd,
+    MembershipPlanOption? MembershipPlan,
+    decimal? MembershipFeeUsd,
     decimal MontoUsd,
     InscriptionStatusAdmin EstadoAdmin,
     InscriptionStatusCompetitor EstadoCompetidor,

@@ -3,8 +3,10 @@ import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LiveStatusService } from '../../../core/services/live-status.service';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
+import { flagForCountryCode, flagForCountryName } from '../../../core/utils/country-flag.util';
 
 interface Circuit {
   id: string;
@@ -37,6 +39,14 @@ interface EventItem {
   isInvitational?: boolean;
   waveSize?: string;
   ganador?: string;
+  imagenUrl?: string;
+  auspiciador?: string;
+}
+
+interface ConfirmedInscriptionRow {
+  fullName: string;
+  country: string;
+  categoryName: string;
 }
 
 interface MyInscription {
@@ -54,11 +64,6 @@ interface CompetitorStats {
   puntosActual?: number;
   rankingAnterior?: number;
 }
-
-const FLAG: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-};
 
 const STATUS_CLASS: Record<string, string> = {
   'Inscripciones Abiertas': 'bg-success-brand/15 text-success-brand border-success-brand/30',
@@ -166,6 +171,12 @@ const STATUS_CLASS: Record<string, string> = {
                         <p class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ monthYearOf(event.fechaInicio) }}</p>
                         <p class="font-accent uppercase text-xs text-text-muted">{{ dateRangeShort(event.fechaInicio, event.fechaFin) }}</p>
                       </div>
+                      @if (event.imagenUrl) {
+                        <div class="w-24 aspect-[16/10] rounded-md border border-navy-mid mt-1">
+                          <img [src]="event.imagenUrl" [alt]="'Afiche ' + event.nombre" loading="lazy" referrerpolicy="no-referrer"
+                               class="w-full h-full object-cover">
+                        </div>
+                      }
                     </div>
 
                     <div class="flex-1 min-w-0">
@@ -220,6 +231,12 @@ const STATUS_CLASS: Record<string, string> = {
                               <p class="font-heading text-lg">{{ event.enrolledCount }}</p>
                             </div>
                           }
+                          @if (event.auspiciador) {
+                            <div>
+                              <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Auspiciador</p>
+                              <p class="font-heading text-lg">{{ event.auspiciador }}</p>
+                            </div>
+                          }
                         </div>
                       } @else {
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
@@ -244,6 +261,12 @@ const STATUS_CLASS: Record<string, string> = {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Circuito</p>
                               <p class="font-heading text-lg">{{ nombreCircuito }}</p>
+                            </div>
+                          }
+                          @if (event.auspiciador) {
+                            <div>
+                              <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">Auspiciador</p>
+                              <p class="font-heading text-lg">{{ event.auspiciador }}</p>
                             </div>
                           }
                         </div>
@@ -273,7 +296,7 @@ const STATUS_CLASS: Record<string, string> = {
                         }
 
                         @if (event.categorias?.length) {
-                          <button (click)="toggleExpand(event.id)"
+                          <button (click)="toggleExpand(event)"
                                   class="px-5 py-2.5 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition flex items-center gap-2">
                             <span>{{ isExpanded(event.id) ? 'Ocultar detalles' : 'Ver detalles' }}</span>
                             <svg class="h-4 w-4 transition-transform" [class.rotate-180]="isExpanded(event.id)"
@@ -281,6 +304,25 @@ const STATUS_CLASS: Record<string, string> = {
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                           </button>
+                        }
+
+                        <button (click)="toggleInscritos(event)"
+                                class="px-5 py-2.5 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition flex items-center gap-2">
+                          <span>{{ isInscritosExpanded(event.id) ? 'Ocultar inscritos' : 'Ver inscritos confirmados' }}</span>
+                          <svg class="h-4 w-4 transition-transform" [class.rotate-180]="isInscritosExpanded(event.id)"
+                               fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                          </svg>
+                        </button>
+
+                        @if (isLiveScheduleAvailable(event.id)) {
+                          <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
+                             class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Descargar programación (PDF)
+                          </a>
                         }
                       </div>
 
@@ -294,6 +336,9 @@ const STATUS_CLASS: Record<string, string> = {
                                   <th class="text-left py-2 pr-4">Categoría</th>
                                   <th class="text-left py-2 px-2">Cupos</th>
                                   <th class="text-right py-2 pl-2">Tarifa</th>
+                                  @if (event.statusPublic === 'Completado') {
+                                    <th class="text-right py-2 pl-2">Ganador</th>
+                                  }
                                 </tr>
                               </thead>
                               <tbody class="divide-y divide-navy-mid/60">
@@ -307,6 +352,11 @@ const STATUS_CLASS: Record<string, string> = {
                                     </td>
                                     <td class="px-2 text-text-muted">{{ cat.inscritos }} / {{ cat.capacidad }}</td>
                                     <td class="py-2.5 pl-2 text-right text-cyan-brand">{{ formatUSD(cat.tarifa) }}</td>
+                                    @if (event.statusPublic === 'Completado') {
+                                      <td class="py-2.5 pl-2 text-right">
+                                        {{ winners().get(cat.id) || (loadingWinners().has(event.id) ? 'Cargando…' : '—') }}
+                                      </td>
+                                    }
                                   </tr>
                                 }
                               </tbody>
@@ -314,6 +364,38 @@ const STATUS_CLASS: Record<string, string> = {
                           </div>
                           @if (event.inscripcionCierre) {
                             <p class="text-xs text-text-muted mt-3">Cierra inscripciones el {{ formatDate(event.inscripcionCierre) }}.</p>
+                          }
+                        </div>
+                      }
+
+                      @if (isInscritosExpanded(event.id)) {
+                        <div class="mt-6 pt-6 border-t border-navy-mid">
+                          <h4 class="font-accent uppercase tracking-wider text-cyan-brand text-sm mb-3">Inscritos confirmados</h4>
+                          @if (loadingInscritos().has(event.id)) {
+                            <p class="text-sm text-text-muted">Cargando…</p>
+                          } @else if ((confirmedInscriptions().get(event.id) ?? []).length === 0) {
+                            <p class="text-sm text-text-muted">Aún no hay inscritos confirmados para este evento.</p>
+                          } @else {
+                            <div class="overflow-x-auto">
+                              <table class="w-full text-sm">
+                                <thead class="text-text-muted font-accent uppercase tracking-wider text-xs">
+                                  <tr class="border-b border-navy-mid">
+                                    <th class="text-left py-2 pr-4">Competidor</th>
+                                    <th class="text-left py-2 px-2">País</th>
+                                    <th class="text-left py-2 pl-2">Categoría</th>
+                                  </tr>
+                                </thead>
+                                <tbody class="divide-y divide-navy-mid/60">
+                                  @for (row of confirmedInscriptions().get(event.id); track row.fullName + row.categoryName) {
+                                    <tr>
+                                      <td class="py-2.5 pr-4 font-medium">{{ row.fullName }}</td>
+                                      <td class="px-2 text-text-muted">{{ flagForCountryName(row.country) }} {{ row.country }}</td>
+                                      <td class="py-2.5 pl-2 text-text-muted">{{ row.categoryName }}</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
                           }
                         </div>
                       }
@@ -385,8 +467,13 @@ const STATUS_CLASS: Record<string, string> = {
                 <p class="text-sm text-text-muted leading-relaxed mb-4">
                   Consulta el reglamento oficial o contacta a soporte para dudas sobre inscripciones y pagos.
                 </p>
-                <a href="mailto:soporte@alasglobaltour.com"
+                <a href="/reglamento.pdf" target="_blank"
                    class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                  Ver reglamento
+                </a>
+                &nbsp;&nbsp;
+                <a href="mailto:soporte@alasglobaltour.com"
+                   class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider mt-2">
                   Contactar soporte →
                 </a>
               </div>
@@ -398,10 +485,13 @@ const STATUS_CLASS: Record<string, string> = {
   `,
 })
 export class EventosComponent implements OnInit {
+  flagForCountryName = flagForCountryName;
+
   auth = inject(AuthService);
   private api = inject(ApiService);
   private title = inject(Title);
   private meta = inject(Meta);
+  private liveStatus = inject(LiveStatusService);
 
   readonly currentYear = new Date().getFullYear();
 
@@ -414,6 +504,13 @@ export class EventosComponent implements OnInit {
   circuitFilter = signal<string>('all');
   expanded = signal<Set<string>>(new Set());
   readonly skeletons = [1, 2, 3];
+
+  winners = signal<Map<string, string>>(new Map());
+  loadingWinners = signal<Set<string>>(new Set());
+
+  expandedInscritos = signal<Set<string>>(new Set());
+  confirmedInscriptions = signal<Map<string, ConfirmedInscriptionRow[]>>(new Map());
+  loadingInscritos = signal<Set<string>>(new Set());
 
   filteredEvents = computed(() => {
     const filter = this.circuitFilter();
@@ -435,6 +532,7 @@ export class EventosComponent implements OnInit {
     });
     this.loadCircuits();
     if (this.auth.isCompetitor()) this.loadCompetitorStats();
+    this.liveStatus.ensureLoaded();
   }
 
   selectCircuit(circuitId: string): void {
@@ -524,16 +622,104 @@ export class EventosComponent implements OnInit {
     return this.circuits().find(c => c.id === event.circuitId)?.nombre;
   }
 
-  toggleExpand(id: string): void {
+  toggleExpand(event: EventItem): void {
     this.expanded.update(set => {
       const next = new Set(set);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(event.id)) {
+        next.delete(event.id);
+      } else {
+        next.add(event.id);
+        if (event.statusPublic === 'Completado') this.loadWinners(event);
+      }
       return next;
     });
   }
 
   isExpanded(id: string): boolean { return this.expanded().has(id); }
-  flagOf(code: string): string { return FLAG[code] ?? '🏄'; }
+
+  private async loadWinners(event: EventItem): Promise<void> {
+    const categorias = event.categorias;
+    if (!categorias?.length) return;
+    const already = this.winners();
+    const pending = categorias.filter(c => !already.has(c.id));
+    if (pending.length === 0) return;
+
+    this.loadingWinners.update(set => new Set(set).add(event.id));
+    try {
+      const entries = await Promise.all(pending.map(async (cat): Promise<[string, string]> => {
+        try {
+          const res = await this.api.get<any>(`/events/${event.id}/results?categoryId=${cat.id}`);
+          const winner = (res?.data ?? []).find((r: any) => r.place === '1');
+          return [cat.id, winner?.competitorName ?? ''];
+        } catch {
+          return [cat.id, ''];
+        }
+      }));
+      this.winners.update(map => {
+        const next = new Map(map);
+        for (const [catId, name] of entries) next.set(catId, name);
+        return next;
+      });
+    } finally {
+      this.loadingWinners.update(set => {
+        const next = new Set(set);
+        next.delete(event.id);
+        return next;
+      });
+    }
+  }
+
+  toggleInscritos(event: EventItem): void {
+    this.expandedInscritos.update(set => {
+      const next = new Set(set);
+      if (next.has(event.id)) {
+        next.delete(event.id);
+      } else {
+        next.add(event.id);
+        this.loadConfirmedInscriptions(event);
+      }
+      return next;
+    });
+  }
+
+  isInscritosExpanded(id: string): boolean { return this.expandedInscritos().has(id); }
+
+  private async loadConfirmedInscriptions(event: EventItem): Promise<void> {
+    if (this.confirmedInscriptions().has(event.id)) return;
+    this.loadingInscritos.update(set => new Set(set).add(event.id));
+    try {
+      const res = await this.api.get<any>(`/events/${event.id}/inscriptions/confirmed`);
+      const rows: ConfirmedInscriptionRow[] = Array.isArray(res) ? res : (res?.data ?? []);
+      this.confirmedInscriptions.update(map => {
+        const next = new Map(map);
+        next.set(event.id, rows);
+        return next;
+      });
+    } catch {
+      this.confirmedInscriptions.update(map => {
+        const next = new Map(map);
+        next.set(event.id, []);
+        return next;
+      });
+    } finally {
+      this.loadingInscritos.update(set => {
+        const next = new Set(set);
+        next.delete(event.id);
+        return next;
+      });
+    }
+  }
+
+  isLiveScheduleAvailable(eventId: string): boolean {
+    const s = this.liveStatus.status();
+    return !!(s?.isLive && s.event?.id === eventId && s.schedulePdfUrl);
+  }
+
+  liveSchedulePdfUrl(): string | null {
+    return this.liveStatus.status()?.schedulePdfUrl ?? null;
+  }
+
+  flagOf(code: string): string { return flagForCountryCode(code); }
   statusClass(status: string): string { return STATUS_CLASS[status] ?? 'bg-orange-brand/15 text-orange-brand border-orange-brand/30'; }
 
   capacityColor(used: number, total: number): string {
@@ -545,26 +731,29 @@ export class EventosComponent implements OnInit {
 
   capacityPct(used: number, total: number): number { return Math.min(100, Math.round((used / total) * 100)); }
   formatUSD(n: number): string { return '$' + n.toLocaleString('en-US'); }
-  dayOf(d: string): string { return d ? String(new Date(d).getDate()).padStart(2, '0') : ''; }
+  // fechaInicio/fechaFin/inscripcionCierre son fechas "solo fecha" (medianoche UTC en el backend).
+  // Se usan los getters UTC para que el día mostrado no dependa del huso horario del navegador
+  // (con getters locales, un usuario en Sudamérica ve el día anterior).
+  dayOf(d: string): string { return d ? String(new Date(d).getUTCDate()).padStart(2, '0') : ''; }
 
   monthYearOf(d: string): string {
     if (!d) return '';
     const date = new Date(d);
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    return `${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
   }
 
   dateRangeShort(start: string, end: string): string {
     if (!start || !end) return '';
     const s = new Date(start), e = new Date(end);
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return `${s.getDate()} - ${e.getDate()} ${months[s.getMonth()]}`;
+    return `${s.getUTCDate()} - ${e.getUTCDate()} ${months[s.getUTCMonth()]}`;
   }
 
   formatDate(d: string): string {
     if (!d) return '';
     const date = new Date(d);
     const months = ['enero', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${date.getDate()} de ${months[date.getMonth()]}`;
+    return `${date.getUTCDate()} de ${months[date.getUTCMonth()]}`;
   }
 }

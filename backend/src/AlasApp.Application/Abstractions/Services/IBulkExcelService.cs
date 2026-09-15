@@ -29,4 +29,8 @@ public interface IBulkExcelService
     byte[] BuildEventResultsTemplate(IReadOnlyCollection<EventResultRosterRowDto> roster);
 
     IReadOnlyCollection<EventResultImportRow> ReadEventResults(byte[] content);
+
+    byte[] BuildInscriptionsTemplate();
+
+    IReadOnlyCollection<InscriptionImportRow> ReadInscriptions(byte[] content);
 }

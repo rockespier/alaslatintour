@@ -5,6 +5,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
+import { flagForCountryName } from '../../../core/utils/country-flag.util';
 
 type InscritosTab = 'inscritos' | 'premios' | 'puestos';
 
@@ -74,7 +75,7 @@ function fmtDateTime(dt: string): string {
     <div class="py-8">
       <div class="mb-6">
         <p class="text-xs text-text-muted font-accent uppercase tracking-wider">Admin / Inscritos</p>
-        <h1 class="font-heading text-2xl text-white leading-tight">Inscritos y Resultados</h1>
+        <h1 class="font-heading text-2xl text-text-light leading-tight">Inscritos y Resultados</h1>
       </div>
 
       <!-- Tabs -->
@@ -119,7 +120,20 @@ function fmtDateTime(dt: string): string {
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               {{ exportando() ? 'Exportando...' : 'Exportar XLSX' }}
             </button>
+            @if (filterEvento && filterCategoria && canEdit()) {
+              <button (click)="descargarPlantillaInscritos()" [disabled]="descargandoPlantillaInscritos()"
+                      class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition whitespace-nowrap disabled:opacity-50">
+                {{ descargandoPlantillaInscritos() ? 'Descargando...' : 'Descargar plantilla' }}
+              </button>
+              <button (click)="inscritosImportOpen.set(true)"
+                      class="px-4 py-2 border border-orange-brand/50 hover:border-orange-brand text-orange-brand font-accent uppercase tracking-wider text-sm rounded-md transition whitespace-nowrap">
+                Importar Excel
+              </button>
+            }
           </div>
+
+          <app-import-excel-modal [open]="inscritosImportOpen()" [importPath]="inscritosImportPath()" entityLabel="inscritos"
+                                   (close)="inscritosImportOpen.set(false)" (imported)="onInscritosImported()" />
 
           @if (filterEvento) {
             <p class="text-xs text-text-muted mb-4">Mostrando inscritos de <span class="text-cyan-brand">{{ nombreEventoSeleccionado() }}</span></p>
@@ -168,7 +182,7 @@ function fmtDateTime(dt: string): string {
                     <tr class="hover:bg-cyan-brand/5 transition">
                       <td class="px-3 py-3 font-mono text-text-muted">{{ row.numero }}</td>
                       <td class="px-3 py-3 font-medium text-text-light">{{ row.competidor }}</td>
-                      <td class="px-3 py-3 text-text-muted">{{ row.pais }}</td>
+                      <td class="px-3 py-3 text-text-muted">{{ flagForCountryName(row.pais) }} {{ row.pais }}</td>
                       <td class="px-3 py-3 text-center font-mono text-sm text-text-light">{{ row.rank2025 }}</td>
                       <td class="px-3 py-3 text-center font-mono text-sm text-cyan-brand">{{ row.rank2026 }}</td>
                       <td class="px-3 py-3 text-text-muted">{{ row.categoria }}</td>
@@ -238,7 +252,7 @@ function fmtDateTime(dt: string): string {
         <div class="space-y-6">
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
             <div class="mb-6">
-              <h2 class="font-heading text-xl text-white mb-1">Distribución de premios por puesto y estrellas del evento</h2>
+              <h2 class="font-heading text-xl text-text-light mb-1">Distribución de premios por puesto y estrellas del evento</h2>
               <p class="text-sm text-text-muted">Porcentaje del pozo total del evento (<code>prizeAmountUsd</code>) que corresponde a cada puesto según el nivel de estrellas. Haz clic en una celda para editar — esta es la misma configuración de Configuración → Ranking.</p>
             </div>
 
@@ -259,7 +273,7 @@ function fmtDateTime(dt: string): string {
                         <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★</span></th>
                         <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★</span></th>
                         <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★</span></th>
-                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★★★★★★★</span></th>
+                        <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">Prime</span></th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-navy-mid/40">
@@ -292,7 +306,7 @@ function fmtDateTime(dt: string): string {
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
             <div class="mb-6">
-              <h2 class="font-heading text-lg text-white mb-1">Vista previa en USD por evento</h2>
+              <h2 class="font-heading text-lg text-text-light mb-1">Vista previa en USD por evento</h2>
               <p class="text-sm text-text-muted">Monto en USD que corresponde a cada puesto, calculado desde el pozo total del evento seleccionado (<code>prizeAmountUsd</code>) según la distribución anterior.</p>
             </div>
 
@@ -302,7 +316,7 @@ function fmtDateTime(dt: string): string {
                 @for (e of eventos(); track e.id) { <option [value]="e.id">{{ e.nombre }}</option> }
               </select>
               @if (premiosStars() > 0) {
-                <p class="flex items-center text-xs text-text-muted">Evento de <span class="text-warning-brand mx-1">{{ '★'.repeat(premiosStars()) }}</span></p>
+                <p class="flex items-center text-xs text-text-muted">Evento de <span class="text-warning-brand mx-1">{{ starsText(premiosStars()) }}</span></p>
               }
             </div>
 
@@ -381,13 +395,13 @@ function fmtDateTime(dt: string): string {
             @if (resultados().length > 0) {
               <!-- Podium -->
               <div class="bg-navy-dark rounded-xl border border-navy-mid p-6 mb-6">
-                <h3 class="font-heading text-lg text-white mb-6 text-center">Podio</h3>
+                <h3 class="font-heading text-lg text-text-light mb-6 text-center">Podio</h3>
                 <div class="grid grid-cols-3 items-end gap-3 max-w-2xl mx-auto">
                   @for (p of podio(); track p.slot) {
                     <div class="text-center">
                       <div [class]="'mx-auto mb-3 rounded-full flex items-center justify-center font-heading text-white ' + p.avatarClass">{{ p.iniciales }}</div>
                       <p class="font-medium text-sm text-text-light">{{ p.competidor }}</p>
-                      <p class="text-xs text-text-muted mb-3">{{ p.pais }}</p>
+                      <p class="text-xs text-text-muted mb-3">{{ flagForCountryName(p.pais) }} {{ p.pais }}</p>
                       <div [class]="p.podiumClass">
                         <p [class]="p.numberClass">{{ p.slot }}</p>
                         <p class="text-xs font-accent uppercase tracking-wider" [class]="p.slot === '1' ? 'text-white/80' : 'text-text-muted'">{{ p.heatScoreTotal ?? '—' }} pts</p>
@@ -402,7 +416,7 @@ function fmtDateTime(dt: string): string {
               <!-- Editable results (full roster) -->
               <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
                 <div class="px-6 py-4 border-b border-navy-mid flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
-                  <h3 class="font-heading text-lg text-white">Resultados completos</h3>
+                  <h3 class="font-heading text-lg text-text-light">Resultados completos</h3>
                   <button (click)="guardarResultados()" [disabled]="guardandoResultados() || filasResultados().length === 0" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50 whitespace-nowrap">
                     {{ guardandoResultados() ? 'Guardando...' : 'Guardar resultados' }}
                   </button>
@@ -429,7 +443,7 @@ function fmtDateTime(dt: string): string {
                               <input type="text" placeholder="—" [(ngModel)]="f.place" [class]="PLACE_INPUT_CLASS">
                             </td>
                             <td class="px-4 py-3 font-medium text-text-light">{{ f.nombre }}</td>
-                            <td class="px-4 py-3 text-text-muted">{{ f.pais }}</td>
+                            <td class="px-4 py-3 text-text-muted">{{ flagForCountryName(f.pais) }} {{ f.pais }}</td>
                             <td class="px-4 py-3 text-right text-text-light">{{ f.ligaPoints ?? '—' }}</td>
                             <td class="px-4 py-3 text-right text-success-brand">{{ f.prizeUsd !== null ? '$' + f.prizeUsd : '—' }}</td>
                             <td class="px-4 py-3 text-right">
@@ -451,7 +465,7 @@ function fmtDateTime(dt: string): string {
               <!-- Read-only results table -->
               <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
                 <div class="px-6 py-4 border-b border-navy-mid">
-                  <h3 class="font-heading text-lg text-white">Resultados completos</h3>
+                  <h3 class="font-heading text-lg text-text-light">Resultados completos</h3>
                 </div>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
@@ -470,7 +484,7 @@ function fmtDateTime(dt: string): string {
                         <tr class="hover:bg-cyan-brand/5 transition">
                           <td [class]="puestoClass(r.place)">{{ r.place }}</td>
                           <td class="px-4 py-3 font-medium text-text-light">{{ r.competidor }}</td>
-                          <td class="px-4 py-3 text-text-muted">{{ r.pais }}</td>
+                          <td class="px-4 py-3 text-text-muted">{{ flagForCountryName(r.pais) }} {{ r.pais }}</td>
                           <td class="px-4 py-3 text-right text-text-light">{{ r.ligaPoints }}</td>
                           <td class="px-4 py-3 text-right text-success-brand">{{ r.prizeUsd !== null ? '$' + r.prizeUsd : '—' }}</td>
                           <td class="px-4 py-3 text-right font-mono text-text-light">{{ r.heatScoreTotal ?? '—' }}</td>
@@ -503,6 +517,8 @@ export class InscritosComponent implements OnInit {
   private permissions = inject(PermissionsService);
 
   canEdit = computed(() => this.permissions.canEdit('Inscripciones'));
+
+  flagForCountryName = flagForCountryName;
   canViewPremiosConfig = computed(() => this.permissions.canView('Configuracion'));
   canEditPremiosConfig = computed(() => this.permissions.canEdit('Configuracion'));
 
@@ -707,6 +723,29 @@ export class InscritosComponent implements OnInit {
     }
   }
 
+  descargandoPlantillaInscritos = signal(false);
+  inscritosImportOpen = signal(false);
+  inscritosImportPath(): string {
+    return `/events/${this.filterEvento}/inscriptions/import?categoryId=${this.filterCategoria}`;
+  }
+
+  async descargarPlantillaInscritos(): Promise<void> {
+    if (!this.filterEvento) return;
+    this.descargandoPlantillaInscritos.set(true);
+    try {
+      await this.api.downloadFile(`/events/${this.filterEvento}/inscriptions/template`, 'inscripciones-template.xlsx');
+    } catch {
+      this.showToast('Error al descargar la plantilla de inscripciones');
+    } finally {
+      this.descargandoPlantillaInscritos.set(false);
+    }
+  }
+
+  async onInscritosImported(): Promise<void> {
+    await this.loadInscritos();
+    this.showToast('Inscripciones importadas correctamente');
+  }
+
   // ─── Puntajes de Premios ──────────────────────────────────────────
   premiosEventoId = '';
   premiosLoading = signal(false);
@@ -714,6 +753,10 @@ export class InscritosComponent implements OnInit {
   premiosRows = signal<{ placeLabel: string; prizeUsd: number }[]>([]);
 
   premiosConfigLoaded = false;
+
+  starsText(s: number): string {
+    return s === 7 ? 'Prime' : '★'.repeat(s);
+  }
   premiosConfigLoading = signal(false);
   premiosConfigSaving = signal(false);
   premiosConfigRows = signal<PremioConfigRow[]>([]);
@@ -795,7 +838,9 @@ export class InscritosComponent implements OnInit {
 
   descargandoPlantilla = signal(false);
   puestosImportOpen = signal(false);
-  puestosImportPath = computed(() => `/events/${this.puestosEventoId}/results/import?categoryId=${this.puestosCategoriaId}`);
+  puestosImportPath(): string {
+    return `/events/${this.puestosEventoId}/results/import?categoryId=${this.puestosCategoriaId}`;
+  }
 
   async descargarPlantillaResultados(): Promise<void> {
     if (!this.puestosEventoId || !this.puestosCategoriaId) return;

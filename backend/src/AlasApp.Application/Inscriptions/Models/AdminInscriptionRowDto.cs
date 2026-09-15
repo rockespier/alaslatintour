@@ -14,6 +14,8 @@ public sealed record AdminInscriptionRowDto(
     string EventoNombre,
     DateTimeOffset InscripcionDate,
     PaymentMethod PaymentMethod,
+    MembershipPlanOption? MembershipPlan,
+    decimal? MembershipFeeUsd,
     decimal MontoUsd,
     InscriptionStatusAdmin EstadoAdmin,
     string Federacion,

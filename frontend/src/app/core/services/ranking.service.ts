@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
+import { flagForCountryName } from '../utils/country-flag.util';
 
 export interface RankingCategory {
   id: string;
@@ -28,18 +29,6 @@ export interface RankingResult {
   currentPage: number;
   totalItems: number;
 }
-
-const FLAGS: Record<string, string> = {
-  PE: '🇵🇪', BR: '🇧🇷', CL: '🇨🇱', AR: '🇦🇷', MX: '🇲🇽',
-  CR: '🇨🇷', CO: '🇨🇴', EC: '🇪🇨', UY: '🇺🇾', PA: '🇵🇦',
-  VE: '🇻🇪', BO: '🇧🇴', US: '🇺🇸', ES: '🇪🇸', PT: '🇵🇹',
-};
-
-const NAMES: Record<string, string> = {
-  PE: 'Perú', BR: 'Brasil', CL: 'Chile', AR: 'Argentina', MX: 'México',
-  CR: 'Costa Rica', CO: 'Colombia', EC: 'Ecuador', UY: 'Uruguay', PA: 'Panamá',
-  VE: 'Venezuela', BO: 'Bolivia', US: 'EE.UU.', ES: 'España', PT: 'Portugal',
-};
 
 @Injectable({ providedIn: 'root' })
 export class RankingService {
@@ -72,12 +61,12 @@ export class RankingService {
       cachedAt: res?.cachedAt ? new Date(res.cachedAt) : null,
       attribution: res?.attribution ?? 'Results by SurfScores.com',
       rows: (res?.data ?? []).map((e: any, i: number): RankingRow => {
-        const code = (e.country ?? '').toUpperCase();
+        const country = e.country ?? '';
         return {
           position: e.pos ?? i + 1,
           name: e.name ?? '',
-          country: NAMES[code] ?? code,
-          flag: FLAGS[code] ?? '🏄',
+          country,
+          flag: flagForCountryName(country),
           points: e.points ?? 0,
           events: e.events ?? 0,
           change: e.variation ?? 0,
@@ -89,8 +78,8 @@ export class RankingService {
     };
   }
 
-  flagOf(code: string): string {
-    return FLAGS[(code ?? '').toUpperCase()] ?? '🏄';
+  flagOf(country: string): string {
+    return flagForCountryName(country);
   }
 
   cachedAgo(date: Date | null): string {

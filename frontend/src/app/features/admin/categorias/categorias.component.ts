@@ -30,7 +30,7 @@ interface Category {
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-3xl font-heading text-white">Categorías</h1>
+          <h1 class="text-3xl font-heading text-text-light">Categorías</h1>
           <p class="text-text-muted text-sm mt-1">Gestión de categorías de competencia y sus tarifas base.</p>
         </div>
         @if (canEdit()) {
@@ -156,10 +156,10 @@ interface Category {
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-6 border-b border-navy-mid">
-            <h2 class="font-heading text-xl text-white">
+            <h2 class="font-heading text-xl text-text-light">
               {{ editingId() ? 'Editar categoría' : 'Nueva categoría' }}
             </h2>
-            <button (click)="closeModal()" class="text-text-muted hover:text-white transition">
+            <button (click)="closeModal()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -300,7 +300,7 @@ interface Category {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
            style="background:rgba(0,35,89,0.8)">
         <div class="bg-navy-dark border border-error-brand/40 rounded-xl w-full max-w-sm p-6">
-          <h3 class="font-heading text-lg text-white mb-2">Eliminar categoría</h3>
+          <h3 class="font-heading text-lg text-text-light mb-2">Eliminar categoría</h3>
           <p class="text-text-muted text-sm mb-5">
             ¿Eliminar <strong class="text-text-light">{{ deleteTarget()!.nombre }}</strong>? Esta acción no se puede deshacer.
           </p>

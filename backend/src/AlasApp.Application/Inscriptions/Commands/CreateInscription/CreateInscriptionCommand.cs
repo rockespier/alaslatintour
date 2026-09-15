@@ -10,6 +10,7 @@ public sealed record CreateInscriptionCommand(
     Guid CategoryId,
     string? ShirtNumber,
     PaymentMethod PaymentMethod,
+    MembershipPlanOption? MembershipPlan,
     bool Reglamento,
     bool RiesgosAceptados,
     bool UsoImagenAceptado) : IRequest<InscriptionDto>;

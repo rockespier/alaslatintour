@@ -6,6 +6,11 @@
  * once the circuit has been running for a while.
  */
 export function sortEventsForDisplay<T extends { fechaInicio: string }>(events: T[]): T[] {
+  // fechaInicio es una fecha "solo fecha" (el backend la normaliza a medianoche UTC), no un
+  // instante real. Comparar sus componentes con getFullYear()/getMonth() locales corre el día
+  // hacia atrás para usuarios en husos horarios negativos (toda Sudamérica): un evento del
+  // 1 de agosto (UTC) se leería como 31 de julio. Se usan los getters UTC para que la
+  // clasificación no dependa del huso horario del navegador.
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -16,7 +21,7 @@ export function sortEventsForDisplay<T extends { fechaInicio: string }>(events: 
 
   for (const event of events) {
     const date = new Date(event.fechaInicio);
-    if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+    if (date.getUTCFullYear() === currentYear && date.getUTCMonth() === currentMonth) {
       currentMonthEvents.push(event);
     } else if (date.getTime() > now.getTime()) {
       upcomingEvents.push(event);

@@ -5,6 +5,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
+import { flagForCountryName } from '../../../core/utils/country-flag.util';
 
 interface CompetitorLicense {
   number?: string | null;
@@ -60,7 +61,7 @@ const PAGE_SIZE = 20;
     <div class="py-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-3xl font-heading text-white">Competidores</h1>
+          <h1 class="text-3xl font-heading text-text-light">Competidores</h1>
           <p class="text-text-muted text-sm mt-1">Gestión de perfiles y licencias de competidores.</p>
         </div>
         @if (canEdit()) {
@@ -142,7 +143,7 @@ const PAGE_SIZE = 20;
                       <p class="font-medium text-text-light">{{ c.nombre }} {{ c.apellido }}</p>
                       <p class="text-xs text-text-muted mt-0.5">{{ c.email }}</p>
                     </td>
-                    <td class="px-4 py-4 text-text-muted text-xs">{{ c.pais }}</td>
+                    <td class="px-4 py-4 text-text-muted text-xs">{{ flagForCountryName(c.pais) }} {{ c.pais }}</td>
                     <td class="px-4 py-4 text-text-muted text-xs">{{ c.genero }}</td>
                     <td class="px-4 py-4">
                       <span [class]="licenseClass(c.license?.status)">{{ c.license?.status ?? '—' }}</span>
@@ -190,10 +191,10 @@ const PAGE_SIZE = 20;
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-6 border-b border-navy-mid">
-            <h2 class="font-heading text-xl text-white">
+            <h2 class="font-heading text-xl text-text-light">
               {{ editingId() ? 'Editar competidor' : 'Nuevo competidor' }}
             </h2>
-            <button (click)="closeModal()" class="text-text-muted hover:text-white transition">
+            <button (click)="closeModal()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -322,8 +323,8 @@ const PAGE_SIZE = 20;
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-6 border-b border-navy-mid">
-            <h2 class="font-heading text-xl text-white">Licencia — {{ licenseTarget()!.nombre }} {{ licenseTarget()!.apellido }}</h2>
-            <button (click)="closeLicense()" class="text-text-muted hover:text-white transition">
+            <h2 class="font-heading text-xl text-text-light">Licencia — {{ licenseTarget()!.nombre }} {{ licenseTarget()!.apellido }}</h2>
+            <button (click)="closeLicense()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -411,8 +412,8 @@ const PAGE_SIZE = 20;
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
              (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between p-4 border-b border-navy-mid">
-            <h3 class="font-heading text-lg text-white">Documento de identidad</h3>
-            <button (click)="closeDocumentViewer()" class="text-text-muted hover:text-white transition">
+            <h3 class="font-heading text-lg text-text-light">Documento de identidad</h3>
+            <button (click)="closeDocumentViewer()" class="text-text-muted hover:text-text-light transition">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -441,7 +442,7 @@ const PAGE_SIZE = 20;
     @if (passwordTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="closePassword()">
         <div class="bg-navy-dark border border-navy-mid rounded-xl w-full max-w-sm p-6" (click)="$event.stopPropagation()">
-          <h3 class="font-heading text-lg text-white mb-1">Cambiar contraseña</h3>
+          <h3 class="font-heading text-lg text-text-light mb-1">Cambiar contraseña</h3>
           <p class="text-text-muted text-sm mb-4">{{ passwordTarget()!.nombre }} {{ passwordTarget()!.apellido }}</p>
           <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Nueva contraseña</label>
           <input type="password" [(ngModel)]="newPasswordValue" autocomplete="new-password"
@@ -471,7 +472,7 @@ const PAGE_SIZE = 20;
     @if (deleteTarget()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)">
         <div class="bg-navy-dark border border-error-brand/40 rounded-xl w-full max-w-sm p-6">
-          <h3 class="font-heading text-lg text-white mb-2">Eliminar competidor</h3>
+          <h3 class="font-heading text-lg text-text-light mb-2">Eliminar competidor</h3>
           <p class="text-text-muted text-sm mb-5">
             ¿Eliminar <strong class="text-text-light">{{ deleteTarget()!.nombre }} {{ deleteTarget()!.apellido }}</strong>?
             Esta acción no se puede deshacer.
@@ -498,6 +499,8 @@ export class CompetidoresComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
 
   canEdit = computed(() => this.permissions.canEdit('Usuarios'));
+
+  flagForCountryName = flagForCountryName;
 
   loading = signal(true);
   saving = signal(false);
