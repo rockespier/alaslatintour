@@ -1,4 +1,4 @@
-import { Component, inject, signal, input, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, input, OnInit, effect, computed, HostListener } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
@@ -95,7 +95,7 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
       </div>
 
       <!-- Lightbox -->
-      @if (lightboxAsset()) {
+      @if (lightboxAsset(); as asset) {
         <div class="fixed inset-0 z-50 bg-navy-deepest/95 flex items-center justify-center p-4"
              (click)="closeLightbox()">
           <button class="absolute top-4 right-4 text-text-muted hover:text-white transition" aria-label="Cerrar">
@@ -103,7 +103,26 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          <img [src]="lightboxAsset()!.url" referrerpolicy="no-referrer"
+
+          @if (flatPhotos().length > 1) {
+            <button class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition p-2"
+                    aria-label="Foto anterior" (click)="showPrev($event)">
+              <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition p-2"
+                    aria-label="Foto siguiente" (click)="showNext($event)">
+              <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <p class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-text-muted font-accent uppercase tracking-wider">
+              {{ lightboxIndex() + 1 }} / {{ flatPhotos().length }}
+            </p>
+          }
+
+          <img [src]="asset.url" referrerpolicy="no-referrer"
                class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
                (click)="$event.stopPropagation()">
         </div>
@@ -121,8 +140,20 @@ export class GaleriaDetalleComponent implements OnInit {
   loading = signal(true);
   notFound = signal(false);
   gallery = signal<GalleryDetail | null>(null);
-  lightboxAsset = signal<GalleryAsset | null>(null);
+  lightboxIndex = signal(-1);
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+
+  flatPhotos = computed<GalleryAsset[]>(() => {
+    const g = this.gallery();
+    if (!g) return [];
+    return g.galleryDays.flatMap(d => d.assets.filter(a => a.type === 'photo'));
+  });
+
+  lightboxAsset = computed<GalleryAsset | null>(() => {
+    const photos = this.flatPhotos();
+    const idx = this.lightboxIndex();
+    return idx >= 0 && idx < photos.length ? photos[idx] : null;
+  });
 
   totalPhotos = () => {
     const g = this.gallery();
@@ -159,8 +190,33 @@ export class GaleriaDetalleComponent implements OnInit {
     }
   }
 
-  openLightbox(asset: GalleryAsset): void { this.lightboxAsset.set(asset); }
-  closeLightbox(): void { this.lightboxAsset.set(null); }
+  openLightbox(asset: GalleryAsset): void {
+    this.lightboxIndex.set(this.flatPhotos().findIndex(a => a.id === asset.id));
+  }
+
+  closeLightbox(): void { this.lightboxIndex.set(-1); }
+
+  showNext(event?: Event): void {
+    event?.stopPropagation();
+    const total = this.flatPhotos().length;
+    if (total === 0) return;
+    this.lightboxIndex.update(i => (i + 1) % total);
+  }
+
+  showPrev(event?: Event): void {
+    event?.stopPropagation();
+    const total = this.flatPhotos().length;
+    if (total === 0) return;
+    this.lightboxIndex.update(i => (i - 1 + total) % total);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (this.lightboxIndex() < 0) return;
+    if (event.key === 'ArrowRight') this.showNext();
+    else if (event.key === 'ArrowLeft') this.showPrev();
+    else if (event.key === 'Escape') this.closeLightbox();
+  }
 
   aspectRatio(asset: GalleryAsset): string {
     if (asset.width && asset.height) return `${asset.width}/${asset.height}`;

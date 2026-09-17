@@ -43,6 +43,10 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.SurfScoresCode)
             .HasMaxLength(100);
 
+        builder.Property(x => x.Orden)
+            .IsRequired()
+            .HasDefaultValue(0);
+
         builder.Property(x => x.CreatedAtUtc).IsRequired();
         builder.Property(x => x.UpdatedAtUtc).IsRequired();
 

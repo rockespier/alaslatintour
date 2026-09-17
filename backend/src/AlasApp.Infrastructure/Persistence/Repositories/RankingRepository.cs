@@ -57,8 +57,13 @@ public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepo
                 x.Year
             })
             .Distinct()
-            .OrderBy(x => x.CategoryName)
             .ToListAsync(cancellationToken);
+
+        var categoryOrders = await dbContext.Categories
+            .AsNoTracking()
+            .Where(x => snapshotRows.Select(r => r.CategoryId).Contains(x.Id))
+            .Select(x => new { x.Id, x.Orden })
+            .ToDictionaryAsync(x => x.Id, x => x.Orden, cancellationToken);
 
         return snapshotRows
             .GroupBy(x => new { x.CategoryId, x.CategoryName })
@@ -66,7 +71,8 @@ public sealed class RankingRepository(AlasAppDbContext dbContext) : IRankingRepo
                 group.Key.CategoryId,
                 group.Key.CategoryName,
                 group.Select(x => x.Year).Distinct().OrderByDescending(x => x).ToList()))
-            .OrderBy(x => x.CategoryName)
+            .OrderBy(x => categoryOrders.GetValueOrDefault(x.CategoryId, int.MaxValue))
+            .ThenBy(x => x.CategoryName)
             .ToList();
     }
 

@@ -33,7 +33,8 @@ public sealed class CreateCategoryCommandHandler(
                 request.MembresiaAnualUsd,
                 request.MembresiaPorEventoUsd,
                 request.BestResultsCount,
-                request.SurfScoresCode);
+                request.SurfScoresCode,
+                request.Orden);
 
             category.SetCreated(clock.UtcNow);
 
@@ -84,6 +85,11 @@ public sealed class CreateCategoryCommandHandler(
         if (request.BestResultsCount is < 1 or > 10)
         {
             errors.Add(new ValidationError("bestResultsCount", "La cantidad de mejores resultados debe estar entre 1 y 10."));
+        }
+
+        if (request.Orden < 0)
+        {
+            errors.Add(new ValidationError("orden", "El orden no puede ser negativo."));
         }
 
         if (errors.Count > 0)

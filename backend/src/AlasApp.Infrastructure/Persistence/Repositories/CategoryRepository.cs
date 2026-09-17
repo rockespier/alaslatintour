@@ -20,7 +20,8 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
         }
 
         var categories = await query
-            .OrderBy(x => x.Nombre)
+            .OrderBy(x => x.Orden)
+            .ThenBy(x => x.Nombre)
             .ToListAsync(cancellationToken);
 
         return categories.Select(MapToDto).ToList();
@@ -103,6 +104,7 @@ public sealed class CategoryRepository(AlasAppDbContext dbContext) : ICategoryRe
             category.MembresiaPorEventoUsd,
             category.BestResultsCount,
             category.CreatedAtUtc,
-            category.SurfScoresCode);
+            category.SurfScoresCode,
+            category.Orden);
     }
 }

@@ -42,8 +42,10 @@ public sealed class CircuitRepository(AlasAppDbContext dbContext) : ICircuitRepo
             .Take(limit)
             .ToListAsync(cancellationToken);
 
+        var competidoresCounts = await GetCompetidoresCountsAsync(circuits.Select(x => x.Id), cancellationToken);
+
         return new PagedResult<CircuitDto>(
-            circuits.Select(MapToDto).ToList(),
+            circuits.Select(x => MapToDto(x, competidoresCounts.GetValueOrDefault(x.Id, 0))).ToList(),
             page,
             limit,
             totalItems);
@@ -56,7 +58,31 @@ public sealed class CircuitRepository(AlasAppDbContext dbContext) : ICircuitRepo
             .Include(x => x.Events)
             .FirstOrDefaultAsync(x => x.Id == circuitId, cancellationToken);
 
-        return circuit is null ? null : MapToDto(circuit);
+        if (circuit is null)
+        {
+            return null;
+        }
+
+        var competidoresCounts = await GetCompetidoresCountsAsync([circuitId], cancellationToken);
+        return MapToDto(circuit, competidoresCounts.GetValueOrDefault(circuitId, 0));
+    }
+
+    private async Task<Dictionary<Guid, int>> GetCompetidoresCountsAsync(IEnumerable<Guid> circuitIds, CancellationToken cancellationToken)
+    {
+        var ids = circuitIds.ToList();
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.Inscriptions
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.Event!.CircuitId))
+            .Select(x => new { x.Event!.CircuitId, x.CompetitorId })
+            .Distinct()
+            .GroupBy(x => x.CircuitId)
+            .Select(g => new { CircuitId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CircuitId, x => x.Count, cancellationToken);
     }
 
     public Task<Circuit?> GetEntityByIdAsync(Guid circuitId, CancellationToken cancellationToken)
@@ -110,7 +136,7 @@ public sealed class CircuitRepository(AlasAppDbContext dbContext) : ICircuitRepo
         dbContext.Circuits.Remove(circuit);
     }
 
-    private static CircuitDto MapToDto(Circuit circuit)
+    private static CircuitDto MapToDto(Circuit circuit, int competidoresCount)
     {
         return new CircuitDto(
             circuit.Id,
@@ -122,7 +148,7 @@ public sealed class CircuitRepository(AlasAppDbContext dbContext) : ICircuitRepo
             circuit.Estado,
             circuit.SurfScoresCode,
             circuit.Events.Count,
-            0,
+            competidoresCount,
             circuit.Events.Sum(x => x.PrizeAmountUsd),
             circuit.LastSyncAt,
             circuit.CreatedAtUtc,

@@ -28,7 +28,8 @@ public sealed class Category : AuditableEntity
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
         int bestResultsCount,
-        string? surfScoresCode)
+        string? surfScoresCode,
+        int orden)
     {
         Id = id;
         Nombre = nombre;
@@ -43,6 +44,7 @@ public sealed class Category : AuditableEntity
         MembresiaPorEventoUsd = membresiaPorEventoUsd;
         BestResultsCount = bestResultsCount;
         SurfScoresCode = surfScoresCode;
+        Orden = orden;
     }
 
     public string Nombre { get; private set; } = string.Empty;
@@ -71,6 +73,8 @@ public sealed class Category : AuditableEntity
 
     public string? SurfScoresCode { get; private set; }
 
+    public int Orden { get; private set; }
+
     public IReadOnlyCollection<CategoryTariff> Tariffs => _tariffs;
 
     public IReadOnlyCollection<EventCategory> EventCategories => _eventCategories;
@@ -87,7 +91,8 @@ public sealed class Category : AuditableEntity
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
         int bestResultsCount,
-        string? surfScoresCode)
+        string? surfScoresCode,
+        int orden = 0)
     {
         Validate(
             nombre,
@@ -100,7 +105,8 @@ public sealed class Category : AuditableEntity
             membresiaAnualUsd,
             membresiaPorEventoUsd,
             bestResultsCount,
-            surfScoresCode);
+            surfScoresCode,
+            orden);
 
         return new Category(
             Guid.NewGuid(),
@@ -115,7 +121,8 @@ public sealed class Category : AuditableEntity
             membresiaAnualUsd,
             membresiaPorEventoUsd,
             bestResultsCount,
-            NormalizeOptional(surfScoresCode));
+            NormalizeOptional(surfScoresCode),
+            orden);
     }
 
     public void Update(
@@ -130,7 +137,8 @@ public sealed class Category : AuditableEntity
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
         int bestResultsCount,
-        string? surfScoresCode)
+        string? surfScoresCode,
+        int orden)
     {
         Validate(
             nombre,
@@ -143,7 +151,8 @@ public sealed class Category : AuditableEntity
             membresiaAnualUsd,
             membresiaPorEventoUsd,
             bestResultsCount,
-            surfScoresCode);
+            surfScoresCode,
+            orden);
 
         Nombre = nombre.Trim();
         Descripcion = NormalizeOptional(descripcion);
@@ -157,6 +166,7 @@ public sealed class Category : AuditableEntity
         MembresiaPorEventoUsd = membresiaPorEventoUsd;
         BestResultsCount = bestResultsCount;
         SurfScoresCode = NormalizeOptional(surfScoresCode);
+        Orden = orden;
     }
 
     public void EnsureCanBeDeleted()
@@ -193,7 +203,8 @@ public sealed class Category : AuditableEntity
         decimal membresiaAnualUsd,
         decimal membresiaPorEventoUsd,
         int bestResultsCount,
-        string? surfScoresCode)
+        string? surfScoresCode,
+        int orden)
     {
         if (string.IsNullOrWhiteSpace(nombre))
         {
@@ -253,6 +264,11 @@ public sealed class Category : AuditableEntity
         if (bestResultsCount is < 1 or > 10)
         {
             throw new DomainRuleException("La cantidad de mejores resultados debe estar entre 1 y 10.");
+        }
+
+        if (orden < 0)
+        {
+            throw new DomainRuleException("El orden de la categoria no puede ser negativo.");
         }
     }
 

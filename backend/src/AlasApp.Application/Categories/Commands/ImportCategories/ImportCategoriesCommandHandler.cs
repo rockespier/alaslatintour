@@ -35,6 +35,7 @@ public sealed class ImportCategoriesCommandHandler(
                 var membresiaAnualUsd = ParseDecimal(row.RowNumber, "MembresiaAnualUsd", row.MembresiaAnualUsd);
                 var membresiaPorEventoUsd = ParseDecimal(row.RowNumber, "MembresiaPorEventoUsd", row.MembresiaPorEventoUsd);
                 var bestResultsCount = ParseInt(row.RowNumber, "BestResultsCount", row.BestResultsCount);
+                var orden = ParseNullableInt(row.RowNumber, "Orden", row.Orden) ?? entity?.Orden ?? 0;
 
                 if (entity is null)
                 {
@@ -50,7 +51,8 @@ public sealed class ImportCategoriesCommandHandler(
                         membresiaAnualUsd,
                         membresiaPorEventoUsd,
                         bestResultsCount,
-                        row.SurfScoresCode);
+                        row.SurfScoresCode,
+                        orden);
 
                     await categoryRepository.AddAsync(entity, cancellationToken);
                     created++;
@@ -70,7 +72,8 @@ public sealed class ImportCategoriesCommandHandler(
                         membresiaAnualUsd,
                         membresiaPorEventoUsd,
                         bestResultsCount,
-                        row.SurfScoresCode);
+                        row.SurfScoresCode,
+                        orden);
 
                     updated++;
                     staged.Add((row, entity, false));
@@ -101,7 +104,8 @@ public sealed class ImportCategoriesCommandHandler(
                     item.Entity.MembresiaAnualUsd,
                     item.Entity.MembresiaPorEventoUsd,
                     item.Entity.BestResultsCount,
-                    item.Entity.SurfScoresCode);
+                    item.Entity.SurfScoresCode,
+                    item.Entity.Orden);
 
                 await unitOfWork.SaveChangesAsync(cancellationToken);
             }

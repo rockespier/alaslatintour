@@ -7,10 +7,14 @@ import { LiveStatusService } from '../../../core/services/live-status.service';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 import { flagForCountryCode, flagForCountryName } from '../../../core/utils/country-flag.util';
+import { pickCurrentCircuit } from '../../../core/utils/current-circuit.util';
 
 interface Circuit {
   id: string;
   nombre: string;
+  estado?: string;
+  lastSyncAt?: string | null;
+  updatedAt?: string | null;
 }
 
 interface EventCategory {
@@ -123,19 +127,27 @@ const STATUS_CLASS: Record<string, string> = {
           <h2 class="font-heading text-3xl md:text-4xl">Eventos y categorías</h2>
         </div>
 
-        <div class="flex flex-wrap gap-1 border-b border-navy-mid mb-8">
-          <button (click)="selectCircuit('all')"
-                  class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
-                  [class]="circuitFilter() === 'all' ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
-            Todos los Circuitos
-          </button>
-          @for (circuit of circuits(); track circuit.id) {
-            <button (click)="selectCircuit(circuit.id)"
-                    class="px-5 py-3 rounded-t-md border-b-2 font-accent uppercase text-sm tracking-wider transition"
-                    [class]="circuitFilter() === circuit.id ? 'border-cyan-brand text-cyan-brand bg-cyan-brand/8' : 'border-transparent text-text-muted hover:text-text-light'">
-              {{ circuit.nombre }}
-            </button>
-          }
+        <div class="flex flex-wrap items-end gap-x-6 gap-y-4 pb-6 mb-8 border-b border-navy-mid">
+          <div>
+            <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Circuito</label>
+            <select [value]="circuitFilter()" (change)="selectCircuit($any($event.target).value)"
+                    class="bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light min-w-[220px] focus:outline-none focus:border-cyan-brand transition">
+              <option value="all">Todos los Circuitos</option>
+              @for (circuit of circuits(); track circuit.id) {
+                <option [value]="circuit.id">{{ circuit.nombre }}</option>
+              }
+            </select>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer select-none pb-2.5">
+            <input type="checkbox" [checked]="proximosOnly()" (change)="proximosOnly.set($any($event.target).checked)"
+                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-brand focus:ring-cyan-brand focus:ring-offset-0">
+            <span class="text-sm text-text-light">Próximos eventos</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer select-none pb-2.5">
+            <input type="checkbox" [checked]="soloAbiertas()" (change)="soloAbiertas.set($any($event.target).checked)"
+                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-brand focus:ring-cyan-brand focus:ring-offset-0">
+            <span class="text-sm text-text-light">Solo inscripciones abiertas</span>
+          </label>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -286,9 +298,16 @@ const STATUS_CLASS: Record<string, string> = {
                             </a>
                           }
                         } @else if (event.statusPublic === 'Completado') {
-                          <a routerLink="/ranking" class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
-                            Ver resultados
-                          </a>
+                          @if (schedulePdfUrl(); as pdfUrl) {
+                            <a [href]="pdfUrl" target="_blank" rel="noopener"
+                               class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                              Ver resultados
+                            </a>
+                          } @else {
+                            <a routerLink="/ranking" class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                              Ver resultados
+                            </a>
+                          }
                         } @else {
                           <button disabled class="px-5 py-2.5 rounded-md bg-navy-mid/60 text-text-muted font-accent uppercase tracking-wider text-sm cursor-not-allowed">
                             Inscripciones cerradas
@@ -370,11 +389,23 @@ const STATUS_CLASS: Record<string, string> = {
 
                       @if (isInscritosExpanded(event.id)) {
                         <div class="mt-6 pt-6 border-t border-navy-mid">
-                          <h4 class="font-accent uppercase tracking-wider text-cyan-brand text-sm mb-3">Inscritos confirmados</h4>
+                          <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+                            <h4 class="font-accent uppercase tracking-wider text-cyan-brand text-sm">Inscritos confirmados</h4>
+                            @if (event.categorias?.length) {
+                              <select [value]="selectedInscritosCategoryId(event.id)"
+                                      (change)="selectInscritosCategory(event.id, $any($event.target).value)"
+                                      class="bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-1.5 text-xs text-text-light focus:outline-none focus:border-cyan-brand transition">
+                                <option value="">Todas las categorías</option>
+                                @for (cat of event.categorias!; track cat.id) {
+                                  <option [value]="cat.id">{{ cat.nombre }}</option>
+                                }
+                              </select>
+                            }
+                          </div>
                           @if (loadingInscritos().has(event.id)) {
                             <p class="text-sm text-text-muted">Cargando…</p>
-                          } @else if ((confirmedInscriptions().get(event.id) ?? []).length === 0) {
-                            <p class="text-sm text-text-muted">Aún no hay inscritos confirmados para este evento.</p>
+                          } @else if (filteredConfirmedInscriptions(event).length === 0) {
+                            <p class="text-sm text-text-muted">Aún no hay inscritos confirmados para esta selección.</p>
                           } @else {
                             <div class="overflow-x-auto">
                               <table class="w-full text-sm">
@@ -386,7 +417,7 @@ const STATUS_CLASS: Record<string, string> = {
                                   </tr>
                                 </thead>
                                 <tbody class="divide-y divide-navy-mid/60">
-                                  @for (row of confirmedInscriptions().get(event.id); track row.fullName + row.categoryName) {
+                                  @for (row of filteredConfirmedInscriptions(event); track row.fullName + row.categoryName) {
                                     <tr>
                                       <td class="py-2.5 pr-4 font-medium">{{ row.fullName }}</td>
                                       <td class="px-2 text-text-muted">{{ flagForCountryName(row.country) }} {{ row.country }}</td>
@@ -502,6 +533,8 @@ export class EventosComponent implements OnInit {
   myInscriptions = signal<MyInscription[]>([]);
   competitorStats = signal<CompetitorStats | null>(null);
   circuitFilter = signal<string>('all');
+  proximosOnly = signal(true);
+  soloAbiertas = signal(false);
   expanded = signal<Set<string>>(new Set());
   readonly skeletons = [1, 2, 3];
 
@@ -511,13 +544,16 @@ export class EventosComponent implements OnInit {
   expandedInscritos = signal<Set<string>>(new Set());
   confirmedInscriptions = signal<Map<string, ConfirmedInscriptionRow[]>>(new Map());
   loadingInscritos = signal<Set<string>>(new Set());
+  selectedInscritosCategory = signal<Map<string, string>>(new Map());
 
   filteredEvents = computed(() => {
     const filter = this.circuitFilter();
     const evts = this.events();
-    const list = filter === 'all'
+    let list = filter === 'all'
       ? evts
       : evts.filter(e => e.circuitId === filter);
+    if (this.proximosOnly()) list = list.filter(e => this.hasNotStarted(e));
+    if (this.soloAbiertas()) list = list.filter(e => e.statusPublic === 'Inscripciones Abiertas');
     return sortEventsForDisplay(list);
   });
 
@@ -555,12 +591,25 @@ export class EventosComponent implements OnInit {
 
   private async loadCircuits(): Promise<void> {
     try {
-      const res = await this.api.get<any>(`/circuits?status=Activo&year=${this.currentYear}&limit=20`);
-      const currentCircuits: Circuit[] = res?.data ?? [];
-      this.circuits.set(currentCircuits);
+      const res = await this.api.get<any>(`/circuits?year=${this.currentYear}&limit=50`);
+      const all: Circuit[] = res?.data ?? [];
+      const visible = all.filter(c => c.estado === 'Activo' || c.estado === 'Próximo');
+      this.circuits.set(visible.length > 0 ? visible : all);
+      const current = pickCurrentCircuit(visible.length > 0 ? visible : all);
+      if (current) this.circuitFilter.set(current.id);
     } catch {
       this.circuits.set([]);
     }
+  }
+
+  // fechaInicio es fecha "solo fecha" (medianoche UTC); se compara contra la medianoche UTC de hoy
+  // para que el filtro no dependa del huso horario del navegador (ver nota de dayOf más abajo).
+  private hasNotStarted(event: EventItem): boolean {
+    if (!event.fechaInicio) return false;
+    const start = new Date(event.fechaInicio).getTime();
+    const now = new Date();
+    const todayUtcStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    return start >= todayUtcStart;
   }
 
   private async loadMyInscriptions(): Promise<void> {
@@ -684,6 +733,26 @@ export class EventosComponent implements OnInit {
 
   isInscritosExpanded(id: string): boolean { return this.expandedInscritos().has(id); }
 
+  selectedInscritosCategoryId(eventId: string): string {
+    return this.selectedInscritosCategory().get(eventId) ?? '';
+  }
+
+  selectInscritosCategory(eventId: string, categoryId: string): void {
+    this.selectedInscritosCategory.update(map => {
+      const next = new Map(map);
+      next.set(eventId, categoryId);
+      return next;
+    });
+  }
+
+  filteredConfirmedInscriptions(event: EventItem): ConfirmedInscriptionRow[] {
+    const rows = this.confirmedInscriptions().get(event.id) ?? [];
+    const categoryId = this.selectedInscritosCategoryId(event.id);
+    if (!categoryId) return rows;
+    const categoryName = event.categorias?.find(c => c.id === categoryId)?.nombre;
+    return categoryName ? rows.filter(r => r.categoryName === categoryName) : rows;
+  }
+
   private async loadConfirmedInscriptions(event: EventItem): Promise<void> {
     if (this.confirmedInscriptions().has(event.id)) return;
     this.loadingInscritos.update(set => new Set(set).add(event.id));
@@ -716,6 +785,10 @@ export class EventosComponent implements OnInit {
   }
 
   liveSchedulePdfUrl(): string | null {
+    return this.liveStatus.status()?.schedulePdfUrl ?? null;
+  }
+
+  schedulePdfUrl(): string | null {
     return this.liveStatus.status()?.schedulePdfUrl ?? null;
   }
 

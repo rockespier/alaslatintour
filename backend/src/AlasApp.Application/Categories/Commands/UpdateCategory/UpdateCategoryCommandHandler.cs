@@ -35,7 +35,8 @@ public sealed class UpdateCategoryCommandHandler(
                 request.MembresiaAnualUsd,
                 request.MembresiaPorEventoUsd,
                 request.BestResultsCount,
-                request.SurfScoresCode);
+                request.SurfScoresCode,
+                request.Orden);
 
             category.SetUpdated(clock.UtcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -96,6 +97,11 @@ public sealed class UpdateCategoryCommandHandler(
         if (request.BestResultsCount is < 1 or > 10)
         {
             errors.Add(new ValidationError("bestResultsCount", "La cantidad de mejores resultados debe estar entre 1 y 10."));
+        }
+
+        if (request.Orden < 0)
+        {
+            errors.Add(new ValidationError("orden", "El orden no puede ser negativo."));
         }
 
         if (errors.Count > 0)

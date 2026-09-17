@@ -58,7 +58,8 @@ public sealed record CategoryImportRow(
     string? Status,
     string? MembresiaAnualUsd,
     string? MembresiaPorEventoUsd,
-    string? BestResultsCount);
+    string? BestResultsCount,
+    string? Orden);
 
 public sealed record CompetitorImportRow(
     int RowNumber,

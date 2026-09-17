@@ -57,7 +57,8 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         "Status",
         "MembresiaAnualUsd",
         "MembresiaPorEventoUsd",
-        "BestResultsCount"
+        "BestResultsCount",
+        "Orden"
     ];
 
     private static readonly string[] CompetitorHeaders =
@@ -86,7 +87,7 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         => BuildWorkbook("Events", EventHeaders, ["", "MANCORA-2026", "", "ALAS-2026", "Mancora Pro", "2026-08-10", "2026-08-13", "PER", "Mancora", "Playa Pocitas", "Marca X", "https://cdn.test/event.png", "6", "120", "5000.00", "Prime", "Abierto", "Activo"]);
 
     public byte[] BuildCategoriesTemplate()
-        => BuildWorkbook("Categories", CategoryHeaders, ["", "OPEN-MEN", "Open Masculino", "Categoria principal", "Masculino", "false", "", "", "", "", "Activo", "35.00", "12.00", "5"]);
+        => BuildWorkbook("Categories", CategoryHeaders, ["", "OPEN-MEN", "Open Masculino", "Categoria principal", "Masculino", "false", "", "", "", "", "Activo", "35.00", "12.00", "5", "10"]);
 
     private static readonly HashSet<string> CompetitorRequiredHeaders = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -150,7 +151,8 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["Status"],
             values["MembresiaAnualUsd"],
             values["MembresiaPorEventoUsd"],
-            values["BestResultsCount"]));
+            values["BestResultsCount"],
+            values["Orden"]));
 
     public IReadOnlyCollection<CompetitorImportRow> ReadCompetitors(byte[] content)
         => ReadRows(content, "Competitors", CompetitorHeaders, values => new CompetitorImportRow(

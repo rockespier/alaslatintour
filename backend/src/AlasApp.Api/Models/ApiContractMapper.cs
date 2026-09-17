@@ -386,7 +386,7 @@ public static class ApiContractMapper
 
     public static Generated.CategoryResponse ToContract(CategoryDto dto)
     {
-        return new Generated.CategoryResponse(
+        var contract = new Generated.CategoryResponse(
             dto.AgeRestriction,
             dto.BestResultsCount,
             dto.CreatedAtUtc,
@@ -402,6 +402,9 @@ public static class ApiContractMapper
             dto.SuccessorCategory is null ? null : new Generated.SuccessorCategory(dto.SuccessorCategory.Id.ToString(), dto.SuccessorCategory.Nombre),
             dto.SuccessorCategoryId?.ToString(),
             dto.SurfScoresCode);
+
+        contract.AdditionalProperties["orden"] = dto.Orden;
+        return contract;
     }
 
     public static Generated.EventCategoryListResponse ToContract(EventCategoryListDto dto)
@@ -941,7 +944,8 @@ public static class ApiContractMapper
             (decimal)request.MembresiaAnualUsd,
             (decimal)request.MembresiaPorEventoUsd,
             request.BestResultsCount ?? Domain.Entities.Category.DefaultBestResultsCount,
-            NormalizeOptional(request.SurfScoresCode));
+            NormalizeOptional(request.SurfScoresCode),
+            ReadAdditionalInt(request.AdditionalProperties, "orden") ?? 0);
     }
 
     public static UpdateCategoryCommand ToCommand(Guid categoryId, Generated.CategoryRequest request)
@@ -959,7 +963,8 @@ public static class ApiContractMapper
             (decimal)request.MembresiaAnualUsd,
             (decimal)request.MembresiaPorEventoUsd,
             request.BestResultsCount ?? Domain.Entities.Category.DefaultBestResultsCount,
-            NormalizeOptional(request.SurfScoresCode));
+            NormalizeOptional(request.SurfScoresCode),
+            ReadAdditionalInt(request.AdditionalProperties, "orden") ?? 0);
     }
 
     public static CreateCompetitorCommand ToCommand(Generated.CompetitorRequest request)
@@ -1958,6 +1963,22 @@ public static class ApiContractMapper
             Newtonsoft.Json.Linq.JValue value when value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean => value.ToObject<bool>(),
             _ when bool.TryParse(rawValue.ToString(), out var parsed) => parsed,
             _ => false
+        };
+    }
+
+    private static int? ReadAdditionalInt(IDictionary<string, object> additionalProperties, string key)
+    {
+        if (!additionalProperties.TryGetValue(key, out var rawValue) || rawValue is null)
+        {
+            return null;
+        }
+
+        return rawValue switch
+        {
+            int value => value,
+            Newtonsoft.Json.Linq.JValue value when value.Type is Newtonsoft.Json.Linq.JTokenType.Integer or Newtonsoft.Json.Linq.JTokenType.Float => value.ToObject<int>(),
+            _ when int.TryParse(rawValue.ToString(), out var parsed) => parsed,
+            _ => null
         };
     }
 

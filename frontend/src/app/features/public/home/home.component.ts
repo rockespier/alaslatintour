@@ -9,6 +9,7 @@ import { RankingService, RankingRow } from '../../../core/services/ranking.servi
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 import { flagForCountryCode } from '../../../core/utils/country-flag.util';
+import { pickCurrentCircuit } from '../../../core/utils/current-circuit.util';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -181,8 +182,8 @@ type ArticleCard = ArticleSummary;
             </svg>
             Ver Calendario
           </a>
-          <a href="#ranking"
-             class="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider rounded-md transition">
+          <a routerLink="/ranking"
+             class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider rounded-md transition shadow-lg shadow-cyan-brand/20">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 5V3h6v2m-7 0h8v3a4 4 0 01-8 0V5zm-2 0h2v1a6 6 0 01-6 6V9a4 4 0 014-4zm12 0h2a4 4 0 014 4v3a6 6 0 01-6-6V5zM12 12v6m-3 3h6"/>
@@ -193,10 +194,10 @@ type ArticleCard = ArticleSummary;
 
         <!-- Quick stats -->
         <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl">
-          <div><div class="font-heading text-3xl text-cyan-brand">18</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Eventos</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">12</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Países</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">340+</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Competidores</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">6</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Categorías</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Eventos</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Países</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Competidores</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Categorías</div></div>
         </div>
       </div>
 
@@ -512,6 +513,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
   rankingCategoryName = signal('Open Hombres');
   rankingCachedAgo = signal('');
 
+  statsEventsCount = signal<number | null>(null);
+  statsPaisesCount = signal<number | null>(null);
+  statsCompetidoresCount = signal<number | null>(null);
+  statsCategoriasCount = signal<number | null>(null);
+
   liveStatus = this.liveStatusService.status;
   liveEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const status = this.liveStatus();
@@ -547,6 +553,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loadEvents();
     this.loadArticles();
     this.loadRanking();
+    this.loadCircuitStats();
     this.liveStatusService.ensureLoaded();
   }
 
@@ -635,6 +642,38 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.ranking.set([]);
     } finally {
       this.loadingRanking.set(false);
+    }
+  }
+
+  private async loadCircuitStats(): Promise<void> {
+    try {
+      const res = await this.api.get<any>(`/circuits?year=${this.currentYear}&limit=50`);
+      const current = pickCurrentCircuit<any>(res?.data ?? []);
+      this.statsEventsCount.set(current?.eventsCount ?? 0);
+      this.statsCompetidoresCount.set(current?.competidoresCount ?? 0);
+      this.statsPaisesCount.set(current ? await this.countPaisesForCircuit(current.id) : 0);
+    } catch {
+      this.statsEventsCount.set(0);
+      this.statsPaisesCount.set(0);
+      this.statsCompetidoresCount.set(0);
+    }
+
+    try {
+      const res = await this.api.get<any>('/categories?status=Activo');
+      const categories = res?.data ?? res ?? [];
+      this.statsCategoriasCount.set(Array.isArray(categories) ? categories.length : 0);
+    } catch {
+      this.statsCategoriasCount.set(0);
+    }
+  }
+
+  private async countPaisesForCircuit(circuitId: string): Promise<number> {
+    try {
+      const res = await this.api.get<any>(`/events?circuitId=${encodeURIComponent(circuitId)}&limit=100`);
+      const events: any[] = res?.data ?? [];
+      return new Set(events.map(e => e.pais).filter(Boolean)).size;
+    } catch {
+      return 0;
     }
   }
 

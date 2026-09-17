@@ -17,4 +17,5 @@ public sealed record UpdateCategoryCommand(
     decimal MembresiaAnualUsd,
     decimal MembresiaPorEventoUsd,
     int BestResultsCount,
-    string? SurfScoresCode) : IRequest<CategoryDto>;
+    string? SurfScoresCode,
+    int Orden) : IRequest<CategoryDto>;

@@ -19,6 +19,7 @@ interface Category {
   membresiaAnualUsd?: number | null;
   membresiaPorEventoUsd?: number | null;
   bestResultsCount?: number | null;
+  orden?: number | null;
 }
 
 @Component({
@@ -72,6 +73,7 @@ interface Category {
           <div class="divide-y divide-navy-mid">
             @for (sk of [1,2,3,4,5]; track sk) {
               <div class="px-6 py-4 flex items-center gap-4">
+                <div class="skeleton h-4 rounded w-10"></div>
                 <div class="skeleton h-4 rounded w-40"></div>
                 <div class="skeleton h-4 rounded w-20 ml-4"></div>
                 <div class="skeleton h-4 rounded w-24 ml-4"></div>
@@ -86,6 +88,7 @@ interface Category {
           <table class="w-full text-sm text-left">
             <thead class="bg-navy-mid/40 text-text-muted font-accent uppercase tracking-wider text-xs">
               <tr>
+                <th class="px-4 py-3 text-right">Orden</th>
                 <th class="px-6 py-3">Nombre</th>
                 <th class="px-4 py-3">Género</th>
                 <th class="px-4 py-3">Edad</th>
@@ -97,6 +100,7 @@ interface Category {
             <tbody class="divide-y divide-navy-mid">
               @for (cat of filtered(); track cat.id) {
                 <tr class="hover:bg-navy-mid/20 transition">
+                  <td class="px-4 py-4 text-right text-text-muted">{{ cat.orden ?? 0 }}</td>
                   <td class="px-6 py-4 font-medium text-text-light">{{ cat.nombre }}</td>
                   <td class="px-4 py-4 text-text-muted">{{ cat.gender }}</td>
                   <td class="px-4 py-4 text-text-muted">
@@ -176,6 +180,14 @@ interface Category {
               @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
                 <p class="text-error-brand text-xs mt-1">El nombre es obligatorio.</p>
               }
+            </div>
+
+            <!-- Orden -->
+            <div>
+              <label class="block text-xs font-accent uppercase tracking-wider text-text-muted mb-1.5">Orden</label>
+              <input formControlName="orden" type="number" min="0" step="1" placeholder="0"
+                     class="w-full max-w-[160px] bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition">
+              <p class="text-text-muted/60 text-xs mt-1">Define la posición de esta categoría en el ranking público. Menor valor aparece primero.</p>
             </div>
 
             <!-- Descripción -->
@@ -343,6 +355,7 @@ export class CategoriasComponent implements OnInit {
 
   form = this.fb.group({
     nombre: ['', Validators.required],
+    orden: [0, [Validators.min(0)]],
     descripcion: [''],
     gender: ['Masculino', Validators.required],
     ageRestriction: [false],
@@ -359,7 +372,8 @@ export class CategoriasComponent implements OnInit {
   filtered = computed(() => {
     const f = this.filterStatus();
     const list = this.categories();
-    return f === 'todos' ? list : list.filter(c => c.status === f);
+    const byStatus = f === 'todos' ? list : list.filter(c => c.status === f);
+    return [...byStatus].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0) || a.nombre.localeCompare(b.nombre));
   });
 
   successorOptions = computed(() => {
@@ -386,7 +400,7 @@ export class CategoriasComponent implements OnInit {
   openCreate(): void {
     this.editingId.set(null);
     this.form.reset({
-      nombre: '', descripcion: '', gender: 'Masculino',
+      nombre: '', orden: 0, descripcion: '', gender: 'Masculino',
       ageRestriction: false, minAge: null, maxAge: null,
       successorCategoryId: '', status: 'Activo', surfScoresCode: '',
       membresiaAnualUsd: null, membresiaPorEventoUsd: null, bestResultsCount: 5,
@@ -398,6 +412,7 @@ export class CategoriasComponent implements OnInit {
     this.editingId.set(cat.id);
     this.form.reset({
       nombre: cat.nombre,
+      orden: cat.orden ?? 0,
       descripcion: cat.descripcion ?? '',
       gender: cat.gender,
       ageRestriction: cat.ageRestriction,
@@ -425,6 +440,7 @@ export class CategoriasComponent implements OnInit {
       const v = this.form.getRawValue();
       const body: any = {
         nombre: v.nombre,
+        orden: v.orden != null ? Number(v.orden) : 0,
         descripcion: v.descripcion || '',
         gender: v.gender,
         ageRestriction: v.ageRestriction,

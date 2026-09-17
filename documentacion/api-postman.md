@@ -105,6 +105,7 @@ Los endpoints nuevos o modificados que el equipo frontend debe considerar en est
 - `GET/PUT /v1/events/{eventId}/categories` ya no maneja tarifa COP; el override por evento quedó solo en USD.
 - `GET/POST/PUT /v1/categories` ahora expone `membresiaAnualUsd` y `membresiaPorEventoUsd`.
 - `GET/POST/PUT /v1/categories` ahora expone `bestResultsCount` para definir cuántos resultados cuentan en el ranking de esa categoría.
+- `GET/POST/PUT /v1/categories` ahora expone `orden` (entero, extension property vía `AdditionalProperties`) para controlar el orden de listado y de las pestañas de `GET /v1/rankings/categories`.
 - `GET /v1/inscriptions`, `GET /v1/inscriptions/{id}` y `GET /v1/competitors/{id}/inscriptions` ahora devuelven `baseAmountUsd` y, solo si aplica, `administrativeFeeUsd`.
 - `GET /v1/categories/{categoryId}/tariffs` y `PUT /v1/categories/{categoryId}/tariffs/{starLevel}` soportan `starLevel` de `1` a `7`.
 - En ranking, los eventos `Prime` aplican bono `+10%` y `SuperPrime` `+50%` sobre `ligaPoints` al construir la caché.
@@ -460,6 +461,8 @@ Content-Type: application/json
   "updatedAt": "2025-07-01T00:00:00Z"
 }
 ```
+
+> **Nota (2026-09-17):** `competidoresCount` ahora se calcula real (competidores distintos con inscripciones en eventos del circuito) en `CircuitRepository`; antes estaba hardcodeado a `0`. `GET /v1/circuits` y `GET /v1/circuits/{id}` son públicos (sin `[Authorize]`) — el home público los usa para mostrar contadores reales del circuito vigente (año actual).
 
 ---
 
@@ -1415,7 +1418,8 @@ Content-Type: application/json
   "membresiaPorEventoUsd": 12.0,
   "bestResultsCount": 5,
   "successorCategoryId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "status": "Activo"
+  "status": "Activo",
+  "orden": 30
 }
 ```
 
@@ -1424,6 +1428,8 @@ Content-Type: application/json
 - `status`: `Activo` · `Inactivo`
 
 > **Nota:** `successorCategoryId` es la categoría a la que pasa el competidor al superar el límite de edad (ej: Sub-14 → Sub-16 → Sub-18 → Open).
+
+> **Nota:** `orden` (opcional, entero >= 0, default `0`) define la posición de la categoría en el listado y en las pestañas del ranking público (`GET /v1/rankings/categories`), de menor a mayor. Va como extension property (no está en el schema NSwag base, se lee/escribe vía `AdditionalProperties`).
 
 **Response:** `201 Created`
 
@@ -1444,7 +1450,8 @@ Content-Type: application/json
     "nombre": "Sub-18 Masculino"
   },
   "status": "Activo",
-  "createdAt": "2025-07-01T00:00:00Z"
+  "createdAt": "2025-07-01T00:00:00Z",
+  "orden": 30
 }
 ```
 
@@ -1469,7 +1476,8 @@ Content-Type: application/json
   "membresiaPorEventoUsd": 15.0,
   "bestResultsCount": 4,
   "successorCategoryId": null,
-  "status": "Activo"
+  "status": "Activo",
+  "orden": 30
 }
 ```
 
@@ -1479,6 +1487,7 @@ Content-Type: application/json
 - Ambos importes deben enviarse siempre; si la UI todavía no tiene captura, enviar `0`.
 - La API rechaza valores negativos.
 - `bestResultsCount` debe enviarse entre `1` y `10`. Si la UI aún no expone el campo, usar `5`.
+- `orden` es opcional (entero >= 0, default `0`); si se omite se asume `0`.
 
 ---
 
@@ -1518,11 +1527,13 @@ Authorization: Bearer {{access_token}}
 - `MembresiaAnualUsd`
 - `MembresiaPorEventoUsd`
 - `BestResultsCount`
+- `Orden`
 
 **Notas para frontend/admin:**
 - `AgeRestriction` debe enviarse como `true` o `false`,
 - si `AgeRestriction = false`, dejar `MinAge` y `MaxAge` vacíos,
-- la sucesora puede resolverse por GUID o por `SurfScoresCode`.
+- la sucesora puede resolverse por GUID o por `SurfScoresCode`,
+- `Orden` es opcional; si se deja vacío en una fila de actualización se conserva el valor ya guardado, y en una fila de creación se usa `0`.
 
 ---
 
