@@ -267,6 +267,11 @@ internal sealed class FakeWordPressService : IWordPressService
         throw new NotSupportedException();
     }
 
+    public Task<string?> FindResultsPdfUrlAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
+
     private static ArticleSummaryDto ToSummary(ArticleDetailDto article)
     {
         return new ArticleSummaryDto(

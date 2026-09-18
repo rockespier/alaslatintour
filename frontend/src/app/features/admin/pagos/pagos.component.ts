@@ -17,6 +17,16 @@ interface CompetitorSearchResult {
   email: string;
 }
 
+interface EventoOption {
+  id: string;
+  nombre: string;
+}
+
+interface CategoriaOption {
+  id: string;
+  nombre: string;
+}
+
 interface Fine {
   id: string;
   motivo: string;
@@ -237,16 +247,16 @@ function monthLabel(key: string): string {
       @if (tab() === 'inscripciones') {
         <div>
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-4 mb-6 flex flex-col xl:flex-row gap-3">
-            <select [class]="CLASS_INPUT + ' xl:max-w-[200px]'" [(ngModel)]="filterEvento">
+            <select [class]="CLASS_INPUT + ' xl:max-w-[200px]'" [(ngModel)]="filterEvento" (ngModelChange)="onFilterEventoChange()">
               <option value="">Todos los eventos</option>
-              @for (e of eventoOptions(); track e) {
-                <option [value]="e">{{ e }}</option>
+              @for (e of eventos(); track e.id) {
+                <option [value]="e.id">{{ e.nombre }}</option>
               }
             </select>
             <select [class]="CLASS_INPUT + ' xl:max-w-[180px]'" [(ngModel)]="filterCategoria">
               <option value="">Todas las categorías</option>
-              @for (c of categoriaOptions(); track c) {
-                <option [value]="c">{{ c }}</option>
+              @for (c of categorias(); track c.id) {
+                <option [value]="c.id">{{ c.nombre }}</option>
               }
             </select>
             <select [class]="CLASS_INPUT + ' xl:max-w-[180px]'" [(ngModel)]="filterMetodo">
@@ -681,14 +691,17 @@ export class PagosComponent implements OnInit {
   filterFromDate = '';
   filterToDate = '';
 
-  eventoOptions = computed(() => Array.from(new Set(this.transacciones().map(t => t.evento))).sort());
-  categoriaOptions = computed(() => Array.from(new Set(this.transacciones().map(t => t.categoria))).sort());
+  eventos = signal<EventoOption[]>([]);
+  categorias = signal<CategoriaOption[]>([]);
+  private categoriasGlobal: CategoriaOption[] = [];
 
   transaccionesFiltradas = computed(() => {
+    const eventoNombre = this.eventos().find(e => e.id === this.filterEvento)?.nombre;
+    const categoriaNombre = this.categorias().find(c => c.id === this.filterCategoria)?.nombre;
     return this.transacciones().filter(t => {
       if (this.filterMetodo && t.metodo !== this.filterMetodo) return false;
-      if (this.filterEvento && t.evento !== this.filterEvento) return false;
-      if (this.filterCategoria && t.categoria !== this.filterCategoria) return false;
+      if (eventoNombre && t.evento !== eventoNombre) return false;
+      if (categoriaNombre && t.categoria !== categoriaNombre) return false;
       return true;
     });
   });
@@ -727,11 +740,58 @@ export class PagosComponent implements OnInit {
   private async loadAll(): Promise<void> {
     this.loading.set(true);
     try {
-      await Promise.all([this.loadKpis(), this.loadTransacciones(), this.loadMembresias(), this.loadMonthlyRevenue()]);
+      await Promise.all([
+        this.loadKpis(),
+        this.loadTransacciones(),
+        this.loadMembresias(),
+        this.loadMonthlyRevenue(),
+        this.loadEventosYCategorias(),
+      ]);
     } catch {
       this.showToast('Error al cargar los datos de pagos');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async loadEventosYCategorias(): Promise<void> {
+    const [eventos, categoriesRes] = await Promise.all([
+      this.fetchAllEvents(),
+      this.api.get<any>('/categories'),
+    ]);
+    this.eventos.set(eventos);
+    this.categoriasGlobal = (categoriesRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre }));
+    this.categorias.set(this.categoriasGlobal);
+  }
+
+  // Recorre todas las páginas para que el selector de eventos no omita eventos cuando hay
+  // más de una página de resultados (mismo patrón usado en /admin/inscritos).
+  private async fetchAllEvents(): Promise<EventoOption[]> {
+    const limit = 100;
+    let page = 1;
+    const all: EventoOption[] = [];
+    for (;;) {
+      const res = await this.api.get<any>(`/events?limit=${limit}&page=${page}`);
+      const data: any[] = res?.data ?? [];
+      all.push(...data.map((e: any) => ({ id: e.id, nombre: e.nombre })));
+      const totalItems: number = res?.pagination?.totalItems ?? all.length;
+      if (data.length === 0 || all.length >= totalItems) break;
+      page += 1;
+    }
+    return all;
+  }
+
+  async onFilterEventoChange(): Promise<void> {
+    this.filterCategoria = '';
+    if (!this.filterEvento) {
+      this.categorias.set(this.categoriasGlobal);
+      return;
+    }
+    try {
+      const res = await this.api.get<any>(`/events/${this.filterEvento}/categories`);
+      this.categorias.set((res?.data ?? []).map((c: any) => ({ id: c.categoryId ?? c.id, nombre: c.categoryName ?? c.nombre })));
+    } catch {
+      this.categorias.set(this.categoriasGlobal);
     }
   }
 

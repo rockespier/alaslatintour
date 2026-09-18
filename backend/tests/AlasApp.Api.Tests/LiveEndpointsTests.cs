@@ -282,4 +282,9 @@ internal sealed class FakeLiveWordPressService : IWordPressService
     {
         return Task.FromResult(new UploadedMediaDto("601", $"https://cdn.test/wp/{fileName}", fileName, contentType, content.CanSeek ? content.Length : 0));
     }
+
+    public Task<string?> FindResultsPdfUrlAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
 }

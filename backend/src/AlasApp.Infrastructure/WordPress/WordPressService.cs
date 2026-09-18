@@ -116,6 +116,11 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
         return mediaService.UploadAsync(content, fileName, contentType, cancellationToken);
     }
 
+    public Task<string?> FindResultsPdfUrlAsync(string surfScoresCode, CancellationToken cancellationToken)
+    {
+        return mediaService.FindUrlBySlugAsync(surfScoresCode, cancellationToken);
+    }
+
     private async Task<List<ArticleSummaryDto>> MapAndFilterAsync(
         IReadOnlyCollection<WordPressPostDto> payload,
         ArticleListFilter filter,

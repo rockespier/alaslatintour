@@ -13,6 +13,7 @@ interface Circuit {
   id: string;
   nombre: string;
   estado?: string;
+  temporada?: number;
   lastSyncAt?: string | null;
   updatedAt?: string | null;
 }
@@ -45,6 +46,7 @@ interface EventItem {
   ganador?: string;
   imagenUrl?: string;
   auspiciador?: string;
+  surfScoresCode?: string;
 }
 
 interface ConfirmedInscriptionRow {
@@ -298,13 +300,9 @@ const STATUS_CLASS: Record<string, string> = {
                             </a>
                           }
                         } @else if (event.statusPublic === 'Completado') {
-                          @if (schedulePdfUrl(); as pdfUrl) {
+                          @if (resultsPdfUrl(event.id); as pdfUrl) {
                             <a [href]="pdfUrl" target="_blank" rel="noopener"
                                class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
-                              Ver resultados
-                            </a>
-                          } @else {
-                            <a routerLink="/ranking" class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
                               Ver resultados
                             </a>
                           }
@@ -541,6 +539,8 @@ export class EventosComponent implements OnInit {
   winners = signal<Map<string, string>>(new Map());
   loadingWinners = signal<Set<string>>(new Set());
 
+  resultsPdfUrls = signal<Map<string, string | null>>(new Map());
+
   expandedInscritos = signal<Set<string>>(new Set());
   confirmedInscriptions = signal<Map<string, ConfirmedInscriptionRow[]>>(new Map());
   loadingInscritos = signal<Set<string>>(new Set());
@@ -581,7 +581,9 @@ export class EventosComponent implements OnInit {
     this.loading.set(true);
     try {
       const res = await this.api.get<any>('/events?limit=100&page=1&includeCategories=true');
-      this.events.set(res?.data ?? []);
+      const events: EventItem[] = res?.data ?? [];
+      this.events.set(events);
+      void this.loadResultsPdfUrls(events);
     } catch {
       this.events.set([]);
     } finally {
@@ -589,13 +591,38 @@ export class EventosComponent implements OnInit {
     }
   }
 
+  // Busca el PDF de resultados (Media Library de WordPress, nombrado con el código SurfScores
+  // del evento, ej. "8178.pdf") solo para eventos completados con código asignado; el botón
+  // "Ver resultados" no se muestra si el PDF no fue cargado.
+  private async loadResultsPdfUrls(events: EventItem[]): Promise<void> {
+    const candidates = events.filter(e => e.statusPublic === 'Completado' && e.surfScoresCode);
+    if (candidates.length === 0) return;
+    const entries = await Promise.all(candidates.map(async (e): Promise<[string, string | null]> => {
+      try {
+        const res = await this.api.get<any>(`/events/${e.id}/results-pdf`);
+        return [e.id, res?.url ?? null];
+      } catch {
+        return [e.id, null];
+      }
+    }));
+    this.resultsPdfUrls.update(map => {
+      const next = new Map(map);
+      for (const [id, url] of entries) next.set(id, url);
+      return next;
+    });
+  }
+
+  resultsPdfUrl(eventId: string): string | null {
+    return this.resultsPdfUrls().get(eventId) ?? null;
+  }
+
   private async loadCircuits(): Promise<void> {
     try {
-      const res = await this.api.get<any>(`/circuits?year=${this.currentYear}&limit=50`);
+      const res = await this.api.get<any>('/circuits?limit=100');
       const all: Circuit[] = res?.data ?? [];
-      const visible = all.filter(c => c.estado === 'Activo' || c.estado === 'Próximo');
-      this.circuits.set(visible.length > 0 ? visible : all);
-      const current = pickCurrentCircuit(visible.length > 0 ? visible : all);
+      this.circuits.set(all);
+      const currentYearCircuits = all.filter(c => c.temporada === this.currentYear);
+      const current = pickCurrentCircuit(currentYearCircuits.length > 0 ? currentYearCircuits : all);
       if (current) this.circuitFilter.set(current.id);
     } catch {
       this.circuits.set([]);
@@ -785,10 +812,6 @@ export class EventosComponent implements OnInit {
   }
 
   liveSchedulePdfUrl(): string | null {
-    return this.liveStatus.status()?.schedulePdfUrl ?? null;
-  }
-
-  schedulePdfUrl(): string | null {
     return this.liveStatus.status()?.schedulePdfUrl ?? null;
   }
 

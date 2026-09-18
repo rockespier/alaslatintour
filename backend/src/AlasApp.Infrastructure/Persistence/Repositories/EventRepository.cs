@@ -60,8 +60,16 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
             .Take(limit)
             .ToList();
 
+        var eventIds = events.Select(x => x.Id).ToList();
+        var enrolledCounts = await dbContext.Inscriptions
+            .AsNoTracking()
+            .Where(x => eventIds.Contains(x.EventId))
+            .GroupBy(x => x.EventId)
+            .Select(g => new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count, cancellationToken);
+
         return new PagedResult<EventDto>(
-            events.Select(MapToDto).ToList(),
+            events.Select(x => MapToDto(x, enrolledCounts.GetValueOrDefault(x.Id))).ToList(),
             page,
             limit,
             totalItems);
@@ -73,7 +81,16 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == eventId, cancellationToken);
 
-        return @event is null ? null : MapToDto(@event);
+        if (@event is null)
+        {
+            return null;
+        }
+
+        var enrolledCount = await dbContext.Inscriptions
+            .AsNoTracking()
+            .CountAsync(x => x.EventId == eventId, cancellationToken);
+
+        return MapToDto(@event, enrolledCount);
     }
 
     public Task<Event?> GetEntityByIdAsync(Guid eventId, CancellationToken cancellationToken)
@@ -114,7 +131,7 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
         };
     }
 
-    private static EventDto MapToDto(Event @event)
+    private static EventDto MapToDto(Event @event, int enrolledCount)
     {
         return new EventDto(
             @event.Id,
@@ -134,7 +151,7 @@ public sealed class EventRepository(AlasAppDbContext dbContext) : IEventReposito
             @event.EventType,
             @event.AccessType,
             @event.Estado,
-            0,
+            enrolledCount,
             @event.GetPublicStatus(),
             @event.GetLugar(),
             @event.CreatedAtUtc,

@@ -108,13 +108,13 @@ internal sealed class FakeGalleryService : IGalleryService
                 new GalleryDayDto(
                     "Day 1",
                     [
-                        new GalleryAssetDto("photo-1", GalleryAssetType.Photo, "https://cdn.test/gallery-1-cover.jpg", 700, 467),
-                        new GalleryAssetDto("photo-2", GalleryAssetType.Photo, "https://cdn.test/gallery-1-2.jpg", 700, 467)
+                        new GalleryAssetDto("photo-1", GalleryAssetType.Photo, "https://cdn.test/gallery-1-cover.jpg", 700, 467, "Foto de portada"),
+                        new GalleryAssetDto("photo-2", GalleryAssetType.Photo, "https://cdn.test/gallery-1-2.jpg", 700, 467, null)
                     ]),
                 new GalleryDayDto(
                     "Day 2",
                     [
-                        new GalleryAssetDto("photo-3", GalleryAssetType.Photo, "https://cdn.test/gallery-1-3.jpg", 700, 467)
+                        new GalleryAssetDto("photo-3", GalleryAssetType.Photo, "https://cdn.test/gallery-1-3.jpg", 700, 467, null)
                     ])
             ]),
         new(
@@ -129,8 +129,8 @@ internal sealed class FakeGalleryService : IGalleryService
                 new GalleryDayDto(
                     "Final",
                     [
-                        new GalleryAssetDto("photo-4", GalleryAssetType.Photo, "https://cdn.test/gallery-2-cover.jpg", 900, 600),
-                        new GalleryAssetDto("photo-5", GalleryAssetType.Photo, "https://cdn.test/gallery-2-2.jpg", 900, 600)
+                        new GalleryAssetDto("photo-4", GalleryAssetType.Photo, "https://cdn.test/gallery-2-cover.jpg", 900, 600, null),
+                        new GalleryAssetDto("photo-5", GalleryAssetType.Photo, "https://cdn.test/gallery-2-2.jpg", 900, 600, null)
                     ])
             ])
     ];

@@ -6,7 +6,8 @@ internal sealed record WordPressGalleryPhotoDto(
     [property: JsonPropertyName("id")] int Id,
     [property: JsonPropertyName("url")] string Url,
     [property: JsonPropertyName("width")] int Width,
-    [property: JsonPropertyName("height")] int Height);
+    [property: JsonPropertyName("height")] int Height,
+    [property: JsonPropertyName("caption")] string? Caption);
 
 internal sealed record WordPressGalleryDayDto(
     [property: JsonPropertyName("day_name")] string? DayName,

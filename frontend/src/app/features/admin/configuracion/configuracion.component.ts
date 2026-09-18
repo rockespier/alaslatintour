@@ -168,11 +168,11 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
           <div class="bg-navy-dark rounded-xl border border-navy-mid p-6">
             <h2 class="font-heading text-xl text-text-light mb-1">Parámetros de distribución de puntos de ranking</h2>
             <p class="text-sm text-text-muted mb-6">Define los puntos otorgados por puesto final según el nivel de estrellas del evento. Estos valores se sincronizan con el motor de ranking de SurfScores.</p>
-            <h3 class="font-heading text-lg text-text-light mb-3">Puntos por posición final (por nivel de evento)</h3>
+            <h3 class="font-heading text-lg text-text-light mb-3">Puntos por posición final (puesto 1 al 90, sin rangos)</h3>
             <div class="bg-navy-deepest rounded-lg border border-navy-mid overflow-hidden">
-              <div class="overflow-x-auto">
+              <div class="overflow-auto max-h-[520px]">
                 <table class="w-full text-sm">
-                  <thead class="border-b border-navy-mid bg-navy-dark/50">
+                  <thead class="border-b border-navy-mid bg-navy-dark/95 sticky top-0 z-10">
                     <tr>
                       <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Puesto</th>
                       <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted"><span class="text-warning-brand">★</span></th>

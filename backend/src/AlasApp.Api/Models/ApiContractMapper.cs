@@ -282,7 +282,8 @@ public static class ApiContractMapper
             },
             dto.Url,
             dto.Width,
-            dto.Height);
+            dto.Height,
+            dto.Caption);
     }
 
     public static UploadedMediaResponse ToContract(UploadedMediaDto dto)

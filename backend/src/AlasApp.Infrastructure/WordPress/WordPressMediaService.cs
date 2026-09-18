@@ -42,6 +42,23 @@ public sealed class WordPressMediaService(HttpClient httpClient)
             content.CanSeek ? content.Length : 0);
     }
 
+    /// <summary>
+    /// Busca un archivo en la Media Library de WordPress por su slug (nombre de archivo sin
+    /// extensión, ej. "8178" para "8178.pdf"). Devuelve null si no fue cargado.
+    /// </summary>
+    public async Task<string?> FindUrlBySlugAsync(string slug, CancellationToken cancellationToken)
+    {
+        var normalizedSlug = Uri.EscapeDataString(slug.Trim().ToLowerInvariant());
+        using var response = await httpClient.GetAsync($"?slug={normalizedSlug}", cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var results = await response.Content.ReadFromJsonAsync<List<WordPressMediaUploadResponseDto>>(JsonOptions, cancellationToken);
+        return results?.FirstOrDefault()?.SourceUrl;
+    }
+
     private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)

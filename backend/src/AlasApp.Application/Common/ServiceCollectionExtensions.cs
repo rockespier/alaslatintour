@@ -67,6 +67,7 @@ using AlasApp.Application.Events.Commands.DeleteEvent;
 using AlasApp.Application.Events.Commands.ImportEvents;
 using AlasApp.Application.Events.Commands.UpdateEvent;
 using AlasApp.Application.Events.Queries.GetEventById;
+using AlasApp.Application.Events.Queries.GetEventResultsPdf;
 using AlasApp.Application.Events.Queries.ListEvents;
 using AlasApp.Application.Live.Queries.GetPublicLiveStatus;
 using AlasApp.Application.PublicSiteSettings.Queries.GetPublicSiteSettings;
@@ -75,6 +76,7 @@ using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
 using AlasApp.Application.Inscriptions.Commands.ImportInscriptions;
 using AlasApp.Application.Inscriptions.Commands.UpdateInscription;
 using AlasApp.Application.Inscriptions.Queries.GetInscriptionById;
+using AlasApp.Application.Inscriptions.Queries.ListConfirmedInscriptions;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
 using AlasApp.Application.Memberships.Commands.CreateMembership;
 using AlasApp.Application.Memberships.Commands.DeleteMembership;
@@ -147,6 +149,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IRequestHandler<ListEventsQuery, PagedResult<Events.Models.EventDto>>, ListEventsQueryHandler>();
         services.AddScoped<IRequestHandler<GetEventByIdQuery, Events.Models.EventDto>, GetEventByIdQueryHandler>();
+        services.AddScoped<IRequestHandler<GetEventResultsPdfQuery, string?>, GetEventResultsPdfQueryHandler>();
         services.AddScoped<IRequestHandler<CreateEventCommand, Events.Models.EventDto>, CreateEventCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateEventCommand, Events.Models.EventDto>, UpdateEventCommandHandler>();
         services.AddScoped<IRequestHandler<DeleteEventCommand, bool>, DeleteEventCommandHandler>();
@@ -186,6 +189,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateCompetitorFineCommand, CompetitorFines.Models.CompetitorFineDto>, CreateCompetitorFineCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateCompetitorFineCommand, CompetitorFines.Models.CompetitorFineDto>, UpdateCompetitorFineCommandHandler>();
         services.AddScoped<IRequestHandler<ListInscriptionsQuery, PagedResult<Inscriptions.Models.AdminInscriptionRowDto>>, ListInscriptionsQueryHandler>();
+        services.AddScoped<IRequestHandler<ListConfirmedInscriptionsQuery, IReadOnlyCollection<Inscriptions.Models.ConfirmedInscriptionRowDto>>, ListConfirmedInscriptionsQueryHandler>();
         services.AddScoped<IRequestHandler<GetInscriptionByIdQuery, Inscriptions.Models.InscriptionDto>, GetInscriptionByIdQueryHandler>();
         services.AddScoped<IRequestHandler<CreateInscriptionCommand, Inscriptions.Models.InscriptionDto>, CreateInscriptionCommandHandler>();
         services.AddScoped<IRequestHandler<UpdateInscriptionCommand, Inscriptions.Models.InscriptionDto>, UpdateInscriptionCommandHandler>();

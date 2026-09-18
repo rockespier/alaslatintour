@@ -114,7 +114,7 @@ function fmtDateTime(dt: string): string {
             </select>
             <div class="relative flex-1">
               <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" placeholder="Buscar competidor..." [(ngModel)]="searchTerm" [class]="CLASS_INPUT + ' pl-9'">
+              <input type="text" placeholder="Buscar competidor..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" [class]="CLASS_INPUT + ' pl-9'">
             </div>
             <button (click)="exportarInscritos()" [disabled]="exportando()" class="px-4 py-2 border border-orange-brand/50 hover:border-orange-brand text-orange-brand font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center whitespace-nowrap disabled:opacity-50">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -548,7 +548,7 @@ export class InscritosComponent implements OnInit {
   circuitos = signal<CircuitoOption[]>([]);
   categorias = signal<CategoriaOption[]>([]);
 
-  searchTerm = '';
+  searchTerm = signal('');
   filterCircuito = '';
   filterEvento = '';
   filterCategoria = '';
@@ -570,7 +570,7 @@ export class InscritosComponent implements OnInit {
   inscritos = signal<InscritoRow[]>([]);
 
   filteredInscritos = computed(() => {
-    const term = this.searchTerm.trim().toLowerCase();
+    const term = this.searchTerm().trim().toLowerCase();
     return this.inscritos().filter(r => {
       if (term && !r.competidor.toLowerCase().includes(term)) return false;
       return true;
@@ -655,15 +655,29 @@ export class InscritosComponent implements OnInit {
     }
   }
 
+  // Recorre todas las páginas para que "resumen()" (PayPal/playa/pendiente) refleje el total
+  // filtrado real y no solo la primera página — el backend ordena por fecha de inscripción
+  // ascendente, así que con más de una página de resultados, una carga masiva antigua puede
+  // desplazar inscripciones recientes (ej. pagadas por PayPal) fuera de la primera página.
   async loadInscritos(): Promise<void> {
-    const params = new URLSearchParams({ limit: '100' });
-    if (this.filterEvento) params.set('eventId', this.filterEvento);
-    if (this.filterCategoria) params.set('categoryId', this.filterCategoria);
-    if (this.filterEstado) params.set('status', this.filterEstado);
-    const res = await this.api.get<any>(`/inscriptions?${params.toString()}`);
-    const data: any[] = res?.data ?? [];
-    this.inscritos.set(data.map(r => this.mapRow(r)));
-    this.totalItems.set(res?.pagination?.totalItems ?? data.length);
+    const limit = 200;
+    let page = 1;
+    const all: any[] = [];
+    let totalItems = 0;
+    for (;;) {
+      const params = new URLSearchParams({ limit: String(limit), page: String(page) });
+      if (this.filterEvento) params.set('eventId', this.filterEvento);
+      if (this.filterCategoria) params.set('categoryId', this.filterCategoria);
+      if (this.filterEstado) params.set('status', this.filterEstado);
+      const res = await this.api.get<any>(`/inscriptions?${params.toString()}`);
+      const data: any[] = res?.data ?? [];
+      all.push(...data);
+      totalItems = res?.pagination?.totalItems ?? all.length;
+      if (data.length === 0 || all.length >= totalItems) break;
+      page += 1;
+    }
+    this.inscritos.set(all.map(r => this.mapRow(r)));
+    this.totalItems.set(totalItems);
   }
 
   private mapRow(r: any): InscritoRow {

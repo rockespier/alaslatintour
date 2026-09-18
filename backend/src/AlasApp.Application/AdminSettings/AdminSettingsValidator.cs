@@ -47,9 +47,9 @@ public static class AdminSettingsValidator
             errors.Add(new ValidationError("ranking.bestResultsCount", "Los mejores resultados a contar deben estar entre 1 y 10."));
         }
 
-        if (settings.Ranking.PointsMatrix.Count != 8)
+        if (settings.Ranking.PointsMatrix.Count != 90)
         {
-            errors.Add(new ValidationError("ranking.pointsMatrix", "La matriz de ranking debe incluir 8 filas de posiciones."));
+            errors.Add(new ValidationError("ranking.pointsMatrix", "La matriz de ranking debe incluir 90 filas de posiciones (puesto 1 a 90, sin rangos)."));
         }
 
         foreach (var row in settings.Ranking.PointsMatrix)

@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Meta, Title, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { LiveStatusService } from '../../../core/services/live-status.service';
-import { RankingService, RankingRow } from '../../../core/services/ranking.service';
+import { RankingService, RankingCategory, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { sortEventsForDisplay } from '../../../core/utils/event-sort.util';
 import { flagForCountryCode } from '../../../core/utils/country-flag.util';
@@ -281,8 +281,17 @@ type ArticleCard = ArticleSummary;
                 </span>
               </div>
               <h2 class="font-heading text-3xl md:text-4xl">Ranking {{ currentYear }}</h2>
-              <p class="text-sm text-text-muted mt-1">{{ rankingCategoryName() }}</p>
             </div>
+            @if (rankingCategories().length > 0) {
+              <select
+                class="input-field w-auto"
+                [value]="selectedCategoryId()"
+                (change)="onCategoryChange($any($event.target).value)">
+                @for (cat of rankingCategories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.nombre }}</option>
+                }
+              </select>
+            }
           </header>
 
           @if (loadingRanking()) {
@@ -295,6 +304,7 @@ type ArticleCard = ArticleSummary;
                     <th class="px-4 py-3 text-left">Pos</th>
                     <th class="px-4 py-3 text-left">Surfista</th>
                     <th class="px-4 py-3 text-left">País</th>
+                    <th class="px-4 py-3 text-right hidden md:table-cell">Eventos</th>
                     <th class="px-4 py-3 text-right">Puntos</th>
                     <th class="px-4 py-3 text-right">Var.</th>
                   </tr>
@@ -308,6 +318,7 @@ type ArticleCard = ArticleSummary;
                       </td>
                       <td class="px-4 py-3 font-medium">{{ row.name }}</td>
                       <td class="px-4 py-3 text-text-muted">{{ row.flag }} {{ row.country }}</td>
+                      <td class="px-4 py-3 text-right text-text-muted hidden md:table-cell">{{ row.events }}</td>
                       <td class="px-4 py-3 text-right font-heading text-lg">{{ row.points | number }}</td>
                       <td class="px-4 py-3 text-right font-medium"
                           [class]="row.change > 0 ? 'text-success-brand' : row.change < 0 ? 'text-error-brand' : 'text-text-muted'">
@@ -510,6 +521,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   loadingEvents = signal(true);
   loadingArticles = signal(true);
   loadingRanking = signal(true);
+  rankingCategories = signal<RankingCategory[]>([]);
+  selectedCategoryId = signal('');
   rankingCategoryName = signal('Open Hombres');
   rankingCachedAgo = signal('');
 
@@ -628,21 +641,49 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private async loadRanking(): Promise<void> {
     try {
       const cats = await this.rankingService.getCategories();
-      const defaultCat = cats[0];
+      this.rankingCategories.set(cats);
+      const defaultCat = this.pickDefaultCategory(cats);
       if (!defaultCat) {
         this.ranking.set([]);
         return;
       }
-      const year = defaultCat.availableYears?.at(-1);
-      const result = await this.rankingService.getRanking(defaultCat.id, year, 1, 8);
-      this.ranking.set(result.rows);
-      this.rankingCategoryName.set(result.categoryName || defaultCat.nombre);
-      this.rankingCachedAgo.set(this.rankingService.cachedAgo(result.cachedAt));
+      this.selectedCategoryId.set(defaultCat.id);
+      await this.fetchRanking(defaultCat);
     } catch {
       this.ranking.set([]);
     } finally {
       this.loadingRanking.set(false);
     }
+  }
+
+  private pickDefaultCategory(cats: RankingCategory[]): RankingCategory | undefined {
+    if (cats.length === 0) return undefined;
+    const normalize = (s: string) => s.trim().toLowerCase();
+    return (
+      cats.find(c => normalize(c.nombre) === 'shortboard open hombres') ??
+      cats.find(c => normalize(c.nombre).includes('open hombres')) ??
+      cats[0]
+    );
+  }
+
+  async onCategoryChange(categoryId: string): Promise<void> {
+    const cat = this.rankingCategories().find(c => c.id === categoryId);
+    if (!cat || cat.id === this.selectedCategoryId()) return;
+    this.selectedCategoryId.set(cat.id);
+    this.loadingRanking.set(true);
+    try {
+      await this.fetchRanking(cat);
+    } finally {
+      this.loadingRanking.set(false);
+    }
+  }
+
+  private async fetchRanking(cat: RankingCategory): Promise<void> {
+    const year = cat.availableYears?.at(-1);
+    const result = await this.rankingService.getRanking(cat.id, year, 1, 8);
+    this.ranking.set(result.rows);
+    this.rankingCategoryName.set(result.categoryName || cat.nombre);
+    this.rankingCachedAgo.set(this.rankingService.cachedAgo(result.cachedAt));
   }
 
   private async loadCircuitStats(): Promise<void> {

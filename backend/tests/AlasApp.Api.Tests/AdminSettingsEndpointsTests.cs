@@ -43,7 +43,7 @@ public sealed class AdminSettingsEndpointsTests : IClassFixture<AdminSettingsWeb
         Assert.Equal("ALAS Global Tour", json["general"]?["organizationName"]?.Value<string>());
         Assert.Equal(0m, json["general"]?["administrativeFeeUsd"]?.Value<decimal>());
         Assert.Equal(24, json["notifications"]?["tokenValidityHours"]?.Value<int>());
-        Assert.Equal(8, json["ranking"]?["pointsMatrix"]?.Count());
+        Assert.Equal(90, json["ranking"]?["pointsMatrix"]?.Count());
         Assert.Equal(5, json["live"]?["surfScores"]?["refreshMinutes"]?.Value<int>());
     }
 

@@ -7,6 +7,7 @@ using AlasApp.Application.EventResults.Commands.UpsertEventResults;
 using AlasApp.Application.EventResults.Queries.GetEventResults;
 using AlasApp.Application.EventResults.Queries.GetEventResultsRoster;
 using AlasApp.Application.EventResults.Queries.GetPrizeDistribution;
+using AlasApp.Application.Events.Queries.GetEventResultsPdf;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Generated = AlasApp.AlasApi.Api.Controllers;
@@ -112,6 +113,24 @@ public sealed class EventResultsController(IRequestDispatcher dispatcher, IBulkE
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));
+    }
+
+    /// <summary>
+    /// URL del PDF de resultados oficiales del evento, buscado en la Media Library de WordPress
+    /// por el código SurfScores del evento (ej. "8178.pdf"). Devuelve url=null si no fue cargado.
+    /// </summary>
+    [HttpGet("results-pdf")]
+    [ProducesResponseType(typeof(EventResultsPdfResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EventResultsPdfResponse>> GetResultsPdf(
+        string eventId,
+        CancellationToken cancellationToken)
+    {
+        var url = await dispatcher.Send(
+            new GetEventResultsPdfQuery(ApiContractMapper.ParseGuid(eventId, "eventId")),
+            cancellationToken);
+
+        return Ok(new EventResultsPdfResponse(url));
     }
 
     [HttpGet("prize-distribution")]

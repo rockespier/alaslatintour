@@ -74,7 +74,8 @@ public sealed class GalleryService(HttpClient httpClient) : IGalleryService
                         GalleryAssetType.Photo,
                         photo.Url,
                         photo.Width,
-                        photo.Height))
+                        photo.Height,
+                        string.IsNullOrWhiteSpace(photo.Caption) ? null : WebUtility.HtmlDecode(photo.Caption).Trim()))
                     .ToList()))
             .ToList() ?? [];
     }

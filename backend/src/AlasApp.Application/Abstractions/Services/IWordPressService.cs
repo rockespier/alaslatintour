@@ -21,4 +21,6 @@ public interface IWordPressService
         string fileName,
         string contentType,
         CancellationToken cancellationToken);
+
+    Task<string?> FindResultsPdfUrlAsync(string surfScoresCode, CancellationToken cancellationToken);
 }

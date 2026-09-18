@@ -5,4 +5,5 @@ public sealed record GalleryAssetDto(
     GalleryAssetType Type,
     string Url,
     int Width,
-    int Height);
+    int Height,
+    string? Caption);
