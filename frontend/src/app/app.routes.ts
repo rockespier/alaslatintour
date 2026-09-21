@@ -46,8 +46,8 @@ export const routes: Routes = [
       },
       {
         path: 'calendario',
-        loadComponent: () => import('./features/public/calendario/calendario.component').then(m => m.CalendarioComponent),
-        title: 'Calendario de Eventos — ALAS Latin Tour',
+        redirectTo: 'eventos',
+        pathMatch: 'full',
       },
       {
         path: 'inscripcion/:eventId',

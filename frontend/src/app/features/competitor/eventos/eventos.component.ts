@@ -300,11 +300,21 @@ const STATUS_CLASS: Record<string, string> = {
                             </a>
                           }
                         } @else if (event.statusPublic === 'Completado') {
-                          @if (resultsPdfUrl(event.id); as pdfUrl) {
-                            <a [href]="pdfUrl" target="_blank" rel="noopener"
-                               class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
-                              Ver resultados
+                          @if (isLiveScheduleAvailable(event.id)) {
+                            <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
+                               class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
+                              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                              </svg>
+                              Descargar programación (PDF)
                             </a>
+                          } @else {
+                            @if (resultsPdfUrl(event.id); as pdfUrl) {
+                              <a [href]="pdfUrl" target="_blank" rel="noopener"
+                                 class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                                Ver ganadores
+                              </a>
+                            }
                           }
                         } @else {
                           <button disabled class="px-5 py-2.5 rounded-md bg-navy-mid/60 text-text-muted font-accent uppercase tracking-wider text-sm cursor-not-allowed">
@@ -332,7 +342,7 @@ const STATUS_CLASS: Record<string, string> = {
                           </svg>
                         </button>
 
-                        @if (isLiveScheduleAvailable(event.id)) {
+                        @if (isLiveScheduleAvailable(event.id) && event.statusPublic !== 'Completado') {
                           <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
                              class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -490,6 +500,24 @@ const STATUS_CLASS: Record<string, string> = {
                 </div>
               }
 
+              <div class="bg-navy-dark border border-navy-mid rounded-xl p-6">
+                <h3 class="font-heading text-xl mb-4">Cómo leer el calendario</h3>
+                <ul class="space-y-3 text-sm text-text-muted">
+                  <li class="flex items-start gap-3">
+                    <span class="text-cyan-brand text-lg leading-none mt-0.5">★</span>
+                    <span>Las estrellas indican el nivel del evento (1 a 7, el nivel máximo se llama "Prime"): a mayor número, más puntos otorga al ranking.</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-success-brand/15 text-success-brand border border-success-brand/30 whitespace-nowrap mt-0.5">Abiertas</span>
+                    <span>Inscripciones activas — quedan cupos disponibles.</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-brand border border-cyan-brand/30 whitespace-nowrap mt-0.5">Próximamente</span>
+                    <span>Fecha confirmada, inscripciones aún no abren.</span>
+                  </li>
+                </ul>
+              </div>
+
               <div class="bg-gradient-to-br from-cyan-brand/10 to-orange-brand/5 border border-cyan-brand/20 rounded-xl p-5">
                 <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-2">¿Necesitas ayuda?</p>
                 <h4 class="font-heading text-lg mb-2 leading-tight">Reglamento y soporte</h4>
@@ -623,7 +651,9 @@ export class EventosComponent implements OnInit {
       this.circuits.set(all);
       const currentYearCircuits = all.filter(c => c.temporada === this.currentYear);
       const current = pickCurrentCircuit(currentYearCircuits.length > 0 ? currentYearCircuits : all);
-      if (current) this.circuitFilter.set(current.id);
+      // Se difiere al siguiente tick: el <select> nativo ignora el [value] si las <option>
+      // del @for aún no existen en el DOM (mismo ciclo de Angular en que llegan los circuitos).
+      if (current) setTimeout(() => this.circuitFilter.set(current.id));
     } catch {
       this.circuits.set([]);
     }

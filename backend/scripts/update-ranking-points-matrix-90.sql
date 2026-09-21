@@ -152,6 +152,6 @@ FROM SystemSettings
 WHERE [Key] = 'admin-settings';
 
 -- Revisá el resultado de arriba (debe mostrar FilasPointsMatrix = 90). Si está correcto:
--- COMMIT TRANSACTION;
+COMMIT TRANSACTION;
 -- Si algo no cuadra:
 -- ROLLBACK TRANSACTION;

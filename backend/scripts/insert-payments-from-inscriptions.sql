@@ -70,6 +70,6 @@ SELECT
     (SELECT SUM(AmountUsd) FROM Payments WHERE Status = 'Confirmado') AS TotalConfirmadoUsd;
 
 -- Revisá el resultado de arriba. Si está correcto:
--- COMMIT TRANSACTION;
+ COMMIT TRANSACTION;
 -- Si algo no cuadra:
 -- ROLLBACK TRANSACTION;
