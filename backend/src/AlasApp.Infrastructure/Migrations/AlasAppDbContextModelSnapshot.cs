@@ -626,6 +626,9 @@ namespace AlasApp.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("InscripcionAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid>("InscriptionGroupId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("MembershipFeeUsd")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -641,6 +644,10 @@ namespace AlasApp.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("PayPalOrderId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
@@ -678,6 +685,8 @@ namespace AlasApp.Infrastructure.Migrations
                     b.HasIndex("EstadoAdmin");
 
                     b.HasIndex("EventId");
+
+                    b.HasIndex("InscriptionGroupId");
 
                     b.HasIndex("CompetitorId", "EventId", "CategoryId")
                         .IsUnique();

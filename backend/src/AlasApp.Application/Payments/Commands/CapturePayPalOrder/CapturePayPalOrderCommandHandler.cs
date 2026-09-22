@@ -27,24 +27,44 @@ public sealed class CapturePayPalOrderCommandHandler(
         var inscription = await inscriptionRepository.GetEntityByIdAsync(request.InscriptionId, cancellationToken)
             ?? throw new NotFoundException("Inscripcion no encontrada.");
 
-        if (await paymentRepository.GetEntityByInscriptionIdAsync(request.InscriptionId, cancellationToken) is not null)
+        if (!string.Equals(inscription.PayPalOrderId, request.OrderId, StringComparison.Ordinal))
         {
-            throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            throw new ConflictException("La orden de PayPal no corresponde a esta inscripcion.");
+        }
+
+        var group = await inscriptionRepository.ListEntitiesByGroupIdAsync(inscription.InscriptionGroupId, cancellationToken);
+
+        foreach (var item in group)
+        {
+            if (await paymentRepository.GetEntityByInscriptionIdAsync(item.Id, cancellationToken) is not null)
+            {
+                throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            }
         }
 
         var captureResult = await payPalGateway.CaptureOrderAsync(request.OrderId, cancellationToken);
 
+        var expectedAmount = decimal.Round(group.Sum(x => x.MontoUsd), 2);
+        if (!string.Equals(captureResult.OrderId, request.OrderId, StringComparison.Ordinal)
+            || decimal.Round(captureResult.AmountUsd, 2) != expectedAmount)
+        {
+            throw new ConflictException("El monto capturado por PayPal no coincide con el total esperado de la inscripcion.");
+        }
+
         var payment = Payment.Create(
             request.InscriptionId,
             PaymentMethod.Paypal,
-            captureResult.AmountUsd,
+            group.Sum(x => x.MontoUsd),
             captureResult.CaptureId,
             PaymentStatusAdmin.Confirmado,
             clock.UtcNow);
 
         payment.SetCreated(clock.UtcNow);
-        inscription.ApplyPayment(PaymentMethod.Paypal, captureResult.CaptureId, InscriptionStatusAdmin.Pagado);
-        inscription.SetUpdated(clock.UtcNow);
+        foreach (var item in group)
+        {
+            item.ApplyPayment(PaymentMethod.Paypal, captureResult.CaptureId, InscriptionStatusAdmin.Pagado);
+            item.SetUpdated(clock.UtcNow);
+        }
 
         await paymentRepository.AddAsync(payment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

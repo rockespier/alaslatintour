@@ -2590,6 +2590,28 @@ identityDocument=@dni.jpg
 Para probar el ciclo completo de los lotes implementados:
 
 ```
+
+## Inscripción multi-categoría y pagos agrupados
+
+`POST /v1/inscriptions/bulk` crea una inscripción por categoría con un mismo `inscriptionGroupId` persistente. Devuelve `primaryInscriptionId`, que se usa sin cambios en los endpoints de PayPal y pago en playa; la captura o el canje se propaga a todas las inscripciones del grupo.
+
+```json
+{
+  "competitorId": "{competitorId}",
+  "eventId": "{eventId}",
+  "categoryIds": ["{categoryId1}", "{categoryId2}"],
+  "paymentMethod": "Paypal",
+  "reglamento": true,
+  "riesgosAceptados": true,
+  "usoImagenAceptado": true
+}
+```
+
+## Exportación de pagos y ranking por circuito
+
+- `GET /v1/payments/export?method=&status=&fromDate=&toDate=` descarga hasta 5.000 transacciones XLSX respetando los filtros de Pagos.
+- `GET /v1/rankings?categoryId={id}&circuitId={id}&year=2025&page=1&limit=20` consulta un circuito específico.
+- `GET /v1/rankings/categories?circuitId={id}` lista las categorías/años disponibles del circuito seleccionado.
 1. POST /v1/categories
 2. PUT  /v1/categories/{id}/tariffs/{starLevel}
 3. POST /v1/circuits

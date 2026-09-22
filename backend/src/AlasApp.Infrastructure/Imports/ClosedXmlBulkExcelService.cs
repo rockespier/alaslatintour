@@ -2,6 +2,7 @@ using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.BulkImports.Models;
 using AlasApp.Application.EventResults.Models;
 using AlasApp.Application.Inscriptions.Models;
+using AlasApp.Application.Payments.Models;
 using ClosedXML.Excel;
 
 namespace AlasApp.Infrastructure.Imports;
@@ -225,6 +226,35 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         return stream.ToArray();
     }
 
+    public byte[] BuildPaymentsExport(IReadOnlyCollection<PaymentDto> rows)
+    {
+        var headers = new[] { "Fecha", "Competidor", "Evento", "Categoría", "Monto", "Método", "ID Transacción", "Estado" };
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Transacciones");
+        for (var index = 0; index < headers.Length; index++)
+        {
+            worksheet.Cell(1, index + 1).Value = headers[index];
+            worksheet.Cell(1, index + 1).Style.Font.Bold = true;
+        }
+        var rowNumber = 2;
+        foreach (var row in rows)
+        {
+            worksheet.Cell(rowNumber, 1).Value = row.Fecha.ToString("yyyy-MM-dd HH:mm");
+            worksheet.Cell(rowNumber, 2).Value = row.Competidor;
+            worksheet.Cell(rowNumber, 3).Value = row.Evento;
+            worksheet.Cell(rowNumber, 4).Value = row.Categoria;
+            worksheet.Cell(rowNumber, 5).Value = (double)row.MontoUsd;
+            worksheet.Cell(rowNumber, 6).Value = row.Metodo.ToString();
+            worksheet.Cell(rowNumber, 7).Value = row.TransaccionId;
+            worksheet.Cell(rowNumber, 8).Value = row.Estado.ToString();
+            rowNumber++;
+        }
+        worksheet.Columns().AdjustToContents();
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
     public byte[] BuildInscriptionFicha(InscriptionDto inscription)
     {
         using var workbook = new XLWorkbook();
@@ -387,6 +417,78 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             values["EstadoAdmin"],
             values["TransaccionId"],
             values["Notas"]));
+
+    private static readonly string[] MembershipPaymentImportHeaders =
+    [
+        "CompetidorId",
+        "SurfScoresCode",
+        "Email",
+        "InscripcionId",
+        "TipoMembresia",
+        "FechaPago",
+        "MetodoPago",
+        "TransaccionId",
+        "Importe"
+    ];
+
+    private static readonly HashSet<string> MembershipPaymentImportRequiredHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "TipoMembresia", "FechaPago", "MetodoPago", "Importe"
+    };
+
+    public byte[] BuildMembershipPaymentsTemplate()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Membresias");
+
+        for (var index = 0; index < MembershipPaymentImportHeaders.Length; index++)
+        {
+            var header = MembershipPaymentImportHeaders[index];
+            var isRequired = MembershipPaymentImportRequiredHeaders.Contains(header);
+            var headerCell = worksheet.Cell(1, index + 1);
+            headerCell.Value = isRequired ? $"{header} *" : header;
+            headerCell.Style.Font.Bold = true;
+            if (isRequired)
+            {
+                headerCell.Style.Font.FontColor = XLColor.DarkRed;
+            }
+        }
+
+        var sample = new[] { "", "", "juan.perez@example.com", "", "PorEvento", "2026-01-15", "Paypal", "", "30" };
+        for (var index = 0; index < sample.Length; index++)
+        {
+            worksheet.Cell(2, index + 1).Value = sample[index];
+        }
+
+        worksheet.Cell(4, 1).Value = "* Campo obligatorio";
+        worksheet.Cell(4, 1).Style.Font.Italic = true;
+        worksheet.Cell(4, 1).Style.Font.FontColor = XLColor.DarkRed;
+
+        worksheet.Cell(5, 1).Value = "Debes completar CompetidorId, SurfScoresCode o Email para identificar al competidor. Solo se agrega membresia a inscripciones que ya existen para el evento elegido (no crea inscripciones nuevas).";
+        worksheet.Cell(5, 1).Style.Font.Italic = true;
+
+        worksheet.Cell(6, 1).Value = "TipoMembresia: Anual o PorEvento. MetodoPago: Paypal o Beach. InscripcionId es opcional, solo obligatorio si el competidor tiene mas de una inscripcion en este evento.";
+        worksheet.Cell(6, 1).Style.Font.Italic = true;
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    public IReadOnlyCollection<MembershipPaymentImportRow> ReadMembershipPayments(byte[] content)
+        => ReadRows(content, "Membresias", MembershipPaymentImportHeaders, values => new MembershipPaymentImportRow(
+            values.RowNumber,
+            values["CompetidorId"],
+            values["SurfScoresCode"],
+            values["Email"],
+            values["InscripcionId"],
+            values["TipoMembresia"],
+            values["FechaPago"],
+            values["MetodoPago"],
+            values["TransaccionId"],
+            values["Importe"]));
 
     private static byte[] BuildWorkbook(
         string sheetName,

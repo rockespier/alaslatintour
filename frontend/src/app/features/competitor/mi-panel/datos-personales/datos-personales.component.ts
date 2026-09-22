@@ -172,8 +172,7 @@ export class DatosPersonalesComponent implements OnInit {
     if (user?.competitorId) return user.competitorId;
     if (!user?.email) return undefined;
 
-    const res = await this.api.get<any>(`/competitors?search=${encodeURIComponent(user.email)}&limit=1`);
-    const competitor = (res?.data ?? [])[0];
+    const competitor = await this.api.get<any>('/competitors/me');
     const competitorId = competitor?.id;
     if (competitorId) {
       const token = this.auth.getToken();

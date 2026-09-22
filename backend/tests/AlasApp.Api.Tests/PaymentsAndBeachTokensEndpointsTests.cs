@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using ClosedXML.Excel;
 using Xunit;
 
 namespace AlasApp.Api.Tests;
@@ -151,6 +153,168 @@ public sealed class PaymentsAndBeachTokensEndpointsTests : IClassFixture<CustomW
         var kpisBody = await ReadJsonAsync(kpisResponse);
         Assert.True(kpisBody.RootElement.GetProperty("totalRecaudadoMes").GetDouble() >= 190d);
         Assert.Equal(1, kpisBody.RootElement.GetProperty("pagoPaypalConfirmados").GetProperty("count").GetInt32());
+    }
+
+    [Fact]
+    public async Task MembershipPayments_ShouldListConfirmedMembershipFeeOnly()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+
+        var categoryResponse = await _client.PostAsJsonAsync("/v1/categories", new
+        {
+            nombre = "Open Membership",
+            descripcion = "Categoria con membresia por evento",
+            gender = "Ambos",
+            ageRestriction = false,
+            minAge = (int?)null,
+            maxAge = (int?)null,
+            successorCategoryId = (string?)null,
+            status = "Activo",
+            membresiaAnualUsd = 0,
+            membresiaPorEventoUsd = 30
+        });
+        var categoryBody = await ReadJsonAsync(categoryResponse);
+        var categoryId = categoryBody.RootElement.GetProperty("id").GetString()!;
+
+        var assignResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[] { new { categoryId, customTariffUsd = 95, capacidad = 5 } }
+        });
+        Assert.Equal(HttpStatusCode.OK, assignResponse.StatusCode);
+
+        var competitorId = await CreateCompetitorAsync("Elena", "Vargas", "elena.vargas@example.com");
+
+        var bulkResponse = await _client.PostAsJsonAsync("/v1/inscriptions/bulk", new
+        {
+            competitorId,
+            eventId,
+            categoryIds = new[] { categoryId },
+            paymentMethod = "paypal",
+            membershipPlan = "PorEvento",
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
+        });
+        Assert.Equal(HttpStatusCode.Created, bulkResponse.StatusCode);
+        var bulkBody = await ReadJsonAsync(bulkResponse);
+        var primaryInscriptionId = bulkBody.RootElement.GetProperty("primaryInscriptionId").GetString();
+        var totalUsd = bulkBody.RootElement.GetProperty("totalMontoUsd").GetDecimal();
+        Assert.Equal(125m, totalUsd);
+
+        var paymentResponse = await _client.PostAsJsonAsync("/v1/payments", new
+        {
+            inscriptionId = primaryInscriptionId,
+            method = "paypal",
+            amountUsd = totalUsd,
+            transactionId = $"PP-MEMBER-{Guid.NewGuid():N}"[..20]
+        });
+        Assert.Equal(HttpStatusCode.Created, paymentResponse.StatusCode);
+
+        var membershipsResponse = await _client.GetAsync("/v1/payments/memberships");
+        var membershipsRaw = await membershipsResponse.Content.ReadAsStringAsync();
+        Assert.True(membershipsResponse.StatusCode == HttpStatusCode.OK, membershipsRaw);
+
+        var membershipsBody = await ReadJsonAsync(membershipsResponse);
+        var rows = membershipsBody.RootElement.GetProperty("data").EnumerateArray().ToList();
+        var row = rows.First(x => x.GetProperty("competitorName").GetString() == "Elena Vargas");
+
+        Assert.Equal("PorEvento", row.GetProperty("membershipPlan").GetString());
+        Assert.Equal("Evento Payments", row.GetProperty("eventName").GetString());
+        Assert.Equal("Circuito Payments", row.GetProperty("circuitName").GetString());
+        Assert.Equal("Paypal", row.GetProperty("method").GetString());
+        Assert.Equal(30m, row.GetProperty("amountUsd").GetDecimal());
+    }
+
+    [Fact]
+    public async Task MembershipPaymentsImport_ShouldAttachMembershipToExistingInscriptionAndCreatePayment()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+        var categoryId = await CreateCategoryAsync();
+
+        var assignResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[] { new { categoryId, customTariffUsd = 95, capacidad = 5 } }
+        });
+        Assert.Equal(HttpStatusCode.OK, assignResponse.StatusCode);
+
+        var competitorId = await CreateCompetitorAsync("Bruna", "Silva", $"bruna.silva-{Guid.NewGuid():N}@example.com");
+
+        // Inscripcion ya existente, SIN membresia ni pago (simula carga masiva historica por SQL).
+        var inscriptionId = await CreateInscriptionAsync(competitorId, eventId, categoryId, "paypal");
+
+        var templateResponse = await _client.GetAsync($"/v1/events/{eventId}/membership-payments/template");
+        Assert.Equal(HttpStatusCode.OK, templateResponse.StatusCode);
+        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", templateResponse.Content.Headers.ContentType?.MediaType);
+
+        using var importWorkbook = new XLWorkbook();
+        var worksheet = importWorkbook.Worksheets.Add("Membresias");
+        WriteRow(worksheet, 1, "CompetidorId", "SurfScoresCode", "Email", "InscripcionId", "TipoMembresia", "FechaPago", "MetodoPago", "TransaccionId", "Importe");
+        WriteRow(worksheet, 2, competitorId, "", "", "", "PorEvento", "2026-01-15", "Paypal", "", "30");
+
+        var importResponse = await _client.PostAsync(
+            $"/v1/events/{eventId}/membership-payments/import",
+            CreateExcelForm(importWorkbook, "membresias-import.xlsx"));
+        var importBody = await importResponse.Content.ReadAsStringAsync();
+        Assert.True(importResponse.StatusCode == HttpStatusCode.OK, importBody);
+
+        var importPayload = await ReadJsonAsync(importResponse);
+        Assert.Equal(1, importPayload.RootElement.GetProperty("processedRows").GetInt32());
+        Assert.Equal(1, importPayload.RootElement.GetProperty("updatedCount").GetInt32());
+        Assert.Equal(0, importPayload.RootElement.GetProperty("errors").GetArrayLength());
+
+        var inscriptionResponse = await _client.GetAsync($"/v1/inscriptions/{inscriptionId}");
+        var inscriptionBody = await ReadJsonAsync(inscriptionResponse);
+        Assert.Equal(125d, inscriptionBody.RootElement.GetProperty("montoUsd").GetDouble());
+
+        var membershipsResponse = await _client.GetAsync("/v1/payments/memberships");
+        var membershipsBody = await ReadJsonAsync(membershipsResponse);
+        var row = membershipsBody.RootElement.GetProperty("data").EnumerateArray()
+            .First(x => x.GetProperty("competitorName").GetString() == "Bruna Silva");
+        Assert.Equal("PorEvento", row.GetProperty("membershipPlan").GetString());
+        Assert.Equal(30d, row.GetProperty("amountUsd").GetDouble());
+
+        // Reimportar la misma fila no debe duplicar el pago (Payments.TransactionId es UNIQUE).
+        using var reimportWorkbook = new XLWorkbook();
+        var reimportSheet = reimportWorkbook.Worksheets.Add("Membresias");
+        WriteRow(reimportSheet, 1, "CompetidorId", "SurfScoresCode", "Email", "InscripcionId", "TipoMembresia", "FechaPago", "MetodoPago", "TransaccionId", "Importe");
+        WriteRow(reimportSheet, 2, competitorId, "", "", "", "PorEvento", "2026-01-15", "Paypal", "", "30");
+
+        var reimportResponse = await _client.PostAsync(
+            $"/v1/events/{eventId}/membership-payments/import",
+            CreateExcelForm(reimportWorkbook, "membresias-reimport.xlsx"));
+        var reimportBody = await reimportResponse.Content.ReadAsStringAsync();
+        Assert.True(reimportResponse.StatusCode == HttpStatusCode.OK, reimportBody);
+        var reimportPayload = JsonDocument.Parse(reimportBody);
+        Assert.Equal(1, reimportPayload.RootElement.GetProperty("updatedCount").GetInt32());
+        Assert.Equal(0, reimportPayload.RootElement.GetProperty("errors").GetArrayLength());
+    }
+
+    private static MultipartFormDataContent CreateExcelForm(XLWorkbook workbook, string fileName)
+    {
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(stream.ToArray());
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        form.Add(fileContent, "file", fileName);
+        return form;
+    }
+
+    private static void WriteRow(IXLWorksheet worksheet, int rowNumber, params string[] values)
+    {
+        for (var i = 0; i < values.Length; i++)
+        {
+            worksheet.Cell(rowNumber, i + 1).Value = values[i];
+        }
     }
 
     private async Task<string> CreateCircuitAsync()

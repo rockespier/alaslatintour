@@ -22,6 +22,8 @@ interface Category {
   orden?: number | null;
 }
 
+interface CategoryTariff { starLevel: number; usd: number; cop: number; active: boolean; }
+
 @Component({
   selector: 'app-categorias',
   standalone: true,
@@ -288,6 +290,28 @@ interface Category {
               <p class="text-text-muted/60 text-xs mt-1">Cantidad de mejores eventos (del circuito actual) que se suman para el ranking de esta categoría. Entre 1 y 10.</p>
             </div>
 
+            @if (editingId()) {
+              <div class="border-t border-navy-mid pt-5">
+                <h3 class="font-heading text-lg text-text-light">Tarifas por nivel de estrellas</h3>
+                <p class="text-xs text-text-muted mt-1 mb-3">Se aplican cuando el evento usa tarifas del circuito.</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="text-xs font-accent uppercase tracking-wider text-text-muted"><tr><th class="text-left py-2">Nivel</th><th class="text-left py-2">USD</th><th class="text-left py-2">COP</th><th class="text-left py-2">Activo</th></tr></thead>
+                    <tbody>
+                      @for (tariff of tariffs(); track tariff.starLevel) {
+                        <tr class="border-t border-navy-mid/50">
+                          <td class="py-2">{{ tariff.starLevel === 7 ? 'Prime' : tariff.starLevel + ' ★' }}</td>
+                          <td><input type="number" min="0" step="0.01" [value]="tariff.usd" (input)="updateTariff(tariff.starLevel, 'usd', $any($event.target).value)" class="w-24 bg-navy-mid/40 border border-navy-mid rounded px-2 py-1 text-text-light"></td>
+                          <td><input type="number" min="0" step="1" [value]="tariff.cop" (input)="updateTariff(tariff.starLevel, 'cop', $any($event.target).value)" class="w-28 bg-navy-mid/40 border border-navy-mid rounded px-2 py-1 text-text-light"></td>
+                          <td><input type="checkbox" [checked]="tariff.active" (change)="updateTariff(tariff.starLevel, 'active', $any($event.target).checked)" class="accent-cyan-brand"></td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
             <!-- Footer -->
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" (click)="closeModal()"
@@ -346,6 +370,7 @@ export class CategoriasComponent implements OnInit {
   modalOpen = signal(false);
   editingId = signal<string | null>(null);
   deleteTarget = signal<Category | null>(null);
+  tariffs = signal<CategoryTariff[]>(this.emptyTariffs());
 
   statusFilters = [
     { label: 'Todos', value: 'todos' as const },
@@ -405,10 +430,11 @@ export class CategoriasComponent implements OnInit {
       successorCategoryId: '', status: 'Activo', surfScoresCode: '',
       membresiaAnualUsd: null, membresiaPorEventoUsd: null, bestResultsCount: 5,
     });
+    this.tariffs.set(this.emptyTariffs());
     this.modalOpen.set(true);
   }
 
-  openEdit(cat: Category): void {
+  async openEdit(cat: Category): Promise<void> {
     this.editingId.set(cat.id);
     this.form.reset({
       nombre: cat.nombre,
@@ -425,6 +451,7 @@ export class CategoriasComponent implements OnInit {
       membresiaPorEventoUsd: cat.membresiaPorEventoUsd ?? null,
       bestResultsCount: cat.bestResultsCount ?? 5,
     });
+    await this.loadTariffs(cat.id);
     this.modalOpen.set(true);
   }
 
@@ -457,6 +484,7 @@ export class CategoriasComponent implements OnInit {
       const id = this.editingId();
       if (id) {
         await this.api.put(`/categories/${id}`, body);
+        await Promise.all(this.tariffs().map(tariff => this.api.put(`/categories/${id}/tariffs/${tariff.starLevel}`, tariff)));
       } else {
         await this.api.post('/categories', body);
       }
@@ -465,6 +493,27 @@ export class CategoriasComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  updateTariff(starLevel: number, field: keyof Omit<CategoryTariff, 'starLevel'>, value: string | boolean): void {
+    this.tariffs.update(rows => rows.map(row => row.starLevel === starLevel
+      ? { ...row, [field]: field === 'active' ? value === true : Number(value) }
+      : row));
+  }
+
+  private async loadTariffs(categoryId: string): Promise<void> {
+    try {
+      const response = await this.api.get<any>(`/categories/${categoryId}/tariffs`);
+      const existing: any[] = response?.data ?? response ?? [];
+      this.tariffs.set(this.emptyTariffs().map(row => {
+        const value = existing.find(item => item.starLevel === row.starLevel);
+        return value ? { starLevel: row.starLevel, usd: Number(value.usd ?? 0), cop: Number(value.cop ?? 0), active: !!value.active } : row;
+      }));
+    } catch { this.tariffs.set(this.emptyTariffs()); }
+  }
+
+  private emptyTariffs(): CategoryTariff[] {
+    return Array.from({ length: 7 }, (_, index) => ({ starLevel: index + 1, usd: 0, cop: 0, active: false }));
   }
 
   confirmDelete(cat: Category): void {

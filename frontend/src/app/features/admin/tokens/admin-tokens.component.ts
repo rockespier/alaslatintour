@@ -13,6 +13,9 @@ interface TokenRequest {
   event: string;
   category: string;
   amount: number;
+  baseAmount: number;
+  administrativeFee: number;
+  membershipFee: number;
 }
 
 type HistEstado = 'Usado' | 'Expirado' | 'Rechazado' | 'Pendiente';
@@ -113,7 +116,12 @@ function fmt(dt: string | null | undefined): string {
                     <td class="px-3 py-4 text-text-muted text-xs">{{ req.email }}</td>
                     <td class="px-3 py-4 text-text-light">{{ req.event }}</td>
                     <td class="px-3 py-4 text-text-light">{{ req.category }}</td>
-                    <td class="px-3 py-4 text-right text-cyan-brand font-heading text-base">\${{ req.amount }}</td>
+                    <td class="px-3 py-4 text-right">
+                      <p class="text-cyan-brand font-heading text-base">\${{ req.amount }}</p>
+                      @if (req.membershipFee > 0) {
+                        <p class="text-[10px] text-text-muted">incl. membresía \${{ req.membershipFee }}</p>
+                      }
+                    </td>
                     <td class="px-5 py-4 text-right">
                       @if (canEdit()) {
                         <div class="inline-flex gap-2">
@@ -235,7 +243,14 @@ function fmt(dt: string | null | undefined): string {
                 <div class="flex justify-between"><dt class="text-text-muted">Email destino</dt><dd class="text-cyan-brand">{{ req.email }}</dd></div>
                 <div class="flex justify-between"><dt class="text-text-muted">Evento</dt><dd class="text-text-light">{{ req.event }}</dd></div>
                 <div class="flex justify-between"><dt class="text-text-muted">Categoría</dt><dd class="text-text-light">{{ req.category }}</dd></div>
-                <div class="flex justify-between"><dt class="text-text-muted">Monto</dt><dd class="text-cyan-brand font-heading">\${{ req.amount }} USD</dd></div>
+                <div class="flex justify-between"><dt class="text-text-muted">Tarifa de inscripción</dt><dd class="text-text-light">\${{ req.baseAmount }} USD</dd></div>
+                @if (req.administrativeFee > 0) {
+                  <div class="flex justify-between"><dt class="text-text-muted">Cuota administrativa</dt><dd class="text-text-light">\${{ req.administrativeFee }} USD</dd></div>
+                }
+                @if (req.membershipFee > 0) {
+                  <div class="flex justify-between"><dt class="text-text-muted">Membresía</dt><dd class="text-text-light">\${{ req.membershipFee }} USD</dd></div>
+                }
+                <div class="flex justify-between pt-2 border-t border-navy-mid"><dt class="text-text-muted font-semibold">Total</dt><dd class="text-cyan-brand font-heading">\${{ req.amount }} USD</dd></div>
               </dl>
             </div>
           }
@@ -369,6 +384,9 @@ export class AdminTokensComponent implements OnInit {
       event: r.event,
       category: r.category,
       amount: r.amountUsd,
+      baseAmount: r.baseAmountUsd ?? r.amountUsd,
+      administrativeFee: r.administrativeFeeUsd ?? 0,
+      membershipFee: r.membershipFeeUsd ?? 0,
     };
   }
 

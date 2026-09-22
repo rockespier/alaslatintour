@@ -746,7 +746,7 @@ public static class ApiContractMapper
 
     public static Generated.BeachTokenAdminResponse ToContract(BeachTokenAdminDto dto)
     {
-        return new Generated.BeachTokenAdminResponse(
+        var contract = new Generated.BeachTokenAdminResponse(
             (double)dto.AmountUsd,
             dto.Category,
             dto.CompetitorEmail,
@@ -758,6 +758,11 @@ public static class ApiContractMapper
             ToGeneratedTokenHistoryStatus(dto.Status),
             dto.TokenCode,
             dto.UsadoEn);
+
+        contract.AdditionalProperties["baseAmountUsd"] = (double)dto.BaseAmountUsd;
+        contract.AdditionalProperties["administrativeFeeUsd"] = (double)dto.AdministrativeFeeUsd;
+        contract.AdditionalProperties["membershipFeeUsd"] = (double)dto.MembershipFeeUsd;
+        return contract;
     }
 
     public static Generated.BeachTokenAdminListResponse ToContract(BeachTokenAdminListDto dto)

@@ -1,6 +1,7 @@
 using AlasApp.Application.BulkImports.Models;
 using AlasApp.Application.EventResults.Models;
 using AlasApp.Application.Inscriptions.Models;
+using AlasApp.Application.Payments.Models;
 
 namespace AlasApp.Application.Abstractions.Services;
 
@@ -24,6 +25,8 @@ public interface IBulkExcelService
 
     byte[] BuildInscriptionsExport(IReadOnlyCollection<AdminInscriptionRowDto> rows);
 
+    byte[] BuildPaymentsExport(IReadOnlyCollection<PaymentDto> rows);
+
     byte[] BuildInscriptionFicha(InscriptionDto inscription);
 
     byte[] BuildEventResultsTemplate(IReadOnlyCollection<EventResultRosterRowDto> roster);
@@ -33,4 +36,8 @@ public interface IBulkExcelService
     byte[] BuildInscriptionsTemplate();
 
     IReadOnlyCollection<InscriptionImportRow> ReadInscriptions(byte[] content);
+
+    byte[] BuildMembershipPaymentsTemplate();
+
+    IReadOnlyCollection<MembershipPaymentImportRow> ReadMembershipPayments(byte[] content);
 }

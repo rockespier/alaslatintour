@@ -20,10 +20,11 @@ public sealed class RankingsController(IRequestDispatcher dispatcher) : Controll
         [FromQuery] int? year,
         [FromQuery] int? page,
         [FromQuery] int? limit,
+        [FromQuery] string? circuitId,
         CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
-            new GetRankingQuery(ApiContractMapper.ParseGuid(categoryId, "categoryId"), year, page, limit),
+            new GetRankingQuery(ApiContractMapper.ParseGuid(categoryId, "categoryId"), year, page, limit, ApiContractMapper.ParseOptionalGuid(circuitId, "circuitId")),
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));
@@ -31,9 +32,9 @@ public sealed class RankingsController(IRequestDispatcher dispatcher) : Controll
 
     [HttpGet("rankings/categories")]
     [ProducesResponseType(typeof(Generated.Response7), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Generated.Response7>> GetCategories(CancellationToken cancellationToken)
+    public async Task<ActionResult<Generated.Response7>> GetCategories([FromQuery] string? circuitId, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(new ListRankingCategoriesQuery(), cancellationToken);
+        var result = await dispatcher.Send(new ListRankingCategoriesQuery(ApiContractMapper.ParseOptionalGuid(circuitId, "circuitId")), cancellationToken);
         return Ok(ApiContractMapper.ToContract(result));
     }
 

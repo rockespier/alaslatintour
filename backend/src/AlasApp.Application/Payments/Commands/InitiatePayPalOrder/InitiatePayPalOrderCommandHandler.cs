@@ -11,7 +11,9 @@ namespace AlasApp.Application.Payments.Commands.InitiatePayPalOrder;
 public sealed class InitiatePayPalOrderCommandHandler(
     IInscriptionRepository inscriptionRepository,
     IPaymentRepository paymentRepository,
-    IPayPalGateway payPalGateway)
+    IPayPalGateway payPalGateway,
+    IUnitOfWork unitOfWork,
+    IClock clock)
     : IRequestHandler<InitiatePayPalOrderCommand, PayPalOrderDto>
 {
     public async Task<PayPalOrderDto> Handle(InitiatePayPalOrderCommand request, CancellationToken cancellationToken)
@@ -23,6 +25,7 @@ public sealed class InitiatePayPalOrderCommandHandler(
 
         var inscription = await inscriptionRepository.GetEntityByIdAsync(request.InscriptionId, cancellationToken)
             ?? throw new NotFoundException("Inscripcion no encontrada.");
+        var group = await inscriptionRepository.ListEntitiesByGroupIdAsync(inscription.InscriptionGroupId, cancellationToken);
 
         if (inscription.PaymentMethod != PaymentMethod.Paypal)
         {
@@ -31,18 +34,25 @@ public sealed class InitiatePayPalOrderCommandHandler(
                 [new ValidationError("inscriptionId", "El metodo de pago de la inscripcion no es PayPal.")]);
         }
 
-        if (await paymentRepository.GetEntityByInscriptionIdAsync(request.InscriptionId, cancellationToken) is not null)
+        foreach (var item in group)
         {
-            throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            if (await paymentRepository.GetEntityByInscriptionIdAsync(item.Id, cancellationToken) is not null)
+            {
+                throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            }
         }
 
         var result = await payPalGateway.CreateOrderAsync(
             request.InscriptionId,
-            inscription.MontoUsd,
+            group.Sum(x => x.MontoUsd),
             request.ReturnUrl,
             request.CancelUrl,
             cancellationToken);
 
-        return new PayPalOrderDto(result.OrderId, result.ApprovalUrl, inscription.MontoUsd);
+        inscription.AssignPayPalOrder(result.OrderId);
+        inscription.SetUpdated(clock.UtcNow);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new PayPalOrderDto(result.OrderId, result.ApprovalUrl, group.Sum(x => x.MontoUsd));
     }
 }

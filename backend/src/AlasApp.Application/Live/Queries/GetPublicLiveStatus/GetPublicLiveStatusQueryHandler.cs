@@ -17,36 +17,42 @@ public sealed partial class GetPublicLiveStatusQueryHandler(
         var settings = AdminSettingsSerializer.DeserializeOrDefault(json);
         var youTube = settings.Live.YouTube;
         var schedulePdfUrl = string.IsNullOrWhiteSpace(settings.Live.SchedulePdfUrl) ? null : settings.Live.SchedulePdfUrl;
-        var notLive = new PublicLiveStatusDto(false, null, null, youTube.Width, youTube.Height, schedulePdfUrl);
+        var empty = new PublicLiveStatusDto(false, null, null, youTube.Width, youTube.Height, schedulePdfUrl);
 
-        if (!youTube.Active || youTube.EventId is null)
+        if (youTube.EventId is null)
         {
-            return notLive;
+            return empty;
         }
 
         var liveEvent = await eventRepository.GetByIdAsync(youTube.EventId.Value, cancellationToken);
         if (liveEvent is null)
         {
-            return notLive;
+            return empty;
         }
 
+        // El evento asociado (y el PDF de programación) se devuelven aunque el toggle "Live" este apagado,
+        // para que la pantalla de eventos pueda mostrar el boton de programacion fuera del vivo.
+        var isLive = youTube.Active;
+        var eventDto = new PublicLiveEventDto(
+            liveEvent.Id,
+            liveEvent.Nombre,
+            liveEvent.Pais,
+            liveEvent.Ciudad,
+            liveEvent.Playa,
+            liveEvent.FechaInicio,
+            liveEvent.FechaFin,
+            liveEvent.ImagenUrl);
+
         var surfScores = settings.Live.SurfScores;
-        var showSurfScores = surfScores.Active
+        var showSurfScores = isLive
+            && surfScores.Active
             && surfScores.EventId == youTube.EventId
             && !string.IsNullOrWhiteSpace(surfScores.EmbedUrl);
 
         return new PublicLiveStatusDto(
-            true,
-            new PublicLiveEventDto(
-                liveEvent.Id,
-                liveEvent.Nombre,
-                liveEvent.Pais,
-                liveEvent.Ciudad,
-                liveEvent.Playa,
-                liveEvent.FechaInicio,
-                liveEvent.FechaFin,
-                liveEvent.ImagenUrl),
-            ExtractYouTubeVideoId(youTube.VideoIdOrUrl),
+            isLive,
+            eventDto,
+            isLive ? ExtractYouTubeVideoId(youTube.VideoIdOrUrl) : null,
             youTube.Width,
             youTube.Height,
             schedulePdfUrl,

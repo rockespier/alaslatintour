@@ -17,4 +17,7 @@ public sealed record EventCategoryDto(
     decimal EffectiveTariffUsd,
     int EnrolledCount,
     decimal MembresiaAnualUsd,
-    decimal MembresiaPorEventoUsd);
+    decimal MembresiaPorEventoUsd,
+    bool AgeRestriction,
+    int? MinAge,
+    int? MaxAge);

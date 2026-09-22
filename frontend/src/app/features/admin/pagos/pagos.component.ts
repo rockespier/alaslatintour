@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { flagForCountryName } from '../../../core/utils/country-flag.util';
+import { ImportExcelModalComponent } from '../../../shared/components/import-excel-modal/import-excel-modal.component';
 
 type PagosTab = 'resumen' | 'inscripciones' | 'membresias' | 'multas';
 
@@ -54,19 +54,17 @@ interface MonthlyRevenue {
   isCurrent: boolean;
 }
 
-interface Membresia {
+interface MembresiaPago {
   id: string;
-  nombre: string;
+  competidor: string;
   iniciales: string;
   gradient: string;
-  pais: string;
-  plan: 'Mensual' | 'Por evento';
-  competidores: number;
-  vencimiento: string;
-  vencimientoIso: string;
-  vencimientoWarning: boolean;
-  estado: 'Activo' | 'Vence pronto';
-  monto: string;
+  fechaPago: string;
+  plan: 'Anual' | 'PorEvento';
+  evento: string | null;
+  circuito: string;
+  metodo: 'PayPal' | 'Efectivo';
+  monto: number;
 }
 
 const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light placeholder-text-muted/50 focus:outline-none focus:border-cyan-brand transition';
@@ -84,12 +82,6 @@ function initialsOf(name: string): string {
 function fmtDate(dt: string): string {
   return new Date(dt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-// vencimiento es una fecha "solo fecha" (medianoche UTC en el backend), no un timestamp real.
-// Se formatea forzando timeZone: 'UTC' para que el día no dependa del huso horario del
-// navegador (con toLocaleDateString normal, Sudamérica ve el día anterior).
-function fmtDateOnly(dt: string): string {
-  return new Date(dt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
-}
 function monthKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}`;
 }
@@ -101,7 +93,7 @@ function monthLabel(key: string): string {
 @Component({
   selector: 'app-pagos',
   standalone: true,
-  imports: [FormsModule, DecimalPipe, LoadingSpinnerComponent],
+  imports: [FormsModule, DecimalPipe, LoadingSpinnerComponent, ImportExcelModalComponent],
   template: `
     <div class="py-8">
       <div class="mb-6">
@@ -147,7 +139,7 @@ function monthLabel(key: string): string {
               <p class="text-xs text-text-muted mt-1">{{ kpis().pagosPlayaValidados.count }} validaciones · {{ kpis().pagosPlayaValidados.pendingCount }} pendientes</p>
             </div>
             <div class="bg-navy-dark rounded-xl border border-navy-mid p-5">
-              <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Membresías activas</p>
+              <p class="font-accent uppercase tracking-wider text-xs text-text-muted mb-2">Membresías pagadas (mes)</p>
               <p class="font-heading text-3xl text-cyan-dark">\${{ kpis().membresiasActivas.amountUsd | number:'1.0-0' }}<span class="text-base text-text-muted ml-1">USD</span></p>
               <p class="text-xs text-text-muted mt-1">{{ kpis().membresiasActivas.count }} membresías</p>
             </div>
@@ -197,9 +189,14 @@ function monthLabel(key: string): string {
 
           <!-- Recent transactions -->
           <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
-            <div class="px-6 py-4 border-b border-navy-mid">
-              <h2 class="font-heading text-xl text-text-light">Transacciones recientes</h2>
-              <p class="text-sm text-text-muted">Últimas {{ transacciones().length }} transacciones registradas</p>
+            <div class="px-6 py-4 border-b border-navy-mid flex items-center justify-between gap-4">
+              <div>
+                <h2 class="font-heading text-xl text-text-light">Transacciones recientes</h2>
+                <p class="text-sm text-text-muted">Últimas {{ transacciones().length }} transacciones registradas</p>
+              </div>
+              <button type="button" (click)="exportTransacciones()" class="px-3 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase text-xs tracking-wider transition">
+                Exportar XLSX
+              </button>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
@@ -355,74 +352,79 @@ function monthLabel(key: string): string {
             </div>
             <div class="flex-1">
               <h3 class="font-heading text-base text-text-light mb-1">¿Qué es una membresía?</h3>
-              <p class="text-sm text-text-muted">Las membresías permiten a clubes y federaciones afiliar a múltiples competidores bajo una tarifa especial. Pueden ser mensuales (acceso completo) o por evento (descuento específico).</p>
+              <p class="text-sm text-text-muted">La membresía da derecho a acumular puntajes para el ranking del ALAS
+TOUR y a luchar por el título de campeón o campeona. Las membresías
+pagadas fecha por fecha no son acumulativas.</p>
             </div>
           </div>
 
           <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
-            <h2 class="font-heading text-xl text-text-light">Membresías activas</h2>
+            <h2 class="font-heading text-xl text-text-light">Membresías pagadas</h2>
             @if (canEdit()) {
-            <button (click)="openCreateMembresia()"
-                    class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition flex items-center gap-2 justify-center">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Nueva Membresía
-            </button>
+              <div class="flex flex-wrap items-center gap-2">
+                <select [class]="CLASS_INPUT + ' sm:max-w-[220px]'" [(ngModel)]="membresiaImportEventoId">
+                  <option value="">Selecciona un evento…</option>
+                  @for (e of eventos(); track e.id) {
+                    <option [value]="e.id">{{ e.nombre }}</option>
+                  }
+                </select>
+                <button (click)="descargarPlantillaMembresias()" [disabled]="!membresiaImportEventoId || descargandoPlantillaMembresias()"
+                        class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+                  {{ descargandoPlantillaMembresias() ? 'Descargando...' : 'Descargar plantilla' }}
+                </button>
+                <button (click)="membresiaImportOpen.set(true)" [disabled]="!membresiaImportEventoId"
+                        class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
+                  Importar Excel
+                </button>
+              </div>
             }
           </div>
+
+          <app-import-excel-modal [open]="membresiaImportOpen()" [importPath]="membresiaImportPath()" entityLabel="membresías"
+                                   (close)="membresiaImportOpen.set(false)" (imported)="onMembresiasImported()" />
 
           <div class="bg-navy-dark rounded-xl border border-navy-mid overflow-hidden">
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="border-b border-navy-mid">
                   <tr>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Club/Federación</th>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Plan</th>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidores Afiliados</th>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Vencimiento</th>
-                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Estado</th>
-                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Monto</th>
-                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Acciones</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Fecha de pago</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Tipo</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Circuito</th>
+                    <th class="px-4 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Método</th>
+                    <th class="px-4 py-3 text-right font-accent uppercase text-xs tracking-wider text-text-muted">Importe</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-navy-mid/50">
-                  @for (m of membresias(); track m.id) {
-                    <tr class="hover:bg-cyan-brand/5 transition">
-                      <td class="px-4 py-3">
-                        <div class="flex items-center gap-3">
-                          <div [class]="'w-9 h-9 rounded-lg flex items-center justify-center font-heading text-white text-xs bg-gradient-to-br ' + m.gradient">{{ m.iniciales }}</div>
-                          <span class="font-medium text-text-light">{{ m.nombre }}</span>
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-text-muted">{{ flagForCountryName(m.pais) }} {{ m.pais }}</td>
-                      <td class="px-4 py-3">
-                        <span [class]="m.plan === 'Mensual'
-                          ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider'
-                          : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider'">
-                          {{ m.plan }}
-                        </span>
-                      </td>
-                      <td class="px-4 py-3 text-text-light">{{ m.competidores }} competidores</td>
-                      <td [class]="m.vencimientoWarning ? 'px-4 py-3 text-warning-brand text-xs' : 'px-4 py-3 text-text-muted'">{{ m.vencimiento }}</td>
-                      <td class="px-4 py-3">
-                        <span [class]="m.estado === 'Activo'
-                          ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success-brand/15 text-success-brand text-xs font-accent uppercase tracking-wider'
-                          : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-brand/15 text-warning-brand text-xs font-accent uppercase tracking-wider'">
-                          {{ m.estado === 'Vence pronto' ? '⚠ Vence pronto' : m.estado }}
-                        </span>
-                      </td>
-                      <td class="px-4 py-3 text-right font-medium text-text-light">{{ m.monto }}</td>
-                      <td class="px-4 py-3 text-right whitespace-nowrap">
-                        @if (m.plan === 'Mensual' && canEdit()) {
-                          <button (click)="renovarMembresia(m)"
-                                  [class]="m.vencimientoWarning
-                                    ? 'text-xs font-accent uppercase tracking-wider text-warning-brand hover:text-yellow-400 mr-2'
-                                    : 'text-xs font-accent uppercase tracking-wider text-cyan-brand hover:text-cyan-dark mr-2'">
-                            Renovar
-                          </button>
-                        }
-                      </td>
-                    </tr>
+                  @if (loadingMembresias()) {
+                    <tr><td colspan="7" class="px-4 py-6 text-center text-text-muted">Cargando…</td></tr>
+                  } @else if (membresias().length === 0) {
+                    <tr><td colspan="7" class="px-4 py-6 text-center text-text-muted">Aún no hay membresías pagadas.</td></tr>
+                  } @else {
+                    @for (m of membresias(); track m.id) {
+                      <tr class="hover:bg-cyan-brand/5 transition">
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-3">
+                            <div [class]="'w-9 h-9 rounded-lg flex items-center justify-center font-heading text-white text-xs bg-gradient-to-br ' + m.gradient">{{ m.iniciales }}</div>
+                            <span class="font-medium text-text-light">{{ m.competidor }}</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-text-muted">{{ fmtDate(m.fechaPago) }}</td>
+                        <td class="px-4 py-3">
+                          <span [class]="m.plan === 'Anual'
+                            ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-brand/15 text-cyan-brand text-xs font-accent uppercase tracking-wider'
+                            : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-brand/15 text-orange-brand text-xs font-accent uppercase tracking-wider'">
+                            {{ m.plan === 'Anual' ? 'Anual' : 'Por evento' }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-text-light">{{ m.evento ?? '—' }}</td>
+                        <td class="px-4 py-3 text-text-muted">{{ m.circuito }}</td>
+                        <td class="px-4 py-3 text-text-light">{{ m.metodo }}</td>
+                        <td class="px-4 py-3 text-right font-medium text-text-light">\${{ m.monto | number:'1.0-2' }}</td>
+                      </tr>
+                    }
                   }
                 </tbody>
               </table>
@@ -556,60 +558,6 @@ function monthLabel(key: string): string {
       </div>
     }
 
-    <!-- Modal: Nueva Membresía -->
-    @if (createMembresiaOpen()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,35,89,0.8)" (click)="createMembresiaOpen.set(false)">
-        <div class="bg-navy-dark border border-navy-mid rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-navy-mid">
-            <h3 class="font-heading text-xl text-text-light">Nueva Membresía</h3>
-            <button (click)="createMembresiaOpen.set(false)" class="text-text-muted hover:text-text-light transition">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div class="p-6 space-y-4">
-            <div>
-              <label [class]="LABEL_INPUT">Club / Federación</label>
-              <input type="text" [class]="CLASS_INPUT" placeholder="Nombre del club" [(ngModel)]="formClub">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label [class]="LABEL_INPUT">País</label>
-                <select [class]="CLASS_INPUT" [(ngModel)]="formPais">
-                  <option>Perú</option><option>Chile</option><option>Brasil</option><option>Argentina</option><option>México</option>
-                </select>
-              </div>
-              <div>
-                <label [class]="LABEL_INPUT">Plan</label>
-                <select [class]="CLASS_INPUT" [(ngModel)]="formPlan">
-                  <option value="Mensual">Mensual ($50/mes)</option>
-                  <option value="Por evento">Por evento ($80/evento)</option>
-                </select>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label [class]="LABEL_INPUT">Inicio vigencia</label>
-                <input type="date" [class]="CLASS_INPUT + ' [color-scheme:dark]'" [(ngModel)]="formInicio">
-              </div>
-              <div>
-                <label [class]="LABEL_INPUT">Vencimiento</label>
-                <input type="date" [class]="CLASS_INPUT + ' [color-scheme:dark]'" [(ngModel)]="formVencimiento">
-              </div>
-            </div>
-            <div>
-              <label [class]="LABEL_INPUT">Email de contacto</label>
-              <input type="email" [class]="CLASS_INPUT" placeholder="contacto@club.com" [(ngModel)]="formEmail">
-            </div>
-          </div>
-          <div class="px-6 py-4 border-t border-navy-mid flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-            <button (click)="createMembresiaOpen.set(false)" class="px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-muted hover:text-text-light font-accent uppercase tracking-wider text-sm rounded-md transition">Cancelar</button>
-            <button (click)="confirmCreateMembresia()" [disabled]="savingMembresia()" class="px-4 py-2 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition disabled:opacity-50">
-              {{ savingMembresia() ? 'Creando...' : 'Crear Membresía' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    }
 
     <!-- Modal: Nueva Multa -->
     @if (createFineOpen()) {
@@ -659,8 +607,6 @@ export class PagosComponent implements OnInit {
 
   canEdit = computed(() => this.permissions.canEdit('Pagos'));
 
-  flagForCountryName = flagForCountryName;
-
   CLASS_INPUT = CLASS_INPUT;
   LABEL_INPUT = LABEL_INPUT;
 
@@ -673,7 +619,7 @@ export class PagosComponent implements OnInit {
 
   loading = signal(true);
   validating = signal(false);
-  savingMembresia = signal(false);
+  loadingMembresias = signal(false);
 
   kpis = signal({
     totalRecaudadoMes: 0,
@@ -731,7 +677,31 @@ export class PagosComponent implements OnInit {
     };
   });
 
-  membresias = signal<Membresia[]>([]);
+  membresias = signal<MembresiaPago[]>([]);
+  membresiaImportEventoId = '';
+  membresiaImportOpen = signal(false);
+  descargandoPlantillaMembresias = signal(false);
+
+  membresiaImportPath(): string {
+    return `/events/${this.membresiaImportEventoId}/membership-payments/import`;
+  }
+
+  async descargarPlantillaMembresias(): Promise<void> {
+    if (!this.membresiaImportEventoId) return;
+    this.descargandoPlantillaMembresias.set(true);
+    try {
+      await this.api.downloadFile(`/events/${this.membresiaImportEventoId}/membership-payments/template`, 'membresias-template.xlsx');
+    } catch {
+      this.showToast('Error al descargar la plantilla de membresías');
+    } finally {
+      this.descargandoPlantillaMembresias.set(false);
+    }
+  }
+
+  async onMembresiasImported(): Promise<void> {
+    await this.loadMembresias();
+    this.showToast('Membresías importadas correctamente');
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadAll();
@@ -816,6 +786,14 @@ export class PagosComponent implements OnInit {
     this.transacciones.set(data.map(p => this.mapPayment(p)));
   }
 
+  async exportTransacciones(): Promise<void> {
+    const params = new URLSearchParams();
+    if (this.filterEstado) params.set('status', this.filterEstado);
+    if (this.filterFromDate) params.set('fromDate', new Date(this.filterFromDate).toISOString());
+    if (this.filterToDate) params.set('toDate', new Date(this.filterToDate).toISOString());
+    await this.api.downloadFile(`/payments/export?${params.toString()}`, 'transacciones.xlsx');
+  }
+
   private async loadMonthlyRevenue(): Promise<void> {
     const monthsBack = 5;
     const now = new Date();
@@ -859,49 +837,31 @@ export class PagosComponent implements OnInit {
   }
 
   private async loadMembresias(): Promise<void> {
-    const res = await this.api.get<any>('/memberships?limit=50');
-    const data: any[] = res?.data ?? [];
-    this.membresias.set(data.map(m => this.mapMembresia(m)));
+    this.loadingMembresias.set(true);
+    try {
+      const res = await this.api.get<any>('/payments/memberships?limit=50');
+      const data: any[] = res?.data ?? [];
+      this.membresias.set(data.map(m => this.mapMembresia(m)));
+    } catch {
+      this.membresias.set([]);
+    } finally {
+      this.loadingMembresias.set(false);
+    }
   }
 
-  private mapMembresia(m: any): Membresia {
-    const vencimiento = new Date(m.vencimiento);
+  private mapMembresia(m: any): MembresiaPago {
     return {
       id: m.id,
-      nombre: m.clubFederacion,
-      iniciales: initialsOf(m.clubFederacion),
+      competidor: m.competitorName,
+      iniciales: initialsOf(m.competitorName),
       gradient: gradientFor(m.id),
-      pais: m.pais,
-      plan: m.plan,
-      competidores: m.competidoresAfiliados,
-      vencimiento: m.plan === 'Por evento' ? '—' : fmtDateOnly(m.vencimiento),
-      vencimientoIso: vencimiento.toISOString().slice(0, 10),
-      vencimientoWarning: m.estado === 'Vence pronto',
-      estado: m.estado,
-      monto: m.plan === 'Mensual' ? '$50/mes' : '$80/evento',
+      fechaPago: m.paymentDate,
+      plan: m.membershipPlan,
+      evento: m.eventName ?? null,
+      circuito: m.circuitName,
+      metodo: m.method === 'Paypal' ? 'PayPal' : 'Efectivo',
+      monto: m.amountUsd,
     };
-  }
-
-  renovarMembresia(m: Membresia): void {
-    (async () => {
-      try {
-        const nuevoVencimiento = new Date(m.vencimientoIso);
-        nuevoVencimiento.setMonth(nuevoVencimiento.getMonth() + 1);
-        const membresiaApi = await this.api.get<any>(`/memberships/${m.id}`);
-        await this.api.put<any>(`/memberships/${m.id}`, {
-          clubFederacion: membresiaApi.clubFederacion,
-          pais: membresiaApi.pais,
-          plan: membresiaApi.plan,
-          inicioVigencia: membresiaApi.inicioVigencia,
-          vencimiento: nuevoVencimiento.toISOString(),
-          emailContacto: membresiaApi.emailContacto,
-        });
-        await this.loadMembresias();
-        this.showToast('Membresía renovada');
-      } catch {
-        this.showToast('Error al renovar la membresía');
-      }
-    })();
   }
 
   validateModalOpen = signal(false);
@@ -925,49 +885,6 @@ export class PagosComponent implements OnInit {
       this.showToast('Error al validar el pago');
     } finally {
       this.validating.set(false);
-    }
-  }
-
-  createMembresiaOpen = signal(false);
-  formClub = '';
-  formPais = 'Perú';
-  formPlan: 'Mensual' | 'Por evento' = 'Mensual';
-  formInicio = new Date().toISOString().slice(0, 10);
-  formVencimiento = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-  formEmail = '';
-
-  openCreateMembresia(): void {
-    this.formClub = '';
-    this.formPais = 'Perú';
-    this.formPlan = 'Mensual';
-    this.formInicio = new Date().toISOString().slice(0, 10);
-    this.formVencimiento = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-    this.formEmail = '';
-    this.createMembresiaOpen.set(true);
-  }
-
-  async confirmCreateMembresia(): Promise<void> {
-    if (!this.formClub.trim() || !this.formEmail.trim()) {
-      this.showToast('Completa club y email de contacto');
-      return;
-    }
-    this.savingMembresia.set(true);
-    try {
-      await this.api.post<any>('/memberships', {
-        clubFederacion: this.formClub,
-        pais: this.formPais,
-        plan: this.formPlan,
-        inicioVigencia: new Date(this.formInicio).toISOString(),
-        vencimiento: new Date(this.formVencimiento).toISOString(),
-        emailContacto: this.formEmail,
-      });
-      await this.loadMembresias();
-      this.createMembresiaOpen.set(false);
-      this.showToast('Membresía creada');
-    } catch {
-      this.showToast('Error al crear la membresía');
-    } finally {
-      this.savingMembresia.set(false);
     }
   }
 

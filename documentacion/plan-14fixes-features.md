@@ -30,7 +30,7 @@ Este plan cubre los 14 puntos, agrupados por dependencia técnica, con el compon
 
 ---
 
-## 1. StarRatingComponent — máximo 6 estrellas, "Prime" solo texto
+## 1. StarRatingComponent — máximo 6 estrellas, "Prime" solo texto	Estado: OK
 
 **Por qué:** el negocio define 6 niveles de estrellas + "Prime" como bono del 10% sobre el nivel 6 (no un 7º nivel de estrellas físico) — confirmado en `AdminSettingsDefaults.BuildDefaultPointsMatrix()` (columnas Star1..Star6) y en el script `update-ranking-points-matrix-90.sql`. Hoy `StarRatingComponent` dibuja hasta `max()` estrellas (default 7), sin caso especial para Prime.
 
@@ -52,7 +52,7 @@ Este plan cubre los 14 puntos, agrupados por dependencia técnica, con el compon
 
 ---
 
-## 2. /eventos — botón de PDF de programación (issue #1)
+## 2. /eventos — botón de PDF de programación (issue #1)	
 
 **Por qué:** hoy `isLiveScheduleAvailable()` exige `s.isLive === true` además de que el evento coincida y exista `schedulePdfUrl`. El backend (`GetPublicLiveStatusQueryHandler`) YA devuelve `schedulePdfUrl` aunque `isLive` sea `false` — es el frontend el que lo oculta de más. El campo sigue siendo global (vive en `Live.SchedulePdfUrl`, asociado indirectamente al evento vía `YouTube.EventId`), no hay modelo per-evento para esto ni falta crearlo: basta con dejar de exigir `isLive` para la visibilidad y usarlo solo para el texto.
 
@@ -65,17 +65,17 @@ Este plan cubre los 14 puntos, agrupados por dependencia técnica, con el compon
 4. La rama `Completado` sigue mostrando "Ver ganadores" vía `resultsPdfUrl(event.id)` **solo si no hay** programación disponible para ese evento (mantener el `@else` ya existente) — esto no cambia.
 
 **Criterio de aceptación:**
-- Evento con PDF de programación configurado y `isLive = false` → botón visible, texto "Ver programación (PDF)".
+- Evento con PDF de programación configurado y `isLive = false` → botón visible, texto "Ver Ganadores (PDF)".
 - Mismo evento con `isLive = true` → botón visible, texto "Descargar programación (PDF)".
 - Evento sin `schedulePdfUrl` configurado, o que no coincide con `youTube.EventId` → botón no aparece, sin importar `isLive`.
 
-## /eventos — filtro de categoría en "Inscritos confirmados" (issue #2)
+## /eventos — filtro de categoría en "Inscritos confirmados" (issue #2) 
 
 **Ya implementado.** `eventos.component.ts` líneas 398-412 (`<select>`), 793-811 (`selectedInscritosCategoryId`, `selectInscritosCategory`, `filteredConfirmedInscriptions`). No requiere cambios — solo verificar manualmente en el navegador que funciona como se espera.
 
 ---
 
-## 3. /mi-panel/datos — "No se pudieron cargar tus datos personales" (bug real de autorización)
+## 3. /mi-panel/datos — "No se pudieron cargar tus datos personales" (bug real de autorización) 	
 
 **Por qué:** `GET /v1/competitors/{competitorId}` está protegido con `AdminPolicies.UsersRead` (política pensada para la pantalla admin de "Usuarios"), pero `datos-personales.component.ts` (panel del propio competidor) llama a ese mismo endpoint para leer su propio perfil. Un JWT de competidor no tiene el claim `admin_role`, así que `AdminPermissionAuthorizationHandler` nunca autoriza y el request cae en 403 → el `catch` genérico del frontend muestra el mensaje reportado. Los endpoints hermanos del mismo controller (`/notifications`, `/inscriptions`, `/points-history`, `/calendar`) **no** tienen `[Authorize]` admin, lo que confirma que `GetById` quedó mal reusado. Esto también explica por qué el widget de ranking en `/eventos` (`loadCompetitorStats()`, mismo endpoint) falla en silencio.
 
@@ -94,7 +94,7 @@ Este plan cubre los 14 puntos, agrupados por dependencia técnica, con el compon
 
 ---
 
-## 4. /admin — sidebar colapsable a solo íconos
+## 4. /admin — sidebar colapsable a solo íconos		Estado: OK
 
 **Por qué:** aprovechar ancho de pantalla en vistas con tablas anchas (categorías, inscritos, pagos). Hoy no existe ningún mecanismo de colapso de escritorio — solo un toggle de apertura/cierre en móvil (`open`/`isDesktop` signals). El patrón reusable más cercano es `AdminThemeService` (signal + `localStorage`, SSR-safe con `isPlatformBrowser`).
 
@@ -119,10 +119,10 @@ Este plan cubre los 14 puntos, agrupados por dependencia técnica, con el compon
 
 **Archivo:** `frontend/src/app/features/admin/dashboard/dashboard.component.ts`
 
-### 5a. Renombrar "Circuitos de la temporada" → "Circuitos"
+### 5a. Renombrar "Circuitos de la temporada" → "Circuitos"	Estado: OK
 Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, sin lógica.
 
-### 5b. "Eventos del circuito" no muestra inscritos
+### 5b. "Eventos del circuito" no muestra inscritos 
 **Diagnóstico:** el wiring de datos (`ae.inscritosCount` → `DashboardEventRow.inscritos` → `{{ ev.inscritos }}`, línea ~176) está correcto end-to-end (backend `InscritosCount`, JSON `inscritosCount`, frontend igual). No hay bug de nombre de campo. Causas probables reales:
 1. El conteo backend (`AdminDashboardRepository.cs` línea ~33) cuenta **todas** las filas de `Inscriptions` para el evento sin filtrar por estado (incluye canceladas/rechazadas) — puede mostrar un número, pero potencialmente "raro", no ausente.
 2. `activeEvents` está limitado a los 10 primeros eventos activos/próximos (`.Take(10)`) — eventos fuera de ese top-10 no aparecen en la tabla en absoluto.
@@ -134,7 +134,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 
 ---
 
-## 6. /admin/categorias — tarifa de inscripción por nivel de estrellas
+## 6. /admin/categorias — tarifa de inscripción por nivel de estrellas 	Estado: OK
 
 **Por qué (decisión ya tomada):** el backend ya tiene todo: `Category.Tariffs` (`CategoryTariff` por `StarLevel` 1-7), endpoints `GET/PUT /v1/categories/{categoryId}/tariffs/{starLevel}` (`CategoryTariffsController.cs`), y la resolución completa en `EventCategoryRepository.GetByEventIdAsync`: si `Event.UseCircuitTariffs = true`, se usa `Category.Tariffs[stars].Usd` (si no hay tarifa activa para ese nivel, cae a `0`). Solo falta la pantalla de admin — sin cambios de backend.
 
@@ -154,7 +154,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 
 ---
 
-## 7. /admin/pagos — exportar transacciones recientes
+## 7. /admin/pagos — exportar transacciones recientes	Estado: OK
 
 **Por qué:** no existe ningún export para pagos (frontend ni backend), pero el patrón ya existe completo para Inscritos (`inscritos.component.ts` botón "Exportar XLSX" → `ApiService.downloadFile()` → `InscriptionsController.Export` → `IBulkExcelService.BuildInscriptionsExport` con ClosedXML). Replicar el mismo patrón para pagos evita duplicar mecanismos.
 
@@ -174,7 +174,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 
 ## 8. /inscripcion — paso 2 (filtro + multi-categoría) y paso 3 (validación)
 
-### 8a. Paso 2 — filtrar categorías por género y edad, permitir selección múltiple, sumar total
+### 8a. Paso 2 — filtrar categorías por género y edad, permitir selección múltiple, sumar total	| Estado: OK
 
 **Por qué:** hoy el filtro de género ya existe (backend `EventCategoriesController` + réplica client-side), pero **no hay filtro de edad** pese a que `Category` ya tiene `AgeRestriction`/`MinAge`/`MaxAge`/`SuccessorCategoryId` en el dominio (reglas de negocio de CLAUDE.md sección 9, "Categoría sucesiva") — están validados al crear categorías pero nunca se usan para filtrar elegibilidad. Tampoco existe `FechaNacimiento` del competidor en el frontend de inscripción (solo se pide `genero` via `GET /competitors/{id}`). Selección es single-select hoy; se decidió ir a **un solo pago combinado**, lo que requiere cambios de backend.
 
@@ -196,7 +196,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 - Puede marcar 2+ categorías elegibles; el total mostrado en el paso 3 es la suma de sus tarifas (+ membresía si aplica).
 - Al confirmar y pagar (PayPal o playa), se crean inscripciones para todas las categorías seleccionadas y el pago/token cubre el total combinado en una sola operación.
 
-### 8b. Paso 3 — no habilitar "Confirmar y Pagar" si falta un dato obligatorio; mostrar el error
+### 8b. Paso 3 — no habilitar "Confirmar y Pagar" si falta un dato obligatorio; mostrar el error | Estado: OK
 
 **Diagnóstico:** el botón ya está deshabilitado por `!paymentMethod() || submitting()` pero el guard de `confirm()` también exige `consentsAccepted()` sin reflejarlo en el `[disabled]` del botón — inconsistencia menor. Sobre el caso puntual reportado (`ShirtNumber` requerido con 400): **no reproduce en el código actual** — `ShirtNumber` es opcional end-to-end (`CreateInscriptionCommand.ShirtNumber` es `string?`, sin validación en `Validate()`, sin `[Required]` en el contrato generado) y el campo YA existe en el paso 1 (línea ~120, "Número de camiseta"). Es posible que el error observado viniera de una versión de backend distinta a la actual, o de otro campo con nombre parecido (ej. `NumeroCamiseta` del perfil del competidor en `registro.component.ts`, que es un campo de perfil, no de inscripción). Se documenta como no reproducible, pero se refuerza el manejo de errores para que, si vuelve a ocurrir con cualquier campo, sea visible.
 
@@ -212,7 +212,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 
 ## 9. /ranking — paginación, circuitos pasados, fórmula configurable, exclusión por membresía
 
-### 9a. Paginación: "0 resultados" y páginas que cambian al ir a la última
+### 9a. Paginación: "0 resultados" y páginas que cambian al ir a la última	| Estado: OK
 
 **Causas confirmadas (bugs de wiring, no de datos):**
 1. `ranking.component.ts` (líneas ~146-151) usa `<app-pagination [currentPage] [totalPages] (pageChange)>` **sin pasar `[totalItems]`** → `PaginationComponent` usa su default `0` → siempre dice "0 resultados" en el pie, aunque el header de la propia página (`{{ totalItems() }} competidores`, línea 78) sí esté bien.
@@ -227,7 +227,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 - Al hacer clic en la última página, se siguen viendo todas las páginas desde la 1, sin que aparezcan números nuevos fuera de rango.
 - Ninguna otra pantalla que use `<app-pagination>` se rompe visualmente (revisar tras el cambio).
 
-### 9b. Ver rankings de circuitos pasados
+### 9b. Ver rankings de circuitos pasados| Estado: OK
 
 **Diagnóstico:** hoy solo hay selector de **año**, no de circuito, y el backend (`GetRankingQueryHandler.cs`) siempre resuelve el circuito vía `circuitRepository.GetCurrentBySeasonAsync(seasonYear)` usando la temporada **actual configurada en Configuración**, ignorando el `year` que el usuario elige — nunca puede llegar a un `Circuit` distinto (recordar que puede haber varios circuitos por temporada, por región, según el modelo de `Circuit` con campos `temporada`+`region`). Esto es más una limitación estructural que un simple bug de un año.
 
@@ -244,7 +244,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 - Selector de circuito visible en `/ranking`, con el circuito actual (según Configuración) seleccionado por defecto — mismo criterio ya usado en `/eventos`.
 - Elegir un circuito de una temporada anterior muestra su ranking histórico correctamente, sin mezclar datos del circuito actual.
 
-### 9c. Fórmula de cálculo del ranking final (configurable on/off)
+### 9c. Fórmula de cálculo del ranking final (configurable on/off) | no veo este cambio
 
 **Por qué:** la fórmula actual (`SurfScoresGateway.BuildCircuitRankingCacheAsync`, líneas 14-78) es: tomar los mejores `BestResultsCount` resultados de cada competidor y sumarlos, desempate por `Events desc → Name asc`. La nueva fórmula pedida por el usuario es distinta: descartar el 30% de las etapas válidas del calendario de esa categoría (redondeo: `<0.50` hacia abajo, `≥0.50` hacia arriba), con desempate por recálculo progresivo (contar 1 evento menos, luego 1 más allá del total, etc.) y fallback final al ranking del año anterior. Debe poder activarse/desactivarse desde Configuración sin perder la fórmula actual.
 
@@ -266,7 +266,7 @@ Línea ~201 (`<h2 ...>Circuitos de la temporada</h2>`). Cambio de texto puro, si
 - Con el toggle desactivado, el ranking se calcula exactamente igual que hoy (regresión cero).
 - Con el toggle activado, un circuito con calendario conocido (ej. 10 etapas) descarta exactamente 3 resultados por competidor, y el empate se resuelve según el algoritmo de recuento progresivo descrito, cayendo al ranking del año anterior si el empate persiste.
 
-### 9d. Excluir del ranking a competidores sin membresía pagada (configurable on/off)
+### 9d. Excluir del ranking a competidores sin membresía pagada (configurable on/off)| no veo este cambio
 
 **Por qué (decisión ya tomada):** usar `Inscription.MembershipPlan`/`MembershipFeeUsd`, ya ligado al competidor vía sus inscripciones de la temporada — no la entidad `Membership` de club/federación (que no tiene FK a competidor individual).
 

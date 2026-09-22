@@ -30,7 +30,13 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
             .ToListAsync(cancellationToken))
             .FirstOrDefault(x => x.Token.Id == tokenId);
 
-        return item is null ? null : MapToDto(item, utcNow);
+        if (item is null)
+        {
+            return null;
+        }
+
+        var breakdowns = await GetGroupBreakdownsAsync([item.Inscription.InscriptionGroupId], cancellationToken);
+        return MapToDto(item, utcNow, breakdowns);
     }
 
     public Task<BeachToken?> GetLatestByInscriptionIdAsync(Guid inscriptionId, CancellationToken cancellationToken)
@@ -72,6 +78,10 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
             .OrderByDescending(x => x.Token.CreatedAtUtc)
             .ToList();
 
+        var breakdowns = await GetGroupBreakdownsAsync(
+            allItems.Select(x => x.Inscription.InscriptionGroupId).Distinct(),
+            cancellationToken);
+
         var pendingItems = allItems
             .Where(x => ResolveStatus(x.Token, utcNow) == TokenHistoryStatus.Pendiente)
             .ToList();
@@ -92,7 +102,7 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
             pending = pendingItems
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .Select(x => MapToDto(x, utcNow))
+                .Select(x => MapToDto(x, utcNow, breakdowns))
                 .ToList();
             history = [];
         }
@@ -112,7 +122,7 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
                 .OrderByDescending(x => x.Token.UpdatedAtUtc)
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .Select(x => MapToDto(x, utcNow))
+                .Select(x => MapToDto(x, utcNow, breakdowns))
                 .ToList();
             pending = [];
         }
@@ -121,13 +131,13 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
             totalItems = historyItems.Count;
             totalPages = (int)Math.Ceiling(totalItems / (double)limit);
             pending = pendingItems
-                .Select(x => MapToDto(x, utcNow))
+                .Select(x => MapToDto(x, utcNow, breakdowns))
                 .ToList();
             history = historyItems
                 .OrderByDescending(x => x.Token.UpdatedAtUtc)
                 .Skip((page - 1) * limit)
                 .Take(limit)
-                .Select(x => MapToDto(x, utcNow))
+                .Select(x => MapToDto(x, utcNow, breakdowns))
                 .ToList();
         }
 
@@ -166,21 +176,74 @@ public sealed class BeachTokenRepository(AlasAppDbContext dbContext) : IBeachTok
                 (left, category) => new BeachTokenDetails(left.token, left.inscription, left.competitor, left.@event, category));
     }
 
-    private static BeachTokenAdminDto MapToDto(BeachTokenDetails item, DateTimeOffset utcNow)
+    // El token de playa se emite sobre UNA inscripcion (la primaria del grupo cuando la inscripcion
+    // es multi-categoria), pero el monto/desglose que debe ver el administrador es el del GRUPO
+    // completo (todas las categorias pagadas con el mismo token), no solo el de esa fila.
+    private async Task<IReadOnlyDictionary<Guid, GroupBreakdown>> GetGroupBreakdownsAsync(
+        IEnumerable<Guid> inscriptionGroupIds,
+        CancellationToken cancellationToken)
     {
+        var groupIds = inscriptionGroupIds.ToList();
+        if (groupIds.Count == 0)
+        {
+            return new Dictionary<Guid, GroupBreakdown>();
+        }
+
+        var rows = await dbContext.Inscriptions
+            .AsNoTracking()
+            .Where(x => groupIds.Contains(x.InscriptionGroupId))
+            .Select(x => new
+            {
+                x.InscriptionGroupId,
+                x.MontoUsd,
+                x.BaseAmountUsd,
+                x.AdministrativeFeeUsd,
+                x.MembershipFeeUsd,
+                CategoryName = x.Category != null ? x.Category.Nombre : string.Empty
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .GroupBy(x => x.InscriptionGroupId)
+            .ToDictionary(
+                g => g.Key,
+                g => new GroupBreakdown(
+                    g.Sum(x => x.MontoUsd),
+                    g.Sum(x => x.BaseAmountUsd),
+                    g.Sum(x => x.AdministrativeFeeUsd),
+                    g.Sum(x => x.MembershipFeeUsd),
+                    string.Join(", ", g.Select(x => x.CategoryName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct())));
+    }
+
+    private static BeachTokenAdminDto MapToDto(BeachTokenDetails item, DateTimeOffset utcNow, IReadOnlyDictionary<Guid, GroupBreakdown> breakdowns)
+    {
+        var breakdown = breakdowns.TryGetValue(item.Inscription.InscriptionGroupId, out var value)
+            ? value
+            : new GroupBreakdown(item.Inscription.MontoUsd, item.Inscription.BaseAmountUsd, item.Inscription.AdministrativeFeeUsd, item.Inscription.MembershipFeeUsd, item.Category.Nombre);
+
         return new BeachTokenAdminDto(
             item.Token.Id,
             $"{item.Competitor.Nombre} {item.Competitor.Apellido}",
             item.Competitor.Email,
             item.Event.Nombre,
-            item.Category.Nombre,
-            item.Inscription.MontoUsd,
+            string.IsNullOrWhiteSpace(breakdown.CategoryNames) ? item.Category.Nombre : breakdown.CategoryNames,
+            breakdown.TotalUsd,
+            breakdown.BaseUsd,
+            breakdown.AdministrativeFeeUsd,
+            breakdown.MembershipFeeUsd,
             item.Token.TokenCode,
             ResolveStatus(item.Token, utcNow),
             item.Token.GeneratedAt,
             item.Token.ExpirationAt,
             item.Token.UsedAt);
     }
+
+    private sealed record GroupBreakdown(
+        decimal TotalUsd,
+        decimal BaseUsd,
+        decimal AdministrativeFeeUsd,
+        decimal MembershipFeeUsd,
+        string CategoryNames);
 
     private static TokenHistoryStatus ResolveStatus(BeachToken token, DateTimeOffset utcNow)
     {

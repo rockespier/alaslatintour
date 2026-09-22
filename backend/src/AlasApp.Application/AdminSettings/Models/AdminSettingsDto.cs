@@ -34,7 +34,9 @@ public sealed record RankingSettingsDto(
     decimal DnsScorePercentage,
     int DsqPenaltyPoints,
     List<RankingPointsRowDto> PointsMatrix,
-    List<PrizeDistributionSettingsDto> PrizeDistribution);
+    List<PrizeDistributionSettingsDto> PrizeDistribution,
+    bool UseStageDropPercentageFormula = false,
+    bool ExcludeCompetitorsWithoutMembership = false);
 
 public sealed record RankingPointsRowDto(
     string Position,

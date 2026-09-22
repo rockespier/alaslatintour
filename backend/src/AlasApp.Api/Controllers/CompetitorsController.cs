@@ -61,14 +61,38 @@ public sealed class CompetitorsController(
         return Ok(ApiContractMapper.ToContract(result));
     }
 
-    [HttpGet("{competitorId}")]
-    [Authorize(Policy = AdminPolicies.UsersRead)]
+    [HttpGet("me")]
+    [Authorize]
     [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Generated.CompetitorResponse>> GetOwn(CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirstValue("competitor_id"), out var ownCompetitorId))
+        {
+            return NotFound();
+        }
+
+        var result = await dispatcher.Send(new GetCompetitorByIdQuery(ownCompetitorId), cancellationToken);
+        return Ok(ApiContractMapper.ToContract(result));
+    }
+
+    [HttpGet("{competitorId}")]
+    [Authorize]
+    [ProducesResponseType(typeof(Generated.CompetitorResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Generated.CompetitorResponse>> GetById(string competitorId, CancellationToken cancellationToken)
     {
+        var requestedCompetitorId = ApiContractMapper.ParseGuid(competitorId, "competitorId");
+        var ownCompetitorId = User.FindFirstValue("competitor_id");
+        var isAdmin = User.HasClaim(claim => claim.Type == "admin_role");
+        if (!isAdmin && (!Guid.TryParse(ownCompetitorId, out var authenticatedCompetitorId) || authenticatedCompetitorId != requestedCompetitorId))
+        {
+            return Forbid();
+        }
+
         var result = await dispatcher.Send(
-            new GetCompetitorByIdQuery(ApiContractMapper.ParseGuid(competitorId, "competitorId")),
+            new GetCompetitorByIdQuery(requestedCompetitorId),
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));

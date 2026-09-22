@@ -18,8 +18,13 @@ public sealed class ListRankingCategoriesQueryHandler(
     {
         var settingsJson = await adminSettingsRepository.GetJsonAsync(AdminSettingsDefaults.SettingsKey, cancellationToken);
         var settings = AdminSettingsSerializer.DeserializeOrDefault(settingsJson);
-        var currentCircuit = await circuitRepository.GetCurrentBySeasonAsync(settings.General.Season.CurrentYear, cancellationToken)
-            ?? throw new NotFoundException("No existe un circuito actual configurado para la temporada.");
+        var currentCircuit = request.CircuitId.HasValue
+            ? await circuitRepository.GetEntityByIdAsync(request.CircuitId.Value, cancellationToken)
+            : await circuitRepository.GetCurrentBySeasonAsync(settings.General.Season.CurrentYear, cancellationToken);
+        if (currentCircuit is null)
+        {
+            throw new NotFoundException("No existe el circuito solicitado.");
+        }
 
         return await rankingRepository.ListAvailableCategoriesAsync(currentCircuit.Id, cancellationToken);
     }

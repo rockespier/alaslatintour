@@ -12,6 +12,9 @@ public sealed class AdminDashboardRepository(AlasAppDbContext dbContext) : IAdmi
         var now = DateTimeOffset.UtcNow;
         var monthStart = new DateTimeOffset(new DateTime(now.Year, now.Month, 1), TimeSpan.Zero);
         var activeStatuses = new[] { EventStatusAdmin.Activo, EventStatusAdmin.Proximo };
+        // "Eventos del circuito" tambien lista eventos Completados (incluye la carga masiva historica
+        // de inscripciones); se excluyen Cancelado/Borrador por no ser operativamente relevantes aqui.
+        var eventsTableStatuses = new[] { EventStatusAdmin.Activo, EventStatusAdmin.Proximo, EventStatusAdmin.Completado };
 
         var totalCompetidores = await dbContext.Competitors.CountAsync(cancellationToken);
         var totalEventosActivos = await dbContext.Events.CountAsync(x => activeStatuses.Contains(x.Estado), cancellationToken);
@@ -23,7 +26,7 @@ public sealed class AdminDashboardRepository(AlasAppDbContext dbContext) : IAdmi
 
         var activeEvents = await dbContext.Events
             .AsNoTracking()
-            .Where(x => activeStatuses.Contains(x.Estado))
+            .Where(x => eventsTableStatuses.Contains(x.Estado))
             .OrderByDescending(x => x.FechaInicio)
             .Select(x => new DashboardActiveEventDto(
                 x.Id,

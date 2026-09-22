@@ -13,4 +13,7 @@ public sealed record InscriptionPricingContext(
     decimal? CustomTariffUsd,
     decimal? CircuitTariffUsd,
     decimal MembresiaAnualUsd,
-    decimal MembresiaPorEventoUsd);
+    decimal MembresiaPorEventoUsd,
+    bool AgeRestriction,
+    int? MinAge,
+    int? MaxAge);

@@ -42,7 +42,10 @@ public sealed class EventCategoryRepository(AlasAppDbContext dbContext) : IEvent
                     effectiveTariffUsd,
                     0,
                     x.Category.MembresiaAnualUsd,
-                    x.Category.MembresiaPorEventoUsd);
+                    x.Category.MembresiaPorEventoUsd,
+                    x.Category.AgeRestriction,
+                    x.Category.MinAge,
+                    x.Category.MaxAge);
             })
             .ToList();
 

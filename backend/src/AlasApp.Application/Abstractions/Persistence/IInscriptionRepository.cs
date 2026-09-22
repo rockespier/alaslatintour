@@ -14,6 +14,8 @@ public interface IInscriptionRepository
 
     Task<Inscription?> GetEntityByIdAsync(Guid inscriptionId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<Inscription>> ListEntitiesByGroupIdAsync(Guid inscriptionGroupId, CancellationToken cancellationToken);
+
     Task<IReadOnlyCollection<Inscription>> ListEntitiesByEventCategoryAsync(
         Guid eventId,
         Guid categoryId,
@@ -33,6 +35,12 @@ public interface IInscriptionRepository
     Task<int> CountByEventCategoryAsync(Guid eventId, Guid categoryId, CancellationToken cancellationToken);
 
     Task<InscriptionPricingContext?> GetPricingContextAsync(Guid eventId, Guid categoryId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<Guid>> ListRegisteredCategoryIdsAsync(Guid competitorId, Guid eventId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<Inscription>> ListEntitiesByCompetitorAndEventAsync(Guid competitorId, Guid eventId, CancellationToken cancellationToken);
+
+    Task<Domain.Enums.MembershipPlanOption?> GetActiveMembershipPlanForEventAsync(Guid competitorId, Guid eventId, Guid circuitId, CancellationToken cancellationToken);
 
     Task AddAsync(Inscription inscription, CancellationToken cancellationToken);
 

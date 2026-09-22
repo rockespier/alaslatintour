@@ -198,7 +198,7 @@ function rangoFechas(inicio: string, fin: string): string {
         <div class="flex items-end justify-between gap-3 mb-5">
           <div>
             <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-xs mb-1">Estructura</p>
-            <h2 class="font-heading text-2xl text-text-light">Circuitos de la temporada</h2>
+            <h2 class="font-heading text-2xl text-text-light">Circuitos</h2>
           </div>
           <button (click)="goTo('/admin/circuitos')"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">

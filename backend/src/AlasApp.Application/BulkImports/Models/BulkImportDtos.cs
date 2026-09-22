@@ -100,3 +100,15 @@ public sealed record InscriptionImportRow(
     string? EstadoAdmin,
     string? TransaccionId,
     string? Notas);
+
+public sealed record MembershipPaymentImportRow(
+    int RowNumber,
+    string? CompetidorId,
+    string? SurfScoresCode,
+    string? Email,
+    string? InscripcionId,
+    string? TipoMembresia,
+    string? FechaPago,
+    string? MetodoPago,
+    string? TransaccionId,
+    string? Importe);

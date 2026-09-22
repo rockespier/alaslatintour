@@ -262,6 +262,8 @@ public sealed class AdminUsersRolesDashboardEndpointsTests : IClassFixture<Admin
         Assert.True(dashboardJson["kpis"]?["recaudacionMesUsd"]?.Value<double>() >= 95d);
         Assert.True(dashboardJson["kpis"]?["tokensPendientes"]?.Value<int>() >= 1);
         Assert.True(dashboardJson["activeEvents"]?.Count() >= 1);
+        var activeEvent = dashboardJson["activeEvents"]!.First(x => x["id"]?.Value<string>() == eventId.ToString());
+        Assert.True(activeEvent["inscritosCount"]?.Value<int>() >= 2, "El conteo de inscritos por evento activo debe reflejar las inscripciones reales.");
         Assert.True(dashboardJson["recentInscriptions"]?.Count() >= 1);
         Assert.True(dashboardJson["alerts"]?.Count() >= 1);
         Assert.Equal("tokens", dashboardJson["alerts"]?[0]?["module"]?.Value<string>());

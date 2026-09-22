@@ -47,6 +47,9 @@ public sealed class Inscription : AuditableEntity
 
     public Guid CompetitorId { get; private set; }
 
+    /// <summary>Identifica las categorías creadas y cobradas en una misma operación.</summary>
+    public Guid InscriptionGroupId { get; private set; }
+
     public Competitor? Competitor { get; private set; }
 
     public Guid EventId { get; private set; }
@@ -79,6 +82,9 @@ public sealed class Inscription : AuditableEntity
 
     public string? TransaccionId { get; private set; }
 
+    /// <summary>Orden de PayPal emitida para esta inscripcion (o la primaria de su grupo). Vincula la captura al monto y grupo esperados.</summary>
+    public string? PayPalOrderId { get; private set; }
+
     public string? Notes { get; private set; }
 
     public bool ReglamentoAceptado { get; private set; }
@@ -103,7 +109,8 @@ public sealed class Inscription : AuditableEntity
         bool reglamentoAceptado,
         bool riesgosAceptados,
         bool usoImagenAceptado,
-        DateTimeOffset inscripcionAt)
+        DateTimeOffset inscripcionAt,
+        Guid? inscriptionGroupId = null)
     {
         Validate(competitorId, eventId, categoryId, shirtNumber, baseAmountUsd, administrativeFeeUsd, membershipPlan, membershipFeeUsd, montoUsd, reglamentoAceptado, riesgosAceptados, usoImagenAceptado);
 
@@ -123,6 +130,7 @@ public sealed class Inscription : AuditableEntity
             riesgosAceptados,
             usoImagenAceptado);
 
+        inscription.InscriptionGroupId = inscriptionGroupId.GetValueOrDefault(Guid.NewGuid());
         inscription.InscripcionAt = inscripcionAt;
         return inscription;
     }
@@ -149,6 +157,34 @@ public sealed class Inscription : AuditableEntity
                 ? InscriptionStatusCompetitor.Confirmado
                 : InscriptionStatusCompetitor.Pendiente;
         }
+    }
+
+    public void AssignPayPalOrder(string orderId)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new DomainRuleException("El identificador de la orden de PayPal es obligatorio.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(TransaccionId))
+        {
+            throw new DomainRuleException("La inscripcion ya tiene un pago registrado.");
+        }
+
+        PayPalOrderId = orderId.Trim();
+    }
+
+    /// <summary>Adjunta/reemplaza la membresia de esta inscripcion (carga de datos historicos). Recalcula MontoUsd.</summary>
+    public void ApplyMembership(MembershipPlanOption plan, decimal feeUsd)
+    {
+        if (feeUsd < 0)
+        {
+            throw new DomainRuleException("El monto de membresia no puede ser negativo.");
+        }
+
+        MembershipPlan = plan;
+        MembershipFeeUsd = feeUsd;
+        MontoUsd = BaseAmountUsd + AdministrativeFeeUsd + MembershipFeeUsd;
     }
 
     public void ApplyPayment(PaymentMethod paymentMethod, string transactionId, InscriptionStatusAdmin estadoAdmin)

@@ -15,6 +15,8 @@ public sealed class InscriptionConfiguration : IEntityTypeConfiguration<Inscript
         builder.Property(x => x.ShirtNumber)
             .HasMaxLength(20);
 
+        builder.Property(x => x.InscriptionGroupId).IsRequired();
+
         builder.Property(x => x.PaymentMethod)
             .HasConversion<string>()
             .HasMaxLength(20)
@@ -52,6 +54,9 @@ public sealed class InscriptionConfiguration : IEntityTypeConfiguration<Inscript
         builder.Property(x => x.TransaccionId)
             .HasMaxLength(100);
 
+        builder.Property(x => x.PayPalOrderId)
+            .HasMaxLength(64);
+
         builder.Property(x => x.Notes)
             .HasMaxLength(2000);
 
@@ -81,5 +86,6 @@ public sealed class InscriptionConfiguration : IEntityTypeConfiguration<Inscript
         builder.HasIndex(x => x.EventId);
         builder.HasIndex(x => x.CategoryId);
         builder.HasIndex(x => x.EstadoAdmin);
+        builder.HasIndex(x => x.InscriptionGroupId);
     }
 }

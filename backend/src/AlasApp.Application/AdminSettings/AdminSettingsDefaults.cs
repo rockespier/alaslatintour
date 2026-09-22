@@ -39,7 +39,7 @@ public static class AdminSettingsDefaults
                     new PrizeDistributionSettingsDto("3°", 15, 15, 15, 15, 15, 15, 15),
                     new PrizeDistributionSettingsDto("4°", 10, 10, 10, 10, 10, 10, 10),
                     new PrizeDistributionSettingsDto("5°", 5, 5, 5, 5, 5, 5, 5)
-                ]),
+                ], false, false),
             new IntegrationSettingsDto(
                 new SurfScoresSettingsDto(
                     "https://surfscores.com/api/v1/",

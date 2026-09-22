@@ -3,4 +3,4 @@ using AlasApp.Application.Rankings.Models;
 
 namespace AlasApp.Application.Rankings.Queries.GetRanking;
 
-public sealed record GetRankingQuery(Guid CategoryId, int? Year, int? Page, int? Limit) : IRequest<RankingDto>;
+public sealed record GetRankingQuery(Guid CategoryId, int? Year, int? Page, int? Limit, Guid? CircuitId = null) : IRequest<RankingDto>;

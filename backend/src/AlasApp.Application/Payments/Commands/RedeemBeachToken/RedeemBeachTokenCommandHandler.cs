@@ -28,6 +28,7 @@ public sealed class RedeemBeachTokenCommandHandler(
 
         var inscription = await inscriptionRepository.GetEntityByIdAsync(request.InscriptionId, cancellationToken)
             ?? throw new NotFoundException("Inscripcion no encontrada.");
+        var group = await inscriptionRepository.ListEntitiesByGroupIdAsync(inscription.InscriptionGroupId, cancellationToken);
 
         var token = await beachTokenRepository.GetByTokenCodeAsync(request.TokenCode.Trim().ToUpperInvariant(), cancellationToken);
         if (token is null || token.InscriptionId != request.InscriptionId)
@@ -59,9 +60,12 @@ public sealed class RedeemBeachTokenCommandHandler(
             throw new BeachTokenOperationException("token_expired", "El token expiro.", token.GeneratedAt, token.ExpirationAt);
         }
 
-        if (await paymentRepository.GetEntityByInscriptionIdAsync(request.InscriptionId, cancellationToken) is not null)
+        foreach (var item in group)
         {
-            throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            if (await paymentRepository.GetEntityByInscriptionIdAsync(item.Id, cancellationToken) is not null)
+            {
+                throw new ConflictException("La inscripcion ya tiene un pago registrado.");
+            }
         }
 
         try
@@ -72,14 +76,17 @@ public sealed class RedeemBeachTokenCommandHandler(
             var payment = Payment.Create(
                 inscription.Id,
                 PaymentMethod.Beach,
-                inscription.MontoUsd,
+                group.Sum(x => x.MontoUsd),
                 token.TokenCode!,
                 PaymentStatusAdmin.Pendiente,
                 clock.UtcNow);
 
             payment.SetCreated(clock.UtcNow);
-            inscription.ApplyPayment(PaymentMethod.Beach, token.TokenCode!, InscriptionStatusAdmin.Pendiente);
-            inscription.SetUpdated(clock.UtcNow);
+            foreach (var item in group)
+            {
+                item.ApplyPayment(PaymentMethod.Beach, token.TokenCode!, InscriptionStatusAdmin.Pendiente);
+                item.SetUpdated(clock.UtcNow);
+            }
 
             await paymentRepository.AddAsync(payment, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -92,7 +99,7 @@ public sealed class RedeemBeachTokenCommandHandler(
                 $"ALAS-RBC-{clock.UtcNow.Year}-{payment.Id.ToString("N")[..4].ToUpperInvariant()}",
                 inscriptionDto.Event.Nombre,
                 inscriptionDto.Category.Nombre,
-                inscription.MontoUsd,
+                group.Sum(x => x.MontoUsd),
                 "pendiente");
         }
         catch (DomainRuleException exception)

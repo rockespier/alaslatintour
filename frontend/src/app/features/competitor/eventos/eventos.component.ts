@@ -300,13 +300,13 @@ const STATUS_CLASS: Record<string, string> = {
                             </a>
                           }
                         } @else if (event.statusPublic === 'Completado') {
-                          @if (isLiveScheduleAvailable(event.id)) {
+                          @if (isScheduleAvailable(event.id)) {
                             <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
                                class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
                               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                               </svg>
-                              Descargar programación (PDF)
+                              {{ scheduleButtonLabel() }}
                             </a>
                           } @else {
                             @if (resultsPdfUrl(event.id); as pdfUrl) {
@@ -342,13 +342,13 @@ const STATUS_CLASS: Record<string, string> = {
                           </svg>
                         </button>
 
-                        @if (isLiveScheduleAvailable(event.id) && event.statusPublic !== 'Completado') {
+                        @if (isScheduleAvailable(event.id) && event.statusPublic !== 'Completado') {
                           <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
                              class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
-                            Descargar programación (PDF)
+                            {{ scheduleButtonLabel() }}
                           </a>
                         }
                       </div>
@@ -608,15 +608,40 @@ export class EventosComponent implements OnInit {
   private async loadEvents(): Promise<void> {
     this.loading.set(true);
     try {
-      const res = await this.api.get<any>('/events?limit=100&page=1&includeCategories=true');
+      const res = await this.api.get<any>('/events?limit=100&page=1');
       const events: EventItem[] = res?.data ?? [];
       this.events.set(events);
       void this.loadResultsPdfUrls(events);
+      void this.loadEventCategories(events);
     } catch {
       this.events.set([]);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  // GET /events no incluye las categorias del evento (no existe tal campo en el contrato) — se
+  // completan por evento con GET /events/{id}/categories, mismo endpoint que ya usa admin-eventos.
+  private async loadEventCategories(events: EventItem[]): Promise<void> {
+    if (events.length === 0) return;
+    const entries = await Promise.all(events.map(async (e): Promise<[string, EventCategory[]]> => {
+      try {
+        const res = await this.api.get<any>(`/events/${e.id}/categories`);
+        const data: any[] = res?.data ?? [];
+        return [e.id, data.map(c => ({
+          id: c.categoryId,
+          nombre: c.categoryName,
+          inscritos: c.enrolledCount ?? 0,
+          capacidad: c.capacidad ?? 0,
+          tarifa: c.effectiveTariffUsd ?? 0,
+        }))];
+      } catch {
+        return [e.id, []];
+      }
+    }));
+
+    const categoriasById = new Map(entries);
+    this.events.update(list => list.map(e => ({ ...e, categorias: categoriasById.get(e.id) ?? e.categorias })));
   }
 
   // Busca el PDF de resultados (Media Library de WordPress, nombrado con el código SurfScores
@@ -836,9 +861,13 @@ export class EventosComponent implements OnInit {
     }
   }
 
-  isLiveScheduleAvailable(eventId: string): boolean {
+  isScheduleAvailable(eventId: string): boolean {
     const s = this.liveStatus.status();
-    return !!(s?.isLive && s.event?.id === eventId && s.schedulePdfUrl);
+    return !!(s?.event?.id === eventId && s.schedulePdfUrl);
+  }
+
+  scheduleButtonLabel(): string {
+    return this.liveStatus.isLive() ? 'Descargar programación (PDF)' : 'Ver ganadores (PDF)';
   }
 
   liveSchedulePdfUrl(): string | null {

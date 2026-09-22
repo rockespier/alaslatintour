@@ -3,4 +3,4 @@ using AlasApp.Application.Rankings.Models;
 
 namespace AlasApp.Application.Rankings.Queries.ListRankingCategories;
 
-public sealed record ListRankingCategoriesQuery : IRequest<IReadOnlyCollection<RankingCategoryAvailabilityDto>>;
+public sealed record ListRankingCategoriesQuery(Guid? CircuitId = null) : IRequest<IReadOnlyCollection<RankingCategoryAvailabilityDto>>;

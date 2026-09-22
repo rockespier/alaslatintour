@@ -5,6 +5,10 @@ import { RankingService, RankingCategory, RankingRow } from '../../../core/servi
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { ApiService } from '../../../core/services/api.service';
+import { pickCurrentCircuit } from '../../../core/utils/current-circuit.util';
+
+interface Circuit { id: string; nombre: string; temporada?: number; estado?: string; }
 
 @Component({
   selector: 'app-ranking',
@@ -29,6 +33,14 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
       <div class="max-w-7xl mx-auto">
 
         <!-- Category tabs -->
+        @if (circuits().length > 0) {
+          <div class="flex items-center gap-3 mb-6">
+            <label class="font-accent uppercase text-xs text-text-muted tracking-wider" for="ranking-circuit">Circuito:</label>
+            <select id="ranking-circuit" [value]="selectedCircuitId()" (change)="selectCircuit($any($event.target).value)" class="bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light">
+              @for (circuit of circuits(); track circuit.id) { <option [value]="circuit.id">{{ circuit.nombre }}</option> }
+            </select>
+          </div>
+        }
         @if (categories().length > 0) {
           <div class="flex gap-2 flex-wrap mb-6">
             @for (cat of categories(); track cat.id) {
@@ -147,6 +159,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
                 <app-pagination
                   [currentPage]="currentPage()"
                   [totalPages]="totalPages()"
+                  [totalItems]="totalItems()"
                   (pageChange)="goToPage($event)" />
               </div>
             }
@@ -163,6 +176,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 })
 export class RankingComponent implements OnInit {
   private rankingService = inject(RankingService);
+  private api = inject(ApiService);
   private titleSvc = inject(Title);
   private metaSvc = inject(Meta);
 
@@ -181,6 +195,8 @@ export class RankingComponent implements OnInit {
   currentPage = signal(1);
   totalPages = signal(1);
   totalItems = signal(0);
+  circuits = signal<Circuit[]>([]);
+  selectedCircuitId = signal('');
 
   ngOnInit(): void {
     this.titleSvc.setTitle('Ranking ALAS Latin Tour 2026 — Posiciones del Circuito');
@@ -190,7 +206,12 @@ export class RankingComponent implements OnInit {
 
   private async init(): Promise<void> {
     try {
-      const cats = await this.rankingService.getCategories();
+      const circuitsResponse = await this.api.get<any>('/circuits?limit=100');
+      const circuits: Circuit[] = circuitsResponse?.data ?? [];
+      this.circuits.set(circuits);
+      const currentCircuit = pickCurrentCircuit(circuits);
+      this.selectedCircuitId.set(currentCircuit?.id ?? circuits[0]?.id ?? '');
+      const cats = await this.rankingService.getCategories(this.selectedCircuitId() || undefined);
       this.categories.set(cats);
       if (cats.length > 0) {
         const first = cats[0];
@@ -221,6 +242,20 @@ export class RankingComponent implements OnInit {
     await this.fetchRanking(cat.id, defaultYear, 1);
   }
 
+  async selectCircuit(circuitId: string): Promise<void> {
+    if (circuitId === this.selectedCircuitId()) return;
+    this.selectedCircuitId.set(circuitId);
+    this.loading.set(true);
+    const categories = await this.rankingService.getCategories(circuitId);
+    this.categories.set(categories);
+    if (categories.length > 0) {
+      await this.selectCategory(categories[0]);
+    } else {
+      this.rows.set([]);
+      this.loading.set(false);
+    }
+  }
+
   async selectYear(year: number): Promise<void> {
     if (year === this.selectedYear()) return;
     this.selectedYear.set(year);
@@ -240,7 +275,7 @@ export class RankingComponent implements OnInit {
     this.loading.set(true);
     this.error.set(false);
     try {
-      const result = await this.rankingService.getRanking(catId, year, page, 20);
+      const result = await this.rankingService.getRanking(catId, year, page, 20, this.selectedCircuitId() || undefined);
       this.rows.set(result.rows);
       this.currentPage.set(result.currentPage);
       this.totalPages.set(result.totalPages);

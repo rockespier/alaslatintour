@@ -3,6 +3,7 @@ using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Abstractions.Services;
 using AlasApp.Application.Inscriptions.Commands.DeleteInscription;
+using AlasApp.Application.Inscriptions.Commands.CreateBulkInscription;
 using AlasApp.Application.Inscriptions.Queries.GetInscriptionById;
 using AlasApp.Application.Inscriptions.Queries.ListInscriptions;
 using AlasApp.Application.Inscriptions.Models;
@@ -10,6 +11,7 @@ using Generated = AlasApp.AlasApi.Api.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using AlasApp.Domain.Enums;
 
 namespace AlasApp.Api.Controllers;
 
@@ -17,6 +19,9 @@ namespace AlasApp.Api.Controllers;
 [Route("v1/inscriptions")]
 public sealed class InscriptionsController(IRequestDispatcher dispatcher, IBulkExcelService bulkExcelService) : ControllerBase
 {
+    public sealed record BulkInscriptionRequest(
+        Guid CompetitorId, Guid EventId, List<Guid> CategoryIds, string? ShirtNumber,
+        string PaymentMethod, string? MembershipPlan, bool Reglamento, bool RiesgosAceptados, bool UsoImagenAceptado);
     private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const int MaxExportRows = 5000;
 
@@ -102,6 +107,25 @@ public sealed class InscriptionsController(IRequestDispatcher dispatcher, IBulkE
         return CreatedAtAction(nameof(GetById), new { inscriptionId = contract.Id }, contract);
     }
 
+    [HttpPost("bulk")]
+    [Authorize]
+    [ProducesResponseType(typeof(BulkInscriptionDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<BulkInscriptionDto>> CreateBulk([FromBody] BulkInscriptionRequest body, CancellationToken cancellationToken)
+    {
+        var isAdmin = User.HasClaim(claim => claim.Type == "admin_role");
+        if (!isAdmin && (!Guid.TryParse(User.FindFirstValue("competitor_id"), out var authenticatedCompetitorId) || authenticatedCompetitorId != body.CompetitorId))
+        {
+            return Forbid();
+        }
+
+        var result = await dispatcher.Send(new CreateBulkInscriptionCommand(
+            body.CompetitorId, body.EventId, body.CategoryIds, body.ShirtNumber,
+            ApiContractMapper.ParsePaymentMethod(body.PaymentMethod) ?? throw new BadHttpRequestException("Método de pago inválido."),
+            ParseMembershipPlan(body.MembershipPlan), body.Reglamento, body.RiesgosAceptados, body.UsoImagenAceptado), cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
     [HttpPut("{inscriptionId}")]
     [Authorize(Policy = AdminPolicies.InscriptionsWrite)]
     [ProducesResponseType(typeof(Generated.InscriptionResponse), StatusCodes.Status200OK)]
@@ -144,5 +168,10 @@ public sealed class InscriptionsController(IRequestDispatcher dispatcher, IBulkE
         }
 
         return competitorId;
+    }
+
+    private static MembershipPlanOption? ParseMembershipPlan(string? value)
+    {
+        return Enum.TryParse<MembershipPlanOption>(value, true, out var plan) ? plan : null;
     }
 }

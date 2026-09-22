@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { PermissionsService, AdminModule } from '../../../core/services/permissions.service';
 import { AdminThemeService } from '../../../core/services/admin-theme.service';
+import { AdminSidebarService } from '../../../core/services/admin-sidebar.service';
 
 interface NavItem {
   label: string;
@@ -25,15 +26,21 @@ interface NavItem {
     }
 
     <!-- Sidebar -->
-    <aside class="fixed top-0 left-0 h-full w-64 bg-[#001830] border-r border-white/10 z-40 flex flex-col
+    <aside class="fixed top-0 left-0 h-full bg-[#001830] border-r border-white/10 z-40 flex flex-col
                   transition-transform duration-300"
+           [class.w-64]="!sidebar.collapsed() || !isDesktop()"
+           [class.w-20]="sidebar.collapsed() && isDesktop()"
            [class.translate-x-0]="open() || isDesktop()"
            [class.-translate-x-full]="!open() && !isDesktop()">
 
       <!-- Logo -->
-      <div class="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-white/10" [class.justify-center]="sidebar.collapsed() && isDesktop()">
         <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Admin" class="h-12 w-auto" />
-        
+        @if (isDesktop()) {
+          <button (click)="sidebar.toggle()" class="ml-auto p-1 text-[#AAAAAA] hover:text-white" [attr.aria-label]="sidebar.collapsed() ? 'Expandir menú' : 'Colapsar menú'">
+            {{ sidebar.collapsed() ? '›' : '‹' }}
+          </button>
+        }
       </div>
 
       <!-- Nav links -->
@@ -41,9 +48,11 @@ interface NavItem {
         @for (item of visibleNavItems(); track item.route) {
           <a [routerLink]="item.route" routerLinkActive="bg-[#0081C6]/20 text-[#0081C6] border-r-2 border-[#0081C6]"
              (click)="open.set(false)"
-             class="flex items-center gap-3 px-5 py-2.5 text-sm text-[#AAAAAA] hover:text-white hover:bg-white/5 relative">
+             class="flex items-center gap-3 px-5 py-2.5 text-sm text-[#AAAAAA] hover:text-white hover:bg-white/5 relative"
+             [class.justify-center]="sidebar.collapsed() && isDesktop()"
+             [attr.title]="sidebar.collapsed() && isDesktop() ? item.label : null">
             <span class="w-5 text-center text-base">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            @if (!sidebar.collapsed() || !isDesktop()) { <span>{{ item.label }}</span> }
             @if (item.badge) {
               <span class="ml-auto bg-[#EF4444] text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center">
                 {{ item.badge }}
@@ -54,7 +63,7 @@ interface NavItem {
       </nav>
 
       <!-- Modo oscuro / claro -->
-      <div class="border-t border-white/10 px-5 py-3">
+      @if (!sidebar.collapsed() || !isDesktop()) { <div class="border-t border-white/10 px-5 py-3">
         <button (click)="theme.toggle()"
                 class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-md text-xs text-[#AAAAAA] hover:text-white hover:bg-white/5 transition"
                 title="Cambiar modo oscuro / claro">
@@ -68,18 +77,18 @@ interface NavItem {
                   [class]="theme.theme() === 'dark' ? 'translate-x-0.5' : 'translate-x-4'"></span>
           </span>
         </button>
-      </div>
+      </div> }
 
       <!-- User info -->
-      <div class="border-t border-white/10 px-5 py-4 flex items-center gap-3">
+      <div class="border-t border-white/10 px-5 py-4 flex items-center gap-3" [class.justify-center]="sidebar.collapsed() && isDesktop()">
         <a routerLink="/admin/perfil" (click)="open.set(false)" class="flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition">
           <div class="w-8 h-8 rounded-full bg-[#0081C6] flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
             {{ initials() }}
           </div>
-          <div class="min-w-0">
+          @if (!sidebar.collapsed() || !isDesktop()) { <div class="min-w-0">
             <p class="text-xs font-medium text-[#EEEEEE] truncate">{{ auth.currentUser()?.fullName }}</p>
             <p class="text-xs text-[#AAAAAA]">{{ auth.currentUser()?.adminRole }}</p>
-          </div>
+          </div> }
         </a>
         <button (click)="auth.logout()" class="text-[#AAAAAA] hover:text-white p-1 flex-shrink-0" title="Cerrar sesión">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,6 +111,7 @@ interface NavItem {
 export class AdminSidebarComponent implements OnInit {
   auth = inject(AuthService);
   theme = inject(AdminThemeService);
+  sidebar = inject(AdminSidebarService);
   private api = inject(ApiService);
   private permissions = inject(PermissionsService);
   private platformId = inject(PLATFORM_ID);

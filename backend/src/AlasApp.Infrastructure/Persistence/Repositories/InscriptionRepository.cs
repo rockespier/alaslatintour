@@ -88,6 +88,13 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
         return dbContext.Inscriptions.FirstOrDefaultAsync(x => x.Id == inscriptionId, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Inscription>> ListEntitiesByGroupIdAsync(Guid inscriptionGroupId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Inscriptions
+            .Where(x => x.InscriptionGroupId == inscriptionGroupId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Inscription>> ListEntitiesByEventCategoryAsync(
         Guid eventId,
         Guid categoryId,
@@ -222,7 +229,51 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             assignment.CustomTariffUsd,
             circuitTariff,
             assignment.Category.MembresiaAnualUsd,
-            assignment.Category.MembresiaPorEventoUsd);
+            assignment.Category.MembresiaPorEventoUsd,
+            assignment.Category.AgeRestriction,
+            assignment.Category.MinAge,
+            assignment.Category.MaxAge);
+    }
+
+    public async Task<IReadOnlyCollection<Guid>> ListRegisteredCategoryIdsAsync(Guid competitorId, Guid eventId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Inscriptions
+            .AsNoTracking()
+            .Where(x => x.CompetitorId == competitorId && x.EventId == eventId)
+            .Select(x => x.CategoryId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Inscription>> ListEntitiesByCompetitorAndEventAsync(Guid competitorId, Guid eventId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Inscriptions
+            .Where(x => x.CompetitorId == competitorId && x.EventId == eventId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<MembershipPlanOption?> GetActiveMembershipPlanForEventAsync(Guid competitorId, Guid eventId, Guid circuitId, CancellationToken cancellationToken)
+    {
+        var hasAnual = await dbContext.Inscriptions.AsNoTracking().AnyAsync(
+            x => x.CompetitorId == competitorId
+                && x.MembershipPlan == MembershipPlanOption.Anual
+                && x.EstadoAdmin == InscriptionStatusAdmin.Pagado
+                && x.Event != null && x.Event.CircuitId == circuitId,
+            cancellationToken);
+
+        if (hasAnual)
+        {
+            return MembershipPlanOption.Anual;
+        }
+
+        var hasPorEvento = await dbContext.Inscriptions.AsNoTracking().AnyAsync(
+            x => x.CompetitorId == competitorId
+                && x.EventId == eventId
+                && x.MembershipPlan == MembershipPlanOption.PorEvento
+                && x.EstadoAdmin == InscriptionStatusAdmin.Pagado,
+            cancellationToken);
+
+        return hasPorEvento ? MembershipPlanOption.PorEvento : null;
     }
 
     public Task AddAsync(Inscription inscription, CancellationToken cancellationToken)

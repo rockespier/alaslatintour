@@ -19,8 +19,13 @@ public sealed class GetRankingQueryHandler(
         var year = request.Year ?? seasonYear;
         var page = request.Page.GetValueOrDefault(1);
         var limit = request.Limit.GetValueOrDefault(20);
-        var currentCircuit = await circuitRepository.GetCurrentBySeasonAsync(seasonYear, cancellationToken)
-            ?? throw new NotFoundException("No existe un circuito actual configurado para la temporada.");
+        var currentCircuit = request.CircuitId.HasValue
+            ? await circuitRepository.GetEntityByIdAsync(request.CircuitId.Value, cancellationToken)
+            : await circuitRepository.GetCurrentBySeasonAsync(seasonYear, cancellationToken);
+        if (currentCircuit is null)
+        {
+            throw new NotFoundException("No existe el circuito solicitado.");
+        }
 
         var ranking = await rankingRepository.GetAsync(currentCircuit.Id, request.CategoryId, year, page, limit, cancellationToken)
             ?? throw new NotFoundException("No existe ranking cacheado para la categoria y temporada solicitadas.");

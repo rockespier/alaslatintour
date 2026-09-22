@@ -19,4 +19,6 @@ public interface IPaymentRepository
     Task AddAsync(Payment payment, CancellationToken cancellationToken);
 
     Task<PaymentKpiDto> GetKpisAsync(DateTimeOffset utcNow, CancellationToken cancellationToken);
+
+    Task<PagedResult<MembershipPaymentRowDto>> ListMembershipPaymentsAsync(int page, int limit, CancellationToken cancellationToken);
 }

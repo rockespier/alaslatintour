@@ -192,8 +192,8 @@ export class MisInscripcionesComponent implements OnInit {
       return undefined;
     }
 
-    const res = await this.api.get<any>(`/competitors?search=${encodeURIComponent(user.email)}&limit=1`);
-    const competitorId = (res?.data ?? [])[0]?.id as string | undefined;
+    const competitor = await this.api.get<any>('/competitors/me');
+    const competitorId = competitor?.id as string | undefined;
 
     if (competitorId) {
       const token = this.auth.getToken();

@@ -33,8 +33,8 @@ public sealed class MembershipsEndpointsTests : IClassFixture<MembershipsWebAppl
             clubFederacion = "Federacion Peruana de Surf",
             pais = "Perú",
             plan = "Mensual",
-            inicioVigencia = "2026-07-01",
-            vencimiento = "2026-10-15",
+            inicioVigencia = DateTime.UtcNow.AddMonths(-1).ToString("yyyy-MM-dd"),
+            vencimiento = DateTime.UtcNow.AddMonths(6).ToString("yyyy-MM-dd"),
             emailContacto = "membresias@alas.test"
         });
 

@@ -253,6 +253,10 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                 <input type="number" [class]="CLASS_INPUT" [(ngModel)]="dsqPenalty">
               </div>
             </div>
+            <div class="mt-5 space-y-3">
+              <label class="flex items-center gap-3 text-sm text-text-light"><input type="checkbox" [(ngModel)]="useStageDropPercentageFormula" class="accent-cyan-brand"> Usar fórmula de descuento por etapas (30%)</label>
+              <label class="flex items-center gap-3 text-sm text-text-light"><input type="checkbox" [(ngModel)]="excludeCompetitorsWithoutMembership" class="accent-cyan-brand"> No otorgar puntos en eventos donde el competidor no pagó membresía</label>
+            </div>
           </div>
 
           <div class="flex justify-end">
@@ -296,7 +300,6 @@ const CLASS_INPUT = 'w-full bg-navy-mid/40 border border-navy-mid rounded-md px-
                   <input type="password" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresPassword" autocomplete="off">
                 </div>
               </div>
-
               <div>
                 <label [class]="LABEL_INPUT">ID de Organización</label>
                 <input type="text" [class]="CLASS_INPUT + ' font-mono'" [(ngModel)]="surfScoresOrgId" placeholder="ej: 142">
@@ -832,6 +835,8 @@ export class ConfiguracionComponent implements OnInit {
   bestResultsCount = 5;
   dnsPercent = 0;
   dsqPenalty = 0;
+  useStageDropPercentageFormula = false;
+  excludeCompetitorsWithoutMembership = false;
 
   // ─── Tab: Integraciones ──────────────────────────────────────
   surfScoresEndpoint = '';
@@ -948,6 +953,8 @@ export class ConfiguracionComponent implements OnInit {
     this.bestResultsCount = r.bestResultsCount ?? 5;
     this.dnsPercent = r.dnsScorePercentage ?? 0;
     this.dsqPenalty = r.dsqPenaltyPoints ?? 0;
+    this.useStageDropPercentageFormula = r.useStageDropPercentageFormula ?? false;
+    this.excludeCompetitorsWithoutMembership = r.excludeCompetitorsWithoutMembership ?? false;
     this.rankingRows = (r.pointsMatrix ?? []).map((row: any) => ({
       pos: row.position, s1: row.star1, s2: row.star2, s3: row.star3, s4: row.star4, s5: row.star5, s6: row.star6, s7: row.star7,
     }));
@@ -1009,6 +1016,8 @@ export class ConfiguracionComponent implements OnInit {
         bestResultsCount: this.bestResultsCount,
         dnsScorePercentage: this.dnsPercent,
         dsqPenaltyPoints: this.dsqPenalty,
+        useStageDropPercentageFormula: this.useStageDropPercentageFormula,
+        excludeCompetitorsWithoutMembership: this.excludeCompetitorsWithoutMembership,
         pointsMatrix: this.rankingRows.map(row => ({
           position: row.pos, star1: row.s1, star2: row.s2, star3: row.s3, star4: row.s4, star5: row.s5, star6: row.s6, star7: row.s7,
         })),

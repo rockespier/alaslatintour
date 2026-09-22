@@ -35,13 +35,7 @@ export class PaginationComponent {
 
   pages = computed(() => {
     const total = this.totalPages();
-    const current = this.currentPage();
-    const delta = 2;
-    const range: number[] = [];
-    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
-      range.push(i);
-    }
-    return range;
+    return Array.from({ length: total }, (_, index) => index + 1);
   });
 
   go(page: number): void {

@@ -1,7 +1,9 @@
 using AlasApp.Api.Authorization;
 using AlasApp.Api.Models;
 using AlasApp.Application.Abstractions.Messaging;
+using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Competitors.Queries.GetCompetitorById;
+using AlasApp.Application.Events.Queries.GetEventById;
 using AlasApp.Domain.Enums;
 using AlasApp.Application.EventCategories.Queries.GetEventCategories;
 using Generated = AlasApp.AlasApi.Api.Controllers;
@@ -12,7 +14,7 @@ namespace AlasApp.Api.Controllers;
 
 [ApiController]
 [Route("v1/events/{eventId}/categories")]
-public sealed class EventCategoriesController(IRequestDispatcher dispatcher) : ControllerBase
+public sealed class EventCategoriesController(IRequestDispatcher dispatcher, IInscriptionRepository inscriptionRepository) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(Generated.EventCategoryListResponse), StatusCodes.Status200OK)]
@@ -22,21 +24,45 @@ public sealed class EventCategoriesController(IRequestDispatcher dispatcher) : C
         [FromQuery] string? competitorId,
         CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(
-            new GetEventCategoriesQuery(ApiContractMapper.ParseGuid(eventId, "eventId")),
-            cancellationToken);
+        var parsedEventId = ApiContractMapper.ParseGuid(eventId, "eventId");
+        var result = await dispatcher.Send(new GetEventCategoriesQuery(parsedEventId), cancellationToken);
+        string? existingMembershipPlan = null;
 
         if (!string.IsNullOrWhiteSpace(competitorId))
         {
-            var competitor = await dispatcher.Send(
-                new GetCompetitorByIdQuery(ApiContractMapper.ParseGuid(competitorId, "competitorId")),
-                cancellationToken);
+            var parsedCompetitorId = ApiContractMapper.ParseGuid(competitorId, "competitorId");
+            var competitor = await dispatcher.Send(new GetCompetitorByIdQuery(parsedCompetitorId), cancellationToken);
 
-            var filtered = result.Data.Where(x => IsGenderCompatible(competitor.Genero, x.Gender)).ToList();
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var age = today.Year - competitor.FechaNacimiento.Year;
+            if (today < DateOnly.FromDateTime(competitor.FechaNacimiento.AddYears(age).Date))
+            {
+                age--;
+            }
+
+            var registeredCategoryIds = await inscriptionRepository.ListRegisteredCategoryIdsAsync(
+                parsedCompetitorId, parsedEventId, cancellationToken);
+
+            var filtered = result.Data
+                .Where(x => IsGenderCompatible(competitor.Genero, x.Gender))
+                .Where(x => !x.AgeRestriction || (x.MinAge <= age && x.MaxAge >= age))
+                .Where(x => !registeredCategoryIds.Contains(x.CategoryId))
+                .ToList();
             result = result with { Data = filtered };
+
+            var eventDto = await dispatcher.Send(new GetEventByIdQuery(parsedEventId), cancellationToken);
+            var activePlan = await inscriptionRepository.GetActiveMembershipPlanForEventAsync(
+                parsedCompetitorId, parsedEventId, eventDto.CircuitId, cancellationToken);
+            existingMembershipPlan = activePlan?.ToString();
         }
 
-        return Ok(ApiContractMapper.ToContract(result));
+        var contract = ApiContractMapper.ToContract(result);
+        if (existingMembershipPlan is not null)
+        {
+            contract.AdditionalProperties["existingMembershipPlan"] = existingMembershipPlan;
+        }
+
+        return Ok(contract);
     }
 
     [HttpPut]

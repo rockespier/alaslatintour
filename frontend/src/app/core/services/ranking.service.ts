@@ -34,8 +34,8 @@ export interface RankingResult {
 export class RankingService {
   private api = inject(ApiService);
 
-  async getCategories(): Promise<RankingCategory[]> {
-    const res = await this.api.get<any>('/rankings/categories');
+  async getCategories(circuitId?: string): Promise<RankingCategory[]> {
+    const res = await this.api.get<any>(`/rankings/categories${circuitId ? `?circuitId=${encodeURIComponent(circuitId)}` : ''}`);
     return (res?.data ?? []).map((d: any) => ({
       id: d.id ?? '',
       nombre: d.nombre ?? '',
@@ -48,9 +48,11 @@ export class RankingService {
     year?: number,
     page = 1,
     limit = 10,
+    circuitId?: string,
   ): Promise<RankingResult> {
     let path = `/rankings?categoryId=${encodeURIComponent(categoryId)}&page=${page}&limit=${limit}`;
     if (year) path += `&year=${year}`;
+    if (circuitId) path += `&circuitId=${encodeURIComponent(circuitId)}`;
 
     const res = await this.api.get<any>(path);
 

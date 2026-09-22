@@ -179,16 +179,13 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @for (cat of categories(); track cat.id) {
                   <div class="category-card rounded-xl p-5"
-                       [class.selected]="selectedCategoryId() === cat.id"
+                       [class.selected]="selectedCategoryIds().has(cat.id)"
                        [class.opacity-50]="isFull(cat)"
                        (click)="selectCategory(cat)">
                     <div class="flex items-start justify-between gap-3">
                       <div class="flex items-center gap-3">
-                        <div class="w-5 h-5 rounded-full border-2 border-cyan-brand flex items-center justify-center flex-shrink-0">
-                          @if (selectedCategoryId() === cat.id) {
-                            <div class="w-2.5 h-2.5 rounded-full bg-cyan-brand"></div>
-                          }
-                        </div>
+                        <input type="checkbox" [checked]="selectedCategoryIds().has(cat.id)" (click)="$event.stopPropagation()" (change)="selectCategory(cat)"
+                               class="w-5 h-5 rounded border-navy-mid bg-navy-deepest accent-cyan-brand flex-shrink-0" [attr.aria-label]="'Seleccionar ' + cat.nombre">
                         <div>
                           <h4 class="font-heading text-lg leading-tight">{{ cat.nombre }}</h4>
                           <p class="text-xs font-accent uppercase tracking-wider mt-0.5"
@@ -210,15 +207,15 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
               </div>
             }
 
-            @if (selectedCategory()) {
+            @if (selectedCategories().length) {
               <div class="mt-6 p-5 rounded-xl bg-navy-deepest border border-navy-mid flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Categoría seleccionada</p>
-                  <p class="font-heading text-xl mt-1">{{ selectedCategory()!.nombre }}</p>
+                  <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Categorías seleccionadas</p>
+                  <p class="font-heading text-xl mt-1">{{ selectedCategoryNames() }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Tarifa</p>
-                  <p class="font-heading text-3xl text-cyan-brand mt-1">{{ formatUSD(selectedCategory()!.tarifa) }}<span class="text-base text-text-muted ml-1">USD</span></p>
+                  <p class="font-accent uppercase tracking-wider text-xs text-text-muted">Tarifas</p>
+                  <p class="font-heading text-3xl text-cyan-brand mt-1">{{ formatUSD(categoryAmount()) }}<span class="text-base text-text-muted ml-1">USD</span></p>
                 </div>
               </div>
             }
@@ -226,9 +223,9 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
             <div class="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
               <button (click)="step.set(1)" class="px-5 py-3 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">← Anterior</button>
               <button (click)="goToStep3()"
-                      [disabled]="!selectedCategoryId()"
+                      [disabled]="!selectedCategoryIds().size"
                       class="px-7 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition shadow-lg"
-                      [class]="selectedCategoryId() ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
+                      [class]="selectedCategoryIds().size ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
                 Siguiente →
               </button>
             </div>
@@ -245,11 +242,11 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
               <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-4">Resumen de inscripción</p>
               <div class="space-y-3 text-sm">
                 <div class="flex justify-between"><span class="text-text-muted">Evento</span><span>{{ event()?.nombre }}</span></div>
-                <div class="flex justify-between"><span class="text-text-muted">Categoría</span><span>{{ selectedCategory()?.nombre }}</span></div>
+                <div class="flex justify-between"><span class="text-text-muted">Categorías</span><span>{{ selectedCategoryNames() }}</span></div>
                 @if (shirtNumber) {
                   <div class="flex justify-between"><span class="text-text-muted">Camiseta solicitada</span><span>#{{ shirtNumber }}</span></div>
                 }
-                <div class="flex justify-between"><span class="text-text-muted">Tarifa de categoría</span><span>{{ formatUSD(selectedCategory()?.tarifa ?? 0) }}</span></div>
+                <div class="flex justify-between"><span class="text-text-muted">Tarifas de categorías</span><span>{{ formatUSD(categoryAmount()) }}</span></div>
                 @if (membershipFeeUsd() > 0) {
                   <div class="flex justify-between"><span class="text-text-muted">Membresía ({{ membershipPlanLabel() }})</span><span>{{ formatUSD(membershipFeeUsd()) }}</span></div>
                 }
@@ -260,6 +257,22 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
               </div>
               <p class="text-[11px] text-text-muted mt-3">Si aplica una cuota administrativa, se sumará al total y quedará reflejada en la confirmación de tu inscripción.</p>
             </div>
+
+            @if (existingMembershipPlan()) {
+              <div class="bg-navy-deepest border border-cyan-brand/40 rounded-xl p-5 mb-6 flex items-start gap-3">
+                <svg class="h-5 w-5 text-cyan-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                  <p class="font-heading text-base">Ya tienes una membresía {{ existingMembershipLabel() }} vigente</p>
+                  <p class="text-xs text-text-muted mt-1">
+                    @if (existingMembershipPlan() === 'Anual') {
+                      Cubre todos los eventos del circuito de esta temporada. No necesitas volver a pagarla.
+                    } @else {
+                      Cubre todas las categorías de este evento. No necesitas volver a pagarla.
+                    }
+                  </p>
+                </div>
+              </div>
+            }
 
             @if (hasMembershipOptions()) {
               <div class="bg-navy-deepest border border-navy-mid rounded-xl p-5 mb-6">
@@ -360,7 +373,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
             <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
               <button (click)="step.set(2)" class="px-5 py-3 rounded-md border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase tracking-wider text-sm transition">← Anterior</button>
               <button (click)="confirm()"
-                      [disabled]="!paymentMethod() || submitting()"
+                    [disabled]="!paymentMethod() || submitting() || !consentsAccepted()"
                       class="px-8 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition shadow-lg"
                       [class]="paymentMethod() && !submitting() ? 'bg-orange-brand hover:bg-orange-light text-white shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
                 {{ submitting() ? 'Procesando...' : 'Confirmar y pagar' }}
@@ -391,8 +404,9 @@ export class InscripcionComponent implements OnInit {
   loadingCategories = signal(false);
   submitting = signal(false);
   errorMessage = signal('');
-  selectedCategoryId = signal('');
+  selectedCategoryIds = signal<Set<string>>(new Set());
   membershipPlan = signal<MembershipPlanChoice>('');
+  existingMembershipPlan = signal<'Anual' | 'PorEvento' | null>(null);
   paymentMethod = signal<'paypal' | 'beach' | ''>('');
   reglamentoAccepted = false;
   riesgosAccepted = false;
@@ -406,9 +420,10 @@ export class InscripcionComponent implements OnInit {
     { num: 3, label: 'Pago' },
   ];
 
-  selectedCategory = computed(() =>
-    this.categories().find(c => c.id === this.selectedCategoryId()) ?? null
-  );
+  selectedCategories = computed(() => this.categories().filter(c => this.selectedCategoryIds().has(c.id)));
+  selectedCategoryNames = computed(() => this.selectedCategories().map(c => c.nombre).join(', '));
+  selectedCategory = computed(() => this.selectedCategories()[0] ?? null);
+  categoryAmount = computed(() => this.selectedCategories().reduce((total, category) => total + category.tarifa, 0));
 
   membershipFeeUsd = computed(() => {
     const cat = this.selectedCategory();
@@ -418,7 +433,7 @@ export class InscripcionComponent implements OnInit {
     return 0;
   });
 
-  totalAmount = computed(() => (this.selectedCategory()?.tarifa ?? 0) + this.membershipFeeUsd());
+  totalAmount = computed(() => this.categoryAmount() + this.membershipFeeUsd());
 
   constructor() {
     effect(() => {
@@ -451,6 +466,7 @@ export class InscripcionComponent implements OnInit {
       const competitorId = this.auth.currentUser()?.competitorId;
       const query = competitorId ? `?competitorId=${encodeURIComponent(competitorId)}` : '';
       const res = await this.api.get<any>(`/events/${this.eventId()}/categories${query}`);
+      this.existingMembershipPlan.set(res?.existingMembershipPlan ?? null);
       const raw: any[] = res?.data ?? [];
       const mapped = raw.map(c => ({
         id: c.categoryId,
@@ -519,7 +535,11 @@ export class InscripcionComponent implements OnInit {
 
   selectCategory(cat: EventCategory): void {
     if (!this.isFull(cat)) {
-      this.selectedCategoryId.set(cat.id);
+      this.selectedCategoryIds.update(selected => {
+        const next = new Set(selected);
+        next.has(cat.id) ? next.delete(cat.id) : next.add(cat.id);
+        return next;
+      });
       this.membershipPlan.set('');
     }
   }
@@ -529,8 +549,13 @@ export class InscripcionComponent implements OnInit {
   }
 
   hasMembershipOptions(): boolean {
+    if (this.existingMembershipPlan()) return false;
     const cat = this.selectedCategory();
     return !!cat && (cat.membresiaAnualUsd > 0 || cat.membresiaPorEventoUsd > 0);
+  }
+
+  existingMembershipLabel(): string {
+    return this.existingMembershipPlan() === 'Anual' ? 'Anual' : 'Por evento';
   }
 
   membershipPlanLabel(): string {
@@ -549,7 +574,7 @@ export class InscripcionComponent implements OnInit {
   }
 
   goToStep3(): void {
-    if (this.selectedCategoryId()) this.step.set(3);
+    if (this.selectedCategoryIds().size) this.step.set(3);
   }
 
   async confirm(): Promise<void> {
@@ -557,10 +582,10 @@ export class InscripcionComponent implements OnInit {
     this.submitting.set(true);
     this.errorMessage.set('');
     try {
-      const inscRes = await this.api.post<any>('/inscriptions', {
+      const inscRes = await this.api.post<any>('/inscriptions/bulk', {
         competitorId: this.auth.currentUser()?.competitorId,
         eventId: this.eventId(),
-        categoryId: this.selectedCategoryId(),
+        categoryIds: Array.from(this.selectedCategoryIds()),
         paymentMethod: this.paymentMethod() === 'beach' ? 'beach' : 'Paypal',
         shirtNumber: this.shirtNumber != null ? String(this.shirtNumber) : undefined,
         membershipPlan: this.membershipPlan() || undefined,
@@ -568,7 +593,7 @@ export class InscripcionComponent implements OnInit {
         riesgosAceptados: this.riesgosAccepted,
         usoImagenAceptado: this.usoImagenAccepted,
       });
-      const inscriptionId: string = inscRes?.data?.id ?? inscRes?.id;
+      const inscriptionId: string = inscRes?.primaryInscriptionId ?? inscRes?.data?.primaryInscriptionId;
 
       if (this.paymentMethod() === 'beach') {
         this.router.navigate(['/pago-playa', inscriptionId]);
@@ -591,7 +616,8 @@ export class InscripcionComponent implements OnInit {
         }
       }
     } catch (err: any) {
-      this.errorMessage.set(err?.body?.message ?? err?.message ?? 'Error al procesar la inscripción. Inténtalo de nuevo.');
+      const fieldErrors = Object.values(err?.body?.errors ?? {}).flat().filter(Boolean).join(' ');
+      this.errorMessage.set(fieldErrors || (err?.body?.message ?? err?.message ?? 'Error al procesar la inscripción. Inténtalo de nuevo.'));
     } finally {
       this.submitting.set(false);
     }

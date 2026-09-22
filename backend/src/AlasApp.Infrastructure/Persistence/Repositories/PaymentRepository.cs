@@ -92,6 +92,14 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
         var paypalConfirmed = currentConfirmed.Where(x => x.Method == PaymentMethod.Paypal).ToList();
         var beachConfirmed = currentConfirmed.Where(x => x.Method == PaymentMethod.Beach).ToList();
 
+        var membresiasDelMes = await dbContext.Payments
+            .AsNoTracking()
+            .Where(x => x.Status == PaymentStatusAdmin.Confirmado
+                && x.Fecha >= currentMonthStart && x.Fecha < nextMonthStart
+                && x.Inscription != null && x.Inscription.MembershipFeeUsd > 0)
+            .Select(x => x.Inscription!.MembershipFeeUsd)
+            .ToListAsync(cancellationToken);
+
         var beachPendingCount = await dbContext.Payments
             .AsNoTracking()
             .CountAsync(
@@ -111,7 +119,50 @@ public sealed class PaymentRepository(AlasAppDbContext dbContext) : IPaymentRepo
             tendenciaPercent,
             new PaymentKpiBucketDto(paypalConfirmed.Sum(x => x.AmountUsd), paypalConfirmed.Count),
             new PaymentKpiBeachBucketDto(beachConfirmed.Sum(x => x.AmountUsd), beachConfirmed.Count, beachPendingCount),
-            new PaymentKpiBucketDto(0m, 0));
+            new PaymentKpiBucketDto(membresiasDelMes.Sum(), membresiasDelMes.Count));
+    }
+
+    public async Task<PagedResult<MembershipPaymentRowDto>> ListMembershipPaymentsAsync(int page, int limit, CancellationToken cancellationToken)
+    {
+        page = page <= 0 ? 1 : page;
+        limit = limit <= 0 ? 20 : limit;
+
+        var query = dbContext.Payments
+            .AsNoTracking()
+            .Where(x => x.Status == PaymentStatusAdmin.Confirmado
+                && x.Inscription != null
+                && x.Inscription.MembershipFeeUsd > 0
+                && x.Inscription.MembershipPlan != null)
+            .Select(x => new
+            {
+                x.Id,
+                CompetitorName = x.Inscription!.Competitor != null ? $"{x.Inscription.Competitor.Nombre} {x.Inscription.Competitor.Apellido}" : string.Empty,
+                x.Fecha,
+                MembershipPlan = x.Inscription.MembershipPlan!.Value,
+                EventName = x.Inscription.Event != null ? x.Inscription.Event.Nombre : string.Empty,
+                CircuitName = x.Inscription.Event != null && x.Inscription.Event.Circuit != null ? x.Inscription.Event.Circuit.Nombre : string.Empty,
+                x.Method,
+                MembershipFeeUsd = x.Inscription.MembershipFeeUsd
+            });
+
+        var totalItems = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderByDescending(x => x.Fecha)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+
+        var rows = items.Select(x => new MembershipPaymentRowDto(
+            x.Id,
+            x.CompetitorName,
+            x.Fecha,
+            x.MembershipPlan,
+            x.MembershipPlan == MembershipPlanOption.PorEvento ? x.EventName : null,
+            x.CircuitName,
+            x.Method,
+            x.MembershipFeeUsd)).ToList();
+
+        return new PagedResult<MembershipPaymentRowDto>(rows, page, limit, totalItems);
     }
 
     private IQueryable<Payment> BuildPaymentBaseQuery()
