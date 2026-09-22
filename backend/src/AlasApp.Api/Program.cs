@@ -20,7 +20,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 builder.Services
-    .AddControllers()
+    .AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true)
     .AddNewtonsoftJson();
 
 var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

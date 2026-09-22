@@ -1,8 +1,9 @@
 using AlasApp.Application.Abstractions.Services;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
+using MimeKit;
 
 namespace AlasApp.Infrastructure.Email;
 
@@ -24,39 +25,41 @@ public sealed class SmtpEmailSender(
 
         Validate(options);
 
-        using var smtpClient = new SmtpClient(options.Host.Trim(), options.Port)
-        {
-            EnableSsl = options.EnableSsl,
-            Credentials = new NetworkCredential(options.Username.Trim(), options.Password)
-        };
+        var mimeMessage = new MimeMessage();
+        mimeMessage.From.Add(string.IsNullOrWhiteSpace(options.FromName)
+            ? new MailboxAddress(options.FromEmail.Trim(), options.FromEmail.Trim())
+            : new MailboxAddress(options.FromName.Trim(), options.FromEmail.Trim()));
+        mimeMessage.To.Add(MailboxAddress.Parse(message.To.Trim()));
+        mimeMessage.Subject = message.Subject.Trim();
 
-        var fromAddress = string.IsNullOrWhiteSpace(options.FromName)
-            ? new MailAddress(options.FromEmail.Trim())
-            : new MailAddress(options.FromEmail.Trim(), options.FromName.Trim());
-
-        using var mailMessage = new MailMessage
+        var bodyBuilder = new BodyBuilder();
+        if (!string.IsNullOrWhiteSpace(message.HtmlBody))
         {
-            From = fromAddress,
-            Subject = message.Subject.Trim(),
-            Body = string.IsNullOrWhiteSpace(message.HtmlBody) ? message.TextBody : message.HtmlBody,
-            IsBodyHtml = !string.IsNullOrWhiteSpace(message.HtmlBody)
-        };
-        mailMessage.To.Add(message.To.Trim());
+            bodyBuilder.HtmlBody = message.HtmlBody;
+            bodyBuilder.TextBody = message.TextBody;
+        }
+        else
+        {
+            bodyBuilder.TextBody = message.TextBody;
+        }
+
+        mimeMessage.Body = bodyBuilder.ToMessageBody();
 
         logger.LogInformation("Enviando correo via SMTP a {Recipient} con asunto {Subject}.", message.To, message.Subject);
 
+        using var smtpClient = new SmtpClient();
         try
         {
-            await smtpClient.SendMailAsync(mailMessage, cancellationToken);
+            var secureSocketOptions = options.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
+            await smtpClient.ConnectAsync(options.Host.Trim(), options.Port, secureSocketOptions, cancellationToken);
+            await smtpClient.AuthenticateAsync(options.Username.Trim(), options.Password, cancellationToken);
+            await smtpClient.SendAsync(mimeMessage, cancellationToken);
+            await smtpClient.DisconnectAsync(true, cancellationToken);
             logger.LogInformation("Correo enviado via SMTP a {Recipient}.", message.To);
         }
-        catch (SmtpException exception)
+        catch (Exception exception) when (exception is SmtpCommandException or SmtpProtocolException or AuthenticationException)
         {
-            logger.LogWarning(
-                exception,
-                "SMTP rechazo el envio a {Recipient}. StatusCode: {StatusCode}.",
-                message.To,
-                exception.StatusCode);
+            logger.LogWarning(exception, "SMTP rechazo el envio a {Recipient}.", message.To);
             throw;
         }
     }

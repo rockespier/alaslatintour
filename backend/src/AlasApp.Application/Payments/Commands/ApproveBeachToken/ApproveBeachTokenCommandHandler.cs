@@ -36,7 +36,14 @@ public sealed class ApproveBeachTokenCommandHandler(
             var approvedToken = await beachTokenRepository.GetAdminByIdAsync(token.Id, clock.UtcNow, cancellationToken)
                 ?? throw new NotFoundException("Token no encontrado despues de aprobarlo.");
 
-            await SendApprovalEmailAsync(approvedToken, cancellationToken);
+            try
+            {
+                await SendApprovalEmailAsync(approvedToken, cancellationToken);
+            }
+            catch
+            {
+                // El token ya quedo aprobado; el correo es secundario y no debe revertir ni fallar la aprobacion.
+            }
 
             return approvedToken;
         }
