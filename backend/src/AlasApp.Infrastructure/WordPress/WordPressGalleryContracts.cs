@@ -12,10 +12,10 @@ internal sealed record WordPressGalleryPhotoDto(
 
 internal sealed record WordPressGalleryDayDto(
     [property: JsonPropertyName("day_name")] string? DayName,
-    [property: JsonPropertyName("photos")] IReadOnlyList<WordPressGalleryPhotoDto>? Photos);
+    [property: JsonPropertyName("photos"), JsonConverter(typeof(AcfListConverter<WordPressGalleryPhotoDto>))] IReadOnlyList<WordPressGalleryPhotoDto>? Photos);
 
 internal sealed record WordPressGalleryAcfDto(
-    [property: JsonPropertyName("gallery_days")] IReadOnlyList<WordPressGalleryDayDto>? GalleryDays,
+    [property: JsonPropertyName("gallery_days"), JsonConverter(typeof(AcfListConverter<WordPressGalleryDayDto>))] IReadOnlyList<WordPressGalleryDayDto>? GalleryDays,
     [property: JsonPropertyName("press_download_link")] string? PressDownloadLink,
     [property: JsonPropertyName("event_date")] string? EventDate);
 

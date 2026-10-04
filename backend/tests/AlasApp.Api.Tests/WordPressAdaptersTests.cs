@@ -301,6 +301,45 @@ public sealed class WordPressAdaptersTests
         Assert.Equal(expected, string.Join(',', result!.Translations!.Select(t => $"{t.Key}={t.Value}")));
     }
 
+    [Fact]
+    public async Task GalleryService_ListAsync_ShouldTreatEmptyAcfFieldsAsEmptyLists()
+    {
+        // ACF sends "" / false for an empty gallery or repeater instead of [].
+        const string payload = """
+        [
+          {
+            "id": 1,
+            "slug": "dia-4",
+            "title": { "rendered": "Día 4" },
+            "acf": {
+              "gallery_days": [
+                { "day_name": "4", "photos": "" },
+                { "day_name": "5", "photos": [ { "id": 7, "url": "https://cdn.test/7.jpg", "width": 700, "height": 467 } ] }
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "slug": "sin-dias",
+            "title": { "rendered": "Sin días" },
+            "acf": { "gallery_days": false }
+          }
+        ]
+        """;
+
+        var handler = new StubHttpMessageHandler(_ => CreateJsonResponse(payload));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/gallery/")
+        };
+
+        var result = await new GalleryService(client).ListAsync(null, CancellationToken.None);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(1, result.Single(g => g.Slug == "dia-4").PhotoCount);
+        Assert.Equal(0, result.Single(g => g.Slug == "sin-dias").PhotoCount);
+    }
+
     private static string GalleryPayload(params (string Slug, string LangJson)[] posts)
     {
         return "[" + string.Join(',', posts.Select((p, i) =>
