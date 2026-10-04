@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { moduleGuard } from './core/guards/module.guard';
+import { competitorGuard } from './core/guards/competitor.guard';
+import { langGuard, langPrefixMatcher } from './core/i18n/lang.guard';
 // mi-panel route moved inside public-layout to avoid double navbar
 
-export const routes: Routes = [
+// Public site + competitor panel + auth. Mounted twice: at the root (Spanish)
+// and behind the `/en` | `/pt` prefix. Route titles are Transloco keys.
+const appChildren: Routes = [
   // ── Portal Público ───────────────────────────────────────────
   {
     path: '',
@@ -13,17 +16,17 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./features/public/home/home.component').then(m => m.HomeComponent),
-        title: 'ALAS Latin Tour — Surf Profesional Latinoamericano',
+        title: 'titles.home',
       },
       {
         path: 'quienes-somos',
         loadComponent: () => import('./features/public/quienes-somos/quienes-somos.component').then(m => m.QuienesSomosComponent),
-        title: 'Quiénes Somos — ALAS Latin Tour',
+        title: 'titles.about',
       },
       {
         path: 'noticias',
         loadComponent: () => import('./features/public/noticias/noticias.component').then(m => m.NoticiasComponent),
-        title: 'Noticias — ALAS Latin Tour',
+        title: 'titles.news',
       },
       {
         path: 'noticias/:slug',
@@ -32,17 +35,17 @@ export const routes: Routes = [
       {
         path: 'galerias/:slug',
         loadComponent: () => import('./features/public/galeria-detalle/galeria-detalle.component').then(m => m.GaleriaDetalleComponent),
-        title: 'Galería — ALAS Latin Tour',
+        title: 'titles.gallery',
       },
       {
         path: 'ranking',
         loadComponent: () => import('./features/public/ranking/ranking.component').then(m => m.RankingComponent),
-        title: 'Ranking — ALAS Latin Tour',
+        title: 'titles.ranking',
       },
       {
         path: 'eventos',
         loadComponent: () => import('./features/competitor/eventos/eventos.component').then(m => m.EventosComponent),
-        title: 'Eventos — ALAS Latin Tour',
+        title: 'titles.events',
       },
       {
         path: 'calendario',
@@ -51,54 +54,54 @@ export const routes: Routes = [
       },
       {
         path: 'inscripcion/:eventId',
-        canActivate: [authGuard],
+        canActivate: [competitorGuard],
         loadComponent: () => import('./features/competitor/inscripcion/inscripcion.component').then(m => m.InscripcionComponent),
-        title: 'Inscripción — ALAS Latin Tour',
+        title: 'titles.inscription',
       },
       {
         path: 'pago-playa/:inscriptionId',
-        canActivate: [authGuard],
+        canActivate: [competitorGuard],
         loadComponent: () => import('./features/competitor/pago-playa/pago-playa.component').then(m => m.PagoPlayaComponent),
-        title: 'Pago en Playa — ALAS Latin Tour',
+        title: 'titles.beachPayment',
       },
       {
         path: 'paypal/retorno',
-        canActivate: [authGuard],
+        canActivate: [competitorGuard],
         loadComponent: () => import('./features/competitor/paypal-return/paypal-return.component').then(m => m.PaypalReturnComponent),
-        title: 'Confirmación PayPal — ALAS Latin Tour',
+        title: 'titles.paypalReturn',
       },
       {
         path: 'paypal/cancelado',
-        canActivate: [authGuard],
+        canActivate: [competitorGuard],
         loadComponent: () => import('./features/competitor/paypal-return/paypal-return.component').then(m => m.PaypalReturnComponent),
-        title: 'Pago PayPal cancelado — ALAS Latin Tour',
+        title: 'titles.paypalCancelled',
       },
       // ── Panel Competidor (nested inside public-layout for shared navbar) ──
       {
         path: 'mi-panel',
-        canActivate: [authGuard],
+        canActivate: [competitorGuard],
         loadComponent: () => import('./layouts/mi-panel-layout/mi-panel-layout.component').then(m => m.MiPanelLayoutComponent),
         children: [
           { path: '', redirectTo: 'inscripciones', pathMatch: 'full' },
           {
             path: 'inscripciones',
             loadComponent: () => import('./features/competitor/mi-panel/mis-inscripciones/mis-inscripciones.component').then(m => m.MisInscripcionesComponent),
-            title: 'Mis Inscripciones — ALAS Latin Tour',
+            title: 'titles.myInscriptions',
           },
           {
             path: 'historial',
             loadComponent: () => import('./features/competitor/mi-panel/historial-puntos/historial-puntos.component').then(m => m.HistorialPuntosComponent),
-            title: 'Historial de Puntos — ALAS Latin Tour',
+            title: 'titles.pointsHistory',
           },
           {
             path: 'calendario',
             loadComponent: () => import('./features/competitor/mi-panel/mi-calendario/mi-calendario.component').then(m => m.MiCalendarioComponent),
-            title: 'Mi Calendario — ALAS Latin Tour',
+            title: 'titles.myCalendar',
           },
           {
             path: 'datos',
             loadComponent: () => import('./features/competitor/mi-panel/datos-personales/datos-personales.component').then(m => m.DatosPersonalesComponent),
-            title: 'Datos Personales — ALAS Latin Tour',
+            title: 'titles.personalData',
           },
         ],
       },
@@ -109,25 +112,27 @@ export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent),
-    title: 'Iniciar Sesión — ALAS Latin Tour',
+    title: 'titles.login',
   },
   {
     path: 'registro',
     loadComponent: () => import('./features/auth/registro/registro.component').then(m => m.RegistroComponent),
-    title: 'Registro — ALAS Latin Tour',
+    title: 'titles.register',
   },
   {
     path: 'recuperar-password',
     loadComponent: () => import('./features/auth/recuperar-password/recuperar-password.component').then(m => m.RecuperarPasswordComponent),
-    title: 'Recuperar Contraseña — ALAS Latin Tour',
+    title: 'titles.forgotPassword',
   },
   {
     path: 'restablecer-password',
     loadComponent: () => import('./features/auth/restablecer-password/restablecer-password.component').then(m => m.RestablecerPasswordComponent),
-    title: 'Restablecer Contraseña — ALAS Latin Tour',
+    title: 'titles.resetPassword',
   },
+];
 
-  // ── Admin ──────────────────────────────────────────────────
+export const routes: Routes = [
+  // ── Admin (solo español, sin prefijo de idioma) ──────────
   {
     path: 'admin',
     canActivate: [adminGuard],
@@ -208,6 +213,10 @@ export const routes: Routes = [
       },
     ],
   },
+
+  // ── Sitio localizado ──────────────────────────────────────
+  { matcher: langPrefixMatcher, canActivate: [langGuard], children: appChildren },
+  { path: '', canActivate: [langGuard], children: appChildren },
 
   // ── Fallback ───────────────────────────────────────────────
   { path: '**', redirectTo: '' },

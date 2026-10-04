@@ -36,6 +36,8 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
             query.Add($"search={Uri.EscapeDataString(filter.Search.Trim())}");
         }
 
+        AddLang(query, filter.Lang);
+
         using var request = new HttpRequestMessage(HttpMethod.Get, BuildRelativeUri(query));
         using var response = await httpClient.SendAsync(request, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
@@ -47,9 +49,12 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
         return new PagedResult<ArticleSummaryDto>(items, page, limit, totalItems > 0 ? totalItems : items.Count);
     }
 
-    public async Task<ArticleDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    public async Task<ArticleDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(BuildRelativeUri(["_embed=1", $"slug={Uri.EscapeDataString(slug)}"]), cancellationToken);
+        var query = new List<string> { "_embed=1", $"slug={Uri.EscapeDataString(slug)}" };
+        AddLang(query, lang);
+
+        using var response = await httpClient.GetAsync(BuildRelativeUri(query), cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -183,7 +188,8 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
             mapped.RelatedEventId,
             mapped.Slug,
             mapped.FechaPublicacion,
-            mapped.TiempoLecturaMin);
+            mapped.TiempoLecturaMin,
+            PolylangFields.Translations(post.Translations));
     }
 
     private async Task<MappedWordPressArticle> MapCoreAsync(WordPressPostDto post, CancellationToken cancellationToken)
@@ -256,6 +262,15 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
                 article.RelatedEventId,
                 article.ImagenUrl,
                 string.Join(',', article.Tags)));
+    }
+
+    // WPML/Polylang convention: `?lang=xx`. Without it WordPress keeps its current default behavior.
+    private static void AddLang(List<string> query, string? lang)
+    {
+        if (!string.IsNullOrWhiteSpace(lang))
+        {
+            query.Add($"lang={Uri.EscapeDataString(lang)}");
+        }
     }
 
     private static string BuildRelativeUri(IReadOnlyCollection<string> segments)

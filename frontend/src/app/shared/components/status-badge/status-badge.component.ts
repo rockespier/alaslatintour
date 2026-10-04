@@ -1,4 +1,5 @@
 import { Component, input, computed } from '@angular/core';
+import { EnumLabelPipe } from '../../pipes/enum-label.pipe';
 
 const STATUS_COLORS: Record<string, string> = {
   'Activo': 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -17,14 +18,17 @@ const STATUS_COLORS: Record<string, string> = {
 @Component({
   selector: 'app-status-badge',
   standalone: true,
+  imports: [EnumLabelPipe],
   template: `
     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ cssClass() }}">
-      {{ status() }}
+      {{ table() ? (status() | enumLabel: table()!) : status() }}
     </span>
   `,
 })
 export class StatusBadgeComponent {
   status = input.required<string>();
+  /** `enums.<table>` used to translate the wire value; omitted = shown as-is (admin). */
+  table = input<string>();
   cssClass = computed(() =>
     STATUS_COLORS[this.status()] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'
   );

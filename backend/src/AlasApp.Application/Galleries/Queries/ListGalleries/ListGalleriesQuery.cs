@@ -3,4 +3,4 @@ using AlasApp.Application.Galleries.Models;
 
 namespace AlasApp.Application.Galleries.Queries.ListGalleries;
 
-public sealed record ListGalleriesQuery : IRequest<IReadOnlyCollection<GallerySummaryDto>>;
+public sealed record ListGalleriesQuery(string? Lang = null) : IRequest<IReadOnlyCollection<GallerySummaryDto>>;

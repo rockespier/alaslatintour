@@ -91,7 +91,7 @@ internal sealed class FakeUploadWordPressService : IWordPressService
     public Task<PagedResult<ArticleSummaryDto>> ListArticlesAsync(ArticleListFilter filter, CancellationToken cancellationToken)
         => Task.FromResult(new PagedResult<ArticleSummaryDto>([], 1, 20, 0));
 
-    public Task<ArticleDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    public Task<ArticleDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
         => Task.FromResult<ArticleDetailDto?>(null);
 
     public Task<ArticleDetailDto> CreateAsync(ArticleUpsertDto article, CancellationToken cancellationToken)

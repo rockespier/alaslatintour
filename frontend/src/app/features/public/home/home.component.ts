@@ -2,8 +2,14 @@ import { AfterViewInit, Component, inject, signal, computed, OnInit, PLATFORM_ID
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Meta, Title, DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { SeoService } from '../../../core/i18n/seo.service';
+import { LocaleFormatService } from '../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
+import { EnumLabelPipe } from '../../../shared/pipes/enum-label.pipe';
 import { LiveStatusService } from '../../../core/services/live-status.service';
 import { RankingService, RankingCategory, RankingRow } from '../../../core/services/ranking.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
@@ -41,7 +47,8 @@ type ArticleCard = ArticleSummary;
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, ReactiveFormsModule, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, DecimalPipe, ReactiveFormsModule, StarRatingComponent, SurfscoresCreditComponent, LoadingSpinnerComponent, TranslocoModule, LocalizePathPipe, EnumLabelPipe],
+  providers: [provideTranslocoScope('public')],
   template: `
    <!-- ═══ EVENTO EN VIVO ═══ -->
     @if (liveStatus()?.isLive) {
@@ -58,7 +65,7 @@ type ArticleCard = ArticleSummary;
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                   </span>
-                  <span class="font-accent uppercase tracking-[0.15em] text-xs font-semibold">En Vivo Ahora</span>
+                  <span class="font-accent uppercase tracking-[0.15em] text-xs font-semibold">{{ 'public.home.live.now' | transloco }}</span>
                 </span>
                 <h2 class="font-heading text-3xl md:text-4xl leading-tight">{{ liveStatus()?.event?.nombre }}</h2>
                 <p class="text-text-muted mt-1.5 flex items-center gap-1.5 text-sm">
@@ -73,7 +80,7 @@ type ArticleCard = ArticleSummary;
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Ver LiveScore
+                    {{ 'public.home.live.liveScore' | transloco }}
                   </a>
                 }
                 @if (liveStatus()?.schedulePdfUrl) {
@@ -82,7 +89,7 @@ type ArticleCard = ArticleSummary;
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    Ver programación
+                    {{ 'public.home.live.schedule' | transloco }}
                   </a>
                 }
               </div>
@@ -94,7 +101,7 @@ type ArticleCard = ArticleSummary;
                 @if (liveEmbedUrl()) {
                   <div class="relative" style="padding-top: 56.25%">
                     <iframe class="absolute inset-0 w-full h-full" [src]="liveEmbedUrl()"
-                            title="Streaming en vivo — ALAS Latin Tour" frameborder="0"
+                            [title]="'public.home.live.streamTitle' | transloco" frameborder="0"
                             allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
                   </div>
                 }
@@ -108,7 +115,7 @@ type ArticleCard = ArticleSummary;
                 
                   <iframe class="rounded-xl overflow-hidden w-full" [style.height.px]="liveStatus()?.surfScoresHeight"
                           [src]="liveScoreboardUrl()"
-                          title="Marcador en vivo — SurfScores" frameborder="0"></iframe>
+                          [title]="'public.home.live.scoreboardTitle' | transloco" frameborder="0"></iframe>
                   <!--<app-surfscores-credit /> -->
                 
               </div>
@@ -122,22 +129,22 @@ type ArticleCard = ArticleSummary;
                 <div class="stat-card border border-navy-mid p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="lg:col-span-2 overflow-hidden gap-6 ring-1 ring-error-brand/20">
 				
-					  <p class="font-heading text-1xl uppercase tracking-wider mb-4">Detalles del evento</p>
+					  <p class="font-heading text-1xl uppercase tracking-wider mb-4">{{ 'public.home.live.details' | transloco }}</p>
 					  <dl class="space-y-3.5 text-sm">
 						<div class="flex items-start justify-between gap-3">
-						  <dt class="text-text-muted shrink-0">Sede</dt>
+						  <dt class="text-text-muted shrink-0">{{ 'public.home.live.venue' | transloco }}</dt>
 						  <dd class="font-medium text-right">{{ liveStatus()?.event?.playa }}</dd>
 						</div>
 						<div class="flex items-start justify-between gap-3">
-						  <dt class="text-text-muted shrink-0">Ciudad</dt>
+						  <dt class="text-text-muted shrink-0">{{ 'public.home.live.city' | transloco }}</dt>
 						  <dd class="font-medium text-right">{{ liveStatus()?.event?.ciudad }}</dd>
 						</div>
 						<div class="flex items-start justify-between gap-3">
-						  <dt class="text-text-muted shrink-0">País</dt>
+						  <dt class="text-text-muted shrink-0">{{ 'public.home.live.country' | transloco }}</dt>
 						  <dd class="font-medium text-right">{{ flagOf(liveStatus()?.event?.pais ?? '') }} {{ liveStatus()?.event?.pais }}</dd>
 						</div>
 						<div class="flex items-start justify-between gap-3 pt-3.5 border-t border-navy-mid/70">
-						  <dt class="text-text-muted shrink-0">Fechas</dt>
+						  <dt class="text-text-muted shrink-0">{{ 'public.home.live.dates' | transloco }}</dt>
 						  <dd class="font-medium text-right">
 							{{ formatDateRange(liveStatus()?.event?.fechaInicio ?? '', liveStatus()?.event?.fechaFin ?? '') }}
 						  </dd>
@@ -155,7 +162,7 @@ type ArticleCard = ArticleSummary;
       <video autoplay muted loop class="bg-video absolute inset-0 w-full h-full object-cover z-0" poster="https://www.alaslatintour.com/content/dist/images/fallback.jpg" preload="auto" playsinline>
         <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
         <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
-        Tu navegador no soporta video HTML5.
+        {{ 'public.home.hero.noVideo' | transloco }}
       </video>
       <div class="absolute inset-0 bg-black/35 pointer-events-none"
           style="background-image: radial-gradient(rgba(0,129,198,0.18) 1px, transparent 1px); background-size: 32px 32px;">
@@ -163,7 +170,7 @@ type ArticleCard = ArticleSummary;
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
         <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm md:text-base mb-4">
-          Temporada 2026 · Circuito Continental de Surfistas Profesionales
+          {{ 'public.home.hero.kicker' | transloco }}
         </p>
         <h1 class="font-heading font-bold leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
           ALAS<br />
@@ -171,33 +178,33 @@ type ArticleCard = ArticleSummary;
           <span class="text-text-light/90">2026</span>
         </h1>
         <p class="mt-6 max-w-2xl text-lg md:text-xl text-text-muted font-light leading-relaxed">
-          El circuito continental de surf de alto rendimiento. Doce países, dieciocho paradas, una sola pasión: las olas del continente.
+          {{ 'public.home.hero.text' | transloco }}
         </p>
         <div class="mt-10 flex flex-col sm:flex-row gap-4">
-          <a routerLink="/eventos"
+          <a [routerLink]="'/eventos' | localizePath"
              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition shadow-lg shadow-orange-brand/20">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            Ver Calendario
+            {{ 'public.home.hero.calendar' | transloco }}
           </a>
-          <a routerLink="/ranking"
+          <a [routerLink]="'/ranking' | localizePath"
              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan-brand hover:bg-cyan-dark text-white font-accent uppercase tracking-wider rounded-md transition shadow-lg shadow-cyan-brand/20">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 5V3h6v2m-7 0h8v3a4 4 0 01-8 0V5zm-2 0h2v1a6 6 0 01-6 6V9a4 4 0 014-4zm12 0h2a4 4 0 014 4v3a6 6 0 01-6-6V5zM12 12v6m-3 3h6"/>
             </svg>
-            Ranking Actual
+            {{ 'public.home.hero.ranking' | transloco }}
           </a>
         </div>
 
         <!-- Quick stats -->
         <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl">
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Eventos</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Países</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Competidores</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">Categorías</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.events' | transloco }}</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.countries' | transloco }}</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.competitors' | transloco }}</div></div>
+          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.categories' | transloco }}</div></div>
         </div>
       </div>
 
@@ -209,11 +216,11 @@ type ArticleCard = ArticleSummary;
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
           <div class="flex items-center gap-3 flex-wrap">
-            <h2 class="font-heading text-4xl md:text-5xl">Próximas paradas del circuito</h2>
-            <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-brand border border-orange-brand/30">Calendario 2026</span>
+            <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.events.title' | transloco }}</h2>
+            <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-brand border border-orange-brand/30">{{ 'public.home.events.badge' | transloco }}</span>
           </div>
-          <a routerLink="/eventos" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider flex items-center gap-1">
-            Ver todos los eventos
+          <a [routerLink]="'/eventos' | localizePath" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider flex items-center gap-1">
+            {{ 'public.home.events.viewAll' | transloco }}
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
             </svg>
@@ -221,9 +228,9 @@ type ArticleCard = ArticleSummary;
         </div>
 
         @if (loadingEvents()) {
-          <app-loading-spinner label="Cargando eventos..." />
+          <app-loading-spinner [label]="'public.home.events.loading' | transloco" />
         } @else if (events().length === 0) {
-          <p class="text-text-muted text-sm py-8 text-center">No hay eventos próximos disponibles.</p>
+          <p class="text-text-muted text-sm py-8 text-center">{{ 'public.home.events.empty' | transloco }}</p>
         } @else {
           <div class="flex gap-5 overflow-x-auto pb-4 scroll-snap-x lg:grid lg:grid-cols-4 lg:overflow-visible">
             @for (event of events(); track event.id) {
@@ -239,7 +246,7 @@ type ArticleCard = ArticleSummary;
                   }
                   <span [class]="statusClass(event.statusPublic)"
                         class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider">
-                    {{ event.statusPublic }}
+                    {{ event.statusPublic | enumLabel: 'eventStatusPublic' }}
                   </span>
                   @if (event.imagenUrl) {
                     <span class="absolute top-3 left-3 text-2xl drop-shadow">{{ flagOf(event.pais) }}</span>
@@ -255,9 +262,9 @@ type ArticleCard = ArticleSummary;
                     </p>
                   </div>
                   <div class="mt-3">
-                    <a [routerLink]="['/inscripcion', event.id]"
+                    <a [routerLink]="('/inscripcion/' + event.id) | localizePath"
                        class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
-                      Ver evento
+                      {{ 'public.home.events.view' | transloco }}
                     </a>
                   </div>
                 </div>
@@ -277,10 +284,10 @@ type ArticleCard = ArticleSummary;
               <div class="flex items-center gap-3 mb-2">
                 <span class="live-dot"></span>
                 <span class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">
-                  @if (rankingCachedAgo()) { {{ rankingCachedAgo() }} } @else { Actualizado }
+                  @if (rankingCachedAgo()) { {{ rankingCachedAgo() }} } @else { {{ 'common.updated' | transloco }} }
                 </span>
               </div>
-              <h2 class="font-heading text-3xl md:text-4xl">Ranking {{ currentYear }}</h2>
+              <h2 class="font-heading text-3xl md:text-4xl">{{ 'public.home.ranking.title' | transloco: { year: currentYear } }}</h2>
             </div>
             @if (rankingCategories().length > 0) {
               <select
@@ -301,12 +308,12 @@ type ArticleCard = ArticleSummary;
               <table class="w-full text-sm">
                 <thead class="bg-navy-mid/40 font-accent uppercase tracking-wider text-text-muted text-xs">
                   <tr>
-                    <th class="px-4 py-3 text-left">Pos</th>
-                    <th class="px-4 py-3 text-left">Surfista</th>
-                    <th class="px-4 py-3 text-left">País</th>
-                    <th class="px-4 py-3 text-right hidden md:table-cell">Eventos</th>
-                    <th class="px-4 py-3 text-right">Puntos</th>
-                    <th class="px-4 py-3 text-right">Var.</th>
+                    <th class="px-4 py-3 text-left">{{ 'public.home.ranking.pos' | transloco }}</th>
+                    <th class="px-4 py-3 text-left">{{ 'public.home.ranking.surfer' | transloco }}</th>
+                    <th class="px-4 py-3 text-left">{{ 'public.home.ranking.country' | transloco }}</th>
+                    <th class="px-4 py-3 text-right hidden md:table-cell">{{ 'public.home.ranking.events' | transloco }}</th>
+                    <th class="px-4 py-3 text-right">{{ 'public.home.ranking.points' | transloco }}</th>
+                    <th class="px-4 py-3 text-right">{{ 'public.home.ranking.change' | transloco }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-navy-mid/50">
@@ -335,9 +342,9 @@ type ArticleCard = ArticleSummary;
 
           <footer class="p-6 flex items-center justify-between bg-navy-deepest/40 border-t border-navy-mid">
             <app-surfscores-credit />
-            <a routerLink="/ranking"
+            <a [routerLink]="'/ranking' | localizePath"
                class="px-6 py-2.5 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition">
-              Ver Ranking Completo
+              {{ 'public.home.ranking.viewFull' | transloco }}
             </a>
           </footer>
         </div>
@@ -348,16 +355,16 @@ type ArticleCard = ArticleSummary;
     <section class="py-14 px-4 sm:px-6 lg:px-8 bg-navy-deepest">
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
-          <h2 class="font-heading text-4xl md:text-5xl">Últimas Noticias</h2>
-          <a routerLink="/noticias" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider">
-            Ver todas →
+          <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.news.title' | transloco }}</h2>
+          <a [routerLink]="'/noticias' | localizePath" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider">
+            {{ 'common.viewAll' | transloco }}
           </a>
         </div>
 
         @if (loadingArticles()) {
           <app-loading-spinner />
         } @else if (articles().length === 0) {
-          <p class="text-text-muted text-sm py-8 text-center">No hay noticias disponibles.</p>
+          <p class="text-text-muted text-sm py-8 text-center">{{ 'public.home.news.empty' | transloco }}</p>
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @for (article of articles(); track article.id) {
@@ -368,7 +375,7 @@ type ArticleCard = ArticleSummary;
                   }
                   <span class="absolute top-3 left-3 px-3 py-1 font-accent uppercase text-xs tracking-wider rounded"
                         [class]="categoryBadgeClass(article.category)">
-                    {{ article.category }}
+                    {{ article.category | enumLabel: 'articleCategory' }}
                   </span>
                 </div>
                 <div class="p-6">
@@ -378,9 +385,9 @@ type ArticleCard = ArticleSummary;
                   <p class="text-sm text-text-muted mb-4 line-clamp-2">{{ article.excerpt }}</p>
                   <div class="flex items-center justify-between text-xs text-text-muted">
                     <span>{{ formatDate(article.publishedAt) }}</span>
-                    <a [routerLink]="['/noticias', article.slug]"
+                    <a [routerLink]="('/noticias/' + article.slug) | localizePath"
                        class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
-                      Leer más →
+                      {{ 'common.readMore' | transloco }}
                     </a>
                   </div>
                 </div>
@@ -396,10 +403,10 @@ type ArticleCard = ArticleSummary;
       <div class="max-w-3xl mx-auto">
 
         <div class="text-center mb-10">
-          <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">Comunícate con nosotros</p>
-          <h2 class="font-heading text-4xl md:text-5xl">Contacto</h2>
+          <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">{{ 'public.home.contact.kicker' | transloco }}</p>
+          <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.contact.title' | transloco }}</h2>
           <p class="text-text-muted mt-3 text-sm max-w-md mx-auto">
-            ¿Tienes preguntas sobre inscripciones, eventos o el circuito? Escríbenos y te responderemos a la brevedad.
+            {{ 'public.home.contact.intro' | transloco }}
           </p>
         </div>
 
@@ -410,11 +417,11 @@ type ArticleCard = ArticleSummary;
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <h3 class="font-heading text-2xl mb-2">¡Mensaje enviado!</h3>
-            <p class="text-text-muted text-sm">Te responderemos al correo indicado en los próximos días hábiles.</p>
+            <h3 class="font-heading text-2xl mb-2">{{ 'public.home.contact.sentTitle' | transloco }}</h3>
+            <p class="text-text-muted text-sm">{{ 'public.home.contact.sentText' | transloco }}</p>
             <button (click)="contactSuccess.set(false)"
               class="mt-6 text-sm text-cyan-brand hover:text-cyan-dark">
-              Enviar otro mensaje
+              {{ 'public.home.contact.sendAnother' | transloco }}
             </button>
           </div>
         } @else {
@@ -429,45 +436,45 @@ type ArticleCard = ArticleSummary;
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre *</label>
-                <input formControlName="nombre" type="text" placeholder="Tu nombre"
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'public.home.contact.name' | transloco }}</label>
+                <input formControlName="nombre" type="text" [placeholder]="'public.home.contact.namePlaceholder' | transloco"
                   class="input-field"
                   [class.field-error]="contactForm.controls.nombre.invalid && contactForm.controls.nombre.touched" />
                 @if (contactForm.controls.nombre.invalid && contactForm.controls.nombre.touched) {
-                  <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                  <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
                 }
               </div>
               <div>
-                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico *</label>
-                <input formControlName="email" type="email" placeholder="tu@correo.com"
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'public.home.contact.email' | transloco }}</label>
+                <input formControlName="email" type="email" [placeholder]="'public.home.contact.emailPlaceholder' | transloco"
                   class="input-field"
                   [class.field-error]="contactForm.controls.email.invalid && contactForm.controls.email.touched" />
                 @if (contactForm.controls.email.invalid && contactForm.controls.email.touched) {
                   <p class="mt-1 text-xs text-error-brand">
-                    @if (contactForm.controls.email.errors?.['required']) { Requerido }
-                    @else { Correo inválido }
+                    @if (contactForm.controls.email.errors?.['required']) { {{ 'common.required' | transloco }} }
+                    @else { {{ 'common.invalidEmail' | transloco }} }
                   </p>
                 }
               </div>
             </div>
 
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Asunto *</label>
-              <input formControlName="asunto" type="text" placeholder="¿En qué podemos ayudarte?"
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'public.home.contact.subject' | transloco }}</label>
+              <input formControlName="asunto" type="text" [placeholder]="'public.home.contact.subjectPlaceholder' | transloco"
                 class="input-field"
                 [class.field-error]="contactForm.controls.asunto.invalid && contactForm.controls.asunto.touched" />
               @if (contactForm.controls.asunto.invalid && contactForm.controls.asunto.touched) {
-                <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
               }
             </div>
 
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Mensaje *</label>
-              <textarea formControlName="mensaje" rows="5" placeholder="Escribe tu mensaje aquí..."
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'public.home.contact.message' | transloco }}</label>
+              <textarea formControlName="mensaje" rows="5" [placeholder]="'public.home.contact.messagePlaceholder' | transloco"
                 class="input-field resize-none"
                 [class.field-error]="contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched"></textarea>
               @if (contactForm.controls.mensaje.invalid && contactForm.controls.mensaje.touched) {
-                <p class="mt-1 text-xs text-error-brand">Mínimo 10 caracteres</p>
+                <p class="mt-1 text-xs text-error-brand">{{ 'common.minLength' | transloco: { min: 10 } }}</p>
               }
             </div>
 
@@ -480,7 +487,7 @@ type ArticleCard = ArticleSummary;
               </div>
             }
 
-            <p class="text-xs text-text-muted">Todos los campos son obligatorios. @if (captchaRequired) { La verificación anti-spam es requerida. }</p>
+            <p class="text-xs text-text-muted">{{ 'public.home.contact.allRequired' | transloco }} @if (captchaRequired) { {{ 'public.home.contact.captchaRequired' | transloco }} }</p>
 
             <button type="submit" [disabled]="contactLoading() || (captchaRequired && !turnstileToken())"
               class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
@@ -490,10 +497,10 @@ type ArticleCard = ArticleSummary;
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
-                  Enviando...
+                  {{ 'public.home.contact.sending' | transloco }}
                 </span>
               } @else {
-                Enviar mensaje
+                {{ 'public.home.contact.send' | transloco }}
               }
             </button>
 
@@ -508,8 +515,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private liveStatusService = inject(LiveStatusService);
   private rankingService = inject(RankingService);
   private fb = inject(FormBuilder);
-  private title = inject(Title);
-  private meta = inject(Meta);
+  private seo = inject(SeoService);
+  private language = inject(LanguageService);
+  private transloco = inject(TranslocoService);
+  private localeFormat = inject(LocaleFormatService);
   private sanitizer = inject(DomSanitizer);
   private platformId = inject(PLATFORM_ID);
 
@@ -559,10 +568,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private turnstileWidgetId: string | null = null;
 
   ngOnInit(): void {
-    this.title.setTitle('ALAS Latin Tour 2026 — Circuito Continental de Surf Profesional');
-    this.meta.updateTag({ name: 'description', content: 'Plataforma oficial del ALAS Latin Tour. Calendario de eventos, ranking en vivo, noticias y registro de competidores del circuito continental de surf.' });
-    this.meta.updateTag({ property: 'og:title', content: 'ALAS Latin Tour 2026' });
-    this.meta.updateTag({ property: 'og:description', content: 'El circuito continental de surf de alto rendimiento.' });
+    // The page title comes from the route (`titles.home`).
+    this.seo.setPageMeta({ scope: 'public', descriptionKey: 'home.meta.description' });
     this.loadEvents();
     this.loadArticles();
     this.loadRanking();
@@ -586,10 +593,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
           this.captchaError.set('');
         },
         'expired-callback': () => this.turnstileToken.set(''),
-        'error-callback': () => this.captchaError.set('No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo nuevamente.'),
+        'error-callback': () => this.captchaError.set(this.t('contact.captchaLoadError')),
       });
     } catch {
-      this.captchaError.set('No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo nuevamente.');
+      this.captchaError.set(this.t('contact.captchaLoadError'));
     }
   }
 
@@ -629,7 +636,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private async loadArticles(): Promise<void> {
     try {
-      const res = await this.api.get<any>('/articles?limit=3');
+      const res = await this.api.get<any>(`/articles?limit=3&lang=${this.language.activeLang()}`);
       this.articles.set((res?.data ?? []).map(mapArticleSummary));
     } catch {
       this.articles.set([]);
@@ -741,28 +748,22 @@ export class HomeComponent implements OnInit, AfterViewInit {
     return map[category] ?? 'bg-navy-mid text-text-light';
   }
 
-  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
-  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
-  // anterior si se usan getters locales).
   formatDateRange(start: string, end: string): string {
-    if (!start) return '';
-    const s = new Date(start);
-    const e = new Date(end);
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `Del ${s.getUTCDate()} al ${e.getUTCDate()} de ${months[s.getUTCMonth()]}`;
+    return this.localeFormat.dateRange(start, end);
   }
 
   formatDate(dateStr: string): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
+    return this.localeFormat.date(dateStr);
+  }
+
+  private t(key: string): string {
+    return this.transloco.translate(`public.home.${key}`);
   }
 
   async submitContact(): Promise<void> {
     if (this.contactForm.invalid) { this.contactForm.markAllAsTouched(); return; }
     if (this.captchaRequired && !this.turnstileToken()) {
-      this.captchaError.set('Completa la verificación anti-spam antes de enviar el mensaje.');
+      this.captchaError.set(this.t('contact.captchaMissing'));
       return;
     }
     this.contactLoading.set(true);
@@ -774,7 +775,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.turnstileToken.set('');
       if (this.turnstileWidgetId) window.turnstile?.reset(this.turnstileWidgetId);
     } catch (err: any) {
-      this.contactError.set(err.body?.message ?? 'No se pudo enviar el mensaje. Intenta de nuevo.');
+      this.contactError.set(err.body?.message ?? this.t('contact.sendError'));
     } finally {
       this.contactLoading.set(false);
     }

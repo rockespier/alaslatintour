@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
 import { ApiService } from '../../../core/services/api.service';
 
 function passwordPolicy(control: AbstractControl) {
@@ -14,10 +16,11 @@ function passwordPolicy(control: AbstractControl) {
 @Component({
   selector: 'app-restablecer-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('auth')],
   template: `
     <div class="min-h-screen bg-navy-deepest flex flex-col items-center justify-center px-4 py-12">
-      <a routerLink="/" class="mb-8">
+      <a [routerLink]="'/' | localizePath" class="mb-8">
         <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-16 w-auto" />
       </a>
 
@@ -25,10 +28,10 @@ function passwordPolicy(control: AbstractControl) {
         <div class="bg-navy-dark border border-navy-mid rounded-2xl p-8 shadow-2xl shadow-black/40">
           @if (!success()) {
             <div class="mb-6">
-              <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">Seguridad</p>
-              <h1 class="font-heading text-3xl mb-1">Restablecer contraseña</h1>
+              <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">{{ 'auth.reset.kicker' | transloco }}</p>
+              <h1 class="font-heading text-3xl mb-1">{{ 'auth.reset.title' | transloco }}</h1>
               <p class="text-text-muted text-sm">
-                Ingresa el token que recibiste por correo y define una nueva contraseña.
+                {{ 'auth.reset.intro' | transloco }}
               </p>
             </div>
 
@@ -41,20 +44,20 @@ function passwordPolicy(control: AbstractControl) {
             <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="space-y-5">
               <div>
                 <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">
-                  Token de recuperación
+                  {{ 'auth.reset.token' | transloco }}
                 </label>
                 <input formControlName="token" type="text" autocomplete="one-time-code"
-                  placeholder="Pega aquí el token recibido"
+                  [placeholder]="'auth.reset.tokenPlaceholder' | transloco"
                   class="input-field"
                   [class.field-error]="form.controls.token.invalid && form.controls.token.touched" />
                 @if (form.controls.token.invalid && form.controls.token.touched) {
-                  <p class="mt-1 text-xs text-error-brand">El token es obligatorio</p>
+                  <p class="mt-1 text-xs text-error-brand">{{ 'auth.reset.tokenRequired' | transloco }}</p>
                 }
               </div>
 
               <div>
                 <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">
-                  Nueva contraseña
+                  {{ 'auth.reset.newPassword' | transloco }}
                 </label>
                 <div class="relative">
                   <input formControlName="newPassword" [type]="showPwd() ? 'text' : 'password'"
@@ -63,7 +66,7 @@ function passwordPolicy(control: AbstractControl) {
                     [class.field-error]="form.controls.newPassword.invalid && form.controls.newPassword.touched" />
                   <button type="button" (click)="showPwd.set(!showPwd())"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-light"
-                    aria-label="Mostrar u ocultar contraseña">
+                    [attr.aria-label]="'auth.reset.togglePassword' | transloco">
                     @if (showPwd()) {
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -79,7 +82,7 @@ function passwordPolicy(control: AbstractControl) {
                 </div>
                 @if (form.controls.newPassword.invalid && form.controls.newPassword.touched) {
                   <p class="mt-1 text-xs text-error-brand">
-                    Mínimo 8 caracteres, una mayúscula y un número.
+                    {{ 'auth.reset.policy' | transloco }}
                   </p>
                 }
               </div>
@@ -87,9 +90,9 @@ function passwordPolicy(control: AbstractControl) {
               <button type="submit" [disabled]="loading()"
                 class="w-full py-3 px-4 bg-cyan-brand hover:bg-cyan-dark disabled:opacity-60 text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
                 @if (loading()) {
-                  Actualizando...
+                  {{ 'auth.reset.updating' | transloco }}
                 } @else {
-                  Guardar nueva contraseña
+                  {{ 'auth.reset.submit' | transloco }}
                 }
               </button>
             </form>
@@ -100,17 +103,17 @@ function passwordPolicy(control: AbstractControl) {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
-              <h2 class="font-heading text-2xl mb-2">Contraseña actualizada</h2>
-              <p class="text-text-muted text-sm mb-8">Ya puedes iniciar sesión con tu nueva contraseña.</p>
-              <a routerLink="/login"
+              <h2 class="font-heading text-2xl mb-2">{{ 'auth.reset.successTitle' | transloco }}</h2>
+              <p class="text-text-muted text-sm mb-8">{{ 'auth.reset.successText' | transloco }}</p>
+              <a [routerLink]="'/login' | localizePath"
                 class="inline-block px-6 py-3 bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg font-bold">
-                Iniciar sesión
+                {{ 'auth.reset.login' | transloco }}
               </a>
             </div>
           }
 
           <p class="mt-6 text-center text-sm text-text-muted">
-            <a routerLink="/recuperar-password" class="text-cyan-brand hover:text-cyan-dark">Solicitar otro token</a>
+            <a [routerLink]="'/recuperar-password' | localizePath" class="text-cyan-brand hover:text-cyan-dark">{{ 'auth.reset.requestAnother' | transloco }}</a>
           </p>
         </div>
       </div>
@@ -122,6 +125,7 @@ export class RestablecerPasswordComponent {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private transloco = inject(TranslocoService);
 
   form = this.fb.group({
     token: [this.route.snapshot.queryParamMap.get('token') ?? '', Validators.required],
@@ -148,7 +152,7 @@ export class RestablecerPasswordComponent {
       this.router.navigate([], { queryParams: {}, replaceUrl: true });
     } catch (err: any) {
       const fieldMessage = Array.isArray(err.body?.fields) ? err.body.fields[0]?.message : null;
-      this.error.set(fieldMessage ?? err.body?.message ?? 'El token es inválido o expiró.');
+      this.error.set(fieldMessage ?? err.body?.message ?? this.transloco.translate('auth.reset.error'));
     } finally {
       this.loading.set(false);
     }

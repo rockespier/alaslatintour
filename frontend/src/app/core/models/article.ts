@@ -20,6 +20,8 @@ export interface ArticleDetail extends ArticleSummary {
   content: string;
   author?: { name: string; role: string };
   tags?: string[];
+  /** Slug of this article per language (Polylang), e.g. `{ es: 'recta-final', en: 'final-stretch' }`. */
+  translations: Record<string, string>;
 }
 
 export function mapArticleSummary(raw: any): ArticleSummary {
@@ -42,5 +44,6 @@ export function mapArticleDetail(raw: any): ArticleDetail {
     content: raw.content,
     author: raw.author,
     tags: raw.tags,
+    translations: raw.translations ?? {},
   };
 }

@@ -3,4 +3,4 @@ using AlasApp.Application.Galleries.Models;
 
 namespace AlasApp.Application.Galleries.Queries.GetGalleryBySlug;
 
-public sealed record GetGalleryBySlugQuery(string Slug) : IRequest<GalleryDetailDto>;
+public sealed record GetGalleryBySlugQuery(string Slug, string? Lang = null) : IRequest<GalleryDetailDto>;

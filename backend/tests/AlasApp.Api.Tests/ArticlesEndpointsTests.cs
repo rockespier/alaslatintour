@@ -208,7 +208,7 @@ internal sealed class FakeWordPressService : IWordPressService
         return Task.FromResult(new PagedResult<ArticleSummaryDto>(items, page, limit, items.Count));
     }
 
-    public Task<ArticleDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    public Task<ArticleDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
     {
         return Task.FromResult(_articles.FirstOrDefault(x => x.Slug == slug));
     }

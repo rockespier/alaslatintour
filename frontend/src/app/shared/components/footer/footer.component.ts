@@ -1,5 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoModule } from '@jsverse/transloco';
+import { LocalizePathPipe } from '../../pipes/localize-path.pipe';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { SiteSettingsService } from '../../../core/services/site-settings.service';
 
 interface SocialLink {
@@ -10,7 +13,7 @@ interface SocialLink {
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoModule, LocalizePathPipe, LanguageSwitcherComponent],
   template: `
     <footer class="bg-[#001a40] border-t border-white/10 mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -20,26 +23,26 @@ interface SocialLink {
           <div class="md:col-span-2">
             <img src="assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto mb-4" />
             <p class="text-sm text-[#AAAAAA] max-w-xs leading-relaxed">
-              Circuito Continental de Surfistas Profesionales. Promoviendo el surf de alto rendimiento desde 2008.
+              {{ 'footer.tagline' | transloco }}
             </p>
-            
+            <div class="mt-4"><app-language-switcher /></div>
           </div>
 
           <!-- Links -->
           <div>
-            <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">Plataforma</h4>
+            <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.platform' | transloco }}</h4>
             <ul class="space-y-2">
-              <li><a routerLink="/eventos" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">Eventos</a></li>
-              <li><a routerLink="/ranking" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">Ranking</a></li>
-              <li><a routerLink="/noticias" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">Noticias</a></li>
-              <li><a routerLink="/quienes-somos" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">Quiénes Somos</a></li>
+              <li><a [routerLink]="'/eventos' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.events' | transloco }}</a></li>
+              <li><a [routerLink]="'/ranking' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.ranking' | transloco }}</a></li>
+              <li><a [routerLink]="'/noticias' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.news' | transloco }}</a></li>
+              <li><a [routerLink]="'/quienes-somos' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.about' | transloco }}</a></li>
             </ul>
           </div>
 
           <!-- Social -->
           @if (socialLinks().length) {
             <div>
-              <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">Redes Sociales</h4>
+              <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.social' | transloco }}</h4>
               <ul class="space-y-2">
                 @for (link of socialLinks(); track link.name) {
                   <li><a [href]="link.url" target="_blank" rel="noopener" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ link.name }}</a></li>
@@ -50,7 +53,7 @@ interface SocialLink {
         </div>
 
         <div class="border-t border-white/10 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p class="text-xs text-[#AAAAAA]">© {{ year }} Circuito Continental de Surfistas Profesionales. Todos los derechos reservados.</p>
+          <p class="text-xs text-[#AAAAAA]">{{ 'footer.copyright' | transloco: { year } }}</p>
           <p class="text-xs text-[#AAAAAA]">
             Results by <a href="https://surfscores.com" target="_blank" rel="noopener"
               class="text-[#0081C6] hover:underline">SurfScores.com</a>

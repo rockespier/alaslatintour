@@ -15,6 +15,7 @@ namespace AlasApp.Application.Inscriptions.Commands.UpdateInscription;
 public sealed class UpdateInscriptionCommandHandler(
     IInscriptionRepository inscriptionRepository,
     ICompetitorRepository competitorRepository,
+    IUserAccountRepository userAccountRepository,
     IAdminSettingsRepository adminSettingsRepository,
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
@@ -71,24 +72,16 @@ public sealed class UpdateInscriptionCommandHandler(
                 return;
             }
 
-            var html = TransactionalEmailTemplate.Render(
-                "Pago confirmado",
-                "Tu pago fue confirmado",
-                $"Hola {competitor.Nombre}, tu inscripción a {dto.Event.Nombre} ha sido validada. ¡Ya estás oficialmente inscrito!",
-                "Evento",
+            var account = await userAccountRepository.GetByCompetitorIdAsync(competitorId, cancellationToken);
+            var email = CompetitorEmails.PaymentConfirmed(
+                EmailLanguage.From(account?.IdiomaPreferido),
+                competitor.Nombre,
                 dto.Event.Nombre,
-                [
-                    new EmailDetail("Categoría", dto.Category.Nombre),
-                    new EmailDetail("Monto pagado", $"USD {dto.MontoUsd:0.##}"),
-                    new EmailDetail("Estado", "Confirmado ✓"),
-                ],
-                "Conserva este correo como comprobante de tu inscripción.",
-                "Notificación automática de ALAS Global Tour.");
-
-            var textBody = $"Hola {competitor.Nombre}, tu pago para {dto.Event.Nombre} / {dto.Category.Nombre} fue confirmado. Monto: USD {dto.MontoUsd:0.##}.";
+                dto.Category.Nombre,
+                dto.MontoUsd);
 
             await emailSender.SendAsync(
-                new EmailMessage(competitor.Email, $"Pago confirmado — {dto.Event.Nombre}", textBody, html),
+                new EmailMessage(competitor.Email, email.Subject, email.Text, email.Html),
                 cancellationToken);
         }
         catch (Exception ex) when (!cancellationToken.IsCancellationRequested)

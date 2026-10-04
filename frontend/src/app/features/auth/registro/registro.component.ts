@@ -1,7 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { Lang } from '../../../core/i18n/languages';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
+import { EnumLabelPipe } from '../../../shared/pipes/enum-label.pipe';
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Brasil', 'Chile', 'Colombia', 'Costa Rica',
@@ -10,15 +15,19 @@ const PAISES = [
   'Otro',
 ];
 
+/** Backend `PreferredLanguage` enum names (parsed case-insensitively). */
+const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English', pt: 'Portugues' };
+
 @Component({
   selector: 'app-registro',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoModule, LocalizePathPipe, EnumLabelPipe],
+  providers: [provideTranslocoScope('auth')],
   template: `
     <div class="min-h-screen bg-navy-deepest flex flex-col items-center justify-center px-4 py-12">
 
       <!-- Logo -->
-      <a routerLink="/" class="mb-6">
+      <a [routerLink]="'/' | localizePath" class="mb-6">
         <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto" />
       </a>
 
@@ -27,8 +36,8 @@ const PAISES = [
 
           <!-- Header -->
           <div class="px-8 pt-8 pb-6 border-b border-navy-mid">
-            <h1 class="font-heading text-3xl mb-1">Crear cuenta</h1>
-            <p class="text-text-muted text-sm">Únete al circuito ALAS Latin Tour</p>
+            <h1 class="font-heading text-3xl mb-1">{{ 'auth.register.title' | transloco }}</h1>
+            <p class="text-text-muted text-sm">{{ 'auth.register.subtitle' | transloco }}</p>
           </div>
 
           <!-- Step indicator -->
@@ -60,11 +69,11 @@ const PAISES = [
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
-              <h2 class="font-heading text-2xl mb-2">¡Registro exitoso!</h2>
-              <p class="text-text-muted text-sm mb-6">Revisa tu correo para confirmar tu cuenta.</p>
-              <a routerLink="/login"
+              <h2 class="font-heading text-2xl mb-2">{{ 'auth.register.successTitle' | transloco }}</h2>
+              <p class="text-text-muted text-sm mb-6">{{ 'auth.register.successText' | transloco }}</p>
+              <a [routerLink]="'/login' | localizePath"
                 class="inline-block px-6 py-2.5 bg-cyan-brand text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg">
-                Iniciar sesión
+                {{ 'auth.register.login' | transloco }}
               </a>
             </div>
           } @else {
@@ -81,30 +90,30 @@ const PAISES = [
               <!-- ── STEP 1: Tipo de cuenta ── -->
               @if (step() === 1) {
                 <div class="mt-6 space-y-4">
-                  <p class="text-sm text-text-muted mb-4">¿Cómo participas en el circuito?</p>
+                  <p class="text-sm text-text-muted mb-4">{{ 'auth.register.howParticipate' | transloco }}</p>
                   <div class="grid grid-cols-2 gap-4">
                     <button type="button" (click)="setTipo('espectador')"
                       class="category-card rounded-xl p-5 text-left"
                       [class.selected]="form.value.tipo === 'espectador'">
                       <div class="text-3xl mb-3">👁️</div>
-                      <p class="font-heading text-lg">Espectador</p>
-                      <p class="text-xs text-text-muted mt-1">Sigo el circuito, veo noticias y resultados</p>
+                      <p class="font-heading text-lg">{{ 'auth.register.spectator' | transloco }}</p>
+                      <p class="text-xs text-text-muted mt-1">{{ 'auth.register.spectatorText' | transloco }}</p>
                     </button>
                     <button type="button" (click)="setTipo('competidor')"
                       class="category-card rounded-xl p-5 text-left"
                       [class.selected]="form.value.tipo === 'competidor'">
                       <div class="text-3xl mb-3">🏄</div>
-                      <p class="font-heading text-lg">Competidor</p>
-                      <p class="text-xs text-text-muted mt-1">Me inscribo y compito en los eventos</p>
+                      <p class="font-heading text-lg">{{ 'auth.register.competitor' | transloco }}</p>
+                      <p class="text-xs text-text-muted mt-1">{{ 'auth.register.competitorText' | transloco }}</p>
                     </button>
                   </div>
                   @if (form.controls.tipo.invalid && form.controls.tipo.touched) {
-                    <p class="text-xs text-error-brand">Selecciona un tipo de cuenta</p>
+                    <p class="text-xs text-error-brand">{{ 'auth.register.selectType' | transloco }}</p>
                   }
                   <div class="pt-4">
                     <button type="button" (click)="goStep2()"
                       class="w-full py-3 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
-                      Continuar
+                      {{ 'auth.register.continue' | transloco }}
                     </button>
                   </div>
                 </div>
@@ -115,42 +124,42 @@ const PAISES = [
                 <div class="mt-6 space-y-4">
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre</label>
-                      <input formControlName="nombre" type="text" placeholder="María" class="input-field"
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.firstName' | transloco }}</label>
+                      <input formControlName="nombre" type="text" [placeholder]="'auth.register.firstNamePlaceholder' | transloco" class="input-field"
                         [class.field-error]="invalid('nombre')" />
                       @if (invalid('nombre')) {
-                        <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                        <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
                       }
                     </div>
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Apellido</label>
-                      <input formControlName="apellido" type="text" placeholder="García" class="input-field"
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.lastName' | transloco }}</label>
+                      <input formControlName="apellido" type="text" [placeholder]="'auth.register.lastNamePlaceholder' | transloco" class="input-field"
                         [class.field-error]="invalid('apellido')" />
                       @if (invalid('apellido')) {
-                        <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                        <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
                       }
                     </div>
                   </div>
                   <div>
-                    <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico</label>
-                    <input formControlName="email" type="email" autocomplete="email" placeholder="tu@correo.com" class="input-field"
+                    <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.email' | transloco }}</label>
+                    <input formControlName="email" type="email" autocomplete="email" [placeholder]="'auth.login.emailPlaceholder' | transloco" class="input-field"
                       [class.field-error]="invalid('email')" />
                     @if (invalid('email')) {
                       <p class="mt-1 text-xs text-error-brand">
-                        @if (form.controls.email.errors?.['required']) { Requerido }
-                        @else { Correo inválido }
+                        @if (form.controls.email.errors?.['required']) { {{ 'common.required' | transloco }} }
+                        @else { {{ 'common.invalidEmail' | transloco }} }
                       </p>
                     }
                   </div>
                   <div>
                     <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">
-                      Contraseña <span class="text-text-muted normal-case">(mín. 8 caracteres, 1 mayúscula, 1 número)</span>
+                      {{ 'auth.register.password' | transloco }} <span class="text-text-muted normal-case">{{ 'auth.register.passwordHint' | transloco }}</span>
                     </label>
                     <div class="relative">
                       <input formControlName="password" [type]="showPwd() ? 'text' : 'password'"
                         autocomplete="new-password" placeholder="••••••••" class="input-field pr-10"
                         [class.field-error]="invalid('password')" />
-                      <button type="button" (click)="showPwd.set(!showPwd())"
+                      <button type="button" (click)="showPwd.set(!showPwd())" [attr.aria-label]="'auth.login.showPassword' | transloco"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-light">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -160,35 +169,35 @@ const PAISES = [
                     </div>
                     @if (invalid('password')) {
                       <p class="mt-1 text-xs text-error-brand">
-                        @if (form.controls.password.errors?.['required']) { Requerida }
-                        @else if (form.controls.password.errors?.['minlength']) { Mínimo 8 caracteres }
-                        @else { Debe tener al menos 1 mayúscula y 1 número }
+                        @if (form.controls.password.errors?.['required']) { {{ 'auth.register.requiredFem' | transloco }} }
+                        @else if (form.controls.password.errors?.['minlength']) { {{ 'auth.register.minPassword' | transloco }} }
+                        @else { {{ 'auth.register.passwordPattern' | transloco }} }
                       </p>
                     }
                   </div>
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">País</label>
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.country' | transloco }}</label>
                       <select formControlName="pais" class="input-field">
-                        <option value="">Selecciona...</option>
+                        <option value="">{{ 'auth.register.select' | transloco }}</option>
                         @for (p of paises; track p) {
-                          <option [value]="p">{{ p }}</option>
+                          <option [value]="p">{{ 'common.countries.' + p | transloco }}</option>
                         }
                       </select>
                     </div>
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Teléfono</label>
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.phone' | transloco }}</label>
                       <input formControlName="telefono" type="tel" placeholder="+56 9 1234 5678" class="input-field" />
                     </div>
                   </div>
                   <div class="flex gap-3 pt-2">
                     <button type="button" (click)="step.set(1)"
                       class="flex-1 py-3 border border-navy-mid text-text-muted font-accent uppercase text-sm rounded-lg hover:border-cyan-brand/50 transition">
-                      Atrás
+                      {{ 'auth.register.back' | transloco }}
                     </button>
                     <button type="button" (click)="goStep3()"
                       class="flex-1 py-3 bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
-                      Continuar
+                      {{ 'auth.register.continue' | transloco }}
                     </button>
                   </div>
                 </div>
@@ -199,38 +208,38 @@ const PAISES = [
                 <div class="mt-6 space-y-4">
 
                   @if (esCompetidor()) {
-                    <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">Datos del competidor</p>
+                    <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">{{ 'auth.register.competitorData' | transloco }}</p>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Fecha de nacimiento</label>
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.birthDate' | transloco }}</label>
                         <input formControlName="fechaNacimiento" type="date" class="input-field"
                           [class.field-error]="invalid('fechaNacimiento')" />
                         @if (invalid('fechaNacimiento')) {
-                          <p class="mt-1 text-xs text-error-brand">Requerida</p>
+                          <p class="mt-1 text-xs text-error-brand">{{ 'auth.register.requiredFem' | transloco }}</p>
                         }
                       </div>
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Género</label>
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.gender' | transloco }}</label>
                         <select formControlName="genero" class="input-field">
-                          <option value="">Selecciona...</option>
-                          <option value="Masculino">Masculino</option>
-                          <option value="Femenino">Femenino</option>
+                          <option value="">{{ 'auth.register.select' | transloco }}</option>
+                          <option value="Masculino">{{ 'Masculino' | enumLabel: 'gender' }}</option>
+                          <option value="Femenino">{{ 'Femenino' | enumLabel: 'gender' }}</option>
                         </select>
                       </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Postura</label>
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.stance' | transloco }}</label>
                         <select formControlName="postura" class="input-field">
-                          <option value="">Selecciona...</option>
+                          <option value="">{{ 'auth.register.select' | transloco }}</option>
                           <option value="Regular">Regular</option>
                           <option value="Goofy">Goofy</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Talla de camiseta</label>
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.shirtSize' | transloco }}</label>
                         <select formControlName="tallaCamiseta" class="input-field">
-                          <option value="">Selecciona...</option>
+                          <option value="">{{ 'auth.register.select' | transloco }}</option>
                           @for (t of ['XS','S','M','L','XL','XXL']; track t) {
                             <option [value]="t">{{ t }}</option>
                           }
@@ -239,25 +248,25 @@ const PAISES = [
                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Club / Escuela</label>
-                        <input formControlName="club" type="text" placeholder="Opcional" class="input-field" />
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.club' | transloco }}</label>
+                        <input formControlName="club" type="text" [placeholder]="'auth.register.optional' | transloco" class="input-field" />
                       </div>
                       <div>
-                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Federación</label>
-                        <input formControlName="federacion" type="text" placeholder="Ej: FENTA" class="input-field" />
+                        <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.federation' | transloco }}</label>
+                        <input formControlName="federacion" type="text" [placeholder]="'auth.register.federationPlaceholder' | transloco" class="input-field" />
                       </div>
                     </div>
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Patrocinadores</label>
-                      <input formControlName="patrocinadores" type="text" placeholder="Opcional — ej: Marca X, Marca Y" class="input-field" />
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.sponsors' | transloco }}</label>
+                      <input formControlName="patrocinadores" type="text" [placeholder]="'auth.register.sponsorsPlaceholder' | transloco" class="input-field" />
                     </div>
                     <div>
-                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Documento de identidad</label>
+                      <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.idDocument' | transloco }}</label>
                       <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="input-field"
                         (change)="onIdentityDocumentSelected($event)" [class.field-error]="invalid('identityDocument')" />
-                      <p class="mt-1 text-xs text-text-muted">Sube una foto o PDF de tu documento. Se guardará de forma privada para la verificación manual de edad.</p>
+                      <p class="mt-1 text-xs text-text-muted">{{ 'auth.register.idDocumentHint' | transloco }}</p>
                       @if (invalid('identityDocument')) {
-                        <p class="mt-1 text-xs text-error-brand">El documento de identidad es obligatorio</p>
+                        <p class="mt-1 text-xs text-error-brand">{{ 'auth.register.idDocumentRequired' | transloco }}</p>
                       }
                     </div>
 
@@ -266,13 +275,13 @@ const PAISES = [
                       <input formControlName="reglamento" type="checkbox"
                         class="mt-0.5 w-4 h-4 rounded border-navy-mid bg-navy-deepest accent-cyan-brand flex-shrink-0" />
                       <span class="text-sm text-text-muted">
-                        He leído y acepto el
-                        <a href="/reglamento.pdf" target="_blank" class="text-cyan-brand hover:underline">Reglamento del Circuito ALAS</a>
+                        {{ 'auth.register.rulesAccept' | transloco }}
+                        <a href="/reglamento.pdf" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.rulesLink' | transloco }}</a>
                         <span class="text-error-brand ml-0.5">*</span>
                       </span>
                     </label>
                     @if (form.controls.reglamento.invalid && form.controls.reglamento.touched) {
-                      <p class="text-xs text-error-brand -mt-2">Debes aceptar el reglamento</p>
+                      <p class="text-xs text-error-brand -mt-2">{{ 'auth.register.rulesRequired' | transloco }}</p>
                     }
                   }
 
@@ -281,21 +290,21 @@ const PAISES = [
                     <input formControlName="terminos" type="checkbox"
                       class="mt-0.5 w-4 h-4 rounded border-navy-mid bg-navy-deepest accent-cyan-brand flex-shrink-0" />
                     <span class="text-sm text-text-muted">
-                      Acepto los
-                      <a href="/terminos" target="_blank" class="text-cyan-brand hover:underline">Términos y Condiciones</a>
-                      y la
-                      <a href="/privacidad" target="_blank" class="text-cyan-brand hover:underline">Política de Privacidad</a>
+                      {{ 'auth.register.termsAccept' | transloco }}
+                      <a href="/terminos" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.termsLink' | transloco }}</a>
+                      {{ 'auth.register.and' | transloco }}
+                      <a href="/privacidad" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.privacyLink' | transloco }}</a>
                       <span class="text-error-brand ml-0.5">*</span>
                     </span>
                   </label>
                   @if (form.controls.terminos.invalid && form.controls.terminos.touched) {
-                    <p class="text-xs text-error-brand -mt-2">Debes aceptar los términos</p>
+                    <p class="text-xs text-error-brand -mt-2">{{ 'auth.register.termsRequired' | transloco }}</p>
                   }
 
                   <div class="flex gap-3 pt-2">
                     <button type="button" (click)="step.set(2)"
                       class="flex-1 py-3 border border-navy-mid text-text-muted font-accent uppercase text-sm rounded-lg hover:border-cyan-brand/50 transition">
-                      Atrás
+                      {{ 'auth.register.back' | transloco }}
                     </button>
                     <button type="submit" [disabled]="loading()"
                       class="flex-1 py-3 bg-orange-brand hover:bg-orange-light disabled:opacity-60 text-white font-accent uppercase tracking-wider text-sm rounded-lg transition font-bold">
@@ -305,10 +314,10 @@ const PAISES = [
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                           </svg>
-                          Creando cuenta...
+                          {{ 'auth.register.creating' | transloco }}
                         </span>
                       } @else {
-                        Crear cuenta
+                        {{ 'auth.register.submit' | transloco }}
                       }
                     </button>
                   </div>
@@ -320,8 +329,8 @@ const PAISES = [
 
           <div class="px-8 py-5 border-t border-navy-mid text-center">
             <p class="text-sm text-text-muted">
-              ¿Ya tienes cuenta?
-              <a routerLink="/login" class="text-cyan-brand hover:text-cyan-dark ml-1">Iniciar sesión</a>
+              {{ 'auth.register.haveAccount' | transloco }}
+              <a [routerLink]="'/login' | localizePath" class="text-cyan-brand hover:text-cyan-dark ml-1">{{ 'auth.register.login' | transloco }}</a>
             </p>
           </div>
         </div>
@@ -333,6 +342,8 @@ export class RegistroComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private router = inject(Router);
+  private language = inject(LanguageService);
+  private transloco = inject(TranslocoService);
 
   readonly paises = PAISES;
 
@@ -420,6 +431,8 @@ export class RegistroComponent {
       body.append('tipo', v.tipo ?? '');
       body.append('terminos', 'true');
       body.append('newsletter', 'true');
+      // Drives the language of transactional emails sent to this account.
+      body.append('idiomaPreferido', PREFERRED_LANGUAGE[this.language.activeLang()]);
       if (v.pais) body.append('pais', v.pais);
       if (v.telefono) body.append('telefono', v.telefono);
       if (this.esCompetidor()) {
@@ -436,7 +449,7 @@ export class RegistroComponent {
       await this.api.upload('/auth/register', body);
       this.success.set(true);
     } catch (err: any) {
-      this.error.set(err.body?.message ?? 'No se pudo completar el registro. Intenta de nuevo.');
+      this.error.set(err.body?.message ?? this.transloco.translate('auth.register.error'));
     } finally {
       this.loading.set(false);
     }

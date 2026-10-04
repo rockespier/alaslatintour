@@ -8,7 +8,7 @@ public interface IWordPressService
 {
     Task<PagedResult<ArticleSummaryDto>> ListArticlesAsync(ArticleListFilter filter, CancellationToken cancellationToken);
 
-    Task<ArticleDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+    Task<ArticleDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken);
 
     Task<ArticleDetailDto> CreateAsync(ArticleUpsertDto article, CancellationToken cancellationToken);
 

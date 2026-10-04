@@ -16,4 +16,6 @@ public sealed record ArticleDetailDto(
     string? RelatedEventId,
     string Slug,
     DateTimeOffset FechaPublicacion,
-    int TiempoLecturaMin);
+    int TiempoLecturaMin,
+    /// <summary>Slug of this article in each language (Polylang), including its own.</summary>
+    IReadOnlyDictionary<string, string>? Translations = null);

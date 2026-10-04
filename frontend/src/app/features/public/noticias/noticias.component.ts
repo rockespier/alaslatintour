@@ -1,10 +1,15 @@
 import { Component, inject, signal, computed, OnInit, afterNextRender } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Meta, Title } from '@angular/platform-browser';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { GalleryCard } from '../../../core/models/gallery';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { SeoService } from '../../../core/i18n/seo.service';
+import { LocaleFormatService } from '../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
+import { EnumLabelPipe } from '../../../shared/pipes/enum-label.pipe';
 
 type Tab = 'todas' | 'noticias' | 'resultados' | 'fotos' | 'videos';
 type GalleryTab = 'fotos' | 'videos';
@@ -29,13 +34,14 @@ const MOCK_VIDEOS = [
 @Component({
   selector: 'app-noticias',
   standalone: true,
-  imports: [RouterLink, LoadingSpinnerComponent],
+  imports: [RouterLink, LoadingSpinnerComponent, TranslocoModule, LocalizePathPipe, EnumLabelPipe],
+  providers: [provideTranslocoScope('public')],
   template: `
     <!-- PAGE HEADER -->
     <section class="py-14 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
       <div class="max-w-7xl mx-auto">
-        <h1 class="font-heading text-4xl md:text-6xl">Noticias y Galería</h1>
-        <p class="mt-3 text-text-muted max-w-2xl">Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano.</p>
+        <h1 class="font-heading text-4xl md:text-6xl">{{ 'public.news.title' | transloco }}</h1>
+        <p class="mt-3 text-text-muted max-w-2xl">{{ 'public.news.intro' | transloco }}</p>
       </div>
     </section>
 
@@ -46,7 +52,7 @@ const MOCK_VIDEOS = [
         @for (t of tabs; track t.key) {
           <button (click)="activeTab.set(t.key)"
                   [class]="activeTab() === t.key ? 'tab-btn active' : 'tab-btn hover:text-text-light'">
-            {{ t.label }}
+            {{ 'public.news.tabs.' + t.key | transloco }}
           </button>
         }
       </div>
@@ -67,21 +73,21 @@ const MOCK_VIDEOS = [
       } @else if (featured()) {
         <article class="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-navy-dark border border-navy-mid rounded-2xl overflow-hidden mb-14 hover:border-cyan-brand/40 transition">
           <div class="h-64 lg:h-auto bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/40 relative">
-            <span class="absolute top-4 left-4 px-3 py-1 bg-orange-brand text-white font-accent uppercase text-xs tracking-wider rounded z-10">Destacado</span>
+            <span class="absolute top-4 left-4 px-3 py-1 bg-orange-brand text-white font-accent uppercase text-xs tracking-wider rounded z-10">{{ 'public.news.featured' | transloco }}</span>
             @if (featured()!.imageUrl) {
               <img [src]="featured()!.imageUrl" [alt]="featured()!.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
             }
           </div>
           <div class="p-8 lg:p-10 flex flex-col justify-center">
             <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-3">
-              {{ featured()!.category }} · ALAS Latin Tour
+              {{ featured()!.category | enumLabel: 'articleCategory' }} · ALAS Latin Tour
             </p>
             <h2 class="font-heading text-3xl md:text-4xl leading-tight mb-4">{{ featured()!.title }}</h2>
             <p class="text-text-muted leading-relaxed mb-5">{{ featured()!.excerpt }}</p>
             <div class="flex items-center justify-between text-xs text-text-muted">
-              <span>{{ formatDate(featured()!.publishedAt) }}{{ featured()!.readingTime ? ' · ' + featured()!.readingTime + ' min de lectura' : '' }}</span>
-              <a [routerLink]="['/noticias', featured()!.slug]" class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
-                Leer artículo →
+              <span>{{ formatDate(featured()!.publishedAt) }}@if (featured()!.readingTime) { · {{ 'public.news.readingTime' | transloco: { min: featured()!.readingTime } }} }</span>
+              <a [routerLink]="('/noticias/' + featured()!.slug) | localizePath" class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                {{ 'public.news.readArticle' | transloco }}
               </a>
             </div>
           </div>
@@ -89,7 +95,7 @@ const MOCK_VIDEOS = [
       }
 
       <!-- ARTICLE GRID -->
-      <h2 class="font-heading text-3xl mb-6">Últimos artículos</h2>
+      <h2 class="font-heading text-3xl mb-6">{{ 'public.news.latest' | transloco }}</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         @if (loading()) {
           @for (sk of skeletons; track sk) {
@@ -115,7 +121,7 @@ const MOCK_VIDEOS = [
               <div class="p-5">
                 <span class="px-2 py-0.5 text-[10px] font-accent uppercase tracking-wider rounded"
                       [class]="categoryClass(article.category)">
-                  {{ article.category }}
+                  {{ article.category | enumLabel: 'articleCategory' }}
                 </span>
                 <h3 class="font-heading text-lg mt-3 mb-2 group-hover:text-cyan-brand transition leading-snug">
                   {{ article.title }}
@@ -123,9 +129,9 @@ const MOCK_VIDEOS = [
                 <p class="text-sm text-text-muted mb-3 line-clamp-2">{{ article.excerpt }}</p>
                 <div class="flex items-center justify-between text-xs text-text-muted">
                   <span>{{ formatDate(article.publishedAt) }}</span>
-                  <a [routerLink]="['/noticias', article.slug]"
+                  <a [routerLink]="('/noticias/' + article.slug) | localizePath"
                      class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider text-[10px]">
-                    Leer →
+                    {{ 'public.news.read' | transloco }}
                   </a>
                 </div>
               </div>
@@ -139,7 +145,7 @@ const MOCK_VIDEOS = [
         <div class="flex justify-center mb-16">
           <button (click)="loadMore()"
                   class="px-8 py-3 bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider rounded-md transition">
-            Cargar más artículos
+            {{ 'public.news.loadMore' | transloco }}
           </button>
         </div>
       }
@@ -147,7 +153,7 @@ const MOCK_VIDEOS = [
       <!-- GALERÍA -->
       <section>
         <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-4">
-          <h2 class="font-heading text-4xl">Galería</h2>
+          <h2 class="font-heading text-4xl">{{ 'public.news.gallery' | transloco }}</h2>
           <div class="flex items-center gap-2">
             <button (click)="galleryTab.set('fotos')"
                     [class]="galleryTab() === 'fotos' ? 'bg-cyan-brand text-navy-deepest' : 'border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light'"
@@ -156,7 +162,7 @@ const MOCK_VIDEOS = [
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
-              Fotos
+              {{ 'public.news.photos' | transloco }}
             </button>
             <button (click)="galleryTab.set('videos')"
                     [class]="galleryTab() === 'videos' ? 'bg-cyan-brand text-navy-deepest' : 'border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light'"
@@ -165,23 +171,21 @@ const MOCK_VIDEOS = [
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
               </svg>
-              Videos
+              {{ 'public.news.videos' | transloco }}
             </button>
           </div>
         </div>
 
         @if (galleryTab() === 'fotos') {
-          <p class="text-xs text-text-muted mb-5">
-            Fotografía oficial del circuito. Haz clic en <strong class="text-text-light">Descargar</strong> para acceder al set completo en alta resolución.
-          </p>
+          <p class="text-xs text-text-muted mb-5" [innerHTML]="'public.news.galleryIntro' | transloco"></p>
           @if (loadingGalleries()) {
-            <app-loading-spinner label="Cargando galería..." />
+            <app-loading-spinner [label]="'public.news.loadingGallery' | transloco" />
           } @else if (galleries().length === 0) {
-            <p class="text-text-muted text-sm py-8 text-center">No hay fotografías disponibles.</p>
+            <p class="text-text-muted text-sm py-8 text-center">{{ 'public.news.noPhotos' | transloco }}</p>
           } @else {
             <div class="columns-2 sm:columns-3 lg:columns-4 gap-3">
               @for (g of galleries(); track g.id; let i = $index) {
-                <a [routerLink]="['/galerias', g.slug]"
+                <a [routerLink]="('/galerias/' + g.slug) | localizePath"
                    class="group relative overflow-hidden rounded-xl bg-navy-mid block break-inside-avoid mb-3">
                   <div class="relative overflow-hidden" [style.height]="galleryTileHeight(i)">
                     @if (g.coverImageUrl) {
@@ -194,12 +198,12 @@ const MOCK_VIDEOS = [
                          style="background:linear-gradient(180deg,transparent 40%,rgba(0,35,89,0.92))">
                       <p class="text-xs font-accent uppercase tracking-wider text-text-light mb-2 line-clamp-2">{{ g.title }}</p>
                       <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-text-muted">{{ g.photoCount }} fotos</span>
-                        <span class="px-2 py-0.5 rounded bg-cyan-brand text-navy-deepest text-[10px] font-accent uppercase tracking-wider">Ver →</span>
+                        <span class="text-[10px] text-text-muted">{{ 'public.news.photoCount' | transloco: { count: g.photoCount } }}</span>
+                        <span class="px-2 py-0.5 rounded bg-cyan-brand text-navy-deepest text-[10px] font-accent uppercase tracking-wider">{{ 'public.news.view' | transloco }}</span>
                       </div>
                     </div>
                     <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-navy-deepest/70 text-[10px] font-accent uppercase tracking-wider text-text-muted">
-                      {{ g.photoCount }} fotos
+                      {{ 'public.news.photoCount' | transloco: { count: g.photoCount } }}
                     </span>
                   </div>
                 </a>
@@ -209,7 +213,7 @@ const MOCK_VIDEOS = [
         }
 
         @if (galleryTab() === 'videos') {
-          <p class="text-xs text-text-muted mb-5">Videos oficiales del circuito en 480p y 1080p.</p>
+          <p class="text-xs text-text-muted mb-5">{{ 'public.news.videosIntro' | transloco }}</p>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (video of mockVideos; track video.title) {
               <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
@@ -245,8 +249,9 @@ const MOCK_VIDEOS = [
 })
 export class NoticiasComponent implements OnInit {
   private api = inject(ApiService);
-  private title = inject(Title);
-  private meta = inject(Meta);
+  private seo = inject(SeoService);
+  private language = inject(LanguageService);
+  private localeFormat = inject(LocaleFormatService);
 
   constructor() {
     afterNextRender(() => { this.loadGalleries(); });
@@ -265,12 +270,12 @@ export class NoticiasComponent implements OnInit {
   galleries = signal<GalleryCard[]>([]);
   mockVideos = MOCK_VIDEOS;
 
-  tabs: { key: Tab; label: string }[] = [
-    { key: 'todas', label: 'Todas' },
-    { key: 'noticias', label: 'Noticias' },
-    { key: 'resultados', label: 'Resultados' },
-    { key: 'fotos', label: 'Fotos' },
-    { key: 'videos', label: 'Videos' },
+  tabs: { key: Tab }[] = [
+    { key: 'todas' },
+    { key: 'noticias' },
+    { key: 'resultados' },
+    { key: 'fotos' },
+    { key: 'videos' },
   ];
 
   filteredArticles = computed(() => {
@@ -288,16 +293,14 @@ export class NoticiasComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.title.setTitle('Noticias y Galería — ALAS Latin Tour');
-    this.meta.updateTag({ name: 'description', content: 'Resultados, crónicas, entrevistas y fotografía oficial del circuito latinoamericano de surf profesional ALAS Latin Tour.' });
-    this.meta.updateTag({ property: 'og:title', content: 'Noticias — ALAS Latin Tour' });
+    this.seo.setPageMeta({ scope: 'public', descriptionKey: 'news.meta.description' });
     this.loadArticles();
   }
 
   private async loadGalleries(retriesLeft = 1): Promise<void> {
     this.loadingGalleries.set(true);
     try {
-      const res = await this.api.get<any>('/galleries');
+      const res = await this.api.get<any>(`/galleries?lang=${this.language.activeLang()}`);
       this.galleries.set((res as any)?.data ?? []);
       this.loadingGalleries.set(false);
     } catch {
@@ -313,7 +316,7 @@ export class NoticiasComponent implements OnInit {
   private async loadArticles(append = false): Promise<void> {
     if (!append) this.loading.set(true);
     try {
-      const res = await this.api.get<any>(`/articles?page=${this.page()}&limit=7`);
+      const res = await this.api.get<any>(`/articles?page=${this.page()}&limit=7&lang=${this.language.activeLang()}`);
       const raw: any[] = res?.data ?? [];
       const all = raw.map(mapArticleSummary);
 
@@ -354,9 +357,6 @@ export class NoticiasComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
+    return this.localeFormat.date(dateStr);
   }
 }

@@ -1,4 +1,5 @@
 using AlasApp.Application.Articles.Models;
+using AlasApp.Application.Common;
 using AlasApp.Application.Galleries.Models;
 using AlasApp.Domain.Enums;
 using AlasApp.Infrastructure.Persistence;
@@ -142,7 +143,7 @@ public sealed class WordPressAdaptersTests
 
         var service = new GalleryService(client);
 
-        var result = await service.GetBySlugAsync("roca-bruja-classic", CancellationToken.None);
+        var result = await service.GetBySlugAsync("roca-bruja-classic", null, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal("roca-bruja-classic", result!.Slug);
@@ -156,6 +157,166 @@ public sealed class WordPressAdaptersTests
         Assert.Equal(2, day1.Assets.Count);
         Assert.All(day1.Assets, asset => Assert.Equal(GalleryAssetType.Photo, asset.Type));
         Assert.Contains(handler.Requests, request => request.RequestUri?.AbsoluteUri == "https://example.test/wp-json/wp/v2/gallery/");
+    }
+
+    [Fact]
+    public async Task WordPressService_GetBySlugAsync_ShouldExposePolylangTranslations()
+    {
+        const string payload = """
+        [{
+          "id": 147, "date": "2026-07-09T10:00:00Z", "slug": "final-stretch",
+          "title": { "rendered": "Final stretch" }, "featured_media": 0, "sticky": false,
+          "lang": "en",
+          "translations": { "es": "recta-final", "en": "final-stretch", "pt": "reta-final" }
+        }]
+        """;
+        var handler = new StubHttpMessageHandler(_ => CreateJsonResponse(payload));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/posts/")
+        };
+        using var mediaClient = new HttpClient(new StubHttpMessageHandler(_ => CreateJsonResponse("{}")))
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/media/")
+        };
+        await using var dbContext = CreateDbContext();
+        var service = new WordPressService(client, dbContext, new WordPressMediaService(mediaClient));
+
+        var article = await service.GetBySlugAsync("final-stretch", "en", CancellationToken.None);
+
+        Assert.Equal("recta-final", article!.Translations!["es"]);
+        Assert.Equal("final-stretch", article.Translations["en"]);
+        Assert.Equal("reta-final", article.Translations["pt"]);
+    }
+
+    [Theory]
+    [InlineData("en", "lang=en")]
+    [InlineData(null, null)]
+    public async Task WordPressService_ShouldForwardLangOnlyWhenProvided(string? lang, string? expectedQuery)
+    {
+        var handler = new StubHttpMessageHandler(_ => CreateJsonResponse("[]", totalItems: 0));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/posts/")
+        };
+        using var mediaClient = new HttpClient(new StubHttpMessageHandler(_ => CreateJsonResponse("{}")))
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/media/")
+        };
+        await using var dbContext = CreateDbContext();
+        var service = new WordPressService(client, dbContext, new WordPressMediaService(mediaClient));
+
+        await service.ListArticlesAsync(new ArticleListFilter(1, 10, null, null, null, lang), CancellationToken.None);
+        await service.GetBySlugAsync("final-day-highlights", lang, CancellationToken.None);
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, request =>
+        {
+            var query = request.RequestUri!.Query;
+            if (expectedQuery is null)
+            {
+                Assert.DoesNotContain("lang=", query);
+            }
+            else
+            {
+                Assert.Contains(expectedQuery, query);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("pt", "https://example.test/wp-json/wp/v2/gallery/?lang=pt")]
+    [InlineData(null, "https://example.test/wp-json/wp/v2/gallery/")]
+    public async Task GalleryService_ListAsync_ShouldForwardLangOnlyWhenProvided(string? lang, string expectedUri)
+    {
+        var handler = new StubHttpMessageHandler(_ => CreateJsonResponse(GalleryPayload(("roca-bruja-en", "\"pt\""))));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/gallery/")
+        };
+
+        await new GalleryService(client).ListAsync(lang, CancellationToken.None);
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal(expectedUri, request.RequestUri!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GalleryService_ListAsync_ShouldFallBackToUntranslatedOrSpanishWhenLanguageIsEmpty()
+    {
+        // `gallery` not enabled in Polylang yet: `?lang=en` answers [] and posts carry `"lang": false`.
+        var handler = new StubHttpMessageHandler(request => CreateJsonResponse(
+            request.RequestUri!.Query.Contains("lang=")
+                ? "[]"
+                : GalleryPayload(("sin-idioma", "false"), ("en-espanol", "\"es\""), ("em-portugues", "\"pt\""))));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/gallery/")
+        };
+
+        var result = await new GalleryService(client).ListAsync("en", CancellationToken.None);
+
+        Assert.Equal(new[] { "sin-idioma", "en-espanol" }, result.Select(g => g.Slug));
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task GalleryService_ListAsync_FallbackShouldDeriveLanguageFromTranslationsWhenLangFieldIsMissing()
+    {
+        // Real WordPress shape (2026-10-04): no `lang` field, only `translations`.
+        const string all = """
+        [
+          { "id": 1, "slug": "dia-4", "title": { "rendered": "Día 4" }, "translations": { "es": "dia-4", "pt": "dia-4-2" } },
+          { "id": 2, "slug": "dia-4-2", "title": { "rendered": "Dia 4" }, "translations": { "es": "dia-4", "pt": "dia-4-2" } }
+        ]
+        """;
+        var handler = new StubHttpMessageHandler(request => CreateJsonResponse(
+            request.RequestUri!.Query.Contains("lang=") ? "[]" : all));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/gallery/")
+        };
+
+        var result = await new GalleryService(client).ListAsync("en", CancellationToken.None);
+
+        Assert.Equal(new[] { "dia-4" }, result.Select(g => g.Slug));
+    }
+
+    [Theory]
+    [InlineData("""{ "es": "dia-4", "en": "day-4", "fr": "jour-4" }""", "es=dia-4,en=day-4")]
+    [InlineData("[]", "")]
+    public async Task GalleryService_GetBySlugAsync_ShouldExposePolylangTranslations(string translationsJson, string expected)
+    {
+        var payload = $$"""
+        [{ "id": 1, "slug": "dia-4", "title": { "rendered": "Día 4" }, "lang": "es", "translations": {{translationsJson}} }]
+        """;
+        var handler = new StubHttpMessageHandler(_ => CreateJsonResponse(payload));
+        using var client = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://example.test/wp-json/wp/v2/gallery/")
+        };
+
+        var result = await new GalleryService(client).GetBySlugAsync("dia-4", "es", CancellationToken.None);
+
+        Assert.Equal(expected, string.Join(',', result!.Translations!.Select(t => $"{t.Key}={t.Value}")));
+    }
+
+    private static string GalleryPayload(params (string Slug, string LangJson)[] posts)
+    {
+        return "[" + string.Join(',', posts.Select((p, i) =>
+            $$"""{ "id": {{i + 1}}, "slug": "{{p.Slug}}", "title": { "rendered": "{{p.Slug}}" }, "lang": {{p.LangJson}} }""")) + "]";
+    }
+
+    [Theory]
+    [InlineData("en", "en")]
+    [InlineData(" PT ", "pt")]
+    [InlineData("es", "es")]
+    [InlineData("fr", null)]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    public void ContentLanguage_Normalize_ShouldOnlyAcceptSiteLanguages(string? input, string? expected)
+    {
+        Assert.Equal(expected, ContentLanguage.Normalize(input));
     }
 
     private static AlasAppDbContext CreateDbContext()

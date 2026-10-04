@@ -1,0 +1,146 @@
+{
+  "home": {
+    "meta": {
+      "description": "Official platform of the ALAS Latin Tour. Event calendar, live ranking, news and competitor registration for the continental surf circuit."
+    },
+    "live": {
+      "now": "Live Now",
+      "liveScore": "View LiveScore",
+      "schedule": "View schedule",
+      "streamTitle": "Live stream — ALAS Latin Tour",
+      "scoreboardTitle": "Live scoreboard — SurfScores",
+      "details": "Event details",
+      "venue": "Venue",
+      "city": "City",
+      "country": "Country",
+      "dates": "Dates"
+    },
+    "hero": {
+      "noVideo": "Your browser does not support HTML5 video.",
+      "kicker": "2026 Season · Continental Circuit of Professional Surfers",
+      "text": "The continental high-performance surf circuit. Twelve countries, eighteen stops, one passion: the waves of the continent.",
+      "calendar": "View Calendar",
+      "ranking": "Current Ranking"
+    },
+    "stats": {
+      "events": "Events",
+      "countries": "Countries",
+      "competitors": "Competitors",
+      "categories": "Categories"
+    },
+    "events": {
+      "title": "Upcoming tour stops",
+      "badge": "2026 Calendar",
+      "viewAll": "View all events",
+      "loading": "Loading events...",
+      "empty": "No upcoming events available.",
+      "view": "View event"
+    },
+    "ranking": {
+      "title": "{{ year }} Ranking",
+      "pos": "Pos",
+      "surfer": "Surfer",
+      "country": "Country",
+      "events": "Events",
+      "points": "Points",
+      "change": "Chg.",
+      "viewFull": "View Full Ranking"
+    },
+    "news": {
+      "title": "Latest News",
+      "empty": "No news available."
+    },
+    "contact": {
+      "kicker": "Get in touch",
+      "title": "Contact",
+      "intro": "Questions about registration, events or the tour? Write to us and we'll get back to you shortly.",
+      "sentTitle": "Message sent!",
+      "sentText": "We'll reply to the email you provided within the next business days.",
+      "sendAnother": "Send another message",
+      "name": "Name *",
+      "namePlaceholder": "Your name",
+      "email": "Email *",
+      "emailPlaceholder": "you@email.com",
+      "subject": "Subject *",
+      "subjectPlaceholder": "How can we help you?",
+      "message": "Message *",
+      "messagePlaceholder": "Write your message here...",
+      "allRequired": "All fields are required.",
+      "captchaRequired": "Anti-spam verification is required.",
+      "sending": "Sending...",
+      "send": "Send message",
+      "captchaLoadError": "The anti-spam verification could not be loaded. Reload the page and try again.",
+      "captchaMissing": "Complete the anti-spam verification before sending your message.",
+      "sendError": "The message could not be sent. Please try again."
+    }
+  },
+  "news": {
+    "meta": {
+      "description": "Results, reports, interviews and official photography from the ALAS Latin Tour, the Latin American professional surf circuit."
+    },
+    "title": "News & Gallery",
+    "intro": "Results, reports, interviews and official photography from the continental circuit.",
+    "tabs": {
+      "todas": "All",
+      "noticias": "News",
+      "resultados": "Results",
+      "fotos": "Photos",
+      "videos": "Videos"
+    },
+    "featured": "Featured",
+    "readingTime": "{{ min }} min read",
+    "readArticle": "Read article →",
+    "latest": "Latest articles",
+    "read": "Read →",
+    "loadMore": "Load more articles",
+    "gallery": "Gallery",
+    "photos": "Photos",
+    "videos": "Videos",
+    "galleryIntro": "Official tour photography. Click <strong class=\"text-text-light\">Download</strong> to access the full high-resolution set.",
+    "loadingGallery": "Loading gallery...",
+    "noPhotos": "No photos available.",
+    "photoCount": "{{ count }} photos",
+    "view": "View →",
+    "videosIntro": "Official tour videos in 480p and 1080p."
+  },
+  "article": {
+    "notFound": "Article not found",
+    "backToNews": "← Back to News",
+    "breadcrumb": "News",
+    "readingTime": "{{ min }} min read",
+    "shareFacebook": "Share on Facebook",
+    "shareX": "Share on X",
+    "shareWhatsapp": "Share on WhatsApp",
+    "linkCopied": "Link copied",
+    "copyLink": "Copy link",
+    "photoCredit": "Photo: ALAS Media",
+    "related": "You may also like"
+  },
+  "gallery": {
+    "notFound": "Gallery not found",
+    "breadcrumb": "Gallery",
+    "photoOne": "{{ count }} photo",
+    "photoMany": "{{ count }} photos",
+    "pressDownload": "Download press kit",
+    "close": "Close",
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "metaDescription": "Official gallery: {{ title }}"
+  },
+  "ranking": {
+    "meta": {
+      "description": "Official ALAS Latin Tour ranking. Up-to-date standings of professional surfers on the Latin American circuit."
+    },
+    "kicker": "Continental Circuit · {{ year }} Season",
+    "title": "{{ year }} Ranking",
+    "intro": "Standings updated from SurfScores. Points are calculated from the results of each tour stop.",
+    "circuit": "Circuit:",
+    "season": "Season:",
+    "live": "Live",
+    "competitors": "{{ count }} competitors",
+    "loading": "Loading ranking...",
+    "error": "The ranking could not be loaded.",
+    "retry": "Retry",
+    "empty": "No ranking data available."
+  }
+}

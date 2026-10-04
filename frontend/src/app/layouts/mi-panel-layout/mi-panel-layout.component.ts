@@ -1,12 +1,16 @@
 import { Component, inject, computed, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageService } from '../../core/i18n/language.service';
+import { stripLangPrefix } from '../../core/i18n/languages';
 
 @Component({
   selector: 'app-mi-panel-layout',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslocoModule],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <!-- Panel header -->
     <div class="bg-gradient-to-r from-navy-dark to-navy-mid border-b border-navy-mid">
@@ -15,7 +19,7 @@ import { AuthService } from '../../core/services/auth.service';
           {{ initial() }}
         </div>
         <div>
-          <p class="font-accent uppercase tracking-[0.2em] text-cyan-brand text-xs">{{ heading() }}</p>
+          <p class="font-accent uppercase tracking-[0.2em] text-cyan-brand text-xs">{{ heading() | transloco }}</p>
           <h1 class="font-heading text-xl leading-tight">{{ fullName() }}</h1>
         </div>
       </div>
@@ -23,9 +27,9 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- Tab navigation -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 overflow-x-auto">
         @for (tab of tabs(); track tab.path) {
-          <a [routerLink]="tab.path" routerLinkActive="!border-cyan-brand !text-cyan-brand"
+          <a [routerLink]="language.localize(tab.path)" routerLinkActive="!border-cyan-brand !text-cyan-brand"
              class="px-5 py-3 border-b-2 border-transparent text-text-muted hover:text-text-light font-accent uppercase text-xs tracking-wider whitespace-nowrap transition flex items-center gap-2">
-            <span>{{ tab.label }}</span>
+            <span>{{ 'competitor.panel.tabs.' + tab.key | transloco }}</span>
           </a>
         }
       </div>
@@ -39,22 +43,23 @@ import { AuthService } from '../../core/services/auth.service';
 export class MiPanelLayoutComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
+  protected language = inject(LanguageService);
 
   fullName = computed(() => this.auth.currentUser()?.fullName ?? '');
   initial = computed(() => (this.auth.currentUser()?.fullName ?? '?')[0].toUpperCase());
   isCompetitor = computed(() => this.auth.isCompetitor());
-  heading = computed(() => this.isCompetitor() ? 'Mi Panel de Competidor' : 'Mi Panel');
+  heading = computed(() => this.isCompetitor() ? 'competitor.panel.competitorHeading' : 'competitor.panel.heading');
 
   tabs = computed(() => {
-    const sharedTabs = [{ path: '/mi-panel/datos', label: 'Mis Datos' }];
+    const sharedTabs = [{ path: '/mi-panel/datos', key: 'datos' }];
     if (!this.isCompetitor()) {
       return sharedTabs;
     }
 
     return [
-      { path: '/mi-panel/inscripciones', label: 'Mis Inscripciones' },
-      { path: '/mi-panel/historial', label: 'Historial de Puntos' },
-      { path: '/mi-panel/calendario', label: 'Mi Calendario' },
+      { path: '/mi-panel/inscripciones', key: 'inscripciones' },
+      { path: '/mi-panel/historial', key: 'historial' },
+      { path: '/mi-panel/calendario', key: 'calendario' },
       ...sharedTabs,
     ];
   });
@@ -71,8 +76,9 @@ export class MiPanelLayoutComponent implements OnInit {
       '/mi-panel/calendario',
     ];
 
-    if (hiddenRoutes.some(route => this.router.url === route)) {
-      void this.router.navigate(['/mi-panel/datos']);
+    const url = stripLangPrefix(this.router.url);
+    if (hiddenRoutes.some(route => url === route)) {
+      void this.router.navigateByUrl(this.language.localize('/mi-panel/datos'));
     }
   }
 }

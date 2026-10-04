@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserInfo } from '../models';
+import { langFromPath, localizeUrl } from '../i18n/languages';
 
 const TOKEN_KEY = 'alas_token';
 const USER_KEY = 'alas_user';
@@ -46,6 +47,6 @@ export class AuthService {
       localStorage.removeItem(USER_KEY);
     }
     this._user.set(null);
-    this.router.navigate(['/login']);
+    this.router.navigateByUrl(localizeUrl('/login', langFromPath(this.router.url)));
   }
 }

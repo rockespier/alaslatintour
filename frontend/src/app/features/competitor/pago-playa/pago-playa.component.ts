@@ -2,7 +2,10 @@ import { Component, inject, signal, computed, input, OnInit, OnDestroy, PLATFORM
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
+import { LocaleFormatService } from '../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
 
 type BeachPaymentState = 'request' | 'pending' | 'enter_token' | 'confirmed' | 'expired';
 
@@ -20,19 +23,20 @@ const TOTAL_SECONDS = 24 * 3600;
 @Component({
   selector: 'app-pago-playa',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <section class="py-10 px-4 sm:px-6 lg:px-8">
       <div class="max-w-2xl mx-auto">
 
         <nav class="flex items-center gap-2 text-xs font-accent uppercase tracking-wider text-text-muted mb-6">
-          <a routerLink="/eventos" class="hover:text-cyan-brand">Eventos</a>
+          <a [routerLink]="'/eventos' | localizePath" class="hover:text-cyan-brand">{{ 'competitor.inscription.breadcrumbEvents' | transloco }}</a>
           <span>/</span>
-          <span class="text-cyan-brand">Pago en Playa</span>
+          <span class="text-cyan-brand">{{ 'competitor.beach.breadcrumb' | transloco }}</span>
         </nav>
 
-        <h1 class="font-heading text-4xl md:text-5xl mb-2">Pago en Playa</h1>
-        <p class="text-text-muted mb-8">Proceso de inscripción con pago presencial en el evento.</p>
+        <h1 class="font-heading text-4xl md:text-5xl mb-2">{{ 'competitor.beach.title' | transloco }}</h1>
+        <p class="text-text-muted mb-8">{{ 'competitor.beach.intro' | transloco }}</p>
 
         <!-- Inscription info banner -->
         @if (inscription()) {
@@ -40,18 +44,18 @@ const TOTAL_SECONDS = 24 * 3600;
             <div class="flex items-center gap-4">
               <div class="text-3xl">{{ inscription()!.eventoPais }}</div>
               <div>
-                <p class="font-accent uppercase text-cyan-brand text-xs tracking-wider">Inscripción #{{ inscriptionId() }}</p>
+                <p class="font-accent uppercase text-cyan-brand text-xs tracking-wider">{{ 'competitor.beach.inscriptionNumber' | transloco: { id: inscriptionId() } }}</p>
                 <h2 class="font-heading text-xl leading-tight">{{ inscription()!.eventoNombre }}</h2>
                 <p class="text-sm text-text-muted">{{ inscription()!.categoria }}</p>
               </div>
             </div>
             <div class="mt-4 pt-4 border-t border-navy-mid space-y-1.5 text-sm">
-              <div class="flex justify-between"><span class="text-text-muted">Tarifa de categoría</span><span>{{ formatUSD(inscription()!.baseAmountUsd) }}</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">{{ 'competitor.beach.categoryFee' | transloco }}</span><span>{{ formatUSD(inscription()!.baseAmountUsd) }}</span></div>
               @if (inscription()!.administrativeFeeUsd) {
-                <div class="flex justify-between"><span class="text-text-muted">Cuota administrativa</span><span>{{ formatUSD(inscription()!.administrativeFeeUsd!) }}</span></div>
+                <div class="flex justify-between"><span class="text-text-muted">{{ 'competitor.beach.adminFee' | transloco }}</span><span>{{ formatUSD(inscription()!.administrativeFeeUsd!) }}</span></div>
               }
               <div class="flex justify-between items-baseline pt-1.5 border-t border-navy-mid/60">
-                <span class="font-heading">Total</span>
+                <span class="font-heading">{{ 'competitor.inscription.total' | transloco }}</span>
                 <span class="font-heading text-xl text-cyan-brand">{{ formatUSD(inscription()!.montoUsd) }}<span class="text-xs ml-1">USD</span></span>
               </div>
             </div>
@@ -70,18 +74,16 @@ const TOTAL_SECONDS = 24 * 3600;
                     d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
               </div>
-              <h3 class="font-heading text-2xl mb-2">Solicitar código de pago</h3>
-              <p class="text-text-muted text-sm mb-6 leading-relaxed max-w-md mx-auto">
-                Al hacer clic en "Solicitar código", notificaremos al administrador del circuito.
-                Una vez aprobado, recibirás un <strong class="text-text-light">token único de 24 horas</strong> en tu correo.
-              </p>
+              <h3 class="font-heading text-2xl mb-2">{{ 'competitor.beach.requestTitle' | transloco }}</h3>
+              <p class="text-text-muted text-sm mb-6 leading-relaxed max-w-md mx-auto"
+                 [innerHTML]="'competitor.beach.requestText' | transloco"></p>
 
               <div class="bg-navy-deepest border border-navy-mid/60 rounded-xl p-5 text-left mb-6 space-y-2 text-sm">
-                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">1.</span> Solicitás el código aquí</div>
-                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">2.</span> Admin aprueba vía CMS</div>
-                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">3.</span> Recibirás un token por correo</div>
-                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">4.</span> Ingresás el token aquí (válido 24 h)</div>
-                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">5.</span> Pagás en efectivo al llegar al evento</div>
+                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">1.</span> {{ 'competitor.beach.steps.s1' | transloco }}</div>
+                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">2.</span> {{ 'competitor.beach.steps.s2' | transloco }}</div>
+                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">3.</span> {{ 'competitor.beach.steps.s3' | transloco }}</div>
+                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">4.</span> {{ 'competitor.beach.steps.s4' | transloco }}</div>
+                <div class="flex items-center gap-2 text-text-muted"><span class="text-warning-brand">5.</span> {{ 'competitor.beach.steps.s5' | transloco }}</div>
               </div>
 
               @if (errorMsg()) {
@@ -93,17 +95,17 @@ const TOTAL_SECONDS = 24 * 3600;
               <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button (click)="requestToken()" [disabled]="submitting()"
                   class="px-8 py-3 rounded-md bg-orange-brand hover:bg-orange-light disabled:opacity-60 text-white font-accent uppercase tracking-wider text-sm transition shadow-lg shadow-orange-brand/20">
-                  {{ submitting() ? 'Enviando solicitud...' : 'Solicitar código' }}
+                  {{ (submitting() ? 'competitor.beach.sendingRequest' : 'competitor.beach.requestCode') | transloco }}
                 </button>
 
                 <button (click)="openTokenEntry()"
                   class="px-8 py-3 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
-                  Ya tengo un token
+                  {{ 'competitor.beach.haveToken' | transloco }}
                 </button>
               </div>
 
               <p class="mt-4 text-xs text-text-muted">
-                Si ya recibiste el código por correo, puedes ingresarlo directamente aquí.
+                {{ 'competitor.beach.haveTokenHint' | transloco }}
               </p>
             </div>
           }
@@ -117,17 +119,17 @@ const TOTAL_SECONDS = 24 * 3600;
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
               </div>
-              <h3 class="font-heading text-2xl mb-2">Solicitud enviada</h3>
+              <h3 class="font-heading text-2xl mb-2">{{ 'competitor.beach.pendingTitle' | transloco }}</h3>
               <p class="text-text-muted text-sm mb-6 leading-relaxed">
-                Tu solicitud fue enviada al administrador. Recibirás el token en tu correo registrado una vez aprobada.
+                {{ 'competitor.beach.pendingText' | transloco }}
               </p>
-              <p class="text-xs text-text-muted mb-8">El administrador revisará tu solicitud y te enviará el token por correo.</p>
+              <p class="text-xs text-text-muted mb-8">{{ 'competitor.beach.pendingHint' | transloco }}</p>
 
               <div class="pt-5 border-t border-navy-mid">
-                <p class="text-sm text-text-muted mb-3">¿Ya recibiste el token por correo?</p>
+                <p class="text-sm text-text-muted mb-3">{{ 'competitor.beach.receivedToken' | transloco }}</p>
                 <button (click)="state.set('enter_token')"
                   class="px-6 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-xs transition">
-                  Ingresar mi token
+                  {{ 'competitor.beach.enterMyToken' | transloco }}
                 </button>
               </div>
             </div>
@@ -136,8 +138,8 @@ const TOTAL_SECONDS = 24 * 3600;
           <!-- STATE: enter_token -->
           @if (state() === 'enter_token') {
             <div>
-              <h3 class="font-heading text-2xl mb-1">Ingresa tu token</h3>
-              <p class="text-text-muted text-sm mb-6">Escribe el código de 6 dígitos que recibiste en tu correo.</p>
+              <h3 class="font-heading text-2xl mb-1">{{ 'competitor.beach.enterTitle' | transloco }}</h3>
+              <p class="text-text-muted text-sm mb-6">{{ 'competitor.beach.enterText' | transloco }}</p>
 
               <!-- Countdown -->
               <div class="mb-6 p-4 rounded-xl flex items-center justify-between"
@@ -145,7 +147,7 @@ const TOTAL_SECONDS = 24 * 3600;
                 <div>
                   <p class="font-accent uppercase text-xs tracking-wider"
                      [class]="countdownUrgent() ? 'text-error-brand' : 'text-text-muted'">
-                    Tiempo restante
+                    {{ 'competitor.beach.timeLeft' | transloco }}
                   </p>
                   <p class="font-heading text-3xl mt-1"
                      [class]="countdownUrgent() ? 'text-error-brand animate-pulse' : 'text-text-light'">
@@ -160,7 +162,7 @@ const TOTAL_SECONDS = 24 * 3600;
               </div>
 
               <div class="mb-5">
-                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-2">Código token (formato XXXX-XXXX)</label>
+                <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-2">{{ 'competitor.beach.tokenLabel' | transloco }}</label>
                 <input [(ngModel)]="tokenValue" type="text" maxlength="9"
                        placeholder="ABCD-1234"
                        class="input-field text-center font-heading text-2xl tracking-[0.3em] uppercase"
@@ -176,7 +178,7 @@ const TOTAL_SECONDS = 24 * 3600;
               <button (click)="redeemToken()" [disabled]="tokenValue.length < 9 || submitting()"
                 class="w-full py-3 rounded-md font-accent uppercase tracking-wider text-sm transition"
                 [class]="tokenValue.length >= 6 && !submitting() ? 'bg-orange-brand hover:bg-orange-light text-white shadow-lg shadow-orange-brand/20' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
-                {{ submitting() ? 'Verificando...' : 'Confirmar inscripción' }}
+                {{ (submitting() ? 'competitor.beach.verifying' : 'competitor.beach.confirm') | transloco }}
               </button>
             </div>
           }
@@ -189,9 +191,9 @@ const TOTAL_SECONDS = 24 * 3600;
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               </div>
-              <h3 class="font-heading text-2xl text-error-brand mb-2">Token expirado</h3>
+              <h3 class="font-heading text-2xl text-error-brand mb-2">{{ 'competitor.beach.expiredTitle' | transloco }}</h3>
               <p class="text-text-muted text-sm mb-8 leading-relaxed">
-                El código de pago expiró (validez de 24 horas). Puedes solicitar un nuevo token.
+                {{ 'competitor.beach.expiredText' | transloco }}
               </p>
 
               @if (errorMsg()) {
@@ -202,7 +204,7 @@ const TOTAL_SECONDS = 24 * 3600;
 
               <button (click)="requestToken()" [disabled]="submitting()"
                 class="px-8 py-3 rounded-md bg-orange-brand hover:bg-orange-light disabled:opacity-60 text-white font-accent uppercase tracking-wider text-sm transition">
-                {{ submitting() ? 'Enviando...' : 'Re-solicitar token' }}
+                {{ (submitting() ? 'competitor.beach.sending' : 'competitor.beach.rerequest') | transloco }}
               </button>
             </div>
           }
@@ -215,14 +217,14 @@ const TOTAL_SECONDS = 24 * 3600;
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
-              <h3 class="font-heading text-2xl text-success-brand mb-2">¡Inscripción confirmada!</h3>
+              <h3 class="font-heading text-2xl text-success-brand mb-2">{{ 'competitor.beach.confirmedTitle' | transloco }}</h3>
               <p class="text-text-muted text-sm mb-2 leading-relaxed">
-                Tu cupo está reservado. Recuerda pagar en efectivo al llegar al evento.
+                {{ 'competitor.beach.confirmedText' | transloco }}
               </p>
-              <p class="text-xs text-text-muted mb-8">El estado de tu inscripción será <strong class="text-warning-brand">Pendiente de pago</strong> hasta la validación presencial.</p>
-              <a routerLink="/mi-panel/inscripciones"
+              <p class="text-xs text-text-muted mb-8" [innerHTML]="'competitor.beach.confirmedStatus' | transloco"></p>
+              <a [routerLink]="'/mi-panel/inscripciones' | localizePath"
                  class="px-8 py-3 rounded-md bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-accent uppercase tracking-wider text-sm transition font-bold inline-block">
-                Ver mis inscripciones
+                {{ 'competitor.beach.myInscriptions' | transloco }}
               </a>
             </div>
           }
@@ -238,6 +240,8 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
 
   private api = inject(ApiService);
   private platformId = inject(PLATFORM_ID);
+  private transloco = inject(TranslocoService);
+  private localeFormat = inject(LocaleFormatService);
 
   state = signal<BeachPaymentState>('request');
   inscription = signal<InscriptionSummary | null>(null);
@@ -289,7 +293,7 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
       await this.api.post('/payments/beach/request', { inscriptionId: this.inscriptionId() });
       this.state.set('pending');
     } catch (err: any) {
-      this.errorMsg.set(err?.body?.message ?? 'No se pudo enviar la solicitud. Intenta de nuevo.');
+      this.errorMsg.set(err?.body?.message ?? this.transloco.translate('competitor.beach.requestError'));
     } finally {
       this.submitting.set(false);
     }
@@ -317,16 +321,16 @@ export class PagoPlayaComponent implements OnInit, OnDestroy {
       if (status === 400) {
         clearInterval(this.countdownRef);
         this.state.set('expired');
-        this.errorMsg.set('El token ingresado es inválido o ha expirado.');
+        this.errorMsg.set(this.transloco.translate('competitor.beach.invalidToken'));
       } else {
-        this.errorMsg.set(err?.body?.message ?? 'Error al verificar el token.');
+        this.errorMsg.set(err?.body?.message ?? this.transloco.translate('competitor.beach.verifyError'));
       }
     } finally {
       this.submitting.set(false);
     }
   }
 
-  formatUSD(n: number): string { return '$' + n.toLocaleString('en-US'); }
+  formatUSD(n: number): string { return this.localeFormat.usd(n); }
 
   private startCountdown(seconds = TOTAL_SECONDS): void {
     if (!isPlatformBrowser(this.platformId)) return;

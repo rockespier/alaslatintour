@@ -1,0 +1,168 @@
+{
+  "nav": {
+    "home": "Início",
+    "about": "Quem Somos",
+    "news": "Notícias",
+    "events": "Eventos",
+    "ranking": "Ranking",
+    "admin": "Admin",
+    "login": "Entrar",
+    "register": "Cadastrar-se",
+    "logout": "Sair",
+    "logoutLong": "Encerrar sessão",
+    "live": "Ao Vivo",
+    "toggleMenu": "Abrir menu"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English",
+    "pt": "Português"
+  },
+  "titles": {
+    "home": "ALAS Latin Tour — Surf Profissional Latino-Americano",
+    "about": "Quem Somos — ALAS Latin Tour",
+    "news": "Notícias — ALAS Latin Tour",
+    "gallery": "Galeria — ALAS Latin Tour",
+    "ranking": "Ranking — ALAS Latin Tour",
+    "events": "Eventos — ALAS Latin Tour",
+    "inscription": "Inscrição — ALAS Latin Tour",
+    "beachPayment": "Pagamento na Praia — ALAS Latin Tour",
+    "paypalReturn": "Confirmação PayPal — ALAS Latin Tour",
+    "paypalCancelled": "Pagamento PayPal cancelado — ALAS Latin Tour",
+    "myInscriptions": "Minhas Inscrições — ALAS Latin Tour",
+    "pointsHistory": "Histórico de Pontos — ALAS Latin Tour",
+    "myCalendar": "Meu Calendário — ALAS Latin Tour",
+    "personalData": "Dados Pessoais — ALAS Latin Tour",
+    "login": "Entrar — ALAS Latin Tour",
+    "register": "Cadastro — ALAS Latin Tour",
+    "forgotPassword": "Recuperar Senha — ALAS Latin Tour",
+    "resetPassword": "Redefinir Senha — ALAS Latin Tour"
+  },
+  "enums": {
+    "circuitStatus": {
+      "Activo": "Ativo",
+      "Borrador": "Rascunho",
+      "Archivado": "Arquivado",
+      "Próximo": "Próximo"
+    },
+    "circuitRegion": {
+      "Latinoamérica": "América Latina",
+      "América del Sur": "América do Sul",
+      "América Central": "América Central",
+      "América del Norte": "América do Norte"
+    },
+    "circuitModalidad": {
+      "Shortboard": "Shortboard",
+      "Longboard": "Longboard",
+      "Mixed": "Misto"
+    },
+    "eventStatusPublic": {
+      "Inscripciones Abiertas": "Inscrições Abertas",
+      "Próximamente": "Em breve",
+      "Completado": "Concluído",
+      "Cerrado": "Encerrado"
+    },
+    "eventAccessType": {
+      "Abierto": "Aberto",
+      "Restringido": "Restrito",
+      "Solo invitación": "Somente convite"
+    },
+    "categoryGender": {
+      "Masculino": "Masculino",
+      "Femenino": "Feminino",
+      "Ambos": "Ambos"
+    },
+    "inscriptionStatus": {
+      "confirmado": "Confirmada",
+      "pendiente": "Pendente",
+      "completado": "Concluída"
+    },
+    "paymentMethod": {
+      "paypal": "PayPal",
+      "beach": "Pagamento na praia"
+    },
+    "licenseStatus": {
+      "Activa": "Ativa",
+      "Pendiente de validación": "Pendente de validação"
+    },
+    "tokenHistoryStatus": {
+      "Usado": "Usado",
+      "Expirado": "Expirado",
+      "Rechazado": "Rejeitado",
+      "Pendiente": "Pendente"
+    },
+    "membershipPlan": {
+      "Mensual": "Mensal",
+      "Por evento": "Por evento"
+    },
+    "membershipStatus": {
+      "Activo": "Ativo",
+      "Vence pronto": "Vence em breve"
+    },
+    "articleCategory": {
+      "Resultados": "Resultados",
+      "Circuito": "Circuito",
+      "Entrevista": "Entrevista",
+      "Reglamento": "Regulamento",
+      "Tecnología": "Tecnologia"
+    },
+    "gender": {
+      "Masculino": "Masculino",
+      "Femenino": "Feminino",
+      "Prefiero no indicar": "Prefiro não informar"
+    },
+    "beachTokenError": {
+      "token_expired": "O token expirou",
+      "token_invalid": "Token inválido",
+      "token_already_used": "O token já foi utilizado",
+      "token_rejected": "O token foi rejeitado"
+    }
+  },
+  "footer": {
+    "tagline": "Circuito Continental de Surfistas Profissionais. Promovendo o surf de alto rendimento desde 2008.",
+    "platform": "Plataforma",
+    "social": "Redes Sociais",
+    "copyright": "© {{ year }} Circuito Continental de Surfistas Profissionais. Todos os direitos reservados."
+  },
+  "common": {
+    "results": "{{ count }} resultados",
+    "loading": "Carregando...",
+    "required": "Obrigatório",
+    "invalidEmail": "E-mail inválido",
+    "minLength": "Mínimo de {{ min }} caracteres",
+    "dateRange": "De {{ start }} a {{ end }} de {{ month }}",
+    "ago": {
+      "now": "agora mesmo",
+      "minutes": "há {{ n }} min",
+      "hours": "há {{ n }} h"
+    },
+    "updated": "Atualizado",
+    "readMore": "Leia mais →",
+    "viewAll": "Ver todas →",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "back": "Voltar",
+    "countries": {
+      "Argentina": "Argentina",
+      "Bolivia": "Bolivia",
+      "Brasil": "Brasil",
+      "Chile": "Chile",
+      "Colombia": "Colombia",
+      "Costa Rica": "Costa Rica",
+      "Ecuador": "Ecuador",
+      "El Salvador": "El Salvador",
+      "Guatemala": "Guatemala",
+      "Honduras": "Honduras",
+      "México": "México",
+      "Nicaragua": "Nicaragua",
+      "Panamá": "Panamá",
+      "Paraguay": "Paraguay",
+      "Perú": "Peru",
+      "República Dominicana": "República Dominicana",
+      "Uruguay": "Uruguay",
+      "Venezuela": "Venezuela",
+      "Otro": "Outro"
+    }
+  }
+}

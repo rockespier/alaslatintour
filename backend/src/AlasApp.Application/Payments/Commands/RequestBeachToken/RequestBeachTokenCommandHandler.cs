@@ -113,6 +113,7 @@ public sealed class RequestBeachTokenCommandHandler(
             };
 
         return TransactionalEmailTemplate.Render(
+            EmailLanguage.Spanish,
             "Pago en playa",
             "Token de pago en playa pendiente",
             intro,

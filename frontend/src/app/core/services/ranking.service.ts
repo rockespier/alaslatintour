@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { ApiService } from './api.service';
 import { flagForCountryName } from '../utils/country-flag.util';
 
@@ -32,6 +33,7 @@ export interface RankingResult {
 
 @Injectable({ providedIn: 'root' })
 export class RankingService {
+  private transloco = inject(TranslocoService);
   private api = inject(ApiService);
 
   async getCategories(circuitId?: string): Promise<RankingCategory[]> {
@@ -87,9 +89,8 @@ export class RankingService {
   cachedAgo(date: Date | null): string {
     if (!date) return '';
     const mins = Math.floor((Date.now() - date.getTime()) / 60000);
-    if (mins < 1) return 'hace un momento';
-    if (mins < 60) return `hace ${mins} min`;
-    const hrs = Math.floor(mins / 60);
-    return `hace ${hrs} h`;
+    if (mins < 1) return this.transloco.translate('common.ago.now');
+    if (mins < 60) return this.transloco.translate('common.ago.minutes', { n: mins });
+    return this.transloco.translate('common.ago.hours', { n: Math.floor(mins / 60) });
   }
 }

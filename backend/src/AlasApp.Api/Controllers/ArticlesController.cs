@@ -4,6 +4,7 @@ using AlasApp.Application.Articles.Commands.DeleteArticle;
 using AlasApp.Application.Articles.Queries.GetArticleBySlug;
 using AlasApp.Application.Articles.Queries.ListArticles;
 using AlasApp.Application.Articles.Models;
+using AlasApp.Application.Common;
 using Generated = AlasApp.AlasApi.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,7 @@ public sealed class ArticlesController(IRequestDispatcher dispatcher) : Controll
         [FromQuery] string? category,
         [FromQuery] bool? featured,
         [FromQuery] string? search,
+        [FromQuery] string? lang,
         CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
@@ -30,7 +32,8 @@ public sealed class ArticlesController(IRequestDispatcher dispatcher) : Controll
                     limit ?? 20,
                     ApiContractMapper.ParseArticleCategory(category),
                     featured,
-                    search)),
+                    search,
+                    ContentLanguage.Normalize(lang))),
             cancellationToken);
 
         return Ok(ApiContractMapper.ToContract(result));
@@ -39,9 +42,9 @@ public sealed class ArticlesController(IRequestDispatcher dispatcher) : Controll
     [HttpGet("{slug}")]
     [ProducesResponseType(typeof(Generated.ArticleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Generated.ArticleResponse>> GetBySlug(string slug, CancellationToken cancellationToken)
+    public async Task<ActionResult<Generated.ArticleResponse>> GetBySlug(string slug, [FromQuery] string? lang, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(new GetArticleBySlugQuery(slug), cancellationToken);
+        var result = await dispatcher.Send(new GetArticleBySlugQuery(slug, ContentLanguage.Normalize(lang)), cancellationToken);
         return Ok(ApiContractMapper.ToContract(result));
     }
 

@@ -230,6 +230,7 @@ public static class ApiContractMapper
             name = dto.Author.Name,
             role = dto.Author.Role
         };
+        contract.AdditionalProperties["translations"] = dto.Translations ?? new Dictionary<string, string>();
 
         return contract;
     }
@@ -260,7 +261,8 @@ public static class ApiContractMapper
             dto.PressDownloadLink,
             dto.CoverImageUrl,
             dto.PhotoCount,
-            dto.GalleryDays.Select(ToContract).ToList());
+            dto.GalleryDays.Select(ToContract).ToList(),
+            dto.Translations ?? new Dictionary<string, string>());
     }
 
     public static GalleryDayResponse ToContract(GalleryDayDto dto)

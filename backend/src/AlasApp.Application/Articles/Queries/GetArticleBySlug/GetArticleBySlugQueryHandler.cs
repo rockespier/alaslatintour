@@ -10,7 +10,7 @@ public sealed class GetArticleBySlugQueryHandler(IWordPressService wordPressServ
 {
     public async Task<ArticleDetailDto> Handle(GetArticleBySlugQuery request, CancellationToken cancellationToken)
     {
-        var article = await wordPressService.GetBySlugAsync(request.Slug, cancellationToken);
+        var article = await wordPressService.GetBySlugAsync(request.Slug, request.Lang, cancellationToken);
         return article ?? throw new NotFoundException("No se encontró el artículo solicitado.");
     }
 }

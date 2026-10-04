@@ -1,0 +1,168 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "news": "News",
+    "events": "Events",
+    "ranking": "Ranking",
+    "admin": "Admin",
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "logoutLong": "Log out",
+    "live": "Live",
+    "toggleMenu": "Open menu"
+  },
+  "language": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English",
+    "pt": "Português"
+  },
+  "titles": {
+    "home": "ALAS Latin Tour — Latin American Professional Surfing",
+    "about": "About Us — ALAS Latin Tour",
+    "news": "News — ALAS Latin Tour",
+    "gallery": "Gallery — ALAS Latin Tour",
+    "ranking": "Ranking — ALAS Latin Tour",
+    "events": "Events — ALAS Latin Tour",
+    "inscription": "Registration — ALAS Latin Tour",
+    "beachPayment": "Beach Payment — ALAS Latin Tour",
+    "paypalReturn": "PayPal Confirmation — ALAS Latin Tour",
+    "paypalCancelled": "PayPal Payment Cancelled — ALAS Latin Tour",
+    "myInscriptions": "My Registrations — ALAS Latin Tour",
+    "pointsHistory": "Points History — ALAS Latin Tour",
+    "myCalendar": "My Calendar — ALAS Latin Tour",
+    "personalData": "Personal Details — ALAS Latin Tour",
+    "login": "Log In — ALAS Latin Tour",
+    "register": "Sign Up — ALAS Latin Tour",
+    "forgotPassword": "Recover Password — ALAS Latin Tour",
+    "resetPassword": "Reset Password — ALAS Latin Tour"
+  },
+  "enums": {
+    "circuitStatus": {
+      "Activo": "Active",
+      "Borrador": "Draft",
+      "Archivado": "Archived",
+      "Próximo": "Upcoming"
+    },
+    "circuitRegion": {
+      "Latinoamérica": "Latin America",
+      "América del Sur": "South America",
+      "América Central": "Central America",
+      "América del Norte": "North America"
+    },
+    "circuitModalidad": {
+      "Shortboard": "Shortboard",
+      "Longboard": "Longboard",
+      "Mixed": "Mixed"
+    },
+    "eventStatusPublic": {
+      "Inscripciones Abiertas": "Registration Open",
+      "Próximamente": "Coming Soon",
+      "Completado": "Completed",
+      "Cerrado": "Closed"
+    },
+    "eventAccessType": {
+      "Abierto": "Open",
+      "Restringido": "Restricted",
+      "Solo invitación": "Invitation only"
+    },
+    "categoryGender": {
+      "Masculino": "Men",
+      "Femenino": "Women",
+      "Ambos": "Mixed"
+    },
+    "inscriptionStatus": {
+      "confirmado": "Confirmed",
+      "pendiente": "Pending",
+      "completado": "Completed"
+    },
+    "paymentMethod": {
+      "paypal": "PayPal",
+      "beach": "Beach payment"
+    },
+    "licenseStatus": {
+      "Activa": "Active",
+      "Pendiente de validación": "Pending validation"
+    },
+    "tokenHistoryStatus": {
+      "Usado": "Used",
+      "Expirado": "Expired",
+      "Rechazado": "Rejected",
+      "Pendiente": "Pending"
+    },
+    "membershipPlan": {
+      "Mensual": "Monthly",
+      "Por evento": "Per event"
+    },
+    "membershipStatus": {
+      "Activo": "Active",
+      "Vence pronto": "Expiring soon"
+    },
+    "articleCategory": {
+      "Resultados": "Results",
+      "Circuito": "Tour",
+      "Entrevista": "Interview",
+      "Reglamento": "Rules",
+      "Tecnología": "Technology"
+    },
+    "gender": {
+      "Masculino": "Male",
+      "Femenino": "Female",
+      "Prefiero no indicar": "Prefer not to say"
+    },
+    "beachTokenError": {
+      "token_expired": "The token has expired",
+      "token_invalid": "Invalid token",
+      "token_already_used": "The token has already been used",
+      "token_rejected": "The token was rejected"
+    }
+  },
+  "footer": {
+    "tagline": "Continental Circuit of Professional Surfers. Promoting high-performance surfing since 2008.",
+    "platform": "Platform",
+    "social": "Social Media",
+    "copyright": "© {{ year }} Continental Circuit of Professional Surfers. All rights reserved."
+  },
+  "common": {
+    "results": "{{ count }} results",
+    "loading": "Loading...",
+    "required": "Required",
+    "invalidEmail": "Invalid email",
+    "minLength": "At least {{ min }} characters",
+    "dateRange": "{{ month }} {{ start }} – {{ end }}",
+    "ago": {
+      "now": "just now",
+      "minutes": "{{ n }} min ago",
+      "hours": "{{ n }} h ago"
+    },
+    "updated": "Updated",
+    "readMore": "Read more →",
+    "viewAll": "View all →",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back",
+    "countries": {
+      "Argentina": "Argentina",
+      "Bolivia": "Bolivia",
+      "Brasil": "Brazil",
+      "Chile": "Chile",
+      "Colombia": "Colombia",
+      "Costa Rica": "Costa Rica",
+      "Ecuador": "Ecuador",
+      "El Salvador": "El Salvador",
+      "Guatemala": "Guatemala",
+      "Honduras": "Honduras",
+      "México": "Mexico",
+      "Nicaragua": "Nicaragua",
+      "Panamá": "Panama",
+      "Paraguay": "Paraguay",
+      "Perú": "Peru",
+      "República Dominicana": "Dominican Republic",
+      "Uruguay": "Uruguay",
+      "Venezuela": "Venezuela",
+      "Otro": "Other"
+    }
+  }
+}

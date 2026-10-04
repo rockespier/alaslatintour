@@ -1,12 +1,14 @@
 import { Component, input, output, computed } from '@angular/core';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
+  imports: [TranslocoModule],
   template: `
     @if (totalPages() > 1) {
       <div class="flex items-center justify-center gap-2 mt-6">
-        <button (click)="go(currentPage() - 1)" [disabled]="currentPage() === 1"
+        <button (click)="go(currentPage() - 1)" [disabled]="currentPage() === 1" [attr.aria-label]="'common.previous' | transloco"
           class="px-3 py-1.5 rounded text-sm bg-navy-mid/10 hover:bg-navy-mid/20 disabled:opacity-30 disabled:cursor-not-allowed text-text-light border border-navy-mid/40">
           ‹
         </button>
@@ -18,11 +20,11 @@ import { Component, input, output, computed } from '@angular/core';
             {{ page }}
           </button>
         }
-        <button (click)="go(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+        <button (click)="go(currentPage() + 1)" [disabled]="currentPage() === totalPages()" [attr.aria-label]="'common.next' | transloco"
           class="px-3 py-1.5 rounded text-sm bg-navy-mid/10 hover:bg-navy-mid/20 disabled:opacity-30 disabled:cursor-not-allowed text-text-light border border-navy-mid/40">
           ›
         </button>
-        <span class="text-xs text-text-muted ml-2">{{ totalItems() }} resultados</span>
+        <span class="text-xs text-text-muted ml-2">{{ 'common.results' | transloco: { count: totalItems() } }}</span>
       </div>
     }
   `,

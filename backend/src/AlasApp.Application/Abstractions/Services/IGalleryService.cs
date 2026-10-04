@@ -4,7 +4,7 @@ namespace AlasApp.Application.Abstractions.Services;
 
 public interface IGalleryService
 {
-    Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(string? lang, CancellationToken cancellationToken);
 
-    Task<GalleryDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+    Task<GalleryDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken);
 }

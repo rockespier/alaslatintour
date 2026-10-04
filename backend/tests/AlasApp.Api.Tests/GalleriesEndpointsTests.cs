@@ -135,7 +135,7 @@ internal sealed class FakeGalleryService : IGalleryService
             ])
     ];
 
-    public Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(string? lang, CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyCollection<GallerySummaryDto>>(
             Galleries.Select(g => new GallerySummaryDto(
@@ -147,7 +147,7 @@ internal sealed class FakeGalleryService : IGalleryService
                 g.PhotoCount)).ToList());
     }
 
-    public Task<GalleryDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    public Task<GalleryDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
     {
         return Task.FromResult(Galleries.FirstOrDefault(x => x.Slug == slug));
     }

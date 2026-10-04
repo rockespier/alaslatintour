@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AlasApp.Infrastructure.WordPress;
@@ -22,4 +23,6 @@ internal sealed record WordPressGalleryPostDto(
     [property: JsonPropertyName("id")] int Id,
     [property: JsonPropertyName("slug")] string Slug,
     [property: JsonPropertyName("title")] WordPressRenderedDto Title,
-    [property: JsonPropertyName("acf")] WordPressGalleryAcfDto? Acf);
+    [property: JsonPropertyName("acf")] WordPressGalleryAcfDto? Acf,
+    [property: JsonPropertyName("lang")] JsonElement? Lang = null,
+    [property: JsonPropertyName("translations")] JsonElement? Translations = null);

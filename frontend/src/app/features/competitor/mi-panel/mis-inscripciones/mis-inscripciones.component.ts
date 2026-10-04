@@ -2,6 +2,9 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { LocaleFormatService } from '../../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../../shared/pipes/localize-path.pipe';
 
 type InscriptionStatus = 'activa' | 'completada' | 'cancelada';
 type PaymentStatus = 'confirmado' | 'pendiente' | 'rechazado';
@@ -16,6 +19,7 @@ interface Inscription {
   categoria: string;
   status: InscriptionStatus;
   statusPago: PaymentStatus;
+  /** Key under `competitor.myInscriptions.status`. */
   statusPagoLabel: string;
   monto: number;
   metodoPago?: string;
@@ -32,10 +36,11 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
 @Component({
   selector: 'app-mis-inscripciones',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h2 class="font-heading text-3xl">Mis Inscripciones</h2>
+      <h2 class="font-heading text-3xl">{{ 'competitor.myInscriptions.title' | transloco }}</h2>
     </div>
 
     <!-- Filter tabs -->
@@ -44,7 +49,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
         <button (click)="filter.set(tab.key)"
                 class="px-4 py-2.5 border-b-2 font-accent uppercase text-xs tracking-wider whitespace-nowrap transition"
                 [class]="filter() === tab.key ? 'border-cyan-brand text-cyan-brand' : 'border-transparent text-text-muted hover:text-text-light'">
-          {{ tab.label }}
+          {{ 'competitor.myInscriptions.tabs.' + tab.key | transloco }}
           @if (tab.count() > 0) {
             <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px]"
                   [class]="filter() === tab.key ? 'bg-cyan-brand/20' : 'bg-navy-mid'">{{ tab.count() }}</span>
@@ -59,20 +64,20 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
       </div>
     } @else if (filtered().length === 0) {
       <div class="text-center py-16">
-        <p class="text-text-muted text-sm">No hay inscripciones en esta categoría.</p>
-        <a routerLink="/eventos" class="mt-4 inline-block text-cyan-brand hover:text-cyan-dark font-accent uppercase text-xs tracking-wider">Ver eventos disponibles →</a>
+        <p class="text-text-muted text-sm">{{ 'competitor.myInscriptions.empty' | transloco }}</p>
+        <a [routerLink]="'/eventos' | localizePath" class="mt-4 inline-block text-cyan-brand hover:text-cyan-dark font-accent uppercase text-xs tracking-wider">{{ 'competitor.myInscriptions.browseEvents' | transloco }}</a>
       </div>
     } @else {
       <div class="overflow-x-auto rounded-2xl border border-navy-mid">
         <table class="w-full text-sm">
           <thead class="bg-navy-mid/40 font-accent uppercase tracking-wider text-text-muted text-xs">
             <tr>
-              <th class="px-5 py-3 text-left">Evento</th>
-              <th class="px-4 py-3 text-left hidden sm:table-cell">Categoría</th>
-              <th class="px-4 py-3 text-left hidden md:table-cell">Fechas</th>
-              <th class="px-4 py-3 text-center">Pago</th>
-              <th class="px-4 py-3 text-right hidden sm:table-cell">Monto</th>
-              <th class="px-4 py-3 text-right">Acción</th>
+              <th class="px-5 py-3 text-left">{{ 'competitor.myInscriptions.event' | transloco }}</th>
+              <th class="px-4 py-3 text-left hidden sm:table-cell">{{ 'competitor.myInscriptions.category' | transloco }}</th>
+              <th class="px-4 py-3 text-left hidden md:table-cell">{{ 'competitor.myInscriptions.dates' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'competitor.myInscriptions.payment' | transloco }}</th>
+              <th class="px-4 py-3 text-right hidden sm:table-cell">{{ 'competitor.myInscriptions.amount' | transloco }}</th>
+              <th class="px-4 py-3 text-right">{{ 'competitor.myInscriptions.action' | transloco }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-navy-mid/50">
@@ -94,30 +99,30 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
                 <td class="px-4 py-4 text-center">
                   <span class="px-2 py-1 rounded-full text-[10px] font-accent uppercase tracking-wider border whitespace-nowrap"
                         [class]="pagoClass(ins.statusPago)">
-                    {{ ins.statusPagoLabel }}
+                    {{ 'competitor.myInscriptions.status.' + ins.statusPagoLabel | transloco }}
                   </span>
                 </td>
-                <td class="px-4 py-4 text-right text-cyan-brand hidden sm:table-cell">{{ '$' + ins.monto }}</td>
+                <td class="px-4 py-4 text-right text-cyan-brand hidden sm:table-cell">{{ formatUSD(ins.monto) }}</td>
                 <td class="px-4 py-4 text-right">
                   @if (ins.statusPago === 'pendiente' && !ins.tokenIngresado) {
                     <div class="flex items-center justify-end gap-3">
                       @if (ins.metodoPago === 'beach') {
-                        <a [routerLink]="['/pago-playa', ins.id]"
+                        <a [routerLink]="('/pago-playa/' + ins.id) | localizePath"
                            class="text-xs font-accent uppercase tracking-wider text-orange-brand hover:text-orange-light">
-                          Ingresar token →
+                          {{ 'competitor.myInscriptions.enterToken' | transloco }}
                         </a>
                       }
                       @if (ins.canDelete) {
                         <button type="button"
                                 (click)="deleteInscription(ins)"
                                 class="text-xs font-accent uppercase tracking-wider text-error-brand hover:text-red-300">
-                          Eliminar
+                          {{ 'competitor.myInscriptions.delete' | transloco }}
                         </button>
                       }
                     </div>
                   } @else if (ins.statusPago === 'pendiente' && ins.tokenIngresado) {
                     <span class="text-xs font-accent uppercase tracking-wider text-cyan-brand">
-                      Pend. Pago
+                      {{ 'competitor.myInscriptions.pendingPayment' | transloco }}
                     </span>
                   } @else {
                     <span class="text-xs text-text-muted">—</span>
@@ -130,7 +135,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
       </div>
 
       @if (filtered().length > 0) {
-        <p class="text-xs text-text-muted mt-3 text-right">{{ filtered().length }} inscripción{{ filtered().length !== 1 ? 'es' : '' }}</p>
+        <p class="text-xs text-text-muted mt-3 text-right">{{ (filtered().length === 1 ? 'competitor.myInscriptions.countOne' : 'competitor.myInscriptions.countMany') | transloco: { count: filtered().length } }}</p>
       }
     }
   `,
@@ -138,6 +143,8 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
 export class MisInscripcionesComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+  private transloco = inject(TranslocoService);
+  private localeFormat = inject(LocaleFormatService);
 
   loading = signal(true);
   inscriptions = signal<Inscription[]>([]);
@@ -154,10 +161,10 @@ export class MisInscripcionesComponent implements OnInit {
   });
 
   filterTabs = [
-    { key: 'todas' as FilterTab,         label: 'Todas',             count: computed(() => this.inscriptions().length) },
-    { key: 'activas' as FilterTab,        label: 'Activas',           count: computed(() => this.inscriptions().filter(i => i.status === 'activa').length) },
-    { key: 'pendiente_pago' as FilterTab, label: 'Pendiente de pago', count: computed(() => this.inscriptions().filter(i => i.statusPago === 'pendiente').length) },
-    { key: 'completadas' as FilterTab,    label: 'Completadas',       count: computed(() => this.inscriptions().filter(i => i.status === 'completada').length) },
+    { key: 'todas' as FilterTab,         count: computed(() => this.inscriptions().length) },
+    { key: 'activas' as FilterTab,        count: computed(() => this.inscriptions().filter(i => i.status === 'activa').length) },
+    { key: 'pendiente_pago' as FilterTab, count: computed(() => this.inscriptions().filter(i => i.statusPago === 'pendiente').length) },
+    { key: 'completadas' as FilterTab,    count: computed(() => this.inscriptions().filter(i => i.status === 'completada').length) },
   ];
 
   ngOnInit(): void {
@@ -225,14 +232,12 @@ export class MisInscripcionesComponent implements OnInit {
 
     const statusPagoLabel =
       statusPago === 'confirmado'
-        ? 'Confirmado'
+        ? 'confirmed'
         : statusPago === 'rechazado'
-          ? 'Rechazado'
-          : tokenIngresado
-            ? 'Pend. Pago'
-            : metodoPago === 'paypal'
-              ? 'Pend. pago'
-              : 'Pend. token';
+          ? 'rejected'
+          : tokenIngresado || metodoPago === 'paypal'
+            ? 'pendingPayment'
+            : 'pendingToken';
 
     const canDelete =
       status === 'activa'
@@ -262,7 +267,7 @@ export class MisInscripcionesComponent implements OnInit {
     }
 
     const confirmed = globalThis.confirm(
-      `Se eliminará la inscripción pendiente para ${inscription.eventoNombre}. Esta acción no se puede deshacer.`
+      this.transloco.translate('competitor.myInscriptions.deleteConfirm', { event: inscription.eventoNombre })
     );
 
     if (!confirmed) {
@@ -273,7 +278,7 @@ export class MisInscripcionesComponent implements OnInit {
       await this.api.delete(`/inscriptions/${inscription.id}`);
       this.inscriptions.update(items => items.filter(item => item.id !== inscription.id));
     } catch (err: any) {
-      globalThis.alert(err?.body?.message ?? err?.message ?? 'No se pudo eliminar la inscripción.');
+      globalThis.alert(err?.body?.message ?? err?.message ?? this.transloco.translate('competitor.myInscriptions.deleteError'));
     }
   }
 
@@ -296,13 +301,10 @@ export class MisInscripcionesComponent implements OnInit {
 
   pagoClass(status: PaymentStatus): string { return PAGO_CLASS[status] ?? ''; }
 
-  // fechaInicio/fechaFin son fechas "solo fecha" (medianoche UTC en el backend); se leen con
-  // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
-  // anterior si se usan getters locales).
+  formatUSD(n: number): string { return this.localeFormat.usd(n); }
+
   dateRange(start: string, end: string): string {
-    if (!start || !end) return 'Por confirmar';
-    const s = new Date(start), e = new Date(end);
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${s.getUTCDate()} - ${e.getUTCDate()} ${months[s.getUTCMonth()]} ${s.getUTCFullYear()}`;
+    if (!start || !end) return this.transloco.translate('competitor.myInscriptions.toBeConfirmed');
+    return `${this.localeFormat.dateRange(start, end)} ${new Date(start).getUTCFullYear()}`;
   }
 }

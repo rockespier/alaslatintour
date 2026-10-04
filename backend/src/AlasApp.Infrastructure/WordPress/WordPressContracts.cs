@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AlasApp.Infrastructure.WordPress;
@@ -52,7 +53,8 @@ internal sealed record WordPressPostDto(
     [property: JsonPropertyName("sticky")] bool Sticky,
     [property: JsonPropertyName("tags")] IReadOnlyList<int>? Tags,
     [property: JsonPropertyName("meta")] WordPressMetaDto? Meta,
-    [property: JsonPropertyName("_embedded")] WordPressEmbeddedDto? Embedded);
+    [property: JsonPropertyName("_embedded")] WordPressEmbeddedDto? Embedded,
+    [property: JsonPropertyName("translations")] JsonElement? Translations = null);
 
 internal sealed record WordPressCreateUpdateRequest(
     [property: JsonPropertyName("title")] string Title,

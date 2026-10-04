@@ -132,6 +132,7 @@ public sealed class CreateInscriptionCommandHandler(
             var competitorName = $"{competitor.Nombre} {competitor.Apellido}";
 
             var html = TransactionalEmailTemplate.Render(
+                EmailLanguage.Spanish,
                 "Inscripción",
                 "Nueva inscripción recibida",
                 $"El competidor {competitorName} se ha inscrito a {dto.Event.Nombre}.",

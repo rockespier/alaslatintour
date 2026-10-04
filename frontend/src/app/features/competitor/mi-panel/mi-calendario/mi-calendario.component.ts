@@ -5,6 +5,9 @@ import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { flagForCountryCode } from '../../../../core/utils/country-flag.util';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { LocaleFormatService } from '../../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../../shared/pipes/localize-path.pipe';
 
 interface CalendarEvent {
   id: string;
@@ -22,17 +25,18 @@ interface CalendarEvent {
 @Component({
   selector: 'app-mi-calendario',
   standalone: true,
-  imports: [RouterLink, StarRatingComponent],
+  imports: [RouterLink, StarRatingComponent, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h2 class="font-heading text-3xl">Mi Calendario</h2>
+      <h2 class="font-heading text-3xl">{{ 'competitor.calendar.title' | transloco }}</h2>
       <button (click)="exportCalendar()" [disabled]="exporting()"
               class="flex items-center gap-2 px-4 py-2 border border-navy-mid hover:border-cyan-brand text-text-light font-accent uppercase text-xs tracking-wider rounded-lg transition">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
-        {{ exporting() ? 'Exportando...' : 'Exportar .ics' }}
+        {{ (exporting() ? 'competitor.calendar.exporting' : 'competitor.calendar.export') | transloco }}
       </button>
     </div>
 
@@ -48,11 +52,11 @@ interface CalendarEvent {
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
         </div>
-        <p class="font-heading text-xl text-text-muted mb-2">Sin eventos en tu calendario</p>
-        <p class="text-sm text-text-muted mb-6">Inscríbete en eventos para verlos aquí.</p>
-        <a routerLink="/eventos"
+        <p class="font-heading text-xl text-text-muted mb-2">{{ 'competitor.calendar.emptyTitle' | transloco }}</p>
+        <p class="text-sm text-text-muted mb-6">{{ 'competitor.calendar.emptyText' | transloco }}</p>
+        <a [routerLink]="'/eventos' | localizePath"
            class="px-6 py-2.5 rounded-md bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-sm transition">
-          Ver eventos disponibles
+          {{ 'competitor.calendar.browseEvents' | transloco }}
         </a>
       </div>
     } @else {
@@ -76,7 +80,7 @@ interface CalendarEvent {
                 <span class="text-sm text-text-muted">{{ event.ciudad }}, {{ event.eventoPais }}</span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider border"
                       [class]="event.statusPago === 'confirmado' ? 'bg-success-brand/15 text-success-brand border-success-brand/30' : 'bg-warning-brand/15 text-warning-brand border-warning-brand/30'">
-                  {{ event.statusPago === 'confirmado' ? 'Pago confirmado' : 'Pago pendiente' }}
+                  {{ (event.statusPago === 'confirmado' ? 'competitor.calendar.paymentConfirmed' : 'competitor.calendar.paymentPending') | transloco }}
                 </span>
               </div>
               <h3 class="font-heading text-xl leading-tight mb-1">{{ event.eventoNombre }}</h3>
@@ -87,9 +91,9 @@ interface CalendarEvent {
             <!-- Action -->
             @if (event.statusPago === 'pendiente') {
               <div class="sm:self-center">
-                <a [routerLink]="['/pago-playa', event.inscriptionId]"
+                <a [routerLink]="('/pago-playa/' + event.inscriptionId) | localizePath"
                    class="block px-4 py-2 rounded-lg bg-orange-brand hover:bg-orange-light text-white font-accent uppercase tracking-wider text-xs transition text-center">
-                  Ver token
+                  {{ 'competitor.calendar.viewToken' | transloco }}
                 </a>
               </div>
             }
@@ -103,6 +107,8 @@ export class MiCalendarioComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
+  private transloco = inject(TranslocoService);
+  private localeFormat = inject(LocaleFormatService);
 
   loading = signal(true);
   exporting = signal(false);
@@ -133,7 +139,7 @@ export class MiCalendarioComponent implements OnInit {
       const blob = new Blob([icsContent], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'alas-calendario.ics'; a.click();
+      a.href = url; a.download = this.transloco.translate('competitor.calendar.fileName'); a.click();
       URL.revokeObjectURL(url);
     } catch { /* ignore */ } finally {
       this.exporting.set(false);
@@ -146,13 +152,11 @@ export class MiCalendarioComponent implements OnInit {
   // getters UTC para que el día no dependa del huso horario del navegador (Sudamérica ve el día
   // anterior si se usan getters locales).
   dayOf(d: string): string { return d ? String(new Date(d).getUTCDate()).padStart(2, '0') : ''; }
-  monthOf(d: string): string { if (!d) return ''; const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return months[new Date(d).getUTCMonth()]; }
+  monthOf(d: string): string { return this.localeFormat.utcDate(d, 'MMM'); }
   yearOf(d: string): string { return d ? String(new Date(d).getUTCFullYear()) : ''; }
 
   dateRange(start: string, end: string): string {
     if (!start || !end) return '';
-    const s = new Date(start), e = new Date(end);
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${s.getUTCDate()} - ${e.getUTCDate()} ${months[s.getUTCMonth()]} ${s.getUTCFullYear()}`;
+    return `${this.localeFormat.dateRange(start, end)} ${new Date(start).getUTCFullYear()}`;
   }
 }

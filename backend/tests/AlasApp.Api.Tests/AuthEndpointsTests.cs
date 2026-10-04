@@ -118,6 +118,30 @@ public sealed class AuthEndpointsTests : IClassFixture<CustomWebApplicationFacto
         Assert.True(persisted);
     }
 
+    [Theory]
+    [InlineData("English", "ALAS Global Tour password recovery", "<html lang=\"en\">")]
+    [InlineData("Portugues", "Recuperação de senha ALAS Global Tour", "<html lang=\"pt\">")]
+    [InlineData("Español", "Recuperacion de contrasena ALAS Global Tour", "<html lang=\"es\">")]
+    public async Task RequestPasswordReset_ShouldSendEmailInPreferredLanguage(
+        string idiomaPreferido,
+        string expectedSubject,
+        string expectedHtmlLang)
+    {
+        var email = $"reset-lang-{Guid.NewGuid():N}@test.com";
+        var registerResponse = await TestCompetitorRegistration.PostAsync(
+            _client, email, "Password1", "Ana", "Ruiz", idiomaPreferido);
+        Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+
+        var response = await _client.PostAsJsonAsync("/v1/auth/password-reset/request", new { email });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var sender = (CustomWebApplicationFactory.RecordingEmailSender)_factory.Services
+            .GetRequiredService<AlasApp.Application.Abstractions.Services.IEmailSender>();
+        var message = Assert.Single(sender.Sent, m => m.To == email);
+        Assert.Equal(expectedSubject, message.Subject);
+        Assert.Contains(expectedHtmlLang, message.HtmlBody);
+    }
+
     [Fact]
     public async Task Login_ShouldLockAccountAfterThreeFailedAttempts()
     {

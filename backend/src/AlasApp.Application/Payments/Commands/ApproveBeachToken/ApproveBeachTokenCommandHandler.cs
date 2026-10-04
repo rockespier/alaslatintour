@@ -12,6 +12,7 @@ namespace AlasApp.Application.Payments.Commands.ApproveBeachToken;
 public sealed class ApproveBeachTokenCommandHandler(
     IBeachTokenRepository beachTokenRepository,
     IAdminSettingsRepository adminSettingsRepository,
+    IUserAccountRepository userAccountRepository,
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
     IClock clock)
@@ -69,13 +70,11 @@ public sealed class ApproveBeachTokenCommandHandler(
         var settingsJson = await adminSettingsRepository.GetJsonAsync(AdminSettingsDefaults.SettingsKey, cancellationToken);
         var settings = AdminSettingsSerializer.DeserializeOrDefault(settingsJson);
         var textBody = BuildTokenEmailText(token, settings.Notifications.CompetitorTokenEmailTemplate);
+        var account = await userAccountRepository.GetByEmailAsync(token.CompetitorEmail, cancellationToken);
+        var email = CompetitorEmails.BeachTokenApproved(EmailLanguage.From(account?.IdiomaPreferido), token, textBody);
 
         await emailSender.SendAsync(
-            new EmailMessage(
-                token.CompetitorEmail,
-                $"Token de pago para {token.Event}",
-                textBody,
-                BuildTokenEmailHtml(token, textBody)),
+            new EmailMessage(token.CompetitorEmail, email.Subject, email.Text, email.Html),
             cancellationToken);
     }
 
@@ -91,26 +90,5 @@ public sealed class ApproveBeachTokenCommandHandler(
             .Replace("[CATEGORIA]", token.Category, StringComparison.OrdinalIgnoreCase)
             .Replace("[COMPETIDOR]", token.CompetitorName, StringComparison.OrdinalIgnoreCase)
             .Replace("[MONTO]", token.AmountUsd.ToString("0.##"), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string BuildTokenEmailHtml(BeachTokenAdminDto token, string textBody)
-    {
-        var expiration = token.ExpiracionAt?.ToString("dd/MM/yyyy HH:mm") ?? "24 horas desde la aprobacion";
-
-        return TransactionalEmailTemplate.Render(
-            "Pago en playa",
-            "Tu token de pago fue aprobado",
-            textBody,
-            "Codigo token",
-            token.TokenCode ?? string.Empty,
-            [
-                new EmailDetail("Evento", token.Event),
-                new EmailDetail("Categoria", token.Category),
-                new EmailDetail("Competidor", token.CompetitorName),
-                new EmailDetail("Monto", $"USD {token.AmountUsd:0.##}"),
-                new EmailDetail("Valido hasta", expiration)
-            ],
-            "Usa este codigo en la web, sección 'Mis Inscripciones' para completar tu inscripción con pago en efectivo. El token es personal y vence a las 24 horas.",
-            "Este mensaje fue enviado automaticamente por ALAS Global Tour.");
     }
 }

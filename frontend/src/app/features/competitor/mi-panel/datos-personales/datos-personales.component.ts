@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 
 const PAISES = [
   'Argentina','Bolivia','Brasil','Chile','Colombia','Costa Rica',
@@ -12,20 +13,21 @@ const PAISES = [
 @Component({
   selector: 'app-datos-personales',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslocoModule],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <div class="max-w-2xl">
-      <h2 class="font-heading text-3xl mb-1">Mis Datos</h2>
-      <p class="text-text-muted text-sm mb-8">Actualiza tu información personal para el circuito.</p>
+      <h2 class="font-heading text-3xl mb-1">{{ 'competitor.personal.title' | transloco }}</h2>
+      <p class="text-text-muted text-sm mb-8">{{ 'competitor.personal.intro' | transloco }}</p>
 
       @if (successMsg()) {
         <div class="mb-6 px-4 py-3 rounded-lg bg-success-brand/10 border border-success-brand/30 text-success-brand text-sm">
-          {{ successMsg() }}
+          {{ successMsg() | transloco }}
         </div>
       }
       @if (errorMsg()) {
         <div class="mb-6 px-4 py-3 rounded-lg bg-error-brand/10 border border-error-brand/30 text-error-brand text-sm">
-          {{ errorMsg() }}
+          {{ errorMsg() | transloco }}
         </div>
       }
 
@@ -38,62 +40,62 @@ const PAISES = [
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Nombre</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.firstName' | transloco }}</label>
               <input formControlName="nombre" type="text" class="input-field"
                      [class.field-error]="form.controls.nombre.invalid && form.controls.nombre.touched" />
               @if (form.controls.nombre.invalid && form.controls.nombre.touched) {
-                <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
               }
             </div>
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Apellido</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.lastName' | transloco }}</label>
               <input formControlName="apellido" type="text" class="input-field"
                      [class.field-error]="form.controls.apellido.invalid && form.controls.apellido.touched" />
               @if (form.controls.apellido.invalid && form.controls.apellido.touched) {
-                <p class="mt-1 text-xs text-error-brand">Requerido</p>
+                <p class="mt-1 text-xs text-error-brand">{{ 'common.required' | transloco }}</p>
               }
             </div>
           </div>
 
           <div>
-            <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Correo electrónico</label>
+            <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.email' | transloco }}</label>
             <input formControlName="email" type="email" class="input-field opacity-60" readonly />
-            <p class="mt-1 text-xs text-text-muted">El correo no puede modificarse. Contáctanos si necesitas cambiarlo.</p>
+            <p class="mt-1 text-xs text-text-muted">{{ 'competitor.personal.emailLocked' | transloco }}</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Teléfono</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.phone' | transloco }}</label>
               <input formControlName="telefono" type="tel" class="input-field" placeholder="+51 999 999 999" />
             </div>
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">País</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.country' | transloco }}</label>
               <select formControlName="pais" class="input-field">
-                <option value="">Seleccionar...</option>
-                @for (p of paises; track p) { <option [value]="p">{{ p }}</option> }
+                <option value="">{{ 'competitor.personal.select' | transloco }}</option>
+                @for (p of paises; track p) { <option [value]="p">{{ 'common.countries.' + p | transloco }}</option> }
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Postura</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.stance' | transloco }}</label>
               <select formControlName="postura" class="input-field">
-                <option value="">Seleccionar...</option>
-                <option value="Regular">Regular (izquierda)</option>
-                <option value="Goofy">Goofy (derecha)</option>
+                <option value="">{{ 'competitor.personal.select' | transloco }}</option>
+                <option value="Regular">{{ 'competitor.personal.regular' | transloco }}</option>
+                <option value="Goofy">{{ 'competitor.personal.goofy' | transloco }}</option>
               </select>
             </div>
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Talla camiseta</label>
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.shirtSize' | transloco }}</label>
               <select formControlName="tallaCamiseta" class="input-field">
                 <option value="">—</option>
                 @for (t of tallas; track t) { <option [value]="t">{{ t }}</option> }
               </select>
             </div>
             <div>
-              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">Club / Academia</label>
-              <input formControlName="club" type="text" class="input-field" placeholder="Nombre del club" />
+              <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'competitor.personal.club' | transloco }}</label>
+              <input formControlName="club" type="text" class="input-field" [placeholder]="'competitor.personal.clubPlaceholder' | transloco" />
             </div>
           </div>
 
@@ -101,7 +103,7 @@ const PAISES = [
             <button type="submit" [disabled]="saving() || form.invalid"
                     class="px-8 py-3 rounded-md font-accent uppercase tracking-wider text-sm transition"
                     [class]="!saving() && form.valid ? 'bg-cyan-brand hover:bg-cyan-dark text-navy-deepest font-bold' : 'bg-navy-mid text-text-muted cursor-not-allowed'">
-              {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+              {{ (saving() ? 'competitor.personal.saving' : 'competitor.personal.save') | transloco }}
             </button>
           </div>
         </form>
@@ -142,7 +144,7 @@ export class DatosPersonalesComponent implements OnInit {
       const competitorId = await this.resolveCompetitorId();
       if (!competitorId) {
         this.form.patchValue({ email: this.auth.currentUser()?.email ?? '' });
-        this.errorMsg.set('No encontramos un perfil de competidor asociado a tu sesión. Cierra sesión e ingresa nuevamente.');
+        this.errorMsg.set('competitor.personal.noProfile');
         return;
       }
 
@@ -161,7 +163,7 @@ export class DatosPersonalesComponent implements OnInit {
       });
     } catch {
       this.form.patchValue({ email: this.auth.currentUser()?.email ?? '' });
-      this.errorMsg.set('No se pudieron cargar tus datos personales.');
+      this.errorMsg.set('competitor.personal.loadError');
     } finally {
       this.loading.set(false);
     }
@@ -190,14 +192,14 @@ export class DatosPersonalesComponent implements OnInit {
     try {
       const competitorId = await this.resolveCompetitorId();
       if (!competitorId) {
-        this.errorMsg.set('No encontramos un perfil de competidor asociado a tu sesión. Cierra sesión e ingresa nuevamente.');
+        this.errorMsg.set('competitor.personal.noProfile');
         return;
       }
 
       await this.api.put(`/competitors/${competitorId}`, this.buildUpdatePayload());
-      this.successMsg.set('Datos actualizados correctamente.');
+      this.successMsg.set('competitor.personal.saved');
     } catch (err: any) {
-      this.errorMsg.set(err?.body?.message ?? 'No se pudo guardar. Intenta de nuevo.');
+      this.errorMsg.set(err?.body?.message ?? 'competitor.personal.saveError');
     } finally {
       this.saving.set(false);
     }

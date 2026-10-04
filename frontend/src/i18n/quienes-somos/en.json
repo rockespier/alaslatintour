@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "description": "ALAS Global Tour: an association founded on April 30, 2001 in Lima, Peru. Learn about our history, mission, vision and the leadership team of the continental surf circuit."
+  },
+  "hero": {
+    "kicker": "About Us",
+    "titleLine1": "Who",
+    "titleLine2": "We Are",
+    "intro": "ALAS GLOBAL TOUR is an association founded on April 30, 2001 in Lima, Peru, originally formed by surfing leaders from across Latin America, with the goal of strengthening, developing and promoting the sport throughout the region."
+  },
+  "history": {
+    "kicker": "Our history",
+    "title": "From a nations tournament to a continental tour",
+    "p1": "The Professional Latin Tour began in 2002 and, later, in 2005, the organization established itself as one of the leading surf-promoting associations in the Americas. Since 2015, ALAS has been a qualifier for the Pan American Games of Lima 2019, Santiago 2023 and Lima 2027.",
+    "p2": "In 2023 ALAS Global Tour was launched, after more than two decades of events held first at the Latin American level and then across the continent, broadening its reach to include athletes from all of the Americas, Europe and Asia.",
+    "p3": "ALAS GLOBAL TOUR will keep working so that, in the years to come, thousands of surfers can compete in events all across the continent."
+  },
+  "timeline": {
+    "1998": { "title": "The idea is born", "description": "El Salvador hosts the first Latin American nations event, with Panama, the Dominican Republic, Guatemala, Costa Rica and Peru." },
+    "1999": { "title": "The project takes hold", "description": "At the Pan American event in Mar del Plata, Argentina, Latin American leaders push the idea of an association exclusively for Latin countries." },
+    "2001": { "title": "Official founding", "description": "On April 30, ALAS is founded in Lima, Peru, following the 3rd Latin American team event in Montañita, Ecuador." },
+    "2002": { "title": "Professional Latin Tour", "description": "The professional circuit kicks off with 4 stops: Peru, Ecuador, the Dominican Republic and Venezuela." },
+    "2005": { "title": "Regional consolidation", "description": "ALAS becomes a professional organization present in 12 countries across the continent." },
+    "2007": { "title": "ISA recognition", "description": "The International Surfing Association begins recognizing the ALAS circuit." },
+    "2008": { "title": "New countries", "description": "Guatemala, Nicaragua, Guadeloupe and Trinidad and Tobago join the ALAS family." },
+    "2015": { "title": "Pan American qualifier", "description": "ALAS becomes a qualifier for the Pan American Games of Lima 2019, Santiago 2023 and Lima 2027." },
+    "2023": { "title": "ALAS Global Tour", "description": "The circuit expands its reach to athletes from all of the Americas, Europe and Asia." }
+  },
+  "origins": {
+    "kicker": "Our origins",
+    "title": "How the Latin American Association was born",
+    "p1": "The idea of a Latin American Association was born in El Salvador in 1998, when our dear friend and president of the Salvadoran surfing association, \"Chute\", organized the first Latin American nations event.",
+    "p2": "Surfers from Panama, the Dominican Republic, Guatemala, Costa Rica and Peru took part in that event. After all the surfers and leaders had spent time together, the next stop was planned for Peru in the year 2000.",
+    "p3": "In 1999, in Mar del Plata, Argentina (Pan American event), several Latin American leaders strengthened their resolve to build an association exclusively for Latin countries, \"with the aim of promoting surfing in Latin countries, especially in fairly young ones\", in order to raise the level in every respect and, in the medium term, stand on par with our neighbors in Brazil and the U.S.",
+    "p4": "Lima hosted the 2nd Latin American team event. La Pampilla beach in Miraflores was the stage for 3 days of camaraderie and plenty of surfing. Countries such as Venezuela, Ecuador, Chile, Argentina, Costa Rica and Panama took part.",
+    "p5": "The idea of an association grew stronger, since these events needed to continue alongside the Pan American team events. The 3rd Latin American team event was held right away at Montañita beach, Ecuador, and a dedicated meeting was called to (legally) found the Latin American Association. It would take place in Lima within 60 days; invitations were sent to every Latin country, and Ecuador, Colombia, Argentina, Chile, Venezuela, El Salvador, Panama, Costa Rica, the Dominican Republic, Peru and Puerto Rico responded.",
+    "p6": "The meeting went ahead as planned and was a complete success, as every country mentioned above took part either in person or by email. Those who attended were: Edgar Severino of the Dominican Republic, Antonio Sotillo of Venezuela, Víctor Arce of Costa Rica, Alcides Guerrero of Ecuador and Karin Sierralta of Peru. Finally, the elections were held. It was 5 days of work and surfing (without forgetting what it is all about). The bylaws, rules and work plans were drawn up."
+  },
+  "tour": {
+    "kicker": "From nations events to the professional circuit",
+    "title": "Professional Latin Tour",
+    "p1": "In 2002, nations events lost their appeal because of the nations events run by PASA (Pan American Games) and ISA (World Games). That is when the project for the first Regional Tour began.",
+    "p2": "The success of this Tour allowed every high-performance athlete in each country to keep competing, earn money, gain international exposure and raise their competitive level. It also became an ideal and affordable opportunity for brands to showcase their products through the Latin Tour.",
+    "p3": "Our circuit began in 2002 with 4 stops: Peru, Ecuador, the Dominican Republic and Venezuela. For 2004, the second year of the Latin Tour, 7 stops were planned and successfully held across Peru, Ecuador, Panama, Costa Rica, the Dominican Republic and Venezuela, with two ALAS pre-qualifying events held in Colombia and Guatemala.",
+    "p4": "In 2005, the Tour's rapid growth forced a rethink of the association's administrative policies so it could become a company. A solid, top-tier circuit for the region was planned and run professionally. As a result, ALAS was held in 12 countries, becoming the largest surfing organization on the continent. Two years later, ISA recognition began.",
+    "p5": "Argentina, Brazil, Chile, Peru, Ecuador, Colombia, Venezuela, Panama, Costa Rica, El Salvador, Mexico, the Dominican Republic, Puerto Rico and Barbados are part of the ALAS family. In 2008, Guatemala, Nicaragua, Guadeloupe and Trinidad and Tobago would join."
+  },
+  "identity": {
+    "kicker": "Our identity",
+    "title": "Mission, Vision and Reach",
+    "missionTitle": "Mission",
+    "mission": "To strengthen, develop and promote surfing as a sport in Latin America, bringing together the region's surfing leaders since our founding.",
+    "visionTitle": "Vision",
+    "vision": "To keep working so that, in the years to come, thousands of surfers can compete in events all across the continent.",
+    "scopeTitle": "Reach",
+    "scope": "Since 2023, ALAS Global Tour has broadened its reach to include athletes from all of the Americas, Europe and Asia, after more than two decades of events held first at the Latin American level and then across the continent."
+  },
+  "stats": {
+    "founded": "Founded in Lima, Peru",
+    "countries": "Established countries (2005)",
+    "qualifier": "Pan American qualifier since",
+    "continents": "Continents: Americas, Europe and Asia"
+  },
+  "team": {
+    "kicker": "The people behind it",
+    "title": "Our Team",
+    "roles": {
+      "president": "Chair of the Board",
+      "technical": "Technical Director",
+      "events": "Events Director",
+      "administration": "Administration",
+      "press": "Press",
+      "marketing": "Marketing",
+      "technology": "Technology"
+    }
+  }
+}

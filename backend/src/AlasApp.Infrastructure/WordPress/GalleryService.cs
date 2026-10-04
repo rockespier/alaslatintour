@@ -11,23 +11,48 @@ public sealed class GalleryService(HttpClient httpClient) : IGalleryService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    public async Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<GallerySummaryDto>> ListAsync(string? lang, CancellationToken cancellationToken)
     {
-        var payload = await GetPayloadAsync(cancellationToken);
+        var payload = await GetPayloadAsync(lang, cancellationToken);
         return payload.Select(MapSummary).ToList();
     }
 
-    public async Task<GalleryDetailDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    public async Task<GalleryDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
     {
         var normalizedSlug = slug.Trim();
-        var payload = await GetPayloadAsync(cancellationToken);
+        var payload = await GetPayloadAsync(lang, cancellationToken);
         var post = payload.FirstOrDefault(x => string.Equals(x.Slug, normalizedSlug, StringComparison.OrdinalIgnoreCase));
         return post is null ? null : MapDetail(post);
     }
 
-    private async Task<IReadOnlyList<WordPressGalleryPostDto>> GetPayloadAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<WordPressGalleryPostDto>> GetPayloadAsync(string? lang, CancellationToken cancellationToken)
     {
-        using var response = await httpClient.GetAsync(string.Empty, cancellationToken);
+        if (string.IsNullOrWhiteSpace(lang))
+        {
+            return await FetchAsync(string.Empty, cancellationToken);
+        }
+
+        var payload = await FetchAsync($"?lang={Uri.EscapeDataString(lang)}", cancellationToken);
+        if (payload.Count > 0)
+        {
+            return payload;
+        }
+
+        // Nothing in that language: either the `gallery` post type isn't enabled in Polylang yet
+        // (WordPress then answers `?lang=` with an empty list) or no gallery was translated.
+        // Photos are language-neutral, so fall back to the untranslated (or Spanish) galleries
+        // instead of showing an empty gallery section.
+        var all = await FetchAsync(string.Empty, cancellationToken);
+        return all
+            .Where(post => PolylangFields.Lang(post.Lang, post.Translations, post.Slug) is null or ContentLanguageFallback)
+            .ToList();
+    }
+
+    private const string ContentLanguageFallback = "es";
+
+    private async Task<IReadOnlyList<WordPressGalleryPostDto>> FetchAsync(string uri, CancellationToken cancellationToken)
+    {
+        using var response = await httpClient.GetAsync(uri, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
 
         return await response.Content.ReadFromJsonAsync<List<WordPressGalleryPostDto>>(JsonOptions, cancellationToken) ?? [];
@@ -60,7 +85,8 @@ public sealed class GalleryService(HttpClient httpClient) : IGalleryService
             post.Acf?.PressDownloadLink,
             cover?.Url,
             photos.Count,
-            MapDays(post));
+            MapDays(post),
+            PolylangFields.Translations(post.Translations));
     }
 
     private static IReadOnlyCollection<GalleryDayDto> MapDays(WordPressGalleryPostDto post)

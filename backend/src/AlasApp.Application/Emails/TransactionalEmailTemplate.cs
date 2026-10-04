@@ -7,7 +7,9 @@ public sealed record EmailDetail(string Label, string Value);
 
 public static class TransactionalEmailTemplate
 {
+    /// <param name="lang"><c>es</c>, <c>en</c> or <c>pt</c>: sets <c>&lt;html lang&gt;</c> and the fixed template text.</param>
     public static string Render(
+        string lang,
         string eyebrow,
         string title,
         string intro,
@@ -25,10 +27,12 @@ public static class TransactionalEmailTemplate
         var safeNote = Encode(note);
         var safeFooter = Encode(footer);
         var detailsHtml = RenderDetails(details);
+        var safeLang = EmailLanguage.Pick(lang, EmailLanguage.Spanish, EmailLanguage.English, EmailLanguage.Portuguese);
+        var officialNotice = Encode(EmailLanguage.Pick(lang, "Notificacion oficial", "Official notification", "Notificação oficial"));
 
         return $"""
             <!doctype html>
-            <html lang="es">
+            <html lang="{safeLang}">
             <head>
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,7 +60,7 @@ public static class TransactionalEmailTemplate
                           <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
                             <tr>
                               <td style="background:#0b2532;padding:22px 24px;border-bottom:4px solid #16a3b8;">
-                                <div style="font-size:12px;line-height:18px;font-weight:700;color:#7ee4f1;letter-spacing:.08em;text-transform:uppercase;">Notificacion oficial</div>
+                                <div style="font-size:12px;line-height:18px;font-weight:700;color:#7ee4f1;letter-spacing:.08em;text-transform:uppercase;">{officialNotice}</div>
                                 <h1 style="margin:6px 0 0 0;font-size:26px;line-height:32px;font-weight:800;color:#ffffff;letter-spacing:0;">{safeTitle}</h1>
                               </td>
                             </tr>

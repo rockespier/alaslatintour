@@ -9,7 +9,8 @@ internal static class TestCompetitorRegistration
         string email,
         string password,
         string nombre = "Test",
-        string apellido = "Competitor")
+        string apellido = "Competitor",
+        string idiomaPreferido = "Español")
     {
         var content = new MultipartFormDataContent
         {
@@ -19,7 +20,7 @@ internal static class TestCompetitorRegistration
             { new StringContent(apellido), "Apellido" },
             { new StringContent("competidor"), "Tipo" },
             { new StringContent("Perú"), "Pais" },
-            { new StringContent("Español"), "IdiomaPreferido" },
+            { new StringContent(idiomaPreferido), "IdiomaPreferido" },
             { new StringContent("false"), "Newsletter" },
             { new StringContent("true"), "Terminos" },
             { new StringContent("true"), "Reglamento" },

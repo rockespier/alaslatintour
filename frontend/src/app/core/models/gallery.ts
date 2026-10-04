@@ -30,4 +30,6 @@ export interface GalleryDetail {
   coverImageUrl: string;
   photoCount: number;
   galleryDays: GalleryDay[];
+  /** Slug of this gallery per language (Polylang), e.g. `{ es: 'dia-4', en: 'day-4' }`. */
+  translations?: Record<string, string>;
 }

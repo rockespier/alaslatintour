@@ -11,7 +11,7 @@ public sealed class GetGalleryBySlugQueryHandler(IGalleryService galleryService)
 {
     public async Task<GalleryDetailDto> Handle(GetGalleryBySlugQuery request, CancellationToken cancellationToken)
     {
-        return await galleryService.GetBySlugAsync(request.Slug, cancellationToken)
+        return await galleryService.GetBySlugAsync(request.Slug, request.Lang, cancellationToken)
             ?? throw new NotFoundException("Galeria no encontrada.");
     }
 }

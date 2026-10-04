@@ -49,12 +49,9 @@ public sealed class RequestPasswordResetCommandHandler(
 
         try
         {
+            var email = CompetitorEmails.PasswordReset(EmailLanguage.From(userAccount.IdiomaPreferido), rawToken);
             await emailSender.SendAsync(
-                new EmailMessage(
-                    userAccount.Email,
-                    "Recuperacion de contrasena ALAS Global Tour",
-                    BuildPasswordResetText(rawToken),
-                    BuildPasswordResetHtml(rawToken)),
+                new EmailMessage(userAccount.Email, email.Subject, email.Text, email.Html),
                 cancellationToken);
         }
         catch (Exception) when (!cancellationToken.IsCancellationRequested)
@@ -64,33 +61,5 @@ public sealed class RequestPasswordResetCommandHandler(
         }
 
         return true;
-    }
-
-    private static string BuildPasswordResetText(string token)
-    {
-        return $"""
-            Recibimos una solicitud para restablecer tu contrasena de ALAS Global Tour.
-
-            Usa este token para confirmar la nueva contrasena:
-            {token}
-
-            El token expira en 30 minutos. Si no solicitaste este cambio, ignora este correo.
-            """;
-    }
-
-    private static string BuildPasswordResetHtml(string token)
-    {
-        return TransactionalEmailTemplate.Render(
-            "Seguridad",
-            "Restablece tu contrasena",
-            "Recibimos una solicitud para restablecer tu contrasena de ALAS Global Tour. Ingresa este token en la pantalla de recuperacion para continuar.",
-            "Token de recuperacion",
-            token,
-            [
-                new EmailDetail("Validez", "30 minutos"),
-                new EmailDetail("Uso", "Un solo intento de recuperacion")
-            ],
-            "Si no solicitaste este cambio, puedes ignorar este correo. Tu contrasena actual seguira siendo valida.",
-            "Este mensaje fue enviado automaticamente por ALAS Global Tour.");
     }
 }

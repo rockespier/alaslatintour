@@ -7,4 +7,5 @@ public sealed record ArticleListFilter(
     int Limit,
     ArticleCategory? Category,
     bool? Featured,
-    string? Search);
+    string? Search,
+    string? Lang = null);

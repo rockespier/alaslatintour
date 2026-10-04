@@ -70,6 +70,7 @@ public sealed class CreateAdminUserCommandHandler(
             };
 
             var html = TransactionalEmailTemplate.Render(
+                EmailLanguage.Spanish,
                 "Invitación",
                 $"Bienvenido al panel de ALAS Global Tour, {request.Nombre}",
                 $"Hola {request.Nombre}, se ha creado una cuenta de administrador para ti en la plataforma ALAS Global Tour. Usa las credenciales a continuación para acceder.",

@@ -4,24 +4,28 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserInfo } from '../../../core/models';
+import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('auth')],
   template: `
     <div class="min-h-screen bg-navy-deepest flex flex-col items-center justify-center px-4 py-12">
 
       <!-- Logo -->
-      <a routerLink="/" class="mb-8">
+      <a [routerLink]="'/' | localizePath" class="mb-8">
         <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-16 w-auto" />
       </a>
 
       <div class="w-full max-w-md">
         <div class="bg-navy-dark border border-navy-mid rounded-2xl p-8 shadow-2xl shadow-black/40">
 
-          <h1 class="font-heading text-3xl mb-1">Iniciar sesión</h1>
-          <p class="text-text-muted text-sm mb-8">Accede a tu cuenta del circuito</p>
+          <h1 class="font-heading text-3xl mb-1">{{ 'auth.login.title' | transloco }}</h1>
+          <p class="text-text-muted text-sm mb-8">{{ 'auth.login.subtitle' | transloco }}</p>
 
           <!-- Error -->
           @if (error()) {
@@ -35,16 +39,16 @@ import { UserInfo } from '../../../core/models';
             <!-- Email -->
             <div>
               <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">
-                Correo electrónico
+                {{ 'auth.login.email' | transloco }}
               </label>
               <input formControlName="email" type="email" autocomplete="email"
-                placeholder="tu@correo.com"
+                [placeholder]="'auth.login.emailPlaceholder' | transloco"
                 class="input-field"
                 [class.field-error]="form.controls.email.invalid && form.controls.email.touched" />
               @if (form.controls.email.invalid && form.controls.email.touched) {
                 <p class="mt-1 text-xs text-error-brand">
-                  @if (form.controls.email.errors?.['required']) { Requerido }
-                  @else { Correo inválido }
+                  @if (form.controls.email.errors?.['required']) { {{ 'common.required' | transloco }} }
+                  @else { {{ 'common.invalidEmail' | transloco }} }
                 </p>
               }
             </div>
@@ -52,7 +56,7 @@ import { UserInfo } from '../../../core/models';
             <!-- Password -->
             <div>
               <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">
-                Contraseña
+                {{ 'auth.login.password' | transloco }}
               </label>
               <div class="relative">
                 <input formControlName="password"
@@ -61,7 +65,7 @@ import { UserInfo } from '../../../core/models';
                   placeholder="••••••••"
                   class="input-field pr-10"
                   [class.field-error]="form.controls.password.invalid && form.controls.password.touched" />
-                <button type="button" (click)="showPwd.set(!showPwd())"
+                <button type="button" (click)="showPwd.set(!showPwd())" [attr.aria-label]="'auth.login.showPassword' | transloco"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-light">
                   @if (showPwd()) {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +81,7 @@ import { UserInfo } from '../../../core/models';
                 </button>
               </div>
               @if (form.controls.password.invalid && form.controls.password.touched) {
-                <p class="mt-1 text-xs text-error-brand">Ingresa tu contraseña</p>
+                <p class="mt-1 text-xs text-error-brand">{{ 'auth.login.passwordRequired' | transloco }}</p>
               }
             </div>
 
@@ -86,11 +90,11 @@ import { UserInfo } from '../../../core/models';
               <label class="flex items-center gap-2 cursor-pointer">
                 <input formControlName="rememberMe" type="checkbox"
                   class="w-4 h-4 rounded border-navy-mid bg-navy-deepest accent-cyan-brand" />
-                <span class="text-sm text-text-muted">Recordarme</span>
+                <span class="text-sm text-text-muted">{{ 'auth.login.remember' | transloco }}</span>
               </label>
-              <a routerLink="/recuperar-password"
+              <a [routerLink]="'/recuperar-password' | localizePath"
                 class="text-sm text-cyan-brand hover:text-cyan-dark">
-                ¿Olvidaste tu contraseña?
+                {{ 'auth.login.forgot' | transloco }}
               </a>
             </div>
 
@@ -103,18 +107,18 @@ import { UserInfo } from '../../../core/models';
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
-                  Verificando...
+                  {{ 'auth.login.verifying' | transloco }}
                 </span>
               } @else {
-                Iniciar sesión
+                {{ 'auth.login.submit' | transloco }}
               }
             </button>
 
           </form>
 
           <p class="mt-6 text-center text-sm text-text-muted">
-            ¿No tienes cuenta?
-            <a routerLink="/registro" class="text-cyan-brand hover:text-cyan-dark ml-1">Regístrate gratis</a>
+            {{ 'auth.login.noAccount' | transloco }}
+            <a [routerLink]="'/registro' | localizePath" class="text-cyan-brand hover:text-cyan-dark ml-1">{{ 'auth.login.register' | transloco }}</a>
           </p>
         </div>
       </div>
@@ -127,6 +131,8 @@ export class LoginComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private language = inject(LanguageService);
+  private transloco = inject(TranslocoService);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -161,12 +167,12 @@ export class LoginComponent {
       } else if (user.adminRole) {
         this.router.navigate(['/admin']);
       } else if (user.tipo === 'competidor') {
-        this.router.navigate(['/mi-panel']);
+        this.router.navigateByUrl(this.language.localize('/mi-panel'));
       } else {
-        this.router.navigate(['/']);
+        this.router.navigateByUrl(this.language.localize('/'));
       }
     } catch (err: any) {
-      this.error.set(err?.body?.message ?? err?.message ?? 'Correo o contraseña incorrectos.');
+      this.error.set(err?.body?.message ?? err?.message ?? this.transloco.translate('auth.login.error'));
     } finally {
       this.loading.set(false);
     }

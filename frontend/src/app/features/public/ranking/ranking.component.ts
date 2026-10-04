@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { Meta, Title } from '@angular/platform-browser';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
+import { SeoService } from '../../../core/i18n/seo.service';
 import { RankingService, RankingCategory, RankingRow } from '../../../core/services/ranking.service';
 import { SurfscoresCreditComponent } from '../../../shared/components/surfscores-credit/surfscores-credit.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -13,18 +14,18 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
 @Component({
   selector: 'app-ranking',
   standalone: true,
-  imports: [DecimalPipe, SurfscoresCreditComponent, LoadingSpinnerComponent, PaginationComponent],
+  imports: [DecimalPipe, SurfscoresCreditComponent, LoadingSpinnerComponent, PaginationComponent, TranslocoModule],
+  providers: [provideTranslocoScope('public')],
   template: `
     <!-- Hero -->
     <section class="bg-gradient-to-b from-navy-dark to-navy-deepest pt-12 pb-8 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
       <div class="max-w-7xl mx-auto">
         <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">
-          Circuito Continental · Temporada {{ currentYear }}
+          {{ 'public.ranking.kicker' | transloco: { year: currentYear } }}
         </p>
-        <h1 class="font-heading text-5xl md:text-6xl mb-2">Ranking {{ currentYear }}</h1>
+        <h1 class="font-heading text-5xl md:text-6xl mb-2">{{ 'public.ranking.title' | transloco: { year: currentYear } }}</h1>
         <p class="text-text-muted text-sm max-w-xl">
-          Posiciones actualizadas desde SurfScores. Los puntos se calculan con base en los resultados
-          de cada parada del circuito.
+          {{ 'public.ranking.intro' | transloco }}
         </p>
       </div>
     </section>
@@ -35,7 +36,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
         <!-- Category tabs -->
         @if (circuits().length > 0) {
           <div class="flex items-center gap-3 mb-6">
-            <label class="font-accent uppercase text-xs text-text-muted tracking-wider" for="ranking-circuit">Circuito:</label>
+            <label class="font-accent uppercase text-xs text-text-muted tracking-wider" for="ranking-circuit">{{ 'public.ranking.circuit' | transloco }}</label>
             <select id="ranking-circuit" [value]="selectedCircuitId()" (change)="selectCircuit($any($event.target).value)" class="bg-navy-mid/40 border border-navy-mid rounded-md px-3 py-2 text-sm text-text-light">
               @for (circuit of circuits(); track circuit.id) { <option [value]="circuit.id">{{ circuit.nombre }}</option> }
             </select>
@@ -58,7 +59,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
         <!-- Year selector (only if multiple years) -->
         @if (availableYears().length > 1) {
           <div class="flex items-center gap-3 mb-6">
-            <span class="font-accent uppercase text-xs text-text-muted tracking-wider">Temporada:</span>
+            <span class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.ranking.season' | transloco }}</span>
             <div class="flex gap-2">
               @for (y of availableYears(); track y) {
                 <button
@@ -81,41 +82,41 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
               <span class="live-dot"></span>
               <div>
                 <p class="font-accent uppercase text-success-brand tracking-[0.2em] text-xs">
-                  @if (cachedAgo()) { {{ cachedAgo() }} } @else { En vivo }
+                  @if (cachedAgo()) { {{ cachedAgo() }} } @else { {{ 'public.ranking.live' | transloco }} }
                 </p>
                 <p class="font-heading text-xl">{{ selectedCatName() }}</p>
               </div>
             </div>
             <p class="text-xs text-text-muted">
-              {{ totalItems() }} competidores
+              {{ 'public.ranking.competitors' | transloco: { count: totalItems() } }}
             </p>
           </header>
 
           @if (loading()) {
             <div class="p-8">
-              <app-loading-spinner label="Cargando ranking..." />
+              <app-loading-spinner [label]="'public.ranking.loading' | transloco" />
             </div>
           } @else if (error()) {
             <div class="p-10 text-center">
-              <p class="text-error-brand mb-3">No se pudo cargar el ranking.</p>
+              <p class="text-error-brand mb-3">{{ 'public.ranking.error' | transloco }}</p>
               <button (click)="reload()"
                 class="px-5 py-2 border border-cyan-brand text-cyan-brand font-accent uppercase text-xs tracking-wider rounded hover:bg-cyan-brand hover:text-navy-deepest transition">
-                Reintentar
+                {{ 'public.ranking.retry' | transloco }}
               </button>
             </div>
           } @else if (rows().length === 0) {
-            <p class="text-text-muted text-sm py-12 text-center">Sin datos de ranking disponibles.</p>
+            <p class="text-text-muted text-sm py-12 text-center">{{ 'public.ranking.empty' | transloco }}</p>
           } @else {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-navy-mid/40 font-accent uppercase tracking-wider text-text-muted text-xs">
                   <tr>
-                    <th class="px-4 py-3 text-left w-12">Pos</th>
-                    <th class="px-4 py-3 text-left">Surfista</th>
-                    <th class="px-4 py-3 text-left hidden sm:table-cell">País</th>
-                    <th class="px-4 py-3 text-right">Puntos</th>
-                    <th class="px-4 py-3 text-right hidden md:table-cell">Eventos</th>
-                    <th class="px-4 py-3 text-right">Var.</th>
+                    <th class="px-4 py-3 text-left w-12">{{ 'public.home.ranking.pos' | transloco }}</th>
+                    <th class="px-4 py-3 text-left">{{ 'public.home.ranking.surfer' | transloco }}</th>
+                    <th class="px-4 py-3 text-left hidden sm:table-cell">{{ 'public.home.ranking.country' | transloco }}</th>
+                    <th class="px-4 py-3 text-right">{{ 'public.home.ranking.points' | transloco }}</th>
+                    <th class="px-4 py-3 text-right hidden md:table-cell">{{ 'public.home.ranking.events' | transloco }}</th>
+                    <th class="px-4 py-3 text-right">{{ 'public.home.ranking.change' | transloco }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-navy-mid/50">
@@ -177,8 +178,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
 export class RankingComponent implements OnInit {
   private rankingService = inject(RankingService);
   private api = inject(ApiService);
-  private titleSvc = inject(Title);
-  private metaSvc = inject(Meta);
+  private seo = inject(SeoService);
 
   readonly currentYear = new Date().getFullYear();
 
@@ -199,8 +199,7 @@ export class RankingComponent implements OnInit {
   selectedCircuitId = signal('');
 
   ngOnInit(): void {
-    this.titleSvc.setTitle('Ranking ALAS Latin Tour 2026 — Posiciones del Circuito');
-    this.metaSvc.updateTag({ name: 'description', content: 'Ranking oficial del ALAS Latin Tour 2026. Posiciones actualizadas de surfistas profesionales del circuito latinoamericano.' });
+    this.seo.setPageMeta({ scope: 'public', descriptionKey: 'ranking.meta.description' });
     this.init();
   }
 

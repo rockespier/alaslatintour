@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "description": "ALAS Global Tour: associação fundada em 30 de abril de 2001 em Lima, Peru. Conheça nossa história, missão, visão e a equipe diretiva do circuito continental de surf."
+  },
+  "hero": {
+    "kicker": "Sobre Nós",
+    "titleLine1": "Quem",
+    "titleLine2": "Somos",
+    "intro": "ALAS GLOBAL TOUR é uma associação fundada em 30 de abril de 2001 em Lima, Peru, formada inicialmente por líderes do surf da América Latina, com objetivos voltados ao fortalecimento, desenvolvimento e promoção desta modalidade esportiva na região."
+  },
+  "history": {
+    "kicker": "Nossa história",
+    "title": "De um torneio de nações a um tour continental",
+    "p1": "Em 2002 teve início o Tour Latino Profissional e, posteriormente, em 2005, a organização se consolidou como uma das principais associações promotoras do surf nas Américas. Desde 2015, a ALAS é classificatória para os Jogos Pan-Americanos de Lima 2019, Santiago 2023 e Lima 2027.",
+    "p2": "Em 2023 começa o ALAS Global Tour, após mais de duas décadas realizando eventos primeiro em nível latino-americano e depois continental, ampliando seu alcance para incluir atletas de toda a América, Europa e Ásia.",
+    "p3": "O ALAS GLOBAL TOUR continuará trabalhando para que, nos próximos anos, milhares de surfistas possam competir em eventos por todo o continente."
+  },
+  "timeline": {
+    "1998": { "title": "Nasce a ideia", "description": "El Salvador organiza o primeiro evento latino-americano de nações com Panamá, República Dominicana, Guatemala, Costa Rica e Peru." },
+    "1999": { "title": "O projeto se fortalece", "description": "No Pan-Americano de Mar del Plata, Argentina, os dirigentes latinos impulsionam a ideia de uma associação exclusivamente latina." },
+    "2001": { "title": "Fundação oficial", "description": "Em 30 de abril a ALAS é fundada em Lima, Peru, após o 3º Latino-Americano por equipes em Montañita, Equador." },
+    "2002": { "title": "Tour Latino Profissional", "description": "O circuito profissional começa com 4 etapas: Peru, Equador, República Dominicana e Venezuela." },
+    "2005": { "title": "Consolidação regional", "description": "A ALAS se transforma em uma organização profissional presente em 12 países do continente." },
+    "2007": { "title": "Reconhecimento da ISA", "description": "Tem início o reconhecimento da International Surfing Association para o circuito ALAS." },
+    "2008": { "title": "Novos países", "description": "Guatemala, Nicarágua, Guadalupe e Trinidad e Tobago passam a integrar a família ALAS." },
+    "2015": { "title": "Classificatório pan-americano", "description": "A ALAS se torna classificatória para os Jogos Pan-Americanos de Lima 2019, Santiago 2023 e Lima 2027." },
+    "2023": { "title": "ALAS Global Tour", "description": "O circuito amplia seu alcance a atletas de toda a América, Europa e Ásia." }
+  },
+  "origins": {
+    "kicker": "As origens",
+    "title": "Como nasceu a Associação Latino-Americana",
+    "p1": "A ideia de uma Associação Latino-Americana nasceu em El Salvador em 1998, quando nosso querido amigo e presidente da associação salvadorenha de surf, o \"Chute\", organizou o primeiro evento latino-americano de nações.",
+    "p2": "Nesse evento participaram surfistas do Panamá, República Dominicana, Guatemala, Costa Rica e Peru. Após a confraternização entre todos os surfistas e dirigentes, a etapa seguinte foi planejada para o Peru no ano 2000.",
+    "p3": "Em 1999, em Mar del Plata, Argentina (Pan-Americano), alguns dirigentes latinos reforçaram o desejo de levar adiante uma associação exclusivamente latina, \"com a finalidade de promover o surf nos países latinos, sobretudo em países bastante jovens\", para elevar o nível em todos os sentidos e, a médio prazo, ficar no mesmo patamar de nossos vizinhos do Brasil e dos EUA.",
+    "p4": "Lima foi a sede do II Latino-Americano por equipes. A praia La Pampilla, em Miraflores, foi o cenário de 3 dias de confraternização e muito surf. Participaram países como Venezuela, Equador, Chile, Argentina, Costa Rica e Panamá.",
+    "p5": "A ideia de uma associação ganhava força, pois esses eventos deviam continuar em paralelo aos Pan-Americanos por equipes. Logo em seguida foi realizado o 3º Latino-Americano por equipes na praia de Montañita, Equador, e decidiu-se fazer uma reunião exclusiva para fundar (legalmente) a Associação Latino-Americana. A sede seria Lima, em 60 dias; foram enviados convites a todos os países latinos, dos quais responderam Equador, Colômbia, Argentina, Chile, Venezuela, El Salvador, Panamá, Costa Rica, República Dominicana, Peru e Porto Rico.",
+    "p6": "A reunião aconteceu conforme o planejado e foi um sucesso total, pois todos os países mencionados estiveram presentes pessoalmente ou por e-mail. Os que compareceram foram: Edgar Severino, da República Dominicana; Antonio Sotillo, da Venezuela; Víctor Arce, da Costa Rica; Alcides Guerrero, do Equador; e Karin Sierralta, do Peru. Por fim, as eleições foram realizadas. Foram 5 dias de trabalho e surf (sem esquecer a essência). Foram criados os estatutos, regulamentos e planos de trabalho."
+  },
+  "tour": {
+    "kicker": "Dos eventos de nações ao circuito profissional",
+    "title": "Tour Latino Profissional",
+    "p1": "Em 2002, os eventos de nações perdem atratividade por causa dos eventos de nações da PASA (Jogos Pan-Americanos) e da ISA (Jogos Mundiais). Então tem início o projeto do primeiro Tour Regional.",
+    "p2": "O sucesso deste Tour permitiu que todos os atletas de alto rendimento de cada país continuassem competindo, ganhassem dinheiro, tivessem exposição internacional e elevassem seu nível competitivo. Também se tornou uma oportunidade ideal e econômica para que as marcas exponham seus produtos por meio do Tour Latino.",
+    "p3": "Em 2002 nosso circuito começou com 4 etapas: Peru, Equador, República Dominicana e Venezuela. Para 2004, o segundo ano do Tour Latino, foram planejadas 7 etapas, realizadas com sucesso entre Peru, Equador, Panamá, Costa Rica, República Dominicana e Venezuela, com dois eventos de pré-classificação ALAS realizados na Colômbia e na Guatemala.",
+    "p4": "Em 2005, o rápido crescimento do Tour obrigou a repensar as políticas administrativas de uma associação para transformá-la em uma empresa. Foi planejado um circuito sólido e de primeiro nível na região, administrado de forma profissional. Graças a isso, a ALAS passou a ser realizada em 12 países, consolidando-se como a maior organização de surf de todo o continente. Dois anos depois começou o reconhecimento da ISA.",
+    "p5": "Argentina, Brasil, Chile, Peru, Equador, Colômbia, Venezuela, Panamá, Costa Rica, El Salvador, México, República Dominicana, Porto Rico e Barbados fazem parte da família ALAS. Em 2008 se integrariam Guatemala, Nicarágua, Guadalupe e Trinidad e Tobago."
+  },
+  "identity": {
+    "kicker": "Nossa identidade",
+    "title": "Missão, Visão e Alcance",
+    "missionTitle": "Missão",
+    "mission": "Fortalecer, desenvolver e promover o surf como modalidade esportiva na América Latina, reunindo desde a fundação os líderes do surf da região.",
+    "visionTitle": "Visão",
+    "vision": "Continuar trabalhando para que, nos próximos anos, milhares de surfistas possam competir em eventos por todo o continente.",
+    "scopeTitle": "Alcance",
+    "scope": "Desde 2023, o ALAS Global Tour amplia seu alcance para incluir atletas de toda a América, Europa e Ásia, após mais de duas décadas de eventos primeiro em nível latino-americano e depois continental."
+  },
+  "stats": {
+    "founded": "Fundação em Lima, Peru",
+    "countries": "Países consolidados (2005)",
+    "qualifier": "Classificatório pan-americano desde",
+    "continents": "Continentes: América, Europa e Ásia"
+  },
+  "team": {
+    "kicker": "As pessoas por trás",
+    "title": "Nossa Equipe",
+    "roles": {
+      "president": "Presidente do conselho",
+      "technical": "Diretor técnico",
+      "events": "Diretor de Eventos",
+      "administration": "Administração",
+      "press": "Imprensa",
+      "marketing": "Marketing",
+      "technology": "Tecnologia"
+    }
+  }
+}

@@ -212,7 +212,7 @@ public async Task<List<NewsArticleDto>> GetNewsForAngularAsync(CancellationToken
 
 ## Multi-idioma con Polylang (REST API)
 
-Configuración para que WordPress sirva Noticias (`post`) y Fotos (`gallery`) en español/inglés/portugués y la API pueda filtrar por idioma con `?lang=xx`. Relacionado con el punto 7 de `documentacion/plan-internacionalizacion-i18n.md` (aún no ejecutado del lado .NET).
+Configuración para que WordPress sirva Noticias (`post`) y Fotos (`gallery`) en español/inglés/portugués y la API pueda filtrar por idioma con `?lang=xx`. Relacionado con el punto 7 de `documentacion/plan-internacionalizacion-i18n.md` (lado .NET implementado, ver G).
 
 ### A. Instalar y configurar Polylang
 1. wp-admin → Plugins → Añadir nuevo → "Polylang" (gratuito, WPSyntex) → Instalar y activar.
@@ -267,13 +267,46 @@ add_action('rest_api_init', function () {
 });
 ```
 
+#### E.2 Mapa de traducciones (`translations`) — requerido por el selector de idioma
+
+Polylang gratuito no expone en la REST API qué post es la traducción de cuál (solo Polylang Pro trae el campo `translations`). Cada traducción tiene **su propio slug**, así que el frontend necesita este mapa para que el selector de idioma y los `<link hreflang>` de una noticia/galería apunten a la versión traducida exacta. Agregar junto al snippet anterior:
+
+```php
+// Expone { "es": "slug-es", "en": "slug-en", "pt": "slug-pt" } con las traducciones publicadas del post.
+add_action('rest_api_init', function () {
+    foreach (['post', 'gallery'] as $post_type) {
+        register_rest_field($post_type, 'translations', [
+            'get_callback' => function ($post_arr) {
+                $slugs = [];
+                if (function_exists('pll_get_post_translations')) {
+                    foreach (pll_get_post_translations($post_arr['id']) as $lang => $id) {
+                        if (get_post_status($id) === 'publish') {
+                            $slugs[$lang] = get_post_field('post_name', $id);
+                        }
+                    }
+                }
+                return (object) $slugs; // (object): siempre {} y nunca [] cuando está vacío
+            },
+            'schema' => ['type' => 'object', 'context' => ['view', 'embed']],
+        ]);
+    }
+});
+```
+
+Sin este snippet todo sigue funcionando: el backend devuelve `translations: {}` y el frontend, en el detalle de una noticia/galería, lleva el selector de idioma al listado `/noticias` del otro idioma y no publica `hreflang`.
+
 ### F. Probar directo contra WordPress (antes de tocar el backend .NET)
 ```
 https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=es&_embed=1
 https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_embed=1
 https://alasglobaltour.rtres.net/wp-json/wp/v2/gallery?lang=pt&_embed=1
+https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_fields=id,slug,lang,translations
 ```
-Cada llamada debe devolver solo el contenido de ese idioma, y el campo `"lang"` del JSON debe coincidir. `lang=en`/`lang=pt` devolverán vacío hasta que existan traducciones reales (paso C).
+Cada llamada debe devolver solo el contenido de ese idioma, y el campo `"lang"` del JSON debe coincidir. `lang=en`/`lang=pt` devolverán vacío hasta que existan traducciones reales (paso C). La última debe mostrar `translations` con el slug de cada idioma.
 
-### G. Lado .NET (pendiente, cubierto en el plan de i18n)
-Cuando se ejecute el punto 7 de `documentacion/plan-internacionalizacion-i18n.md`: `ArticleListFilter` gana `string? Lang`, y en `WordPressService.cs` (`BuildRelativeUri`, usado en `ListArticlesAsync`/`GetBySlugAsync`/`GetRawBySlugAsync`) se agrega `query.Add($"lang={filter.Lang}")` igual que ya se hace con `search`. Mismo patrón para `WordPressMediaService.cs` (galerías).
+**Estado verificado (2026-10-04, después de A.3, B.2 y E.2)**: `post` ✅ y `gallery` ✅: `?lang=es|en|pt` filtra (4 noticias y 2 galerías por idioma) y `translations` trae el slug de cada idioma. El campo `lang` del primer bloque de E no aparece en la respuesta; no es necesario: el backend deduce el idioma de un post como la entrada de `translations` que apunta a su propio slug (`PolylangFields.Lang`).
+
+### G. Lado .NET (implementado)
+- `?lang=` en `ListArticlesAsync`/`GetBySlugAsync` (`WordPressService.cs`) y en galerías (`GalleryService.cs`); el idioma lo envía el frontend según la URL (`/en/...`, `/pt/...`).
+- Galerías: si `?lang=xx` devuelve vacío (caso actual, `gallery` sin Polylang), el backend reintenta sin `lang` y muestra las galerías sin idioma o en español (las fotos son neutras al idioma), en vez de dejar la sección vacía.
+- `translations` se lee de forma tolerante (`PolylangFields.cs`) y se expone en `GET /v1/articles/{slug}` y `GET /v1/galleries/{slug}` como `translations: { es, en, pt }`.

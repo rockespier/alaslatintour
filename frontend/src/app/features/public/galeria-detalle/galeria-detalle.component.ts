@@ -1,13 +1,20 @@
 import { Component, inject, signal, input, OnInit, effect, computed, HostListener } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Title, Meta } from '@angular/platform-browser';
+import { Router, RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
 import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { translationPaths } from '../../../core/i18n/languages';
+import { SeoService } from '../../../core/i18n/seo.service';
+import { LocaleFormatService } from '../../../core/i18n/locale-format.service';
+import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
 
 @Component({
   selector: 'app-galeria-detalle',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoModule, LocalizePathPipe],
+  providers: [provideTranslocoScope('public')],
   template: `
     @if (loading()) {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
@@ -20,17 +27,17 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
       </div>
     } @else if (notFound()) {
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-        <p class="font-heading text-3xl text-text-muted mb-4">Galería no encontrada</p>
-        <a routerLink="/noticias" class="text-cyan-brand font-accent uppercase tracking-wider">← Volver a Noticias</a>
+        <p class="font-heading text-3xl text-text-muted mb-4">{{ 'public.gallery.notFound' | transloco }}</p>
+        <a [routerLink]="'/noticias' | localizePath" class="text-cyan-brand font-accent uppercase tracking-wider">{{ 'public.article.backToNews' | transloco }}</a>
       </div>
     } @else if (gallery()) {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
 
         <!-- Breadcrumb -->
         <nav class="text-xs text-text-muted font-accent uppercase tracking-wider mb-6">
-          <a routerLink="/noticias" class="hover:text-cyan-brand">Noticias</a>
+          <a [routerLink]="'/noticias' | localizePath" class="hover:text-cyan-brand">{{ 'public.article.breadcrumb' | transloco }}</a>
           <span class="mx-2">/</span>
-          <span class="text-cyan-brand">Galería</span>
+          <span class="text-cyan-brand">{{ 'public.gallery.breadcrumb' | transloco }}</span>
         </nav>
 
         <!-- Header -->
@@ -41,7 +48,7 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
               <p class="text-text-muted text-sm">{{ formatDate(gallery()!.eventDate!) }}</p>
             }
             <p class="text-xs text-text-muted mt-1">
-              {{ totalPhotos() }} {{ totalPhotos() === 1 ? 'foto' : 'fotos' }}
+              {{ (totalPhotos() === 1 ? 'public.gallery.photoOne' : 'public.gallery.photoMany') | transloco: { count: totalPhotos() } }}
             </p>
           </div>
           @if (gallery()!.pressDownloadLink) {
@@ -51,7 +58,7 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
               </svg>
-              Descargar set de prensa
+              {{ 'public.gallery.pressDownload' | transloco }}
             </a>
           }
         </div>
@@ -103,7 +110,7 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
       @if (lightboxAsset(); as asset) {
         <div class="fixed inset-0 z-50 bg-navy-deepest/95 flex items-center justify-center p-4"
              (click)="closeLightbox()">
-          <button class="absolute top-4 right-4 text-text-muted hover:text-white transition" aria-label="Cerrar">
+          <button class="absolute top-4 right-4 text-text-muted hover:text-white transition" [attr.aria-label]="'public.gallery.close' | transloco">
             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -111,13 +118,13 @@ import { GalleryDetail, GalleryAsset } from '../../../core/models/gallery';
 
           @if (flatPhotos().length > 1) {
             <button class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition p-2"
-                    aria-label="Foto anterior" (click)="showPrev($event)">
+                    [attr.aria-label]="'public.gallery.prev' | transloco" (click)="showPrev($event)">
               <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
               </svg>
             </button>
             <button class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition p-2"
-                    aria-label="Foto siguiente" (click)="showNext($event)">
+                    [attr.aria-label]="'public.gallery.next' | transloco" (click)="showNext($event)">
               <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
@@ -144,7 +151,10 @@ export class GaleriaDetalleComponent implements OnInit {
 
   private api = inject(ApiService);
   private titleSvc = inject(Title);
-  private meta = inject(Meta);
+  private seo = inject(SeoService);
+  private language = inject(LanguageService);
+  private router = inject(Router);
+  private localeFormat = inject(LocaleFormatService);
 
   loading = signal(true);
   notFound = signal(false);
@@ -186,12 +196,13 @@ export class GaleriaDetalleComponent implements OnInit {
     this.loading.set(true);
     this.notFound.set(false);
     try {
-      const res = await this.api.get<any>(`/galleries/${slug}`);
+      const res = await this.api.get<any>(`/galleries/${slug}?lang=${this.language.activeLang()}`);
       const raw = res?.data ?? res;
       if (!raw?.id) { this.notFound.set(true); return; }
       this.gallery.set(raw as GalleryDetail);
+      this.seo.setContentAlternates(this.router.url, translationPaths('/galerias', raw.translations));
       this.titleSvc.setTitle(`${raw.title} — ALAS Latin Tour`);
-      this.meta.updateTag({ name: 'description', content: `Galería oficial: ${raw.title}` });
+      this.seo.setPageMeta({ scope: 'public', descriptionKey: 'gallery.metaDescription', params: { title: raw.title } });
     } catch (err: any) {
       if (err?.status === 404) this.notFound.set(true);
     } finally {
@@ -233,9 +244,6 @@ export class GaleriaDetalleComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    return `${d.getDate()} de ${months[d.getMonth()]}, ${d.getFullYear()}`;
+    return this.localeFormat.date(dateStr, 'longDate');
   }
 }

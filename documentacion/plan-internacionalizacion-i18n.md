@@ -1,6 +1,20 @@
 # Plan: Sitio ALAS Latin Tour en Español / Inglés / Portugués
 
-> **Estado**: plan aprobado para documentar, pendiente de ejecución. No implementar hasta indicación explícita.
+> **Estado (2026-10-04)**: fases 0–8 implementadas, sin commit. Verificado: build + SSR real con curl (`<html lang>`, título, description, `hreflang`, texto traducido en el HTML del servidor, sin claves crudas) en `/`, `/en`, `/pt/noticias`, `/en/eventos`, `/pt/registro`, `/en/login`, `/pt/quienes-somos`; frontend 37 tests, backend 101 tests (`AlasAppTests`). Pendiente: revisión nativa de las traducciones EN/PT (borrador IA) y confirmar con el admin de WordPress el modo WPML/Polylang.
+>
+> **Desvíos respecto del plan**:
+> - Sin fallback de traducción en runtime (`useFallbackTranslation: false`): con fallback, cada página `/en` y `/pt` serializaba además los JSON en español en el HTML. La paridad de claves y parámetros entre idiomas la garantiza `core/i18n/translations.spec.ts`.
+> - El registro no enviaba `idiomaPreferido` (todas las cuentas quedaban en español); ahora envía el idioma activo (`Espanol|English|Portugues`).
+> - Los textos de los 3 emails al competidor viven en `Application/Emails/CompetitorEmails.cs` (en vez de un `Copy` por handler) y se testean directo. Ningún test instanciaba los handlers, así que agregar `IUserAccountRepository` no rompió tests.
+> - `LocaleFormatService.usd()` mantiene `$` como prefijo en los 3 idiomas (el `formatCurrency` de Angular en `es` lo pondría al final); solo cambian los separadores.
+> - Noticias/galerías en detalle (`/noticias/:slug`, `/galerias/:slug`): Polylang usa un slug distinto por idioma. El backend expone `translations` (slug por idioma, leído del campo REST del snippet E.2 de `wordpress_api.md`); el selector de idioma y `hreflang` apuntan a la traducción exacta, y si un idioma no tiene traducción el selector lleva al listado `/noticias` y no se publica `hreflang` para ese idioma.
+> - Galerías: hoy `gallery` no está activado en Polylang (`?lang=xx` devuelve vacío); el backend hace fallback a las galerías sin idioma/en español para no dejar la sección vacía.
+> - Para probar SSR sin backend local hay que interceptar `/api` (si no, cada llamada a la API re-renderiza la app vía SSR y el proceso se cuelga).
+> - Loader: los JSON se empaquetan como chunks lazy (`import()`) en `src/i18n/` en vez de usar `HttpClient`. Así el SSR nunca se llama a sí mismo vía HTTP (detrás de IIS) y el cliente reutiliza la traducción por `TransferState` (verificado: viaja en `ng-state` y no se vuelve a pedir al hidratar).
+> - `shared.json` + `enums.json` se fusionan en el archivo raíz `src/i18n/{lang}.json`; los scopes (`public`, `quienes-somos`, `auth`, `competitor`) se agregan como `src/i18n/<scope>/{lang}.json` en `TRANSLATION_FILES`.
+> - Títulos de ruta = claves `titles.*`, resueltas por `I18nTitleStrategy` (los títulos admin quedan literales). `hreflang` se actualiza en cada `NavigationEnd` (`SeoService.updateAlternateLinks`).
+> - Links internos: `[routerLink]="'/noticias' | localizePath"` y `LanguageService.localize()` en código; guards y `logout` ya redirigen respetando el idioma.
+> - Hallazgo fuera de alcance: `@angular/ssr` 19.2.27 cae a CSR si el header `Host` no está permitido (`NG_ALLOWED_HOSTS` / `security.allowedHosts`). Revisar que producción lo tenga configurado, si no el SSR no está corriendo.
 
 ## Contexto
 

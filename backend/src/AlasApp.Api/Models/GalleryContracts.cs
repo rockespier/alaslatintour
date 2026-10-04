@@ -27,7 +27,8 @@ public sealed record GalleryDetailResponse(
     string? PressDownloadLink,
     string? CoverImageUrl,
     int PhotoCount,
-    IReadOnlyCollection<GalleryDayResponse> GalleryDays);
+    IReadOnlyCollection<GalleryDayResponse> GalleryDays,
+    IReadOnlyDictionary<string, string> Translations);
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public sealed record GalleryListResponse(IReadOnlyCollection<GallerySummaryResponse> Data);

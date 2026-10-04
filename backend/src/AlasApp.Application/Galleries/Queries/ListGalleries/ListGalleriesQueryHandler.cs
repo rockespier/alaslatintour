@@ -8,5 +8,5 @@ public sealed class ListGalleriesQueryHandler(IGalleryService galleryService)
     : IRequestHandler<ListGalleriesQuery, IReadOnlyCollection<GallerySummaryDto>>
 {
     public Task<IReadOnlyCollection<GallerySummaryDto>> Handle(ListGalleriesQuery request, CancellationToken cancellationToken)
-        => galleryService.ListAsync(cancellationToken);
+        => galleryService.ListAsync(request.Lang, cancellationToken);
 }

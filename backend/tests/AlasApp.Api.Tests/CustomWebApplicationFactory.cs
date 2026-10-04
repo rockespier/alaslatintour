@@ -55,7 +55,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<IEmailSender>();
             services.RemoveAll<IIdentityDocumentStorage>();
             services.AddDbContext<AlasAppDbContext>(options => options.UseSqlServer(connectionString));
-            services.AddSingleton<IEmailSender, NoOpEmailSender>();
+            services.AddSingleton<IEmailSender, RecordingEmailSender>();
             services.AddSingleton<IIdentityDocumentStorage, NoOpIdentityDocumentStorage>();
             ConfigureTestServices(services);
         });
@@ -143,10 +143,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             """);
     }
 
-    private sealed class NoOpEmailSender : IEmailSender
+    /// <summary>Doesn't send anything; keeps the messages so tests can assert on them.</summary>
+    public sealed class RecordingEmailSender : IEmailSender
     {
+        public System.Collections.Concurrent.ConcurrentQueue<EmailMessage> Sent { get; } = new();
+
         public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
         {
+            Sent.Enqueue(message);
             return Task.CompletedTask;
         }
     }

@@ -3,6 +3,8 @@ import { DecimalPipe } from '@angular/common';
 import { ApiService } from '../../../../core/services/api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
+import { LocaleFormatService } from '../../../../core/i18n/locale-format.service';
 
 interface PointEntry {
   eventoNombre: string;
@@ -17,15 +19,16 @@ interface PointEntry {
 @Component({
   selector: 'app-historial-puntos',
   standalone: true,
-  imports: [DecimalPipe, StarRatingComponent],
+  imports: [DecimalPipe, StarRatingComponent, TranslocoModule],
+  providers: [provideTranslocoScope('competitor')],
   template: `
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <h2 class="font-heading text-3xl">Historial de Puntos</h2>
+      <h2 class="font-heading text-3xl">{{ 'competitor.history.title' | transloco }}</h2>
 
       <!-- Year selector -->
       <div class="flex gap-2">
         @for (y of availableYears; track y) {
-          <button (click)="selectedYear.set(y)"
+          <button (click)="selectYear(y)"
                   class="px-4 py-1.5 rounded font-accent text-xs transition"
                   [class]="selectedYear() === y ? 'bg-orange-brand text-white' : 'border border-navy-mid text-text-muted hover:border-orange-brand/50'">
             {{ y }}
@@ -38,11 +41,11 @@ interface PointEntry {
     @if (!loading() && history().length > 0) {
       <div class="bg-gradient-to-r from-cyan-brand/10 to-navy-mid border border-cyan-brand/20 rounded-2xl p-6 mb-6 flex items-center justify-between">
         <div>
-          <p class="font-accent uppercase text-xs text-cyan-brand tracking-wider mb-1">Puntos acumulados {{ selectedYear() }}</p>
+          <p class="font-accent uppercase text-xs text-cyan-brand tracking-wider mb-1">{{ 'competitor.history.accumulated' | transloco: { year: selectedYear() } }}</p>
           <p class="font-heading text-5xl">{{ totalPoints() | number }}</p>
         </div>
         <div class="text-right">
-          <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">Eventos</p>
+          <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">{{ 'competitor.history.events' | transloco }}</p>
           <p class="font-heading text-3xl">{{ history().length }}</p>
         </div>
       </div>
@@ -54,19 +57,19 @@ interface PointEntry {
       </div>
     } @else if (history().length === 0) {
       <div class="text-center py-16">
-        <p class="font-heading text-xl text-text-muted mb-2">Sin historial para {{ selectedYear() }}</p>
-        <p class="text-sm text-text-muted">Los puntos se registran al completar eventos del circuito.</p>
+        <p class="font-heading text-xl text-text-muted mb-2">{{ 'competitor.history.emptyTitle' | transloco: { year: selectedYear() } }}</p>
+        <p class="text-sm text-text-muted">{{ 'competitor.history.emptyText' | transloco }}</p>
       </div>
     } @else {
       <div class="overflow-x-auto rounded-2xl border border-navy-mid">
         <table class="w-full text-sm">
           <thead class="bg-navy-mid/40 font-accent uppercase tracking-wider text-text-muted text-xs">
             <tr>
-              <th class="px-5 py-3 text-left">Evento</th>
-              <th class="px-4 py-3 text-left hidden sm:table-cell">Categoría</th>
-              <th class="px-4 py-3 text-center hidden md:table-cell">Estrellas</th>
-              <th class="px-4 py-3 text-center">Posición</th>
-              <th class="px-4 py-3 text-right">Puntos</th>
+              <th class="px-5 py-3 text-left">{{ 'competitor.history.event' | transloco }}</th>
+              <th class="px-4 py-3 text-left hidden sm:table-cell">{{ 'competitor.history.category' | transloco }}</th>
+              <th class="px-4 py-3 text-center hidden md:table-cell">{{ 'competitor.history.stars' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'competitor.history.position' | transloco }}</th>
+              <th class="px-4 py-3 text-right">{{ 'competitor.history.points' | transloco }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-navy-mid/50">
@@ -96,8 +99,8 @@ interface PointEntry {
           </tbody>
           <tfoot class="bg-navy-mid/20 font-accent uppercase text-xs tracking-wider">
             <tr>
-              <td colspan="4" class="px-5 py-3 text-text-muted hidden md:table-cell">Total temporada {{ selectedYear() }}</td>
-              <td colspan="4" class="px-5 py-3 text-text-muted md:hidden">Total</td>
+              <td colspan="4" class="px-5 py-3 text-text-muted hidden md:table-cell">{{ 'competitor.history.seasonTotal' | transloco: { year: selectedYear() } }}</td>
+              <td colspan="4" class="px-5 py-3 text-text-muted md:hidden">{{ 'competitor.history.total' | transloco }}</td>
               <td class="px-4 py-3 text-right font-heading text-xl text-cyan-brand">{{ totalPoints() | number }}</td>
             </tr>
           </tfoot>
@@ -109,6 +112,7 @@ interface PointEntry {
 export class HistorialPuntosComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+  private localeFormat = inject(LocaleFormatService);
 
   readonly currentYear = new Date().getFullYear();
   availableYears = [this.currentYear, this.currentYear - 1];
@@ -121,16 +125,24 @@ export class HistorialPuntosComponent implements OnInit {
 
   ngOnInit(): void { this.load(); }
 
+  selectYear(year: number): void {
+    if (year === this.selectedYear()) return;
+    this.selectedYear.set(year);
+    this.load();
+  }
+
   private async load(): Promise<void> {
     const competitorId = this.auth.currentUser()?.competitorId;
+    const year = this.selectedYear();
     this.loading.set(true);
     try {
-      const res = await this.api.get<any>(`/competitors/${competitorId}/points-history?year=${this.selectedYear()}&limit=50`);
-      this.history.set(res?.data ?? []);
+      const res = await this.api.get<any>(`/competitors/${competitorId}/points-history?year=${year}&limit=50`);
+      // Ignore a slower response for a year the user already switched away from.
+      if (year === this.selectedYear()) this.history.set(res?.data ?? []);
     } catch {
-      this.history.set([]);
+      if (year === this.selectedYear()) this.history.set([]);
     } finally {
-      this.loading.set(false);
+      if (year === this.selectedYear()) this.loading.set(false);
     }
   }
 
@@ -139,13 +151,7 @@ export class HistorialPuntosComponent implements OnInit {
     return !isNaN(n) && n >= 1 && n <= 3;
   }
 
-  // fechaInicio es una fecha "solo fecha" (medianoche UTC en el backend); se lee con getters UTC
-  // para que el día no dependa del huso horario del navegador (Sudamérica ve el día anterior si
-  // se usan getters locales).
   formatDate(d: string): string {
-    if (!d) return '';
-    const date = new Date(d);
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+    return this.localeFormat.utcDate(d);
   }
 }
