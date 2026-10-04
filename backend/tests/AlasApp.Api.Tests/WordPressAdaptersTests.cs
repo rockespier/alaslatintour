@@ -166,7 +166,7 @@ public sealed class WordPressAdaptersTests
         [{
           "id": 147, "date": "2026-07-09T10:00:00Z", "slug": "final-stretch",
           "title": { "rendered": "Final stretch" }, "featured_media": 0, "sticky": false,
-          "lang": "en",
+          "pll_lang": "en",
           "translations": { "es": "recta-final", "en": "final-stretch", "pt": "reta-final" }
         }]
         """;
@@ -244,7 +244,7 @@ public sealed class WordPressAdaptersTests
     [Fact]
     public async Task GalleryService_ListAsync_ShouldFallBackToUntranslatedOrSpanishWhenLanguageIsEmpty()
     {
-        // `gallery` not enabled in Polylang yet: `?lang=en` answers [] and posts carry `"lang": false`.
+        // `gallery` not enabled in Polylang yet: `?lang=en` answers [] and posts carry `"pll_lang": false`.
         var handler = new StubHttpMessageHandler(request => CreateJsonResponse(
             request.RequestUri!.Query.Contains("lang=")
                 ? "[]"
@@ -288,7 +288,7 @@ public sealed class WordPressAdaptersTests
     public async Task GalleryService_GetBySlugAsync_ShouldExposePolylangTranslations(string translationsJson, string expected)
     {
         var payload = $$"""
-        [{ "id": 1, "slug": "dia-4", "title": { "rendered": "Día 4" }, "lang": "es", "translations": {{translationsJson}} }]
+        [{ "id": 1, "slug": "dia-4", "title": { "rendered": "Día 4" }, "pll_lang": "es", "translations": {{translationsJson}} }]
         """;
         var handler = new StubHttpMessageHandler(_ => CreateJsonResponse(payload));
         using var client = new HttpClient(handler)
@@ -304,7 +304,7 @@ public sealed class WordPressAdaptersTests
     private static string GalleryPayload(params (string Slug, string LangJson)[] posts)
     {
         return "[" + string.Join(',', posts.Select((p, i) =>
-            $$"""{ "id": {{i + 1}}, "slug": "{{p.Slug}}", "title": { "rendered": "{{p.Slug}}" }, "lang": {{p.LangJson}} }""")) + "]";
+            $$"""{ "id": {{i + 1}}, "slug": "{{p.Slug}}", "title": { "rendered": "{{p.Slug}}" }, "pll_lang": {{p.LangJson}} }""")) + "]";
     }
 
     [Theory]

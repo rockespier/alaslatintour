@@ -253,10 +253,11 @@ function alas_apply_lang_filter($args, $request) {
     return $args;
 }
 
-// Expone el idioma de cada post en el JSON, útil para verificar desde el backend .NET
+// Expone el idioma de cada post en el JSON (solo informativo). Se llama `pll_lang` y no `lang`:
+// con `lang` el campo no aparece en la respuesta (Polylang ya usa ese nombre).
 add_action('rest_api_init', function () {
     foreach (['post', 'gallery'] as $post_type) {
-        register_rest_field($post_type, 'lang', [
+        register_rest_field($post_type, 'pll_lang', [
             'get_callback' => function ($post_arr) {
                 return function_exists('pll_get_post_language')
                     ? pll_get_post_language($post_arr['id'], 'slug')
@@ -300,11 +301,11 @@ Sin este snippet todo sigue funcionando: el backend devuelve `translations: {}` 
 https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=es&_embed=1
 https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_embed=1
 https://alasglobaltour.rtres.net/wp-json/wp/v2/gallery?lang=pt&_embed=1
-https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_fields=id,slug,lang,translations
+https://alasglobaltour.rtres.net/wp-json/wp/v2/posts?lang=en&_fields=id,slug,pll_lang,translations
 ```
-Cada llamada debe devolver solo el contenido de ese idioma, y el campo `"lang"` del JSON debe coincidir. `lang=en`/`lang=pt` devolverán vacío hasta que existan traducciones reales (paso C). La última debe mostrar `translations` con el slug de cada idioma.
+Cada llamada debe devolver solo el contenido de ese idioma, y el campo `"pll_lang"` del JSON debe coincidir. `lang=en`/`lang=pt` devolverán vacío hasta que existan traducciones reales (paso C). La última debe mostrar `translations` con el slug de cada idioma.
 
-**Estado verificado (2026-10-04, después de A.3, B.2 y E.2)**: `post` ✅ y `gallery` ✅: `?lang=es|en|pt` filtra (4 noticias y 2 galerías por idioma) y `translations` trae el slug de cada idioma. El campo `lang` del primer bloque de E no aparece en la respuesta; no es necesario: el backend deduce el idioma de un post como la entrada de `translations` que apunta a su propio slug (`PolylangFields.Lang`).
+**Estado verificado (2026-10-04, después de A.3, B.2 y E.2)**: `post` ✅ y `gallery` ✅: `?lang=es|en|pt` filtra (4 noticias y 2 galerías por idioma) y `translations` trae el slug de cada idioma. Un campo REST llamado `lang` no aparece en la respuesta, por eso el bloque de E lo registra como `pll_lang` (informativo). El backend lo usa si viene; si no, deduce el idioma de un post como la entrada de `translations` que apunta a su propio slug (`PolylangFields.Lang`). La copia completa y vigente del snippet está en `documentacion/functions.php`.
 
 ### G. Lado .NET (implementado)
 - `?lang=` en `ListArticlesAsync`/`GetBySlugAsync` (`WordPressService.cs`) y en galerías (`GalleryService.cs`); el idioma lo envía el frontend según la URL (`/en/...`, `/pt/...`).

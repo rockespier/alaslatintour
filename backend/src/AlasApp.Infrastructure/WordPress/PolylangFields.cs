@@ -5,13 +5,13 @@ namespace AlasApp.Infrastructure.WordPress;
 
 /// <summary>
 /// Reads the Polylang REST fields registered in WordPress (see documentacion/wordpress_api.md, section E):
-/// <c>lang</c> (language slug, or <c>false</c> when the post type isn't managed by Polylang) and
+/// <c>pll_lang</c> (language slug, or <c>false</c> when the post type isn't managed by Polylang) and
 /// <c>translations</c> (<c>{ "es": "slug-es", "en": "slug-en" }</c>; PHP emits <c>[]</c> when empty).
 /// </summary>
 internal static class PolylangFields
 {
     /// <summary>
-    /// Language of a post: the <c>lang</c> field when WordPress exposes it, otherwise the entry of
+    /// Language of a post: the <c>pll_lang</c> field when WordPress exposes it, otherwise the entry of
     /// <c>translations</c> that points to the post's own slug. Null when Polylang doesn't manage it.
     /// </summary>
     public static string? Lang(JsonElement? lang, JsonElement? translations, string slug)
