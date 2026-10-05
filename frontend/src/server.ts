@@ -9,7 +9,11 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+// Behind IIS (deploy/web.config): Host is always 127.0.0.1:4000 and the public domain arrives in
+// X-Forwarded-Host/Proto. ARR also adds X-Forwarded-For; trusting it avoids falling back to CSR.
+const angularApp = new AngularNodeAppEngine({
+  trustProxyHeaders: ['x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for'],
+});
 
 app.use(
   express.static(browserDistFolder, {
