@@ -6,4 +6,6 @@ public sealed record GallerySummaryDto(
     string Title,
     DateTimeOffset? EventDate,
     string? CoverImageUrl,
-    int PhotoCount);
+    int PhotoCount,
+    /// <summary>Publication date set in WordPress.</summary>
+    DateTimeOffset? PublishedAt = null);

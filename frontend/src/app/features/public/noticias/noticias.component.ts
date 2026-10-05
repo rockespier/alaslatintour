@@ -1,9 +1,12 @@
-import { Component, inject, signal, computed, OnInit, afterNextRender } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, inject, signal, computed, OnInit, afterNextRender, HostListener, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 import { ApiService } from '../../../core/services/api.service';
 import { ArticleSummary, mapArticleSummary } from '../../../core/models/article';
 import { GalleryCard } from '../../../core/models/gallery';
+import { Video } from '../../../core/models/video';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SeoService } from '../../../core/i18n/seo.service';
@@ -24,12 +27,6 @@ const CATEGORY_MAP: Record<string, string> = {
   'Tecnología': 'bg-navy-mid/50 text-text-muted',
 };
 
-const MOCK_VIDEOS = [
-  { title: 'Final Open Hombres — Roca Bruja Classic', location: 'Lobitos, Perú', date: '14 jun 2026', duration: '18:42' },
-  { title: 'Highlights Sayulita Masters 2026', location: 'Sayulita, México', date: '20 sep 2026', duration: '24:15' },
-  { title: 'Entrevista: Camila Restrepo — Top 10 a los 17', location: 'Matanzas, Chile', date: '5 jun 2026', duration: '08:30' },
-  { title: 'Resumen Mid-Season — Open Hombres 2026', location: 'ALAS Latin Tour', date: '25 jun 2026', duration: '35:00' },
-];
 
 @Component({
   selector: 'app-noticias',
@@ -164,7 +161,7 @@ const MOCK_VIDEOS = [
               </svg>
               {{ 'public.news.photos' | transloco }}
             </button>
-            <button (click)="galleryTab.set('videos')"
+            <button (click)="showVideos()"
                     [class]="galleryTab() === 'videos' ? 'bg-cyan-brand text-navy-deepest' : 'border border-navy-mid text-text-muted hover:border-cyan-brand hover:text-text-light'"
                     class="px-4 py-1.5 rounded-md font-accent uppercase text-xs tracking-wider transition flex items-center gap-1.5">
               <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +193,6 @@ const MOCK_VIDEOS = [
                     }
                     <div class="absolute inset-0 p-3 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-opacity"
                          style="background:linear-gradient(180deg,transparent 40%,rgba(0,35,89,0.92))">
-                      <p class="text-xs font-accent uppercase tracking-wider text-text-light mb-2 line-clamp-2">{{ g.title }}</p>
                       <div class="flex items-center justify-between">
                         <span class="text-[10px] text-text-muted">{{ 'public.news.photoCount' | transloco: { count: g.photoCount } }}</span>
                         <span class="px-2 py-0.5 rounded bg-cyan-brand text-navy-deepest text-[10px] font-accent uppercase tracking-wider">{{ 'public.news.view' | transloco }}</span>
@@ -206,6 +202,12 @@ const MOCK_VIDEOS = [
                       {{ 'public.news.photoCount' | transloco: { count: g.photoCount } }}
                     </span>
                   </div>
+                  <div class="px-3 py-2.5">
+                    <h3 class="text-sm font-accent uppercase tracking-wider text-text-light leading-snug line-clamp-2 group-hover:text-cyan-brand transition-colors">{{ g.title }}</h3>
+                    @if (g.publishedAt) {
+                      <p class="text-[11px] text-text-muted mt-1">{{ formatDate(g.publishedAt) }}</p>
+                    }
+                  </div>
                 </a>
               }
             </div>
@@ -214,44 +216,84 @@ const MOCK_VIDEOS = [
 
         @if (galleryTab() === 'videos') {
           <p class="text-xs text-text-muted mb-5">{{ 'public.news.videosIntro' | transloco }}</p>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @for (video of mockVideos; track video.title) {
-              <div class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
-                <div class="relative h-44 bg-gradient-to-br from-navy-mid to-navy-deepest flex items-center justify-center">
-                  <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
-                    <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
+          @if (loadingVideos()) {
+            <app-loading-spinner [label]="'public.news.loadingVideos' | transloco" />
+          } @else if (videos().length === 0) {
+            <p class="text-text-muted text-sm py-8 text-center">{{ 'public.news.noVideos' | transloco }}</p>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              @for (video of videos(); track video.id) {
+                <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
+                  <div class="relative aspect-video bg-navy-deepest">
+                      <button type="button" (click)="openVideo(video)"
+                              class="absolute inset-0 w-full h-full flex items-center justify-center"
+                              [attr.aria-label]="'public.news.playVideo' | transloco: { title: video.title }">
+                        <img [src]="video.thumbnailUrl" [alt]="video.title" loading="lazy" referrerpolicy="no-referrer"
+                             class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="relative w-14 h-14 rounded-full bg-navy-deepest/70 border-2 border-cyan-brand flex items-center justify-center group-hover:bg-cyan-brand/30 transition">
+                          <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </span>
+                      </button>
                   </div>
-                  <span class="absolute top-3 left-3 px-2 py-0.5 rounded bg-navy-deepest/80 text-[10px] font-accent uppercase tracking-wider text-cyan-brand">
-                    {{ video.duration }}
-                  </span>
-                </div>
-                <div class="p-4">
-                  <h3 class="font-heading text-base mb-1 group-hover:text-cyan-brand transition">{{ video.title }}</h3>
-                  <p class="text-xs text-text-muted mb-3">{{ video.location }} · {{ video.date }}</p>
-                  <div class="flex gap-2">
-                    <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-navy-mid hover:border-cyan-brand text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition">
-                      480p
-                    </a>
-                    <a href="#" class="flex-1 text-center px-3 py-1.5 rounded-md border border-warning-brand/40 hover:border-warning-brand text-[11px] font-accent uppercase tracking-wider text-warning-brand hover:bg-warning-brand/10 transition">
-                      1080p
-                    </a>
+                  <div class="p-4">
+                    <h3 class="font-heading text-base mb-1 line-clamp-2 group-hover:text-cyan-brand transition">{{ video.title }}</h3>
+                    <div class="flex items-center justify-between gap-3">
+                      <p class="text-xs text-text-muted">{{ formatDate(video.publishedAt) }}</p>
+                      <a [href]="video.url" target="_blank" rel="noopener"
+                         class="text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition">
+                        {{ 'public.news.watchOnYoutube' | transloco }}
+                      </a>
+                    </div>
                   </div>
-                </div>
-              </div>
-            }
-          </div>
+                </article>
+              }
+            </div>
+          }
         }
       </section>
+
+      <!-- Reproductor de video (popup) -->
+      @if (playingVideo(); as video) {
+        <div class="fixed inset-0 z-50 bg-navy-deepest/95 flex items-center justify-center p-4"
+             role="dialog" aria-modal="true" [attr.aria-label]="video.title"
+             (click)="closeVideo()">
+          <button type="button" class="absolute top-4 right-4 text-text-muted hover:text-white transition"
+                  [attr.aria-label]="'public.gallery.close' | transloco" (click)="closeVideo()">
+            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+          <div class="w-full max-w-5xl" (click)="$event.stopPropagation()">
+            <div class="relative aspect-video bg-black rounded-lg overflow-hidden shadow-2xl">
+              <iframe [src]="embedUrl(video.id)" [title]="video.title" class="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+              <div>
+                <h3 class="font-heading text-lg sm:text-xl">{{ video.title }}</h3>
+                <p class="text-xs text-text-muted">{{ formatDate(video.publishedAt) }}</p>
+              </div>
+              <a [href]="video.url" target="_blank" rel="noopener"
+                 class="text-[11px] font-accent uppercase tracking-wider text-text-muted hover:text-cyan-brand transition">
+                {{ 'public.news.watchOnYoutube' | transloco }}
+              </a>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
 })
-export class NoticiasComponent implements OnInit {
+export class NoticiasComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private seo = inject(SeoService);
   private language = inject(LanguageService);
   private localeFormat = inject(LocaleFormatService);
+  private sanitizer = inject(DomSanitizer);
+  private document = inject(DOCUMENT);
 
   constructor() {
     afterNextRender(() => { this.loadGalleries(); });
@@ -268,7 +310,10 @@ export class NoticiasComponent implements OnInit {
 
   loadingGalleries = signal(false);
   galleries = signal<GalleryCard[]>([]);
-  mockVideos = MOCK_VIDEOS;
+  loadingVideos = signal(false);
+  videos = signal<Video[]>([]);
+  playingVideo = signal<Video | null>(null);
+  private videosRequested = false;
 
   tabs: { key: Tab }[] = [
     { key: 'todas' },
@@ -292,9 +337,54 @@ export class NoticiasComponent implements OnInit {
     return list.filter(a => a.category === map[tab]);
   });
 
+  ngOnDestroy(): void {
+    if (this.playingVideo()) this.closeVideo();
+  }
+
   ngOnInit(): void {
     this.seo.setPageMeta({ scope: 'public', descriptionKey: 'news.meta.description' });
     this.loadArticles();
+  }
+
+  /** Videos come from the official YouTube channel; loaded the first time the tab is opened. */
+  showVideos(): void {
+    this.galleryTab.set('videos');
+    if (!this.videosRequested) {
+      this.videosRequested = true;
+      void this.loadVideos();
+    }
+  }
+
+  private async loadVideos(): Promise<void> {
+    this.loadingVideos.set(true);
+    try {
+      const res = await this.api.get<{ data: Video[] }>('/videos');
+      this.videos.set(res?.data ?? []);
+    } catch {
+      this.videos.set([]);
+    } finally {
+      this.loadingVideos.set(false);
+    }
+  }
+
+  openVideo(video: Video): void {
+    this.playingVideo.set(video);
+    this.document.body.style.overflow = 'hidden';
+  }
+
+  closeVideo(): void {
+    this.playingVideo.set(null);
+    this.document.body.style.overflow = '';
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.playingVideo()) this.closeVideo();
+  }
+
+  embedUrl(videoId: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&modestbranding=1`);
   }
 
   private async loadGalleries(retriesLeft = 1): Promise<void> {

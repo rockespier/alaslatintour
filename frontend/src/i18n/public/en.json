@@ -101,7 +101,11 @@
     "noPhotos": "No photos available.",
     "photoCount": "{{ count }} photos",
     "view": "View →",
-    "videosIntro": "Official tour videos in 480p and 1080p."
+    "videosIntro": "Official tour videos from our YouTube channel.",
+    "loadingVideos": "Loading videos...",
+    "noVideos": "No videos available.",
+    "playVideo": "Play {{ title }}",
+    "watchOnYoutube": "Watch on YouTube ↗"
   },
   "article": {
     "notFound": "Article not found",

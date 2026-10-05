@@ -24,5 +24,6 @@ internal sealed record WordPressGalleryPostDto(
     [property: JsonPropertyName("slug")] string Slug,
     [property: JsonPropertyName("title")] WordPressRenderedDto Title,
     [property: JsonPropertyName("acf")] WordPressGalleryAcfDto? Acf,
+    [property: JsonPropertyName("date")] DateTimeOffset? Date = null,
     [property: JsonPropertyName("pll_lang")] JsonElement? Lang = null,
     [property: JsonPropertyName("translations")] JsonElement? Translations = null);

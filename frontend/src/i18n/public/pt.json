@@ -101,7 +101,11 @@
     "noPhotos": "Não há fotografias disponíveis.",
     "photoCount": "{{ count }} fotos",
     "view": "Ver →",
-    "videosIntro": "Vídeos oficiais do circuito em 480p e 1080p."
+    "videosIntro": "Vídeos oficiais do circuito no nosso canal do YouTube.",
+    "loadingVideos": "Carregando vídeos...",
+    "noVideos": "Nenhum vídeo disponível.",
+    "playVideo": "Reproduzir {{ title }}",
+    "watchOnYoutube": "Ver no YouTube ↗"
   },
   "article": {
     "notFound": "Artigo não encontrado",

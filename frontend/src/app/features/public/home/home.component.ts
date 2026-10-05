@@ -262,7 +262,7 @@ type ArticleCard = ArticleSummary;
                     </p>
                   </div>
                   <div class="mt-3">
-                    <a [routerLink]="('/inscripcion/' + event.id) | localizePath"
+                    <a [routerLink]="'/eventos' | localizePath" [fragment]="'evento-' + event.id"
                        class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
                       {{ 'public.home.events.view' | transloco }}
                     </a>

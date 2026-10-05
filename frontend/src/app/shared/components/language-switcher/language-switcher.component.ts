@@ -1,8 +1,10 @@
+import { DOCUMENT } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, UrlTree } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SeoService } from '../../../core/i18n/seo.service';
+import { LANG_COOKIE } from '../../../core/i18n/lang-detection';
 import { AVAILABLE_LANGS, Lang, localizeUrl, translatedContentFallback } from '../../../core/i18n/languages';
 
 @Component({
@@ -13,6 +15,7 @@ import { AVAILABLE_LANGS, Lang, localizeUrl, translatedContentFallback } from '.
     <div class="flex items-center gap-1 text-xs font-semibold uppercase" role="group" [attr.aria-label]="'language.label' | transloco">
       @for (lang of langs; track lang) {
         <a [routerLink]="hrefFor(lang)"
+           (click)="remember(lang)"
            [attr.hreflang]="lang"
            [attr.lang]="lang"
            [attr.title]="'language.' + lang | transloco"
@@ -29,6 +32,7 @@ export class LanguageSwitcherComponent {
   protected readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly seo = inject(SeoService);
+  private readonly document = inject(DOCUMENT);
   protected readonly langs = AVAILABLE_LANGS;
 
   /**
@@ -36,6 +40,11 @@ export class LanguageSwitcherComponent {
    * slug is language-specific (Polylang): go to the translated post WordPress reported, or to the
    * news listing when that language has no translation.
    */
+  /** Explicit choice: the server stops redirecting by country/browser language. */
+  remember(lang: Lang): void {
+    this.document.cookie = `${LANG_COOKIE}=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+  }
+
   hrefFor(lang: Lang): UrlTree {
     const url = this.router.url;
     if (lang === this.language.activeLang()) return this.router.parseUrl(url);

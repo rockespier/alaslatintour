@@ -69,7 +69,8 @@ public sealed class GalleryService(HttpClient httpClient) : IGalleryService
             WebUtility.HtmlDecode(post.Title.Rendered).Trim(),
             ParseEventDate(post.Acf?.EventDate),
             cover?.Url,
-            photos.Count);
+            photos.Count,
+            post.Date);
     }
 
     private static GalleryDetailDto MapDetail(WordPressGalleryPostDto post)
@@ -86,7 +87,8 @@ public sealed class GalleryService(HttpClient httpClient) : IGalleryService
             cover?.Url,
             photos.Count,
             MapDays(post),
-            PolylangFields.Translations(post.Translations));
+            PolylangFields.Translations(post.Translations),
+            post.Date);
     }
 
     private static IReadOnlyCollection<GalleryDayDto> MapDays(WordPressGalleryPostDto post)

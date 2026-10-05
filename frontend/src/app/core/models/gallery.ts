@@ -3,6 +3,8 @@ export interface GalleryCard {
   slug: string;
   title: string;
   eventDate: string | null;
+  /** Publication date set in WordPress. */
+  publishedAt: string | null;
   coverImageUrl: string;
   photoCount: number;
 }
@@ -26,6 +28,8 @@ export interface GalleryDetail {
   slug: string;
   title: string;
   eventDate: string | null;
+  /** Publication date set in WordPress. */
+  publishedAt: string | null;
   pressDownloadLink: string | null;
   coverImageUrl: string;
   photoCount: number;

@@ -10,4 +10,6 @@ public sealed record GalleryDetailDto(
     int PhotoCount,
     IReadOnlyCollection<GalleryDayDto> GalleryDays,
     /// <summary>Slug of this gallery in each language (Polylang), including its own.</summary>
-    IReadOnlyDictionary<string, string>? Translations = null);
+    IReadOnlyDictionary<string, string>? Translations = null,
+    /// <summary>Publication date set in WordPress.</summary>
+    DateTimeOffset? PublishedAt = null);

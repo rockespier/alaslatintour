@@ -247,6 +247,7 @@ public static class ApiContractMapper
             dto.Slug,
             dto.Title,
             dto.EventDate,
+            dto.PublishedAt,
             dto.CoverImageUrl,
             dto.PhotoCount);
     }
@@ -258,6 +259,7 @@ public static class ApiContractMapper
             dto.Slug,
             dto.Title,
             dto.EventDate,
+            dto.PublishedAt,
             dto.PressDownloadLink,
             dto.CoverImageUrl,
             dto.PhotoCount,

@@ -44,8 +44,8 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-10">
           <div>
             <h1 class="font-heading text-4xl md:text-5xl leading-tight mb-2">{{ gallery()!.title }}</h1>
-            @if (gallery()!.eventDate) {
-              <p class="text-text-muted text-sm">{{ formatDate(gallery()!.eventDate!) }}</p>
+            @if (gallery()!.publishedAt) {
+              <p class="text-text-muted text-sm">{{ formatDate(gallery()!.publishedAt!) }}</p>
             }
             <p class="text-xs text-text-muted mt-1">
               {{ (totalPhotos() === 1 ? 'public.gallery.photoOne' : 'public.gallery.photoMany') | transloco: { count: totalPhotos() } }}

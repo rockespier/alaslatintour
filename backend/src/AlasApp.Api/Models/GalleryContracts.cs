@@ -15,6 +15,7 @@ public sealed record GallerySummaryResponse(
     string Slug,
     string Title,
     DateTimeOffset? EventDate,
+    DateTimeOffset? PublishedAt,
     string? CoverImageUrl,
     int PhotoCount);
 
@@ -24,6 +25,7 @@ public sealed record GalleryDetailResponse(
     string Slug,
     string Title,
     DateTimeOffset? EventDate,
+    DateTimeOffset? PublishedAt,
     string? PressDownloadLink,
     string? CoverImageUrl,
     int PhotoCount,

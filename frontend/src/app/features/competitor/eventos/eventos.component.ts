@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal, computed, OnInit, afterNextRender, Injector } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoModule, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { SeoService } from '../../../core/i18n/seo.service';
 import { LocaleFormatService } from '../../../core/i18n/locale-format.service';
@@ -178,7 +178,8 @@ const STATUS_CLASS: Record<string, string> = {
               }
             } @else {
               @for (event of filteredEvents(); track event.id) {
-                <article class="card-event rounded-xl p-6"
+                <article class="card-event rounded-xl p-6 scroll-mt-24"
+                         [id]="'evento-' + event.id"
                          [class.opacity-70]="event.statusPublic === 'Completado'">
                   <div class="flex flex-col md:flex-row gap-5">
                     <div class="md:w-32 flex md:flex-col items-center md:items-start gap-3 md:gap-1 md:border-r md:border-navy-mid md:pr-5 flex-shrink-0">
@@ -559,6 +560,8 @@ export class EventosComponent implements OnInit {
   private transloco = inject(TranslocoService);
   private localeFormat = inject(LocaleFormatService);
   private liveStatus = inject(LiveStatusService);
+  private route = inject(ActivatedRoute);
+  private injector = inject(Injector);
 
   readonly currentYear = new Date().getFullYear();
 
@@ -600,10 +603,10 @@ export class EventosComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.setPageMeta({ scope: 'competitor', descriptionKey: 'events.meta.description' });
-    this.loadEvents().then(() => {
+    const eventsLoaded = this.loadEvents().then(() => {
       if (this.auth.isAuthenticated()) this.loadMyInscriptions();
     });
-    this.loadCircuits();
+    void Promise.all([eventsLoaded, this.loadCircuits()]).then(() => this.focusLinkedEvent());
     if (this.auth.isCompetitor()) this.loadCompetitorStats();
     this.liveStatus.ensureLoaded();
   }
@@ -687,7 +690,7 @@ export class EventosComponent implements OnInit {
       const current = pickCurrentCircuit(currentYearCircuits.length > 0 ? currentYearCircuits : all);
       // Se difiere al siguiente tick: el <select> nativo ignora el [value] si las <option>
       // del @for aún no existen en el DOM (mismo ciclo de Angular en que llegan los circuitos).
-      if (current) setTimeout(() => this.circuitFilter.set(current.id));
+      if (current && !this.linkedEventId()) setTimeout(() => this.circuitFilter.set(current.id));
     } catch {
       this.circuits.set([]);
     }
@@ -760,6 +763,26 @@ export class EventosComponent implements OnInit {
 
   circuitNombre(event: EventItem): string | undefined {
     return this.circuits().find(c => c.id === event.circuitId)?.nombre;
+  }
+
+  private linkedEventId(): string | undefined {
+    return this.route.snapshot.fragment?.match(/^evento-(.+)$/)?.[1];
+  }
+
+  /** `/eventos#evento-<id>` (home "Ver evento"): show that event expanded and scroll to it. */
+  private focusLinkedEvent(): void {
+    const id = this.linkedEventId();
+    const event = id ? this.events().find(e => e.id === id) : undefined;
+    if (!event) return;
+    if (!this.hasNotStarted(event)) this.proximosOnly.set(false);
+    if (!this.isExpanded(event.id)) this.toggleExpand(event);
+    // Diferido como en loadCircuits: el <select> necesita sus <option> ya renderizadas.
+    setTimeout(() => {
+      this.circuitFilter.set(event.circuitId && this.circuits().some(c => c.id === event.circuitId) ? event.circuitId : 'all');
+      afterNextRender(() => {
+        document.getElementById(`evento-${event.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, { injector: this.injector });
+    });
   }
 
   toggleExpand(event: EventItem): void {

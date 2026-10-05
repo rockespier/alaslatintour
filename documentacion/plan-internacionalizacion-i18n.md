@@ -160,3 +160,12 @@ En los 3 handlers en-alcance (`RequestPasswordResetCommandHandler`, `ApproveBeac
 - `backend/src/AlasApp.Application/Payments/Commands/ApproveBeachToken/ApproveBeachTokenCommandHandler.cs` y `backend/src/AlasApp.Application/Inscriptions/Commands/UpdateInscription/UpdateInscriptionCommandHandler.cs` — agregar `IUserAccountRepository`.
 - `backend/src/AlasApp.Infrastructure/WordPress/WordPressService.cs` — passthrough de `lang`.
 - `backend/src/AlasApp.Api/Controllers/GeneratedControllers.cs` — fuente de verdad para auditar el inventario completo de enums antes de redactar `enums.json`.
+
+## Detección automática de idioma por país (post-plan)
+
+En la primera visita a una URL sin prefijo (español), `src/server.ts` redirige con 302 a `/pt/...` o `/en/...` según el país del visitante (`core/i18n/lang-detection.ts`):
+
+- Prioridad: cookie `alas_lang` (elección manual en el selector, 1 año) → header geo del CDN/proxy (`CF-IPCountry` / `X-Country-Code`) → región de `Accept-Language` (`pt-BR` → BR).
+- Mapeo: países hispanohablantes → `es`; Brasil, Portugal y países lusófonos → `pt`; resto → `en`.
+- No se redirigen bots/crawlers (SEO), ni URLs ya prefijadas (`/en`, `/pt`), assets, `/api` ni `/v1`. Respuesta con `Vary: Accept-Language, Cookie`.
+- Detrás de IIS sin CDN no hay header geo: se usa `Accept-Language`. Para geolocalización real por IP, poner Cloudflare (envía `CF-IPCountry`) o hacer que el proxy envíe `X-Country-Code`.

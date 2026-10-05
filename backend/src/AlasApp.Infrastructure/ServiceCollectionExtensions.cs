@@ -9,6 +9,7 @@ using AlasApp.Infrastructure.Persistence;
 using AlasApp.Infrastructure.Persistence.Repositories;
 using AlasApp.Infrastructure.SurfScores;
 using AlasApp.Infrastructure.WordPress;
+using AlasApp.Infrastructure.YouTube;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +71,9 @@ public static class ServiceCollectionExtensions
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.GalleriesBaseUrl, "gallery"));
         });
+        services.Configure<YouTubeConfig>(configuration.GetSection(YouTubeConfig.SectionName));
+        services.AddSingleton<YouTubeFeedCache>();
+        services.AddHttpClient<IVideoService, YouTubeVideoService>(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<PayPalTokenCache>();

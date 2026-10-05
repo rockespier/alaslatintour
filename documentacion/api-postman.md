@@ -1027,6 +1027,7 @@ GET {{base_url}}/v1/galleries
       "slug": "roca-bruja-classic",
       "title": "Roca Bruja Classic",
       "eventDate": "2026-07-08T00:00:00Z",
+      "publishedAt": "2026-07-10T09:30:00-05:00",
       "coverImageUrl": "https://cdn.test/gallery-1-cover.jpg",
       "photoCount": 3
     }
@@ -1035,6 +1036,7 @@ GET {{base_url}}/v1/galleries
 ```
 
 > Este listado es liviano: una sola imagen de portada por galería.
+> `publishedAt` es la fecha de publicación del post en WordPress (campo `date`); es la fecha que muestra la web.
 
 ---
 
@@ -1051,6 +1053,7 @@ GET {{base_url}}/v1/galleries/roca-bruja-classic
   "slug": "roca-bruja-classic",
   "title": "Roca Bruja Classic",
   "eventDate": "2026-07-08T00:00:00Z",
+  "publishedAt": "2026-07-10T09:30:00-05:00",
   "pressDownloadLink": "https://drive.test/roca-bruja",
   "coverImageUrl": "https://cdn.test/gallery-1-cover.jpg",
   "photoCount": 3,
@@ -2625,3 +2628,28 @@ Para probar el ciclo completo de los lotes implementados:
 11. PUT /v1/payments/{id}
 12. GET /v1/payments/kpis
 ```
+
+## Videos — `/v1/videos`
+
+### GET /v1/videos — Últimos videos del canal oficial de YouTube
+
+```http
+GET {{base_url}}/v1/videos
+```
+
+**Ejemplo de response:**
+```json
+{
+  "data": [
+    {
+      "id": "MVTLcQ6sbaY",
+      "title": "Premiación ALAS Global Tour Garabito Pro",
+      "publishedAt": "2026-08-24T23:50:31+00:00",
+      "thumbnailUrl": "https://i2.ytimg.com/vi/MVTLcQ6sbaY/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=MVTLcQ6sbaY"
+    }
+  ]
+}
+```
+
+> Fuente: feed RSS público del canal (`YouTubeConfig:ChannelId` en `appsettings.json`, hoy `@alasglobaltour`), sin API key. Devuelve los 15 videos más recientes, ordenados del más nuevo al más antiguo. El backend lo cachea `YouTubeConfig:CacheMinutes` (30 min); si YouTube no responde, sirve la última lista válida, o `data: []` si nunca se pudo leer.

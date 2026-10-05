@@ -35,6 +35,7 @@ public sealed class GalleriesEndpointsTests : IClassFixture<GalleriesWebApplicat
         Assert.Equal("Roca Bruja Classic", first.GetProperty("title").GetString());
         Assert.Equal("https://cdn.test/gallery-1-cover.jpg", first.GetProperty("coverImageUrl").GetString());
         Assert.Equal(3, first.GetProperty("photoCount").GetInt32());
+        Assert.Equal(new DateTimeOffset(2026, 7, 10, 9, 30, 0, TimeSpan.Zero), first.GetProperty("publishedAt").GetDateTimeOffset());
         Assert.False(first.TryGetProperty("photos", out _));
     }
 
@@ -52,6 +53,7 @@ public sealed class GalleriesEndpointsTests : IClassFixture<GalleriesWebApplicat
         Assert.Equal("https://drive.test/roca-bruja", payload.GetProperty("pressDownloadLink").GetString());
         Assert.Equal("https://cdn.test/gallery-1-cover.jpg", payload.GetProperty("coverImageUrl").GetString());
         Assert.Equal(3, payload.GetProperty("photoCount").GetInt32());
+        Assert.Equal(new DateTimeOffset(2026, 7, 10, 9, 30, 0, TimeSpan.Zero), payload.GetProperty("publishedAt").GetDateTimeOffset());
         Assert.Equal(2, payload.GetProperty("galleryDays").GetArrayLength());
         Assert.Equal("Day 1", firstDay.GetProperty("dayName").GetString());
         Assert.Equal("photo", firstAsset.GetProperty("type").GetString());
@@ -116,7 +118,8 @@ internal sealed class FakeGalleryService : IGalleryService
                     [
                         new GalleryAssetDto("photo-3", GalleryAssetType.Photo, "https://cdn.test/gallery-1-3.jpg", 700, 467, null)
                     ])
-            ]),
+            ],
+            PublishedAt: new DateTimeOffset(2026, 7, 10, 9, 30, 0, TimeSpan.Zero)),
         new(
             "gallery-2",
             "sayulita-masters",
@@ -144,7 +147,8 @@ internal sealed class FakeGalleryService : IGalleryService
                 g.Title,
                 g.EventDate,
                 g.CoverImageUrl,
-                g.PhotoCount)).ToList());
+                g.PhotoCount,
+                g.PublishedAt)).ToList());
     }
 
     public Task<GalleryDetailDto?> GetBySlugAsync(string slug, string? lang, CancellationToken cancellationToken)
