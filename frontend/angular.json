@@ -45,7 +45,9 @@
               "allowedHosts": [
                 "localhost",
                 "127.0.0.1",
-                "alasglobaltour.gestionaminegocio.com"
+                "alasglobaltour.gestionaminegocio.com",
+                "alasglobaltour.com",
+                "www.alasglobaltour.com"
               ]
             }
           },
