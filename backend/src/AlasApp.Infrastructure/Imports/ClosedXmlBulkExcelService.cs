@@ -179,6 +179,8 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         "Numero",
         "Competidor",
         "Pais",
+        "Ranking Temporada Anterior",
+        "Ranking Temporada Actual",
         "Categoria",
         "Evento",
         "Fecha Inscripcion",
@@ -207,15 +209,17 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
             worksheet.Cell(rowNumber, 1).Value = row.SequentialNumber;
             worksheet.Cell(rowNumber, 2).Value = row.FullName;
             worksheet.Cell(rowNumber, 3).Value = row.Country;
-            worksheet.Cell(rowNumber, 4).Value = row.Categoria;
-            worksheet.Cell(rowNumber, 5).Value = row.EventoNombre;
-            worksheet.Cell(rowNumber, 6).Value = row.InscripcionDate.ToString("yyyy-MM-dd HH:mm");
-            worksheet.Cell(rowNumber, 7).Value = row.PaymentMethod.ToString();
-            worksheet.Cell(rowNumber, 8).Value = (double)row.MontoUsd;
-            worksheet.Cell(rowNumber, 9).Value = row.EstadoAdmin.ToString();
-            worksheet.Cell(rowNumber, 10).Value = row.Federacion;
-            worksheet.Cell(rowNumber, 11).Value = row.LicenciaNumber;
-            worksheet.Cell(rowNumber, 12).Value = row.TransaccionId ?? string.Empty;
+            SetRankingPosition(worksheet.Cell(rowNumber, 4), row.Ranking2025);
+            SetRankingPosition(worksheet.Cell(rowNumber, 5), row.Ranking2026);
+            worksheet.Cell(rowNumber, 6).Value = row.Categoria;
+            worksheet.Cell(rowNumber, 7).Value = row.EventoNombre;
+            worksheet.Cell(rowNumber, 8).Value = row.InscripcionDate.ToString("yyyy-MM-dd HH:mm");
+            worksheet.Cell(rowNumber, 9).Value = row.PaymentMethod.ToString();
+            worksheet.Cell(rowNumber, 10).Value = (double)row.MontoUsd;
+            worksheet.Cell(rowNumber, 11).Value = row.EstadoAdmin.ToString();
+            worksheet.Cell(rowNumber, 12).Value = row.Federacion;
+            worksheet.Cell(rowNumber, 13).Value = row.LicenciaNumber;
+            worksheet.Cell(rowNumber, 14).Value = row.TransaccionId ?? string.Empty;
             rowNumber++;
         }
 
@@ -224,6 +228,15 @@ public sealed class ClosedXmlBulkExcelService : IBulkExcelService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         return stream.ToArray();
+    }
+
+    // Numeric when ranked (so Excel sorts/filters it), blank otherwise.
+    private static void SetRankingPosition(IXLCell cell, string? position)
+    {
+        if (int.TryParse(position, out var value))
+        {
+            cell.Value = value;
+        }
     }
 
     public byte[] BuildPaymentsExport(IReadOnlyCollection<PaymentDto> rows)

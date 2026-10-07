@@ -306,6 +306,57 @@ public sealed class InscriptionsEndpointsTests : IClassFixture<CustomWebApplicat
         Assert.Equal(HttpStatusCode.Unauthorized, deleteResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task ListInscriptions_ShouldIncludeRankingPositionsOfPreviousAndCurrentSeason()
+    {
+        await TestAdminAuthHelper.AuthenticateAsAdminAsync(_client, _factory.Services);
+
+        var circuitId = await CreateCircuitAsync();
+        var eventId = await CreateEventAsync(circuitId);
+        var categoryId = await CreateCategoryAsync($"Open Ranking {Guid.NewGuid():N}");
+        var competitor = await RegisterAndLoginCompetitorAsync();
+
+        var assignCategoryResponse = await _client.PutAsJsonAsync($"/v1/events/{eventId}/categories", new
+        {
+            useCircuitTariffs = false,
+            categories = new[] { new { categoryId, customTariffUsd = 80, capacidad = 4 } }
+        });
+        Assert.Equal(HttpStatusCode.OK, assignCategoryResponse.StatusCode);
+
+        var createInscriptionResponse = await _client.PostAsJsonAsync("/v1/inscriptions", new
+        {
+            competitorId = competitor.CompetitorId,
+            eventId,
+            categoryId,
+            shirtNumber = "#7",
+            paymentMethod = "paypal",
+            reglamento = true,
+            riesgosAceptados = true,
+            usoImagenAceptado = true
+        });
+        Assert.Equal(HttpStatusCode.Created, createInscriptionResponse.StatusCode);
+
+        // The test competitor is "Carlos Diaz"; SurfScores spells names freely.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AlasAppDbContext>();
+            var previous = RankingSnapshot.Create(Guid.Parse(circuitId), Guid.Parse(categoryId), "Open Ranking", 2025, DateTimeOffset.UtcNow);
+            previous.AddEntry("Pedro Rojas", "Chile", 1, 900, 3, null);
+            previous.AddEntry("Carlos Andrés Díaz Pérez", "Perú", 7, 300, 2, null);
+            var current = RankingSnapshot.Create(Guid.Parse(circuitId), Guid.Parse(categoryId), "Open Ranking", 2026, DateTimeOffset.UtcNow);
+            current.AddEntry("carlos díaz", "Perú", 3, 500, 2, null);
+            dbContext.RankingSnapshots.AddRange(previous, current);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var listResponse = await _client.GetAsync($"/v1/inscriptions?eventId={eventId}&categoryId={categoryId}");
+        Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
+
+        var row = (await ReadJsonAsync(listResponse)).RootElement.GetProperty("data")[0];
+        Assert.Equal("7", row.GetProperty("ranking2025").GetString());
+        Assert.Equal("3", row.GetProperty("ranking2026").GetString());
+    }
+
     private async Task<string> CreateCircuitAsync()
     {
         var response = await _client.PostAsJsonAsync("/v1/circuits", new

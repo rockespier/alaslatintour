@@ -2,6 +2,7 @@ using AlasApp.Application.Abstractions.Persistence;
 using AlasApp.Application.Common;
 using AlasApp.Application.Competitors.Models;
 using AlasApp.Application.Inscriptions.Models;
+using AlasApp.Application.Rankings;
 using AlasApp.Domain.Entities;
 using AlasApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
             .Take(limit)
             .ToListAsync(cancellationToken);
 
+        var rankings = await LoadRankingPositionsAsync(items, cancellationToken);
+
         var mapped = items
             .Select((x, index) => new AdminInscriptionRowDto(
                 x.Id,
@@ -40,8 +43,8 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
                 ((page - 1) * limit + index + 1).ToString("000"),
                 $"{x.Competitor!.Nombre} {x.Competitor.Apellido}",
                 x.Competitor.Pais,
-                null,
-                null,
+                rankings.GetValueOrDefault(x.Id).Previous,
+                rankings.GetValueOrDefault(x.Id).Current,
                 x.Category!.Nombre,
                 x.Event!.Nombre,
                 x.InscripcionAt,
@@ -284,6 +287,79 @@ public sealed class InscriptionRepository(AlasAppDbContext dbContext) : IInscrip
     public void Remove(Inscription inscription)
     {
         dbContext.Inscriptions.Remove(inscription);
+    }
+
+    /// <summary>
+    /// Position of each inscribed competitor in the latest ranking of the event's season (Current)
+    /// and of the season before (Previous), for the inscription's category. Ranking entries only
+    /// carry the competitor's name, so they are matched with <see cref="RankingNameMatcher"/>.
+    /// For each season the snapshot of the event's own circuit wins; otherwise the most recent one.
+    /// </summary>
+    private async Task<Dictionary<Guid, (string? Previous, string? Current)>> LoadRankingPositionsAsync(
+        IReadOnlyCollection<Inscription> items,
+        CancellationToken cancellationToken)
+    {
+        var result = new Dictionary<Guid, (string? Previous, string? Current)>();
+        if (items.Count == 0)
+        {
+            return result;
+        }
+
+        static int SeasonOf(Inscription x) => x.Event!.Circuit?.Temporada ?? x.Event.FechaInicio.Year;
+
+        var categoryIds = items.Select(x => x.CategoryId).Distinct().ToList();
+        var years = items.SelectMany(x => new[] { SeasonOf(x), SeasonOf(x) - 1 }).Distinct().ToList();
+
+        var snapshots = await dbContext.RankingSnapshots
+            .AsNoTracking()
+            .Where(s => categoryIds.Contains(s.CategoryId) && years.Contains(s.Year))
+            .Select(s => new { s.Id, s.CircuitId, s.CategoryId, s.Year, s.CachedAtUtc })
+            .ToListAsync(cancellationToken);
+        if (snapshots.Count == 0)
+        {
+            return result;
+        }
+
+        Guid? PickSnapshot(Guid categoryId, int year, Guid preferredCircuitId) => snapshots
+            .Where(s => s.CategoryId == categoryId && s.Year == year)
+            .OrderByDescending(s => s.CircuitId == preferredCircuitId)
+            .ThenByDescending(s => s.CachedAtUtc)
+            .Select(s => (Guid?)s.Id)
+            .FirstOrDefault();
+
+        var picks = items.ToDictionary(
+            x => x.Id,
+            x => (Previous: PickSnapshot(x.CategoryId, SeasonOf(x) - 1, x.Event!.CircuitId),
+                  Current: PickSnapshot(x.CategoryId, SeasonOf(x), x.Event!.CircuitId)));
+
+        var snapshotIds = picks.Values
+            .SelectMany(p => new[] { p.Previous, p.Current })
+            .OfType<Guid>()
+            .Distinct()
+            .ToList();
+
+        var entries = await dbContext.RankingSnapshotEntries
+            .AsNoTracking()
+            .Where(e => snapshotIds.Contains(e.RankingSnapshotId))
+            .Select(e => new { e.RankingSnapshotId, e.CompetitorName, e.Position })
+            .ToListAsync(cancellationToken);
+
+        var matchers = entries
+            .GroupBy(e => e.RankingSnapshotId)
+            .ToDictionary(g => g.Key, g => new RankingNameMatcher(g.Select(e => (e.CompetitorName, e.Position))));
+
+        string? PositionIn(Guid? snapshotId, Competitor competitor) =>
+            snapshotId is { } id && matchers.TryGetValue(id, out var matcher)
+                ? matcher.FindPosition(competitor.Nombre, competitor.Apellido)?.ToString()
+                : null;
+
+        foreach (var item in items)
+        {
+            var (previous, current) = picks[item.Id];
+            result[item.Id] = (PositionIn(previous, item.Competitor!), PositionIn(current, item.Competitor!));
+        }
+
+        return result;
     }
 
     private IQueryable<Inscription> BuildInscriptionBaseQuery()

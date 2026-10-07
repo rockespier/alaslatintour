@@ -29,7 +29,7 @@ interface InscritoRow {
 }
 
 interface EventoOption { id: string; nombre: string; circuitId: string; }
-interface CircuitoOption { id: string; nombre: string; }
+interface CircuitoOption { id: string; nombre: string; temporada: number | null; }
 interface CategoriaOption { id: string; nombre: string; }
 
 interface ResultadoRow {
@@ -167,8 +167,8 @@ function fmtDateTime(dt: string): string {
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">#</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Competidor</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">País</th>
-                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2025</th>
-                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. 2026</th>
+                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. {{ rankSeason() - 1 }}</th>
+                    <th class="px-3 py-3 text-center font-accent uppercase text-xs tracking-wider text-text-muted">Rank. {{ rankSeason() }}</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Categoría</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Evento</th>
                     <th class="px-3 py-3 text-left font-accent uppercase text-xs tracking-wider text-text-muted">Inscripción</th>
@@ -556,6 +556,15 @@ export class InscritosComponent implements OnInit {
 
   private categoriasGlobal: CategoriaOption[] = [];
 
+  /**
+   * Season shown in the ranking columns: the backend returns, per row, the position in the ranking
+   * of the event's season (ranking2026) and of the season before (ranking2025).
+   */
+  rankSeason(): number {
+    const circuitId = this.filterCircuito || this.eventos().find(e => e.id === this.filterEvento)?.circuitId;
+    return this.circuitos().find(c => c.id === circuitId)?.temporada ?? new Date().getFullYear();
+  }
+
   eventosFiltrados(): EventoOption[] {
     const circuitoId = this.filterCircuito;
     return circuitoId ? this.eventos().filter(e => e.circuitId === circuitoId) : this.eventos();
@@ -601,7 +610,7 @@ export class InscritosComponent implements OnInit {
       this.eventos.set(eventos);
       this.categoriasGlobal = (categoriesRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre }));
       this.categorias.set(this.categoriasGlobal);
-      this.circuitos.set((circuitsRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre })));
+      this.circuitos.set((circuitsRes?.data ?? []).map((c: any) => ({ id: c.id, nombre: c.nombre, temporada: c.temporada ?? null })));
       await this.loadInscritos();
     } catch {
       this.showToast('Error al cargar los inscritos');
