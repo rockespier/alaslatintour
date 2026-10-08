@@ -2653,3 +2653,26 @@ GET {{base_url}}/v1/videos
 ```
 
 > Fuente: feed RSS público del canal (`YouTubeConfig:ChannelId` en `appsettings.json`, hoy `@alasglobaltour`), sin API key. Devuelve los 15 videos más recientes, ordenados del más nuevo al más antiguo. El backend lo cachea `YouTubeConfig:CacheMinutes` (30 min); si YouTube no responde, sirve la última lista válida, o `data: []` si nunca se pudo leer.
+
+## Pages — `/v1/pages`
+
+### GET /v1/pages/{slug}?lang= — Texto de una página editable en WordPress
+
+```http
+GET {{base_url}}/v1/pages/quienes-somos?lang=en
+```
+
+**Ejemplo de response:**
+```json
+{
+  "slug": "quienes-somos",
+  "lang": "en",
+  "title": "About us",
+  "intro": ["ALAS GLOBAL TOUR is an association founded on April 30, 2001..."],
+  "sections": [
+    { "title": "From a nations tournament to a continental tour", "paragraphs": ["The Professional Latin Tour began in 2002..."] }
+  ]
+}
+```
+
+> `{slug}` es el slug en español. El idioma se resuelve con el campo `translations` de Polylang; si no hay traducción, `lang` vuelve como `es`. Solo texto plano (sin HTML): `intro` es lo que está antes del primer H2 y cada H2 abre una `section`. Caché de 10 min. `404` si la página no existe o WordPress no responde. Guía para editores: `documentacion/wordpress-quienes-somos/README.md`.

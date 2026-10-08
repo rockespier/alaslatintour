@@ -167,9 +167,13 @@ type ArticleCard = ArticleSummary;
       <div class="absolute inset-0 bg-black/35 pointer-events-none"
           style="background-image: radial-gradient(rgba(0,129,198,0.18) 1px, transparent 1px); background-size: 32px 32px;">
       </div>
+      <!-- Oscurece el lado del texto y la base para que titular y contadores se lean sobre cualquier cuadro del video -->
+      <div class="absolute inset-0 pointer-events-none"
+           style="background: linear-gradient(90deg, rgba(0,22,56,0.85) 0%, rgba(0,22,56,0.6) 45%, rgba(0,22,56,0.15) 100%), linear-gradient(0deg, rgba(0,22,56,0.75) 0%, transparent 45%);">
+      </div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
-        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm md:text-base mb-4">
+      <div class="hero-copy max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
+        <p class="font-accent uppercase tracking-[0.3em] text-cyan-300 font-semibold text-sm md:text-base mb-4">
           {{ 'public.home.hero.kicker' | transloco }}
         </p>
         <h1 class="font-heading font-bold leading-[0.9] text-5xl sm:text-7xl md:text-8xl">
@@ -177,7 +181,7 @@ type ArticleCard = ArticleSummary;
           <span class="text-orange-brand">TOUR</span><br />
           <span class="text-text-light/90">2026</span>
         </h1>
-        <p class="mt-6 max-w-2xl text-lg md:text-xl text-text-muted font-light leading-relaxed">
+        <p class="mt-6 max-w-2xl text-lg md:text-xl text-white/90 leading-relaxed">
           {{ 'public.home.hero.text' | transloco }}
         </p>
         <div class="mt-10 flex flex-col sm:flex-row gap-4">
@@ -200,11 +204,11 @@ type ArticleCard = ArticleSummary;
         </div>
 
         <!-- Quick stats -->
-        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl">
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.events' | transloco }}</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.countries' | transloco }}</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.competitors' | transloco }}</div></div>
-          <div><div class="font-heading text-3xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-text-muted tracking-wider">{{ 'public.home.stats.categories' | transloco }}</div></div>
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px max-w-3xl rounded-xl overflow-hidden border border-white/10 bg-white/10 backdrop-blur-sm">
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.events' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.countries' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.competitors' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.categories' | transloco }}</div></div>
         </div>
       </div>
 
@@ -253,15 +257,13 @@ type ArticleCard = ArticleSummary;
                   }
                 </div>
                 <div class="p-6 flex flex-col flex-1">
-                  <h3 class="font-heading text-2xl leading-tight mb-2">{{ event.nombre }}</h3>
-                  <p class="text-sm text-text-muted mb-4">{{ event.ciudad }}, {{ event.pais }}</p>
-                  <app-star-rating [value]="event.stars" class="mb-4" />
-                  <div class="mt-auto pt-4 border-t border-navy-mid">
-                    <p class="font-accent uppercase text-xs text-text-muted tracking-wider">
-                      {{ formatDateRange(event.fechaInicio, event.fechaFin) }}
-                    </p>
-                  </div>
-                  <div class="mt-3">
+                  <p class="font-heading text-2xl text-cyan-brand leading-tight">
+                    {{ formatDateRange(event.fechaInicio, event.fechaFin) }}
+                  </p>
+                  <p class="font-accent uppercase text-sm tracking-wider text-text-light mt-1">{{ event.ciudad }}, {{ event.pais }}</p>
+                  <h3 class="text-base text-text-muted leading-snug mt-3">{{ event.nombre }}</h3>
+                  <app-star-rating [value]="event.stars" class="mt-3" />
+                  <div class="mt-auto pt-4">
                     <a [routerLink]="'/eventos' | localizePath" [fragment]="'evento-' + event.id"
                        class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
                       {{ 'public.home.events.view' | transloco }}

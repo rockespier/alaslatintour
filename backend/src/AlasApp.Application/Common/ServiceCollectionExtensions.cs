@@ -1,5 +1,6 @@
 using AlasApp.Application.Abstractions.Messaging;
 using AlasApp.Application.Abstractions.Services;
+using AlasApp.Application.Pages.Queries.GetPageBySlug;
 using AlasApp.Application.Videos.Queries.ListVideos;
 using AlasApp.Application.AdminUsers.Commands.UpdateRolePermissions;
 using AlasApp.Application.Articles.Commands.CreateArticle;
@@ -131,6 +132,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestHandler<UpdateRolePermissionsCommand, AdminUsers.Models.RoleDto>, UpdateRolePermissionsCommandHandler>();
         services.AddScoped<IRequestHandler<GetDashboardQuery, Dashboard.Models.DashboardDto>, GetDashboardQueryHandler>();
         services.AddScoped<IRequestHandler<ListGalleriesQuery, IReadOnlyCollection<Galleries.Models.GallerySummaryDto>>, ListGalleriesQueryHandler>();
+        services.AddScoped<IRequestHandler<GetPageBySlugQuery, Pages.Models.PageContentDto>, GetPageBySlugQueryHandler>();
         services.AddScoped<IRequestHandler<ListVideosQuery, IReadOnlyCollection<Videos.Models.VideoDto>>, ListVideosQueryHandler>();
         services.AddScoped<IRequestHandler<GetGalleryBySlugQuery, Galleries.Models.GalleryDetailDto>, GetGalleryBySlugQueryHandler>();
         services.AddScoped<IRequestHandler<RegisterUserCommand, Auth.Models.RegisterResultDto>, RegisterUserCommandHandler>();

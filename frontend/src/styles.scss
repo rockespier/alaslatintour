@@ -24,6 +24,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Hero gradiente ── */
+/* Texto del hero sobre video: sombra suave para separarlo de cuadros claros */
+.hero-copy h1,
+.hero-copy p {
+  text-shadow: 0 2px 12px rgba(0, 22, 56, 0.7);
+}
+
 .hero-bg {
   background:
     radial-gradient(ellipse at top, #004F8E 0%, #003873 45%, #002359 100%),

@@ -321,9 +321,10 @@ add_action( 'login_enqueue_scripts', 'mi_custom_login_logo' );
 
 add_action('save_post', 'alas_save_headless_data');
 
-// Fuerza el filtro por idioma en la REST API para 'post' (Noticias) y 'gallery' (Fotos)
+// Fuerza el filtro por idioma en la REST API para 'post' (Noticias), 'gallery' (Fotos) y 'page' (Quiénes somos)
 add_filter('rest_post_query', 'alas_apply_lang_filter', 10, 2);
 add_filter('rest_gallery_query', 'alas_apply_lang_filter', 10, 2);
+add_filter('rest_page_query', 'alas_apply_lang_filter', 10, 2);
 
 function alas_apply_lang_filter($args, $request) {
     $lang = $request->get_param('lang');
@@ -340,7 +341,7 @@ function alas_apply_lang_filter($args, $request) {
 // traducciones { "es": "...", "en": "...", "pt": "..." } (translations, lo usa el backend .NET
 // para el selector de idioma y los hreflang de noticias/galerías).
 add_action('rest_api_init', function () {
-    foreach (['post', 'gallery'] as $post_type) {
+    foreach (['post', 'gallery', 'page'] as $post_type) {
         register_rest_field($post_type, 'pll_lang', [
             'get_callback' => function ($post_arr) {
                 return function_exists('pll_get_post_language')

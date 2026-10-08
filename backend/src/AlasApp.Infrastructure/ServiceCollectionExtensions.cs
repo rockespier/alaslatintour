@@ -71,6 +71,11 @@ public static class ServiceCollectionExtensions
         {
             ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.GalleriesBaseUrl, "gallery"));
         });
+        services.AddSingleton<WordPressPageCache>();
+        services.AddHttpClient<IPageService, WordPressPageService>(client =>
+        {
+            ConfigureWordPressClient(client, wordPressConfig, ResolveWordPressBaseUrl(wordPressConfig, wordPressConfig.PagesBaseUrl, "pages"));
+        });
         services.Configure<YouTubeConfig>(configuration.GetSection(YouTubeConfig.SectionName));
         services.AddSingleton<YouTubeFeedCache>();
         services.AddHttpClient<IVideoService, YouTubeVideoService>(client => client.Timeout = TimeSpan.FromSeconds(10));

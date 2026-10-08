@@ -238,9 +238,10 @@ Los campos `author_role`, `read_time_minutes`, `show_ranking` (registrados en `r
 Agregar en el mismo `functions.php`/snippet donde está el resto de las customizaciones REST de este documento:
 
 ```php
-// Fuerza el filtro por idioma en la REST API para 'post' (Noticias) y 'gallery' (Fotos)
+// Fuerza el filtro por idioma en la REST API para 'post' (Noticias), 'gallery' (Fotos) y 'page' (Quiénes somos)
 add_filter('rest_post_query', 'alas_apply_lang_filter', 10, 2);
 add_filter('rest_gallery_query', 'alas_apply_lang_filter', 10, 2);
+add_filter('rest_page_query', 'alas_apply_lang_filter', 10, 2);
 
 function alas_apply_lang_filter($args, $request) {
     $lang = $request->get_param('lang');
@@ -256,7 +257,7 @@ function alas_apply_lang_filter($args, $request) {
 // Expone el idioma de cada post en el JSON (solo informativo). Se llama `pll_lang` y no `lang`:
 // con `lang` el campo no aparece en la respuesta (Polylang ya usa ese nombre).
 add_action('rest_api_init', function () {
-    foreach (['post', 'gallery'] as $post_type) {
+    foreach (['post', 'gallery', 'page'] as $post_type) {
         register_rest_field($post_type, 'pll_lang', [
             'get_callback' => function ($post_arr) {
                 return function_exists('pll_get_post_language')
@@ -275,7 +276,7 @@ Polylang gratuito no expone en la REST API qué post es la traducción de cuál 
 ```php
 // Expone { "es": "slug-es", "en": "slug-en", "pt": "slug-pt" } con las traducciones publicadas del post.
 add_action('rest_api_init', function () {
-    foreach (['post', 'gallery'] as $post_type) {
+    foreach (['post', 'gallery', 'page'] as $post_type) {
         register_rest_field($post_type, 'translations', [
             'get_callback' => function ($post_arr) {
                 $slugs = [];
