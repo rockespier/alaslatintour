@@ -88,7 +88,7 @@ import { ApiService } from '../../../core/services/api.service';
                 {{ 'auth.forgot.enterToken' | transloco }}
               </a>
               <button (click)="sent.set(false)"
-                class="text-sm text-cyan-brand hover:text-cyan-dark">
+                class="text-sm text-cyan-text hover:text-cyan-dark">
                 {{ 'auth.forgot.tryAnother' | transloco }}
               </button>
             </div>
@@ -96,7 +96,7 @@ import { ApiService } from '../../../core/services/api.service';
           }
 
           <p class="mt-6 text-center text-sm text-text-muted">
-            <a [routerLink]="'/login' | localizePath" class="text-cyan-brand hover:text-cyan-dark">{{ 'auth.forgot.backToLogin' | transloco }}</a>
+            <a [routerLink]="'/login' | localizePath" class="text-cyan-text hover:text-cyan-dark">{{ 'auth.forgot.backToLogin' | transloco }}</a>
           </p>
         </div>
       </div>

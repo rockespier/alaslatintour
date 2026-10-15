@@ -32,7 +32,7 @@ const TOTAL_SECONDS = 24 * 3600;
         <nav class="flex items-center gap-2 text-xs font-accent uppercase tracking-wider text-text-muted mb-6">
           <a [routerLink]="'/eventos' | localizePath" class="hover:text-cyan-brand">{{ 'competitor.inscription.breadcrumbEvents' | transloco }}</a>
           <span>/</span>
-          <span class="text-cyan-brand">{{ 'competitor.beach.breadcrumb' | transloco }}</span>
+          <span class="text-cyan-text">{{ 'competitor.beach.breadcrumb' | transloco }}</span>
         </nav>
 
         <h1 class="font-heading text-4xl md:text-5xl mb-2">{{ 'competitor.beach.title' | transloco }}</h1>
@@ -44,7 +44,7 @@ const TOTAL_SECONDS = 24 * 3600;
             <div class="flex items-center gap-4">
               <div class="text-3xl">{{ inscription()!.eventoPais }}</div>
               <div>
-                <p class="font-accent uppercase text-cyan-brand text-xs tracking-wider">{{ 'competitor.beach.inscriptionNumber' | transloco: { id: inscriptionId() } }}</p>
+                <p class="font-accent uppercase text-cyan-text text-xs tracking-wider">{{ 'competitor.beach.inscriptionNumber' | transloco: { id: inscriptionId() } }}</p>
                 <h2 class="font-heading text-xl leading-tight">{{ inscription()!.eventoNombre }}</h2>
                 <p class="text-sm text-text-muted">{{ inscription()!.categoria }}</p>
               </div>
@@ -56,7 +56,7 @@ const TOTAL_SECONDS = 24 * 3600;
               }
               <div class="flex justify-between items-baseline pt-1.5 border-t border-navy-mid/60">
                 <span class="font-heading">{{ 'competitor.inscription.total' | transloco }}</span>
-                <span class="font-heading text-xl text-cyan-brand">{{ formatUSD(inscription()!.montoUsd) }}<span class="text-xs ml-1">USD</span></span>
+                <span class="font-heading text-xl text-cyan-text">{{ formatUSD(inscription()!.montoUsd) }}<span class="text-xs ml-1">USD</span></span>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ const TOTAL_SECONDS = 24 * 3600;
                 </button>
 
                 <button (click)="openTokenEntry()"
-                  class="px-8 py-3 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                  class="px-8 py-3 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
                   {{ 'competitor.beach.haveToken' | transloco }}
                 </button>
               </div>
@@ -128,7 +128,7 @@ const TOTAL_SECONDS = 24 * 3600;
               <div class="pt-5 border-t border-navy-mid">
                 <p class="text-sm text-text-muted mb-3">{{ 'competitor.beach.receivedToken' | transloco }}</p>
                 <button (click)="state.set('enter_token')"
-                  class="px-6 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-xs transition">
+                  class="px-6 py-2.5 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-xs transition">
                   {{ 'competitor.beach.enterMyToken' | transloco }}
                 </button>
               </div>

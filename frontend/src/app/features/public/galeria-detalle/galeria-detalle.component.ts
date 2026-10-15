@@ -28,7 +28,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
     } @else if (notFound()) {
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
         <p class="font-heading text-3xl text-text-muted mb-4">{{ 'public.gallery.notFound' | transloco }}</p>
-        <a [routerLink]="'/noticias' | localizePath" class="text-cyan-brand font-accent uppercase tracking-wider">{{ 'public.article.backToNews' | transloco }}</a>
+        <a [routerLink]="'/noticias' | localizePath" class="text-cyan-text font-accent uppercase tracking-wider">{{ 'public.article.backToNews' | transloco }}</a>
       </div>
     } @else if (gallery()) {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
@@ -37,7 +37,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
         <nav class="text-xs text-text-muted font-accent uppercase tracking-wider mb-6">
           <a [routerLink]="'/noticias' | localizePath" class="hover:text-cyan-brand">{{ 'public.article.breadcrumb' | transloco }}</a>
           <span class="mx-2">/</span>
-          <span class="text-cyan-brand">{{ 'public.gallery.breadcrumb' | transloco }}</span>
+          <span class="text-cyan-text">{{ 'public.gallery.breadcrumb' | transloco }}</span>
         </nav>
 
         <!-- Header -->
@@ -53,7 +53,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
           </div>
           @if (gallery()!.pressDownloadLink) {
             <a [href]="gallery()!.pressDownloadLink!" target="_blank" rel="noreferrer"
-               class="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase text-xs tracking-wider transition">
+               class="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase text-xs tracking-wider transition">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -66,7 +66,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
         <!-- Gallery days -->
         @for (day of gallery()!.galleryDays; track day.dayName) {
           <section class="mb-14">
-            <h2 class="font-accent uppercase tracking-widest text-xs text-cyan-brand mb-5 border-b border-navy-mid pb-3">
+            <h2 class="font-accent uppercase tracking-widest text-xs text-cyan-text mb-5 border-b border-navy-mid pb-3">
              {{ day.dayName }}
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -92,7 +92,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
                   <div class="group relative overflow-hidden rounded-lg bg-navy-mid" style="aspect-ratio:16/9">
                     <div class="absolute inset-0 flex items-center justify-center">
                       <div class="w-14 h-14 rounded-full bg-cyan-brand/20 border-2 border-cyan-brand flex items-center justify-center">
-                        <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-6 w-6 text-cyan-text ml-1" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z"/>
                         </svg>
                       </div>

@@ -17,11 +17,11 @@ export class ApiService {
     return headers;
   }
 
-  private async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  private async request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown, transferCache?: boolean): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     try {
       return await firstValueFrom(
-        this.http.request<T>(method, url, { headers: this.buildHeaders(), body }),
+        this.http.request<T>(method, url, { headers: this.buildHeaders(), body, ...(transferCache === false ? { transferCache: false } : {}) }),
       );
     } catch (err) {
       if (err instanceof HttpErrorResponse) {
@@ -32,7 +32,8 @@ export class ApiService {
     }
   }
 
-  get<T>(path: string): Promise<T> { return this.request('GET', path); }
+  /** `transferCache: false` evita serializar la respuesta completa en el HTML SSR (ng-state). */
+  get<T>(path: string, options?: { transferCache?: boolean }): Promise<T> { return this.request('GET', path, undefined, options?.transferCache); }
   post<T>(path: string, body: unknown): Promise<T> { return this.request('POST', path, body); }
   put<T>(path: string, body: unknown): Promise<T> { return this.request('PUT', path, body); }
   delete<T>(path: string): Promise<T> { return this.request('DELETE', path); }

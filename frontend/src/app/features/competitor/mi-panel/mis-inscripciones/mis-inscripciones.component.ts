@@ -48,7 +48,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
       @for (tab of filterTabs; track tab.key) {
         <button (click)="filter.set(tab.key)"
                 class="px-4 py-2.5 border-b-2 font-accent uppercase text-xs tracking-wider whitespace-nowrap transition"
-                [class]="filter() === tab.key ? 'border-cyan-brand text-cyan-brand' : 'border-transparent text-text-muted hover:text-text-light'">
+                [class]="filter() === tab.key ? 'border-cyan-brand text-cyan-text' : 'border-transparent text-text-muted hover:text-text-light'">
           {{ 'competitor.myInscriptions.tabs.' + tab.key | transloco }}
           @if (tab.count() > 0) {
             <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px]"
@@ -65,7 +65,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
     } @else if (filtered().length === 0) {
       <div class="text-center py-16">
         <p class="text-text-muted text-sm">{{ 'competitor.myInscriptions.empty' | transloco }}</p>
-        <a [routerLink]="'/eventos' | localizePath" class="mt-4 inline-block text-cyan-brand hover:text-cyan-dark font-accent uppercase text-xs tracking-wider">{{ 'competitor.myInscriptions.browseEvents' | transloco }}</a>
+        <a [routerLink]="'/eventos' | localizePath" class="mt-4 inline-block text-cyan-text hover:text-cyan-dark font-accent uppercase text-xs tracking-wider">{{ 'competitor.myInscriptions.browseEvents' | transloco }}</a>
       </div>
     } @else {
       <div class="overflow-x-auto rounded-2xl border border-navy-mid">
@@ -102,7 +102,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
                     {{ 'competitor.myInscriptions.status.' + ins.statusPagoLabel | transloco }}
                   </span>
                 </td>
-                <td class="px-4 py-4 text-right text-cyan-brand hidden sm:table-cell">{{ formatUSD(ins.monto) }}</td>
+                <td class="px-4 py-4 text-right text-cyan-text hidden sm:table-cell">{{ formatUSD(ins.monto) }}</td>
                 <td class="px-4 py-4 text-right">
                   @if (ins.statusPago === 'pendiente' && !ins.tokenIngresado) {
                     <div class="flex items-center justify-end gap-3">
@@ -121,7 +121,7 @@ const PAGO_CLASS: Record<PaymentStatus, string> = {
                       }
                     </div>
                   } @else if (ins.statusPago === 'pendiente' && ins.tokenIngresado) {
-                    <span class="text-xs font-accent uppercase tracking-wider text-cyan-brand">
+                    <span class="text-xs font-accent uppercase tracking-wider text-cyan-text">
                       {{ 'competitor.myInscriptions.pendingPayment' | transloco }}
                     </span>
                   } @else {

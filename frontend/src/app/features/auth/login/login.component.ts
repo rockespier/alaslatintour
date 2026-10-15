@@ -93,7 +93,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
                 <span class="text-sm text-text-muted">{{ 'auth.login.remember' | transloco }}</span>
               </label>
               <a [routerLink]="'/recuperar-password' | localizePath"
-                class="text-sm text-cyan-brand hover:text-cyan-dark">
+                class="text-sm text-cyan-text hover:text-cyan-dark">
                 {{ 'auth.login.forgot' | transloco }}
               </a>
             </div>
@@ -118,7 +118,7 @@ import { LocalizePathPipe } from '../../../shared/pipes/localize-path.pipe';
 
           <p class="mt-6 text-center text-sm text-text-muted">
             {{ 'auth.login.noAccount' | transloco }}
-            <a [routerLink]="'/registro' | localizePath" class="text-cyan-brand hover:text-cyan-dark ml-1">{{ 'auth.login.register' | transloco }}</a>
+            <a [routerLink]="'/registro' | localizePath" class="text-cyan-text hover:text-cyan-dark ml-1">{{ 'auth.login.register' | transloco }}</a>
           </p>
         </div>
       </div>

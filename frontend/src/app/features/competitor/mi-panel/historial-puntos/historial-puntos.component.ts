@@ -41,7 +41,7 @@ interface PointEntry {
     @if (!loading() && history().length > 0) {
       <div class="bg-gradient-to-r from-cyan-brand/10 to-navy-mid border border-cyan-brand/20 rounded-2xl p-6 mb-6 flex items-center justify-between">
         <div>
-          <p class="font-accent uppercase text-xs text-cyan-brand tracking-wider mb-1">{{ 'competitor.history.accumulated' | transloco: { year: selectedYear() } }}</p>
+          <p class="font-accent uppercase text-xs text-cyan-text tracking-wider mb-1">{{ 'competitor.history.accumulated' | transloco: { year: selectedYear() } }}</p>
           <p class="font-heading text-5xl">{{ totalPoints() | number }}</p>
         </div>
         <div class="text-right">
@@ -89,11 +89,11 @@ interface PointEntry {
                 </td>
                 <td class="px-4 py-4 text-center">
                   <span class="font-heading text-xl"
-                        [class]="isTopResult(entry.puesto) ? 'text-cyan-brand' : ''">
+                        [class]="isTopResult(entry.puesto) ? 'text-cyan-text' : ''">
                     #{{ entry.puesto }}
                   </span>
                 </td>
-                <td class="px-4 py-4 text-right font-heading text-lg text-cyan-brand">{{ entry.puntos | number }}</td>
+                <td class="px-4 py-4 text-right font-heading text-lg text-cyan-text">{{ entry.puntos | number }}</td>
               </tr>
             }
           </tbody>
@@ -101,7 +101,7 @@ interface PointEntry {
             <tr>
               <td colspan="4" class="px-5 py-3 text-text-muted hidden md:table-cell">{{ 'competitor.history.seasonTotal' | transloco: { year: selectedYear() } }}</td>
               <td colspan="4" class="px-5 py-3 text-text-muted md:hidden">{{ 'competitor.history.total' | transloco }}</td>
-              <td class="px-4 py-3 text-right font-heading text-xl text-cyan-brand">{{ totalPoints() | number }}</td>
+              <td class="px-4 py-3 text-right font-heading text-xl text-cyan-text">{{ totalPoints() | number }}</td>
             </tr>
           </tfoot>
         </table>

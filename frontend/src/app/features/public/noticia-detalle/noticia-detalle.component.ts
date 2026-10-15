@@ -40,7 +40,7 @@ type RelatedArticle = ArticleSummary;
     } @else if (notFound()) {
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
         <p class="font-heading text-3xl text-text-muted mb-4">{{ 'public.article.notFound' | transloco }}</p>
-        <a [routerLink]="'/noticias' | localizePath" class="text-cyan-brand font-accent uppercase tracking-wider">{{ 'public.article.backToNews' | transloco }}</a>
+        <a [routerLink]="'/noticias' | localizePath" class="text-cyan-text font-accent uppercase tracking-wider">{{ 'public.article.backToNews' | transloco }}</a>
       </div>
     } @else {
       <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
@@ -165,7 +165,7 @@ type RelatedArticle = ArticleSummary;
                     }
                   </div>
                   <div class="p-5">
-                    <span class="font-accent uppercase tracking-wider text-xs text-cyan-brand">{{ rel.category | enumLabel: 'articleCategory' }}</span>
+                    <span class="font-accent uppercase tracking-wider text-xs text-cyan-text">{{ rel.category | enumLabel: 'articleCategory' }}</span>
                     <h3 class="font-heading text-lg mt-2 mb-2 group-hover:text-cyan-brand transition leading-snug">
                       {{ rel.title }}
                     </h3>
@@ -291,7 +291,7 @@ export class NoticiaDetalleComponent implements OnInit {
   categoryClass(cat: string): string {
     const map: Record<string, string> = {
       'Resultados': 'text-success-brand',
-      'Circuito': 'text-cyan-brand',
+      'Circuito': 'text-cyan-text',
       'Entrevista': 'text-orange-brand',
       'Reglamento': 'text-warning-brand',
     };

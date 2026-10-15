@@ -208,7 +208,7 @@ const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English',
                 <div class="mt-6 space-y-4">
 
                   @if (esCompetidor()) {
-                    <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">{{ 'auth.register.competitorData' | transloco }}</p>
+                    <p class="font-accent uppercase text-xs tracking-wider text-cyan-text mb-2">{{ 'auth.register.competitorData' | transloco }}</p>
                     <div class="grid grid-cols-2 gap-4">
                       <div>
                         <label class="block font-accent uppercase text-xs tracking-wider text-text-muted mb-1.5">{{ 'auth.register.birthDate' | transloco }}</label>
@@ -276,7 +276,7 @@ const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English',
                         class="mt-0.5 w-4 h-4 rounded border-navy-mid bg-navy-deepest accent-cyan-brand flex-shrink-0" />
                       <span class="text-sm text-text-muted">
                         {{ 'auth.register.rulesAccept' | transloco }}
-                        <a href="/reglamento.pdf" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.rulesLink' | transloco }}</a>
+                        <a href="/reglamento.pdf" target="_blank" class="text-cyan-text hover:underline">{{ 'auth.register.rulesLink' | transloco }}</a>
                         <span class="text-error-brand ml-0.5">*</span>
                       </span>
                     </label>
@@ -291,9 +291,9 @@ const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English',
                       class="mt-0.5 w-4 h-4 rounded border-navy-mid bg-navy-deepest accent-cyan-brand flex-shrink-0" />
                     <span class="text-sm text-text-muted">
                       {{ 'auth.register.termsAccept' | transloco }}
-                      <a href="/terminos" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.termsLink' | transloco }}</a>
+                      <a href="/terminos" target="_blank" class="text-cyan-text hover:underline">{{ 'auth.register.termsLink' | transloco }}</a>
                       {{ 'auth.register.and' | transloco }}
-                      <a href="/privacidad" target="_blank" class="text-cyan-brand hover:underline">{{ 'auth.register.privacyLink' | transloco }}</a>
+                      <a href="/privacidad" target="_blank" class="text-cyan-text hover:underline">{{ 'auth.register.privacyLink' | transloco }}</a>
                       <span class="text-error-brand ml-0.5">*</span>
                     </span>
                   </label>
@@ -330,7 +330,7 @@ const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English',
           <div class="px-8 py-5 border-t border-navy-mid text-center">
             <p class="text-sm text-text-muted">
               {{ 'auth.register.haveAccount' | transloco }}
-              <a [routerLink]="'/login' | localizePath" class="text-cyan-brand hover:text-cyan-dark ml-1">{{ 'auth.register.login' | transloco }}</a>
+              <a [routerLink]="'/login' | localizePath" class="text-cyan-text hover:text-cyan-dark ml-1">{{ 'auth.register.login' | transloco }}</a>
             </p>
           </div>
         </div>

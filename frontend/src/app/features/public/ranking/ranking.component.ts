@@ -20,7 +20,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
     <!-- Hero -->
     <section class="bg-gradient-to-b from-navy-dark to-navy-deepest pt-12 pb-8 px-4 sm:px-6 lg:px-8 border-b border-navy-mid">
       <div class="max-w-7xl mx-auto">
-        <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">
+        <p class="font-accent uppercase tracking-[0.25em] text-cyan-text text-xs mb-2">
           {{ 'public.ranking.kicker' | transloco: { year: currentYear } }}
         </p>
         <h1 class="font-heading text-5xl md:text-6xl mb-2">{{ 'public.ranking.title' | transloco: { year: currentYear } }}</h1>
@@ -100,7 +100,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
             <div class="p-10 text-center">
               <p class="text-error-brand mb-3">{{ 'public.ranking.error' | transloco }}</p>
               <button (click)="reload()"
-                class="px-5 py-2 border border-cyan-brand text-cyan-brand font-accent uppercase text-xs tracking-wider rounded hover:bg-cyan-brand hover:text-navy-deepest transition">
+                class="px-5 py-2 border border-cyan-brand text-cyan-text font-accent uppercase text-xs tracking-wider rounded hover:bg-cyan-brand hover:text-navy-deepest transition">
                 {{ 'public.ranking.retry' | transloco }}
               </button>
             </div>
@@ -123,7 +123,7 @@ interface Circuit { id: string; nombre: string; temporada?: number; estado?: str
                   @for (row of rows(); track row.position) {
                     <tr class="ranking-row transition">
                       <td class="px-4 py-3 font-heading text-lg"
-                          [class]="row.position === 1 ? 'text-cyan-brand' : row.position <= 3 ? 'text-text-light' : 'text-text-muted'">
+                          [class]="row.position === 1 ? 'text-cyan-text' : row.position <= 3 ? 'text-text-light' : 'text-text-muted'">
                         @if (row.position <= 3) {
                           <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-sm"
                                 [class]="row.position === 1 ? 'bg-warning-brand/20 text-warning-brand' : 'bg-navy-mid/50'">

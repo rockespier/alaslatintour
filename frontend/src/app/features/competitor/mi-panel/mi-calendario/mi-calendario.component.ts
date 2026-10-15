@@ -66,7 +66,7 @@ interface CalendarEvent {
 
             <!-- Date block -->
             <div class="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-0 sm:w-24 sm:border-r sm:border-navy-mid sm:pr-4 flex-shrink-0">
-              <p class="font-heading text-5xl leading-none text-cyan-brand">{{ dayOf(event.fechaInicio) }}</p>
+              <p class="font-heading text-5xl leading-none text-cyan-text">{{ dayOf(event.fechaInicio) }}</p>
               <div>
                 <p class="font-accent uppercase text-xs text-text-muted">{{ monthOf(event.fechaInicio) }}</p>
                 <p class="font-accent uppercase text-xs text-text-muted">{{ yearOf(event.fechaInicio) }}</p>

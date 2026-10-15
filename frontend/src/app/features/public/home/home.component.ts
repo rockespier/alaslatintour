@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
+import { AfterViewInit, Component, inject, signal, computed, OnInit, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -76,7 +76,7 @@ type ArticleCard = ArticleSummary;
               <div class="flex flex-wrap items-center gap-3 w-fit shrink-0">
                 @if (liveStatus()?.surfScoresEmbedUrl) {
                   <a [href]="liveStatus()?.surfScoresEmbedUrl" target="_blank" rel="noopener"
-                     class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold">
+                     class="inline-flex items-center justify-center gap-2 px-6 py-3 border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm rounded-md transition font-bold">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
@@ -211,10 +211,10 @@ type ArticleCard = ArticleSummary;
 
         <!-- Quick stats -->
         <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px max-w-3xl rounded-xl overflow-hidden border border-white/10 bg-white/10 backdrop-blur-sm">
-          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.events' | transloco }}</div></div>
-          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.countries' | transloco }}</div></div>
-          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.competitors' | transloco }}</div></div>
-          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-brand">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.categories' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-text">{{ statsEventsCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.events' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-text">{{ statsPaisesCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.countries' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-text">{{ statsCompetidoresCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.competitors' | transloco }}</div></div>
+          <div class="bg-navy-deepest/70 px-5 py-4"><div class="font-heading text-4xl text-cyan-text">{{ statsCategoriasCount() ?? '—' }}</div><div class="font-accent uppercase text-xs text-white/85 tracking-wider">{{ 'public.home.stats.categories' | transloco }}</div></div>
         </div>
       </div>
 
@@ -227,9 +227,9 @@ type ArticleCard = ArticleSummary;
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
           <div class="flex items-center gap-3 flex-wrap">
             <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.events.title' | transloco }}</h2>
-            <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-brand border border-orange-brand/30">{{ 'public.home.events.badge' | transloco }}</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-accent uppercase tracking-wider bg-orange-brand/20 text-orange-light border border-orange-brand/30">{{ 'public.home.events.badge' | transloco }}</span>
           </div>
-          <a [routerLink]="'/eventos' | localizePath" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider flex items-center gap-1">
+          <a [routerLink]="'/eventos' | localizePath" class="font-accent uppercase text-sm text-cyan-text hover:text-cyan-dark tracking-wider flex items-center gap-1">
             {{ 'public.home.events.viewAll' | transloco }}
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -264,7 +264,7 @@ type ArticleCard = ArticleSummary;
                   }
                 </div>
                 <div class="p-6 flex flex-col flex-1">
-                  <p class="font-heading text-2xl text-cyan-brand leading-tight">
+                  <p class="font-heading text-2xl text-cyan-text leading-tight">
                     {{ formatDateRange(event.fechaInicio, event.fechaFin) }}
                   </p>
                   <p class="font-accent uppercase text-sm tracking-wider text-text-light mt-1">{{ event.ciudad }}, {{ event.pais }}</p>
@@ -272,7 +272,7 @@ type ArticleCard = ArticleSummary;
                   <app-star-rating [value]="event.stars" class="mt-3" />
                   <div class="mt-auto pt-4">
                     <a [routerLink]="'/eventos' | localizePath" [fragment]="'evento-' + event.id"
-                       class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-brand font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
+                       class="block w-full text-center py-2 px-4 bg-cyan-brand/10 hover:bg-cyan-brand/20 text-cyan-text font-accent uppercase text-xs tracking-wider rounded border border-cyan-brand/30 hover:border-cyan-brand/60 transition">
                       {{ 'public.home.events.view' | transloco }}
                     </a>
                   </div>
@@ -330,7 +330,7 @@ type ArticleCard = ArticleSummary;
                   @for (row of ranking(); track row.position) {
                     <tr class="ranking-row transition">
                       <td class="px-4 py-3 font-heading text-lg"
-                          [class]="row.position === 1 ? 'text-cyan-brand' : row.position <= 3 ? 'text-text-light' : 'text-text-muted'">
+                          [class]="row.position === 1 ? 'text-cyan-text' : row.position <= 3 ? 'text-text-light' : 'text-text-muted'">
                         {{ row.position }}
                       </td>
                       <td class="px-4 py-3 font-medium">{{ row.name }}</td>
@@ -366,7 +366,7 @@ type ArticleCard = ArticleSummary;
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
           <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.news.title' | transloco }}</h2>
-          <a [routerLink]="'/noticias' | localizePath" class="font-accent uppercase text-sm text-cyan-brand hover:text-cyan-dark tracking-wider">
+          <a [routerLink]="'/noticias' | localizePath" class="font-accent uppercase text-sm text-cyan-text hover:text-cyan-dark tracking-wider">
             {{ 'common.viewAll' | transloco }}
           </a>
         </div>
@@ -397,7 +397,7 @@ type ArticleCard = ArticleSummary;
                   <div class="flex items-center justify-between text-xs text-text-muted">
                     <span>{{ formatDate(article.publishedAt) }}</span>
                     <a [routerLink]="('/noticias/' + article.slug) | localizePath"
-                       class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                       class="text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider">
                       {{ 'common.readMore' | transloco }}
                     </a>
                   </div>
@@ -414,7 +414,7 @@ type ArticleCard = ArticleSummary;
       <div class="max-w-3xl mx-auto">
 
         <div class="text-center mb-10">
-          <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-2">{{ 'public.home.contact.kicker' | transloco }}</p>
+          <p class="font-accent uppercase tracking-[0.25em] text-cyan-text text-xs mb-2">{{ 'public.home.contact.kicker' | transloco }}</p>
           <h2 class="font-heading text-4xl md:text-5xl">{{ 'public.home.contact.title' | transloco }}</h2>
           <p class="text-text-muted mt-3 text-sm max-w-md mx-auto">
             {{ 'public.home.contact.intro' | transloco }}
@@ -431,7 +431,7 @@ type ArticleCard = ArticleSummary;
             <h3 class="font-heading text-2xl mb-2">{{ 'public.home.contact.sentTitle' | transloco }}</h3>
             <p class="text-text-muted text-sm">{{ 'public.home.contact.sentText' | transloco }}</p>
             <button (click)="contactSuccess.set(false)"
-              class="mt-6 text-sm text-cyan-brand hover:text-cyan-dark">
+              class="mt-6 text-sm text-cyan-text hover:text-cyan-dark">
               {{ 'public.home.contact.sendAnother' | transloco }}
             </button>
           </div>
@@ -532,6 +532,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private localeFormat = inject(LocaleFormatService);
   private sanitizer = inject(DomSanitizer);
   private platformId = inject(PLATFORM_ID);
+  private transferState = inject(TransferState);
 
   readonly currentYear = new Date().getFullYear();
   readonly heroPoster = 'assets/images/hero-poster.webp';
@@ -661,11 +662,29 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Transfiere al navegador solo el resultado ya reducido (no la respuesta completa de la API),
+   * para no inflar el HTML SSR con ~70 KB de eventos que no se muestran.
+   */
+  private async transferred<T>(key: string, load: () => Promise<T>): Promise<T> {
+    const stateKey = makeStateKey<T>(key);
+    if (this.transferState.hasKey(stateKey)) {
+      const value = this.transferState.get(stateKey, null as T);
+      this.transferState.remove(stateKey);
+      return value;
+    }
+    const value = await load();
+    if (!isPlatformBrowser(this.platformId)) this.transferState.set(stateKey, value);
+    return value;
+  }
+
   private async loadEvents(): Promise<void> {
     try {
-      const res = await this.api.get<any>('/events?limit=100&page=1');
-      const events = (res?.data ?? []) as EventCard[];
-      this.events.set(sortEventsForDisplay(events).slice(0, 4));
+      const events = await this.transferred('home-events', async () => {
+        const res = await this.api.get<any>('/events?limit=100&page=1', { transferCache: false });
+        return sortEventsForDisplay((res?.data ?? []) as EventCard[]).slice(0, 4);
+      });
+      this.events.set(events);
     } catch {
       this.events.set([]);
     } finally {
@@ -756,9 +775,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private async countPaisesForCircuit(circuitId: string): Promise<number> {
     try {
-      const res = await this.api.get<any>(`/events?circuitId=${encodeURIComponent(circuitId)}&limit=100`);
-      const events: any[] = res?.data ?? [];
-      return new Set(events.map(e => e.pais).filter(Boolean)).size;
+      return await this.transferred(`home-paises-${circuitId}`, async () => {
+        const res = await this.api.get<any>(`/events?circuitId=${encodeURIComponent(circuitId)}&limit=100`, { transferCache: false });
+        const events: any[] = res?.data ?? [];
+        return new Set(events.map(e => e.pais).filter(Boolean)).size;
+      });
     } catch {
       return 0;
     }
@@ -775,7 +796,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       'Completado': 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
       'Cerrado': 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
     };
-    return map[status] ?? 'bg-orange-brand/20 text-orange-brand border border-orange-brand/30';
+    return map[status] ?? 'bg-orange-brand/20 text-orange-light border border-orange-brand/30';
   }
 
   categoryBadgeClass(category: string): string {

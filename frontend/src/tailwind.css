@@ -12,6 +12,8 @@
   --color-cyan-dark: #0070b0;
   --color-orange-brand: #F97316;
   --color-orange-light: #FB923C;
+  /* Variantes para texto sobre fondos navy (contraste WCAG AA ≥ 4.5:1) */
+  --color-cyan-text: #4FB3E8;
   --color-text-light: #EEEEEE;
   --color-text-muted: #AAAAAA;
   --color-success-brand: #22C55E;
@@ -39,4 +41,5 @@
   --color-navy-mid: #E2E8F0;
   --color-text-light: #0F1E33;
   --color-text-muted: #5B6472;
+  --color-cyan-text: #0070b0;
 }

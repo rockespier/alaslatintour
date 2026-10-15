@@ -35,9 +35,9 @@ interface TeamMember {
       <div class="absolute inset-0 opacity-20 pointer-events-none"
            style="background-image: radial-gradient(rgba(0,129,198,0.2) 1px, transparent 1px); background-size: 40px 40px;"></div>
       <div class="max-w-5xl mx-auto relative z-10 text-center">
-        <p class="font-accent uppercase tracking-[0.3em] text-cyan-brand text-sm mb-4">{{ t('hero.kicker') }}</p>
+        <p class="font-accent uppercase tracking-[0.3em] text-cyan-text text-sm mb-4">{{ t('hero.kicker') }}</p>
         <h1 class="font-heading font-bold text-5xl sm:text-7xl mb-6 leading-tight">
-          {{ t('hero.titleLine1') }}<br><span class="text-cyan-brand">{{ t('hero.titleLine2') }}</span>
+          {{ t('hero.titleLine1') }}<br><span class="text-cyan-text">{{ t('hero.titleLine2') }}</span>
         </h1>
         @if (wpIntro(); as intro) {
           @for (p of intro; track $index) {
@@ -71,7 +71,7 @@ interface TeamMember {
           @for (year of timelineYears; track year) {
             <div class="relative">
               <div class="timeline-dot absolute -left-[41px] top-1"></div>
-              <span class="font-heading text-cyan-brand text-xl">{{ year }}</span>
+              <span class="font-heading text-cyan-text text-xl">{{ year }}</span>
               <h3 class="font-heading text-lg mt-1 mb-1">{{ t('timeline.' + year + '.title') }}</h3>
               <p class="text-sm text-text-muted leading-relaxed">{{ t('timeline.' + year + '.description') }}</p>
             </div>
@@ -130,12 +130,12 @@ interface TeamMember {
             <div class="stat-card rounded-2xl p-8 border border-navy-mid hover:border-cyan-brand/40 transition">
               <div class="text-3xl mb-4">{{ item.icon }}</div>
               @if (wp(item.key); as section) {
-                <h3 class="font-heading text-2xl text-cyan-brand mb-3">{{ section.title || t('identity.' + item.key + 'Title') }}</h3>
+                <h3 class="font-heading text-2xl text-cyan-text mb-3">{{ section.title || t('identity.' + item.key + 'Title') }}</h3>
                 @for (p of section.paragraphs; track $index) {
                   <p class="text-text-muted leading-relaxed text-sm" [class.mt-3]="!$first">{{ p }}</p>
                 }
               } @else {
-                <h3 class="font-heading text-2xl text-cyan-brand mb-3">{{ t('identity.' + item.key + 'Title') }}</h3>
+                <h3 class="font-heading text-2xl text-cyan-text mb-3">{{ t('identity.' + item.key + 'Title') }}</h3>
                 <p class="text-text-muted leading-relaxed text-sm">{{ t('identity.' + item.key) }}</p>
               }
             </div>
@@ -150,7 +150,7 @@ interface TeamMember {
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           @for (stat of stats; track stat.label) {
             <div class="py-8">
-              <div class="font-heading text-5xl md:text-6xl text-cyan-brand leading-none">{{ stat.value }}</div>
+              <div class="font-heading text-5xl md:text-6xl text-cyan-text leading-none">{{ stat.value }}</div>
               <div class="font-accent uppercase text-xs tracking-[0.2em] text-text-muted mt-3">{{ t('stats.' + stat.label) }}</div>
             </div>
           }
@@ -173,7 +173,7 @@ interface TeamMember {
                 {{ member.initials }}
               </div>
               <h3 class="font-heading text-lg leading-tight">{{ member.name }}</h3>
-              <p class="font-accent uppercase text-xs text-cyan-brand tracking-wider mt-1">{{ t('team.roles.' + member.role) }}</p>
+              <p class="font-accent uppercase text-xs text-cyan-text tracking-wider mt-1">{{ t('team.roles.' + member.role) }}</p>
             </div>
           }
         </div>

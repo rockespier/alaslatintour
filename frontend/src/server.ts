@@ -23,6 +23,16 @@ app.use(
   }),
 );
 
+// Un archivo que no existe en dist (p. ej. /llms.txt, /foo.js) no debe pasar por el SSR:
+// devolvía la app completa con 200 tras varios segundos.
+app.use((req, res, next) => {
+  if (/\.[a-z0-9]+$/i.test(req.path) && !/^\/(api|v1)(\/|$)/.test(req.path)) {
+    res.status(404).type('text/plain').send('Not found');
+    return;
+  }
+  next();
+});
+
 /**
  * First visit to a Spanish (unprefixed) page: send the visitor to their country's language
  * (geo header from the CDN/proxy if present, otherwise Accept-Language). The switcher's cookie

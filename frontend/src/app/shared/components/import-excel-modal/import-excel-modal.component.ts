@@ -35,7 +35,7 @@ export interface ImportResult {
           <div class="p-6 space-y-4">
             @if (!result()) {
               <p class="text-sm text-text-muted">
-                Selecciona un archivo <code class="text-cyan-brand">.xlsx</code> basado en la plantilla descargada.
+                Selecciona un archivo <code class="text-cyan-text">.xlsx</code> basado en la plantilla descargada.
                 Si una fila trae <code>Id</code> o coincide por código de SurfScores, se actualiza; si no, se crea.
               </p>
               <input type="file" accept=".xlsx" (change)="onFileSelected($event)" [disabled]="uploading()"
@@ -50,7 +50,7 @@ export interface ImportResult {
               <div class="space-y-2 text-sm">
                 <p class="text-text-light">Filas procesadas: <strong>{{ result()!.processedRows }}</strong></p>
                 <p class="text-success-brand">Creadas: {{ result()!.createdCount }}</p>
-                <p class="text-cyan-brand">Actualizadas: {{ result()!.updatedCount }}</p>
+                <p class="text-cyan-text">Actualizadas: {{ result()!.updatedCount }}</p>
                 @if (result()!.errors.length > 0) {
                   <div class="text-warning-brand text-xs mt-2">
                     <p class="font-accent uppercase tracking-wider mb-1">Errores ({{ result()!.errors.length }})</p>
@@ -66,7 +66,7 @@ export interface ImportResult {
                     </ul>
                     @if (result()!.errorLogFile) {
                       <p class="text-text-muted mt-2">
-                        Detalle guardado en el servidor: <code class="text-cyan-brand">{{ result()!.errorLogFile }}</code>
+                        Detalle guardado en el servidor: <code class="text-cyan-text">{{ result()!.errorLogFile }}</code>
                       </p>
                     }
                   </div>

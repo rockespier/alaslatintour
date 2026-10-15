@@ -21,8 +21,8 @@ type Article = ArticleSummary;
 
 const CATEGORY_MAP: Record<string, string> = {
   'Resultados': 'bg-success-brand/15 text-success-brand',
-  'Circuito': 'bg-cyan-brand/15 text-cyan-brand',
-  'Entrevista': 'bg-orange-brand/15 text-orange-brand',
+  'Circuito': 'bg-cyan-brand/15 text-cyan-text',
+  'Entrevista': 'bg-orange-brand/15 text-orange-light',
   'Reglamento': 'bg-warning-brand/15 text-warning-brand',
   'Tecnología': 'bg-navy-mid/50 text-text-muted',
 };
@@ -76,14 +76,14 @@ const CATEGORY_MAP: Record<string, string> = {
             }
           </div>
           <div class="p-8 lg:p-10 flex flex-col justify-center">
-            <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-3">
+            <p class="font-accent uppercase tracking-wider text-cyan-text text-xs mb-3">
               {{ featured()!.category | enumLabel: 'articleCategory' }} · ALAS Latin Tour
             </p>
             <h2 class="font-heading text-3xl md:text-4xl leading-tight mb-4">{{ featured()!.title }}</h2>
             <p class="text-text-muted leading-relaxed mb-5">{{ featured()!.excerpt }}</p>
             <div class="flex items-center justify-between text-xs text-text-muted">
               <span>{{ formatDate(featured()!.publishedAt) }}@if (featured()!.readingTime) { · {{ 'public.news.readingTime' | transloco: { min: featured()!.readingTime } }} }</span>
-              <a [routerLink]="('/noticias/' + featured()!.slug) | localizePath" class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+              <a [routerLink]="('/noticias/' + featured()!.slug) | localizePath" class="text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider">
                 {{ 'public.news.readArticle' | transloco }}
               </a>
             </div>
@@ -127,7 +127,7 @@ const CATEGORY_MAP: Record<string, string> = {
                 <div class="flex items-center justify-between text-xs text-text-muted">
                   <span>{{ formatDate(article.publishedAt) }}</span>
                   <a [routerLink]="('/noticias/' + article.slug) | localizePath"
-                     class="text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider text-[10px]">
+                     class="text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider text-[10px]">
                     {{ 'public.news.read' | transloco }}
                   </a>
                 </div>
@@ -231,7 +231,7 @@ const CATEGORY_MAP: Record<string, string> = {
                         <img [src]="video.thumbnailUrl" [alt]="video.title" loading="lazy" referrerpolicy="no-referrer"
                              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <span class="relative w-14 h-14 rounded-full bg-navy-deepest/70 border-2 border-cyan-brand flex items-center justify-center group-hover:bg-cyan-brand/30 transition">
-                          <svg class="h-6 w-6 text-cyan-brand ml-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <svg class="h-6 w-6 text-cyan-text ml-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M8 5v14l11-7z"/>
                           </svg>
                         </span>

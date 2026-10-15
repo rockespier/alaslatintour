@@ -1,0 +1,17 @@
+# ALAS Global Tour
+
+> Sitio oficial del ALAS Global Tour (Asociación Latinoamericana de Surfistas Profesionales): calendario de eventos, ranking de surfistas, noticias, galerías e inscripción de competidores. Disponible en español (raíz), inglés (/en) y portugués (/pt).
+
+## Secciones públicas
+
+- [Inicio](https://alasglobaltour.gestionaminegocio.com/): próximas paradas del circuito, ranking destacado y últimas noticias.
+- [Eventos](https://alasglobaltour.gestionaminegocio.com/eventos): eventos del circuito con fechas, sede, estrellas y estado de inscripción.
+- [Calendario](https://alasglobaltour.gestionaminegocio.com/calendario): calendario anual del tour.
+- [Ranking](https://alasglobaltour.gestionaminegocio.com/ranking): posiciones por categoría y temporada.
+- [Noticias](https://alasglobaltour.gestionaminegocio.com/noticias): artículos y resultados.
+- [Quiénes somos](https://alasglobaltour.gestionaminegocio.com/quienes-somos): información de la asociación.
+
+## Competidores
+
+- [Registro](https://alasglobaltour.gestionaminegocio.com/registro): crear cuenta de competidor.
+- [Iniciar sesión](https://alasglobaltour.gestionaminegocio.com/login): acceso al panel para inscribirse en eventos.

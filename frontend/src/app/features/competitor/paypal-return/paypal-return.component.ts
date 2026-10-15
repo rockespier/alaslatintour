@@ -14,7 +14,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   template: `
     <section class="py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-2xl mx-auto bg-navy-dark border border-navy-mid rounded-2xl p-6 md:p-8">
-        <p class="font-accent uppercase tracking-wider text-xs text-cyan-brand mb-3">PayPal</p>
+        <p class="font-accent uppercase tracking-wider text-xs text-cyan-text mb-3">PayPal</p>
 
         @if (status() === 'loading') {
           <h1 class="font-heading text-3xl mb-2">{{ 'competitor.paypal.confirming' | transloco }}</h1>

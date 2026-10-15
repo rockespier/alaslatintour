@@ -49,7 +49,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
           <a [routerLink]="'/eventos' | localizePath" class="hover:text-cyan-brand">{{ 'competitor.inscription.breadcrumbEvents' | transloco }}</a>
           <span>/</span>
           @if (event()) { <span>{{ event()!.nombre }}</span><span>/</span> }
-          <span class="text-cyan-brand">{{ 'competitor.inscription.breadcrumb' | transloco }}</span>
+          <span class="text-cyan-text">{{ 'competitor.inscription.breadcrumb' | transloco }}</span>
         </nav>
 
         <h1 class="font-heading text-4xl md:text-5xl mb-2">{{ 'competitor.inscription.title' | transloco }}</h1>
@@ -71,7 +71,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                 }
               </div>
               <p class="mt-3 font-accent uppercase tracking-wider text-xs"
-                 [class]="step() >= s.num ? 'text-cyan-brand' : 'text-text-muted'">
+                 [class]="step() >= s.num ? 'text-cyan-text' : 'text-text-muted'">
                 {{ 'competitor.inscription.steps.' + s.key | transloco }}
               </p>
             </div>
@@ -87,7 +87,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
             <div class="flex items-center gap-3">
               <span class="text-3xl">{{ flagOf(event()!.pais) }}</span>
               <div>
-                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs">{{ 'competitor.inscription.event' | transloco }}</p>
+                <p class="font-accent uppercase tracking-wider text-cyan-text text-xs">{{ 'competitor.inscription.event' | transloco }}</p>
                 <h2 class="font-heading text-xl leading-tight">{{ event()!.nombre }}</h2>
               </div>
             </div>
@@ -119,7 +119,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
               </div>
               <div>
                 <label class="flex items-center justify-between font-accent uppercase tracking-wider text-xs mb-2">
-                  <span class="text-cyan-brand">{{ 'competitor.inscription.shirtNumber' | transloco }}</span>
+                  <span class="text-cyan-text">{{ 'competitor.inscription.shirtNumber' | transloco }}</span>
                   <span class="text-text-muted normal-case">{{ 'competitor.inscription.editable' | transloco }}</span>
                 </label>
                 <input type="number" min="0" max="99" [(ngModel)]="shirtNumber"
@@ -128,7 +128,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
             </div>
 
             <div class="mt-8 pt-6 border-t border-navy-mid">
-              <p class="font-accent uppercase tracking-wider text-xs text-cyan-brand mb-4">{{ 'competitor.inscription.requiredConsents' | transloco }}</p>
+              <p class="font-accent uppercase tracking-wider text-xs text-cyan-text mb-4">{{ 'competitor.inscription.requiredConsents' | transloco }}</p>
               <div class="space-y-4">
                 <label class="flex items-start gap-3 cursor-pointer group">
                   <input type="checkbox" [(ngModel)]="reglamentoAccepted"
@@ -191,12 +191,12 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                         <div>
                           <h4 class="font-heading text-lg leading-tight">{{ cat.nombre }}</h4>
                           <p class="text-xs font-accent uppercase tracking-wider mt-0.5"
-                             [class]="cat.tipo === 'Principal' ? 'text-cyan-brand' : 'text-text-muted'">
+                             [class]="cat.tipo === 'Principal' ? 'text-cyan-text' : 'text-text-muted'">
                             {{ cat.tipo }}
                           </p>
                         </div>
                       </div>
-                      <span class="font-heading text-xl text-cyan-brand">{{ formatUSD(cat.tarifa) }}</span>
+                      <span class="font-heading text-xl text-cyan-text">{{ formatUSD(cat.tarifa) }}</span>
                     </div>
                     @if (cat.descripcion) {
                       <p class="text-xs text-text-muted mt-3 leading-relaxed">{{ cat.descripcion }}</p>
@@ -217,7 +217,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                 </div>
                 <div class="text-right">
                   <p class="font-accent uppercase tracking-wider text-xs text-text-muted">{{ 'competitor.inscription.fees' | transloco }}</p>
-                  <p class="font-heading text-3xl text-cyan-brand mt-1">{{ formatUSD(categoryAmount()) }}<span class="text-base text-text-muted ml-1">USD</span></p>
+                  <p class="font-heading text-3xl text-cyan-text mt-1">{{ formatUSD(categoryAmount()) }}<span class="text-base text-text-muted ml-1">USD</span></p>
                 </div>
               </div>
             }
@@ -241,7 +241,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
             <p class="text-sm text-text-muted mb-6">{{ 'competitor.inscription.paymentMethodText' | transloco }}</p>
 
             <div class="bg-navy-deepest border border-navy-mid rounded-xl p-5 mb-6">
-              <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-4">{{ 'competitor.inscription.summary' | transloco }}</p>
+              <p class="font-accent uppercase tracking-wider text-cyan-text text-xs mb-4">{{ 'competitor.inscription.summary' | transloco }}</p>
               <div class="space-y-3 text-sm">
                 <div class="flex justify-between"><span class="text-text-muted">{{ 'competitor.inscription.event' | transloco }}</span><span>{{ event()?.nombre }}</span></div>
                 <div class="flex justify-between"><span class="text-text-muted">{{ 'competitor.inscription.categories' | transloco }}</span><span>{{ selectedCategoryNames() }}</span></div>
@@ -254,7 +254,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                 }
                 <div class="pt-3 border-t border-navy-mid flex justify-between items-baseline">
                   <span class="font-heading text-lg">{{ 'competitor.inscription.total' | transloco }}</span>
-                  <span class="font-heading text-3xl text-cyan-brand">{{ formatUSD(totalAmount()) }}<span class="text-base ml-1">USD</span></span>
+                  <span class="font-heading text-3xl text-cyan-text">{{ formatUSD(totalAmount()) }}<span class="text-base ml-1">USD</span></span>
                 </div>
               </div>
               <p class="text-[11px] text-text-muted mt-3">{{ 'competitor.inscription.adminFeeNote' | transloco }}</p>
@@ -262,7 +262,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
 
             @if (existingMembershipPlan()) {
               <div class="bg-navy-deepest border border-cyan-brand/40 rounded-xl p-5 mb-6 flex items-start gap-3">
-                <svg class="h-5 w-5 text-cyan-brand flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg class="h-5 w-5 text-cyan-text flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div>
                   <p class="font-heading text-base">{{ 'competitor.inscription.existingMembership' | transloco: { plan: existingMembershipLabel() } }}</p>
                   <p class="text-xs text-text-muted mt-1">
@@ -278,7 +278,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
 
             @if (hasMembershipOptions()) {
               <div class="bg-navy-deepest border border-navy-mid rounded-xl p-5 mb-6">
-                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-1">{{ 'competitor.inscription.membershipOptional' | transloco }}</p>
+                <p class="font-accent uppercase tracking-wider text-cyan-text text-xs mb-1">{{ 'competitor.inscription.membershipOptional' | transloco }}</p>
                 <p class="text-sm text-text-muted mb-4">{{ 'competitor.inscription.membershipOptionalText' | transloco }}</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button type="button" (click)="membershipPlan.set('')"
@@ -291,7 +291,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                             class="membership-option rounded-lg p-4 text-left" [class.selected]="membershipPlan() === 'Anual'">
                       <p class="font-heading text-base">{{ 'competitor.inscription.plans.Anual' | transloco }}</p>
                       <p class="text-xs text-text-muted mt-1">{{ 'competitor.inscription.annualText' | transloco }}</p>
-                      <p class="font-heading text-xl text-cyan-brand mt-2">{{ formatUSD(selectedCategory()!.membresiaAnualUsd) }}</p>
+                      <p class="font-heading text-xl text-cyan-text mt-2">{{ formatUSD(selectedCategory()!.membresiaAnualUsd) }}</p>
                     </button>
                   }
                   @if ((selectedCategory()?.membresiaPorEventoUsd ?? 0) > 0) {
@@ -299,7 +299,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                             class="membership-option rounded-lg p-4 text-left" [class.selected]="membershipPlan() === 'PorEvento'">
                       <p class="font-heading text-base">{{ 'competitor.inscription.plans.PorEvento' | transloco }}</p>
                       <p class="text-xs text-text-muted mt-1">{{ 'competitor.inscription.perEventText' | transloco }}</p>
-                      <p class="font-heading text-xl text-cyan-brand mt-2">{{ formatUSD(selectedCategory()!.membresiaPorEventoUsd) }}</p>
+                      <p class="font-heading text-xl text-cyan-text mt-2">{{ formatUSD(selectedCategory()!.membresiaPorEventoUsd) }}</p>
                     </button>
                   }
                 </div>
@@ -338,7 +338,7 @@ type MembershipPlanChoice = '' | 'Anual' | 'PorEvento';
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
                       <span class="font-heading text-lg">{{ 'competitor.inscription.beachPayment' | transloco }}</span>
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-orange-brand/15 text-orange-brand border border-orange-brand/30">{{ 'competitor.inscription.cash' | transloco }}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-orange-brand/15 text-orange-light border border-orange-brand/30">{{ 'competitor.inscription.cash' | transloco }}</span>
                     </div>
                     <p class="text-xs text-text-muted leading-relaxed">{{ 'competitor.inscription.beachText' | transloco }}</p>
                   </div>

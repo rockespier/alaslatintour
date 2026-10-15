@@ -28,7 +28,7 @@ function passwordPolicy(control: AbstractControl) {
         <div class="bg-navy-dark border border-navy-mid rounded-2xl p-8 shadow-2xl shadow-black/40">
           @if (!success()) {
             <div class="mb-6">
-              <p class="font-accent uppercase text-xs tracking-wider text-cyan-brand mb-2">{{ 'auth.reset.kicker' | transloco }}</p>
+              <p class="font-accent uppercase text-xs tracking-wider text-cyan-text mb-2">{{ 'auth.reset.kicker' | transloco }}</p>
               <h1 class="font-heading text-3xl mb-1">{{ 'auth.reset.title' | transloco }}</h1>
               <p class="text-text-muted text-sm">
                 {{ 'auth.reset.intro' | transloco }}
@@ -113,7 +113,7 @@ function passwordPolicy(control: AbstractControl) {
           }
 
           <p class="mt-6 text-center text-sm text-text-muted">
-            <a [routerLink]="'/recuperar-password' | localizePath" class="text-cyan-brand hover:text-cyan-dark">{{ 'auth.reset.requestAnother' | transloco }}</a>
+            <a [routerLink]="'/recuperar-password' | localizePath" class="text-cyan-text hover:text-cyan-dark">{{ 'auth.reset.requestAnother' | transloco }}</a>
           </p>
         </div>
       </div>

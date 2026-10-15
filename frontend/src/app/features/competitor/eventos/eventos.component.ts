@@ -77,7 +77,7 @@ interface CompetitorStats {
 
 const STATUS_CLASS: Record<string, string> = {
   'Inscripciones Abiertas': 'bg-success-brand/15 text-success-brand border-success-brand/30',
-  'Próximamente': 'bg-cyan-brand/15 text-cyan-brand border-cyan-brand/30',
+  'Próximamente': 'bg-cyan-brand/15 text-cyan-text border-cyan-brand/30',
   'Completado': 'bg-navy-mid text-text-muted border-navy-mid',
   'Cerrado': 'bg-navy-mid text-text-muted border-navy-mid',
 };
@@ -97,7 +97,7 @@ const STATUS_CLASS: Record<string, string> = {
                 {{ userInitial() }}
               </div>
               <div>
-                <p class="font-accent uppercase tracking-[0.25em] text-cyan-brand text-xs mb-1">{{ 'competitor.events.seasonKicker' | transloco }}</p>
+                <p class="font-accent uppercase tracking-[0.25em] text-cyan-text text-xs mb-1">{{ 'competitor.events.seasonKicker' | transloco }}</p>
                 <h1 class="font-heading text-2xl md:text-3xl">{{ 'competitor.events.hello' | transloco: { name: firstName() } }}</h1>
                 <p class="text-sm text-text-muted mt-1">{{ 'competitor.events.ready' | transloco }}</p>
               </div>
@@ -106,7 +106,7 @@ const STATUS_CLASS: Record<string, string> = {
               <div class="flex gap-8 text-center">
                 <div>
                   <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-1">{{ 'competitor.events.ranking' | transloco: { year: currentYear } }}</p>
-                  <p class="font-heading text-3xl text-cyan-brand">
+                  <p class="font-heading text-3xl text-cyan-text">
                     {{ competitorStats()!.rankingActual ? '#' + competitorStats()!.rankingActual : '—' }}
                   </p>
                 </div>
@@ -147,12 +147,12 @@ const STATUS_CLASS: Record<string, string> = {
           </div>
           <label class="flex items-center gap-2 cursor-pointer select-none pb-2.5">
             <input type="checkbox" [checked]="proximosOnly()" (change)="proximosOnly.set($any($event.target).checked)"
-                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-brand focus:ring-cyan-brand focus:ring-offset-0">
+                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-text focus:ring-cyan-brand focus:ring-offset-0">
             <span class="text-sm text-text-light">{{ 'competitor.events.upcomingOnly' | transloco }}</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer select-none pb-2.5">
             <input type="checkbox" [checked]="soloAbiertas()" (change)="soloAbiertas.set($any($event.target).checked)"
-                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-brand focus:ring-cyan-brand focus:ring-offset-0">
+                   class="h-4 w-4 rounded border-navy-mid bg-navy-mid/40 text-cyan-text focus:ring-cyan-brand focus:ring-offset-0">
             <span class="text-sm text-text-light">{{ 'competitor.events.openOnly' | transloco }}</span>
           </label>
         </div>
@@ -184,7 +184,7 @@ const STATUS_CLASS: Record<string, string> = {
                   <div class="flex flex-col md:flex-row gap-5">
                     <div class="md:w-32 flex md:flex-col items-center md:items-start gap-3 md:gap-1 md:border-r md:border-navy-mid md:pr-5 flex-shrink-0">
                       <div class="font-heading text-5xl leading-none"
-                           [class]="event.statusPublic === 'Completado' ? 'text-text-muted' : 'text-cyan-brand'">
+                           [class]="event.statusPublic === 'Completado' ? 'text-text-muted' : 'text-cyan-text'">
                         {{ dayOf(event.fechaInicio) }}
                       </div>
                       <div>
@@ -206,10 +206,10 @@ const STATUS_CLASS: Record<string, string> = {
                             <span class="text-xl">{{ flagOf(event.pais) }}</span>
                             <span>{{ event.ciudad }}, {{ event.pais }}</span>
                             @if (event.isInvitational) {
-                              <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-brand border border-cyan-brand/30">{{ 'competitor.events.invitational' | transloco }}</span>
+                              <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-text border border-cyan-brand/30">{{ 'competitor.events.invitational' | transloco }}</span>
                             }
                             @if (event.stars === 5) {
-                              <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-orange-brand/15 text-orange-brand border border-orange-brand/30">{{ 'competitor.events.starEvent' | transloco }}</span>
+                              <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-orange-brand/15 text-orange-light border border-orange-brand/30">{{ 'competitor.events.starEvent' | transloco }}</span>
                             }
                           </div>
                           <h3 class="font-heading text-2xl md:text-3xl leading-tight"
@@ -263,7 +263,7 @@ const STATUS_CLASS: Record<string, string> = {
                           @if (event.prizeAmountUsd) {
                             <div>
                               <p class="font-accent uppercase text-xs text-text-muted tracking-wider mb-0.5">{{ 'competitor.events.prize' | transloco }}</p>
-                              <p class="font-heading text-lg text-cyan-brand">{{ formatUSD(event.prizeAmountUsd) }} USD</p>
+                              <p class="font-heading text-lg text-cyan-text">{{ formatUSD(event.prizeAmountUsd) }} USD</p>
                             </div>
                           }
                           @if (event.enrolledCount !== undefined && event.capacidadMaxima) {
@@ -312,7 +312,7 @@ const STATUS_CLASS: Record<string, string> = {
                         } @else if (event.statusPublic === 'Completado') {
                           @if (isScheduleAvailable(event.id)) {
                             <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
-                               class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
+                               class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
                               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                               </svg>
@@ -321,7 +321,7 @@ const STATUS_CLASS: Record<string, string> = {
                           } @else {
                             @if (resultsPdfUrl(event.id); as pdfUrl) {
                               <a [href]="pdfUrl" target="_blank" rel="noopener"
-                                 class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
+                                 class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition">
                                 {{ 'competitor.events.viewWinners' | transloco }}
                               </a>
                             }
@@ -354,7 +354,7 @@ const STATUS_CLASS: Record<string, string> = {
 
                         @if (isScheduleAvailable(event.id) && event.statusPublic !== 'Completado') {
                           <a [href]="liveSchedulePdfUrl()" target="_blank" rel="noopener"
-                             class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-brand hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
+                             class="px-5 py-2.5 rounded-md border border-cyan-brand text-cyan-text hover:bg-cyan-brand hover:text-navy-deepest font-accent uppercase tracking-wider text-sm transition inline-flex items-center gap-2">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
@@ -365,7 +365,7 @@ const STATUS_CLASS: Record<string, string> = {
 
                       @if (isExpanded(event.id) && event.categorias?.length) {
                         <div class="mt-6 pt-6 border-t border-navy-mid">
-                          <h4 class="font-accent uppercase tracking-wider text-cyan-brand text-sm mb-3">{{ 'competitor.events.categoriesAndFees' | transloco }}</h4>
+                          <h4 class="font-accent uppercase tracking-wider text-cyan-text text-sm mb-3">{{ 'competitor.events.categoriesAndFees' | transloco }}</h4>
                           <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                               <thead class="text-text-muted font-accent uppercase tracking-wider text-xs">
@@ -388,7 +388,7 @@ const STATUS_CLASS: Record<string, string> = {
                                       }
                                     </td>
                                     <td class="px-2 text-text-muted">{{ cat.inscritos }} / {{ cat.capacidad }}</td>
-                                    <td class="py-2.5 pl-2 text-right text-cyan-brand">{{ formatUSD(cat.tarifa) }}</td>
+                                    <td class="py-2.5 pl-2 text-right text-cyan-text">{{ formatUSD(cat.tarifa) }}</td>
                                     @if (event.statusPublic === 'Completado') {
                                       <td class="py-2.5 pl-2 text-right">
                                         {{ winners().get(cat.id) || (loadingWinners().has(event.id) ? ('competitor.events.loading' | transloco) : '—') }}
@@ -408,7 +408,7 @@ const STATUS_CLASS: Record<string, string> = {
                       @if (isInscritosExpanded(event.id)) {
                         <div class="mt-6 pt-6 border-t border-navy-mid">
                           <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
-                            <h4 class="font-accent uppercase tracking-wider text-cyan-brand text-sm">{{ 'competitor.events.confirmedTitle' | transloco }}</h4>
+                            <h4 class="font-accent uppercase tracking-wider text-cyan-text text-sm">{{ 'competitor.events.confirmedTitle' | transloco }}</h4>
                             @if (event.categorias?.length) {
                               <select [value]="selectedInscritosCategoryId(event.id)"
                                       (change)="selectInscritosCategory(event.id, $any($event.target).value)"
@@ -465,7 +465,7 @@ const STATUS_CLASS: Record<string, string> = {
                   <div class="flex items-center justify-between mb-5">
                     <h3 class="font-heading text-xl">{{ 'competitor.events.myInscriptions' | transloco }}</h3>
                     @if (myInscriptions().length > 0) {
-                      <span class="px-2 py-0.5 rounded-full text-xs font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-brand border border-cyan-brand/30">
+                      <span class="px-2 py-0.5 rounded-full text-xs font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-text border border-cyan-brand/30">
                         {{ 'competitor.events.active' | transloco: { count: myInscriptions().length } }}
                       </span>
                     }
@@ -504,7 +504,7 @@ const STATUS_CLASS: Record<string, string> = {
                   }
 
                   <a [routerLink]="'/mi-panel/inscripciones' | localizePath"
-                     class="block text-center mt-5 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                     class="block text-center mt-5 text-sm text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider">
                     {{ 'competitor.events.fullHistory' | transloco }}
                   </a>
                 </div>
@@ -514,7 +514,7 @@ const STATUS_CLASS: Record<string, string> = {
                 <h3 class="font-heading text-xl mb-4">{{ 'competitor.events.howToRead' | transloco }}</h3>
                 <ul class="space-y-3 text-sm text-text-muted">
                   <li class="flex items-start gap-3">
-                    <span class="text-cyan-brand text-lg leading-none mt-0.5">★</span>
+                    <span class="text-cyan-text text-lg leading-none mt-0.5">★</span>
                     <span>{{ 'competitor.events.starsHelp' | transloco }}</span>
                   </li>
                   <li class="flex items-start gap-3">
@@ -522,25 +522,25 @@ const STATUS_CLASS: Record<string, string> = {
                     <span>{{ 'competitor.events.openHelp' | transloco }}</span>
                   </li>
                   <li class="flex items-start gap-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-brand border border-cyan-brand/30 whitespace-nowrap mt-0.5">{{ 'competitor.events.soonBadge' | transloco }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-accent uppercase tracking-wider bg-cyan-brand/15 text-cyan-text border border-cyan-brand/30 whitespace-nowrap mt-0.5">{{ 'competitor.events.soonBadge' | transloco }}</span>
                     <span>{{ 'competitor.events.soonHelp' | transloco }}</span>
                   </li>
                 </ul>
               </div>
 
               <div class="bg-gradient-to-br from-cyan-brand/10 to-orange-brand/5 border border-cyan-brand/20 rounded-xl p-5">
-                <p class="font-accent uppercase tracking-wider text-cyan-brand text-xs mb-2">{{ 'competitor.events.needHelp' | transloco }}</p>
+                <p class="font-accent uppercase tracking-wider text-cyan-text text-xs mb-2">{{ 'competitor.events.needHelp' | transloco }}</p>
                 <h4 class="font-heading text-lg mb-2 leading-tight">{{ 'competitor.events.rulesSupport' | transloco }}</h4>
                 <p class="text-sm text-text-muted leading-relaxed mb-4">
                   {{ 'competitor.events.rulesSupportText' | transloco }}
                 </p>
                 <a href="/reglamento.pdf" target="_blank"
-                   class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider">
+                   class="inline-flex items-center gap-1 text-sm text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider">
                   {{ 'competitor.events.viewRules' | transloco }}
                 </a>
                 &nbsp;&nbsp;
                 <a href="mailto:soporte@alasglobaltour.com"
-                   class="inline-flex items-center gap-1 text-sm text-cyan-brand hover:text-cyan-dark font-accent uppercase tracking-wider mt-2">
+                   class="inline-flex items-center gap-1 text-sm text-cyan-text hover:text-cyan-dark font-accent uppercase tracking-wider mt-2">
                   {{ 'competitor.events.contactSupport' | transloco }}
                 </a>
               </div>
@@ -907,7 +907,7 @@ export class EventosComponent implements OnInit {
   }
 
   flagOf(code: string): string { return flagForCountryCode(code); }
-  statusClass(status: string): string { return STATUS_CLASS[status] ?? 'bg-orange-brand/15 text-orange-brand border-orange-brand/30'; }
+  statusClass(status: string): string { return STATUS_CLASS[status] ?? 'bg-orange-brand/15 text-orange-light border-orange-brand/30'; }
 
   capacityColor(used: number, total: number): string {
     const pct = used / total;
