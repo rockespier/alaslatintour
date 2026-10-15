@@ -35,7 +35,7 @@ interface NavItem {
 
       <!-- Logo -->
       <div class="flex items-center gap-3 px-5 py-4 border-b border-white/10" [class.justify-center]="sidebar.collapsed() && isDesktop()">
-        <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Admin" class="h-12 w-auto" />
+        <img src="/assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Admin" class="h-12 w-auto" />
         @if (isDesktop()) {
           <button (click)="sidebar.toggle()" class="ml-auto p-1 text-[#AAAAAA] hover:text-white" [attr.aria-label]="sidebar.collapsed() ? 'Expandir menú' : 'Colapsar menú'">
             {{ sidebar.collapsed() ? '›' : '‹' }}

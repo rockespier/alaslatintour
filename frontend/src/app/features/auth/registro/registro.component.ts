@@ -28,7 +28,7 @@ const PREFERRED_LANGUAGE: Record<Lang, string> = { es: 'Espanol', en: 'English',
 
       <!-- Logo -->
       <a [routerLink]="'/' | localizePath" class="mb-6">
-        <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto" />
+        <img src="/assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Latin Tour" class="h-14 w-auto" />
       </a>
 
       <div class="w-full max-w-lg">

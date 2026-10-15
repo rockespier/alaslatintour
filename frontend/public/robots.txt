@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /mi-panel
+Disallow: /pago-playa/
+Disallow: /paypal/
+Disallow: /restablecer-password
+Disallow: /*/admin
+Disallow: /*/mi-panel

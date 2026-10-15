@@ -15,7 +15,7 @@ import { ApiService } from '../../../core/services/api.service';
 
       <!-- Logo -->
       <a [routerLink]="'/' | localizePath" class="mb-8">
-        <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-16 w-auto" />
+        <img src="/assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Latin Tour" class="h-16 w-auto" />
       </a>
 
       <div class="w-full max-w-md">

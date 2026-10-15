@@ -159,11 +159,17 @@ type ArticleCard = ArticleSummary;
 
     <!-- ═══ HERO ═══ -->
     <section class="hero-bg min-h-[92vh] flex items-center relative overflow-hidden" >
-      <video autoplay muted loop class="bg-video absolute inset-0 w-full h-full object-cover z-0" poster="https://www.alaslatintour.com/content/dist/images/fallback.jpg" preload="auto" playsinline>
-        <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
-        <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
-        {{ 'public.home.hero.noVideo' | transloco }}
-      </video>
+      <!-- El póster es el LCP: se pinta desde el HTML SSR; el video solo se monta en desktop tras el load -->
+      <img [src]="heroPoster" srcset="assets/images/hero-poster-768.webp 768w, assets/images/hero-poster.webp 1280w"
+           sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async"
+           class="absolute inset-0 w-full h-full object-cover z-0" />
+      @if (heroVideo()) {
+        <video autoplay muted loop class="bg-video absolute inset-0 w-full h-full object-cover z-0" [poster]="heroPoster" preload="none" playsinline>
+          <source src="https://www.alaslatintour.com/content/dist/images/landing.webm" type="video/webm">
+          <source src="https://www.alaslatintour.com/content/dist/images/landing.mp4" type="video/mp4" />
+          {{ 'public.home.hero.noVideo' | transloco }}
+        </video>
+      }
       <div class="absolute inset-0 bg-black/35 pointer-events-none"
           style="background-image: radial-gradient(rgba(0,129,198,0.18) 1px, transparent 1px); background-size: 32px 32px;">
       </div>
@@ -242,6 +248,7 @@ type ArticleCard = ArticleSummary;
                 <div class="relative aspect-[16/10] bg-navy-mid/40">
                   @if (event.imagenUrl) {
                     <img [src]="event.imagenUrl" [alt]="event.nombre" referrerpolicy="no-referrer"
+                         loading="lazy" decoding="async" width="640" height="400"
                          class="w-full h-full object-cover">
                   } @else {
                     <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-navy-mid/60 to-navy-deepest text-5xl">
@@ -294,6 +301,7 @@ type ArticleCard = ArticleSummary;
             @if (rankingCategories().length > 0) {
               <select
                 class="input-field w-auto"
+                [attr.aria-label]="'public.home.ranking.title' | transloco: { year: currentYear }"
                 [value]="selectedCategoryId()"
                 (change)="onCategoryChange($any($event.target).value)">
                 @for (cat of rankingCategories(); track cat.id) {
@@ -373,7 +381,8 @@ type ArticleCard = ArticleSummary;
               <article class="bg-navy-dark rounded-xl overflow-hidden border border-navy-mid hover:border-cyan-brand/40 transition group">
                 <div class="h-48 bg-gradient-to-br from-cyan-brand/30 via-navy-mid to-orange-brand/30 relative overflow-hidden">
                   @if (article.imageUrl) {
-                    <img [src]="article.imageUrl" [alt]="article.title" referrerpolicy="no-referrer" class="object-cover w-full h-full">
+                    <img [src]="article.imageUrl" [alt]="article.title" referrerpolicy="no-referrer"
+                         loading="lazy" decoding="async" width="768" height="384" class="object-cover w-full h-full">
                   }
                   <span class="absolute top-3 left-3 px-3 py-1 font-accent uppercase text-xs tracking-wider rounded"
                         [class]="categoryBadgeClass(article.category)">
@@ -525,6 +534,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private platformId = inject(PLATFORM_ID);
 
   readonly currentYear = new Date().getFullYear();
+  readonly heroPoster = 'assets/images/hero-poster.webp';
+  heroVideo = signal(false);
 
   events = signal<EventCard[]>([]);
   articles = signal<ArticleCard[]>([]);
@@ -580,8 +591,34 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (!this.captchaRequired || !isPlatformBrowser(this.platformId)) return;
-    void this.renderTurnstile();
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.scheduleHeroVideo();
+    if (this.captchaRequired) this.renderTurnstileWhenVisible();
+  }
+
+  /** Solo desktop y sin ahorro de datos; espera al load para no competir con el LCP. */
+  private scheduleHeroVideo(): void {
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (saveData || !window.matchMedia('(min-width: 768px)').matches) return;
+    const start = () => setTimeout(() => this.heroVideo.set(true), 300);
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+  }
+
+  /** Turnstile (~1 KiB + iframe) se carga cuando el formulario de contacto se acerca al viewport. */
+  private renderTurnstileWhenVisible(): void {
+    const target = document.getElementById('contacto');
+    if (!target || !('IntersectionObserver' in window)) {
+      void this.renderTurnstile();
+      return;
+    }
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) {
+        observer.disconnect();
+        void this.renderTurnstile();
+      }
+    }, { rootMargin: '400px' });
+    observer.observe(target);
   }
 
   private async renderTurnstile(): Promise<void> {

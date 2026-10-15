@@ -18,7 +18,7 @@ import { LanguageSwitcherComponent } from '../language-switcher/language-switche
 
           <!-- Logo -->
           <a [routerLink]="'/' | localizePath" class="flex items-center gap-3">            
-            <img src="assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-20 w-auto" />
+            <img src="assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Latin Tour" width="1579" height="1108" class="h-20 w-auto" />
           </a>
 
           <!-- Nav desktop -->

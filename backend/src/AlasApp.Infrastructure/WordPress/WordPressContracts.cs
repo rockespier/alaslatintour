@@ -12,7 +12,15 @@ internal sealed record WordPressAuthorDto(
 internal sealed record WordPressMediaSizeDto(
     [property: JsonPropertyName("source_url")] string? SourceUrl);
 
+internal sealed record WordPressMediaSizesDto(
+    [property: JsonPropertyName("full")] WordPressMediaSizeDto? Full,
+    [property: JsonPropertyName("large")] WordPressMediaSizeDto? Large,
+    [property: JsonPropertyName("medium_large")] WordPressMediaSizeDto? MediumLarge,
+    [property: JsonPropertyName("medium")] WordPressMediaSizeDto? Medium);
+
+// WordPress anida los tamaños en media_details.sizes; las propiedades planas se mantienen por compatibilidad.
 internal sealed record WordPressMediaDetailsDto(
+    [property: JsonPropertyName("sizes")] WordPressMediaSizesDto? Sizes,
     [property: JsonPropertyName("full")] WordPressMediaSizeDto? Full,
     [property: JsonPropertyName("large")] WordPressMediaSizeDto? Large,
     [property: JsonPropertyName("medium_large")] WordPressMediaSizeDto? MediumLarge,

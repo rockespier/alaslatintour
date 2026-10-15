@@ -21,7 +21,7 @@ interface SocialLink {
 
           <!-- Brand -->
           <div class="md:col-span-2">
-            <img src="assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-14 w-auto mb-4" />
+            <img src="assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Latin Tour" width="1579" height="1108" loading="lazy" class="h-14 w-auto mb-4" />
             <p class="text-sm text-[#AAAAAA] max-w-xs leading-relaxed">
               {{ 'footer.tagline' | transloco }}
             </p>
@@ -30,7 +30,7 @@ interface SocialLink {
 
           <!-- Links -->
           <div>
-            <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.platform' | transloco }}</h4>
+            <h2 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.platform' | transloco }}</h2>
             <ul class="space-y-2">
               <li><a [routerLink]="'/eventos' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.events' | transloco }}</a></li>
               <li><a [routerLink]="'/ranking' | localizePath" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ 'nav.ranking' | transloco }}</a></li>
@@ -42,7 +42,7 @@ interface SocialLink {
           <!-- Social -->
           @if (socialLinks().length) {
             <div>
-              <h4 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.social' | transloco }}</h4>
+              <h2 class="text-sm font-semibold text-[#EEEEEE] mb-4 uppercase tracking-wider">{{ 'footer.social' | transloco }}</h2>
               <ul class="space-y-2">
                 @for (link of socialLinks(); track link.name) {
                   <li><a [href]="link.url" target="_blank" rel="noopener" class="text-sm text-[#AAAAAA] hover:text-[#0081C6]">{{ link.name }}</a></li>

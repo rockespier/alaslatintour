@@ -339,11 +339,17 @@ public sealed partial class WordPressService(HttpClient httpClient, AlasAppDbCon
             return post.Meta.ImageUrl;
         }
 
+        // Prioriza tamaños web (≤1024px): el original subido puede pesar varios MB.
         var featuredMedia = post.Embedded?.FeaturedMedia?.FirstOrDefault();
-        return featuredMedia?.MediaDetails?.Full?.SourceUrl
-            ?? featuredMedia?.MediaDetails?.Large?.SourceUrl
-            ?? featuredMedia?.MediaDetails?.MediumLarge?.SourceUrl
-            ?? featuredMedia?.MediaDetails?.Medium?.SourceUrl
+        var details = featuredMedia?.MediaDetails;
+        return details?.Sizes?.Large?.SourceUrl
+            ?? details?.Sizes?.MediumLarge?.SourceUrl
+            ?? details?.Large?.SourceUrl
+            ?? details?.MediumLarge?.SourceUrl
+            ?? details?.Sizes?.Full?.SourceUrl
+            ?? details?.Full?.SourceUrl
+            ?? details?.Sizes?.Medium?.SourceUrl
+            ?? details?.Medium?.SourceUrl
             ?? featuredMedia?.SourceUrl
             ?? string.Empty;
     }

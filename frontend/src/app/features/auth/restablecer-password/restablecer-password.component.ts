@@ -21,7 +21,7 @@ function passwordPolicy(control: AbstractControl) {
   template: `
     <div class="min-h-screen bg-navy-deepest flex flex-col items-center justify-center px-4 py-12">
       <a [routerLink]="'/' | localizePath" class="mb-8">
-        <img src="/assets/images/brand/logo-pro-tour-white-2x.png" alt="ALAS Latin Tour" class="h-16 w-auto" />
+        <img src="/assets/images/brand/logo-pro-tour-white-sm.webp" alt="ALAS Latin Tour" class="h-16 w-auto" />
       </a>
 
       <div class="w-full max-w-md">
